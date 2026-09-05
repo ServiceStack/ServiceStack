@@ -98,7 +98,6 @@ public class AppTasks
                         continue;
                     }
 
-                    var exitCode = 0;
                     try
                     {
                         Instance.Log.Info($"Running AppTask '{appTask}'...");
@@ -106,10 +105,9 @@ public class AppTasks
                     }
                     catch (Exception e)
                     {
-                        exitCode = i + 1; // return 1-based index of AppTask that failed
                         Instance.Log.Error($"Failed to run AppTask '{appTask}'", e);
+                        return i + 1; // return 1-based index of AppTask that failed
                     }
-                    return exitCode;
                 }
             }
             else

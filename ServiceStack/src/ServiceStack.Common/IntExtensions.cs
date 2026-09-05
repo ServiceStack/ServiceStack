@@ -1,4 +1,4 @@
-﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -78,13 +78,14 @@ public static class IntExtensions
 
     public static List<IAsyncResult> TimesAsync(this int times, Action<int> actionFn)
     {
+        if (times <= 0) return new List<IAsyncResult>();
         var asyncResults = new List<IAsyncResult>(times);
         for (var i = 0; i < times; i++)
         {
 #if NETCORE
             asyncResults.Add(Task.Run(() => actionFn(i)));
 #else                
-                asyncResults.Add(actionFn.BeginInvoke(i, null, null));
+            asyncResults.Add(actionFn.BeginInvoke(i, null, null));
 #endif
         }
         return asyncResults;
@@ -92,13 +93,14 @@ public static class IntExtensions
 
     public static List<IAsyncResult> TimesAsync(this int times, Action actionFn)
     {
+        if (times <= 0) return new List<IAsyncResult>();
         var asyncResults = new List<IAsyncResult>(times);
         for (var i = 0; i < times; i++)
         {
 #if NETCORE
             asyncResults.Add(Task.Run(actionFn));
 #else                
-                asyncResults.Add(actionFn.BeginInvoke(null, null));
+            asyncResults.Add(actionFn.BeginInvoke(null, null));
 #endif
         }
         return asyncResults;

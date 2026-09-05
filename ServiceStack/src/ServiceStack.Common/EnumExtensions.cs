@@ -9,18 +9,23 @@ public static class EnumUtils
 {
     public static IEnumerable<T> GetValues<T>() where T : Enum => Enum.GetValues(typeof(T)).Cast<T>();
     
-    public static FieldInfo GetEnumMember(Type type, string name) => 
-        (FieldInfo) type.GetMember(name, BindingFlags.Public | BindingFlags.Static)[0];
+    public static FieldInfo GetEnumMember(Type type, string name)
+    {
+        if (type == null || name == null) return null;
+        var members = type.GetMember(name, BindingFlags.Public | BindingFlags.Static);
+        return members.Length > 0 ? members[0] as FieldInfo : null;
+    }
 
     public static List<string> ToEnumFlagsList(this Enum enumValue)
     {
+        if (enumValue == null) return new List<string>();
         var enumType = enumValue.GetType();
         return Enum.GetValues(enumType).Cast<Enum>()
             .Where(x => enumValue.HasFlag(x) && Convert.ToInt64(x) != 0)
             .Select(x => {
                 var name = x.ToString();
                 var enumMember = GetEnumMember(enumType, name);
-                var enumDesc = enumMember.GetDescription();
+                var enumDesc = enumMember?.GetDescription();
                 return enumDesc ?? name;
             }).ToList();
     }
@@ -38,16 +43,26 @@ public static class EnumUtils
         {
             var name = names[i];
             var enumMember = GetEnumMember(enumType, name);
-            var enumDesc = enumMember.GetDescription();
+            var enumDesc = enumMember?.GetDescription();
             if (enumDesc != null)
                 descMap[enumDesc] = enumMember.GetRawConstantValue()!;
         }
 
         return enums.Aggregate(null, (object acc, string x) =>
         {
+            if (x == null) return acc;
             object value = null;
             if (!descMap.TryGetValue(x, out value))
-                value = Enum.Parse(enumType, x, ignoreCase: true);
+            {
+                try
+                {
+                    value = Enum.Parse(enumType, x, ignoreCase: true);
+                }
+                catch
+                {
+                    // ignore invalid enum flag
+                }
+            }
             if (value != null)
             {
                 acc = Enum.ToObject(enumType, Convert.ToInt64(acc) | Convert.ToInt64(value));

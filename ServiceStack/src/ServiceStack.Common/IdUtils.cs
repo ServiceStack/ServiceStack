@@ -142,7 +142,9 @@ public static class IdUtils
 
     public static object GetObjectId(this object entity)
     {
-        return entity.GetType().GetIdProperty().GetGetMethod(nonPublic:true).Invoke(entity, TypeConstants.EmptyObjectArray);
+        if (entity == null) return null;
+        var pi = entity.GetType().GetIdProperty();
+        return pi?.GetGetMethod(nonPublic:true)?.Invoke(entity, TypeConstants.EmptyObjectArray);
     }
 
     public static object ToId<T>(this T entity)
@@ -193,6 +195,9 @@ public static class IdUtils
 
     public static string CreateCacheKeyPath<T>(string idValue)
     {
+        if (idValue == null)
+            throw new ArgumentNullException(nameof(idValue));
+
         if (idValue.Length < 4)
         {
             idValue = idValue.PadLeft(4, '0');
@@ -210,6 +215,7 @@ public static class IdUtils
 
     public static PropertyInfo GetIdProperty(this Type type)
     {
+        if (type == null) return null;
         foreach (var pi in type.GetProperties())
         {
             if (string.Equals(IdField, pi.Name, StringComparison.OrdinalIgnoreCase))

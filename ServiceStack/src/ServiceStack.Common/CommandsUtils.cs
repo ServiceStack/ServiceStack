@@ -24,21 +24,35 @@ public class CommandsUtils
     public static List<T> ExecuteAsyncCommandList<T>(TimeSpan timeout, IEnumerable<ICommandList<T>> commands)
     {
         var results = new List<T>();
+        if (commands == null)
+            return results;
+
         var waitHandles = new List<WaitHandle>();
-        foreach (ICommandList<T> command in commands)
+        try
         {
-            var waitHandle = new AutoResetEvent(false);
-            waitHandles.Add(waitHandle);
-            var commandResultsHandler = new CommandResultsHandler<T>(results, command, waitHandle);
+            foreach (ICommandList<T> command in commands)
+            {
+                if (command == null) continue;
+                var waitHandle = new AutoResetEvent(false);
+                waitHandles.Add(waitHandle);
+                var commandResultsHandler = new CommandResultsHandler<T>(results, command, waitHandle);
 #if NETCORE
-            Task.Run(() => ExecuteCommandList(commandResultsHandler));
+                Task.Run(() => ExecuteCommandList(commandResultsHandler));
 #elif NETFX_CORE
-            ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandResultsHandler)));
+                ThreadPool.RunAsync(new WorkItemHandler((IAsyncAction) => ExecuteCommandList(commandResultsHandler)));
 #else
-            ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandResultsHandler);
+                ThreadPool.QueueUserWorkItem(ExecuteCommandList, commandResultsHandler);
 #endif
+            }
+            WaitAll(waitHandles.ToArray(), timeout);
         }
-        WaitAll(waitHandles.ToArray(), timeout);
+        finally
+        {
+            foreach (var wh in waitHandles)
+            {
+                try { wh.Dispose(); } catch { }
+            }
+        }
         return results;
     }
 
@@ -87,8 +101,10 @@ public class CommandsUtils
 
     public static void ExecuteAsyncCommandExec(TimeSpan timeout, IEnumerable<ICommandExec> commands)
     {
+        if (commands == null) return;
         foreach (ICommandExec command in commands)
         {
+            if (command == null) continue;
 #if NETCORE
             Task.Run(() => ExecuteCommandExec(command));
 #elif NETFX_CORE
@@ -107,8 +123,10 @@ public class CommandsUtils
     public static List<WaitHandle> ExecuteAsyncCommandExec(IEnumerable<ICommandExec> commands)
     {
         var waitHandles = new List<WaitHandle>();
+        if (commands == null) return waitHandles;
         foreach (var command in commands)
         {
+            if (command == null) continue;
             var waitHandle = new AutoResetEvent(false);
             waitHandles.Add(waitHandle);
             var commandExecsHandler = new CommandExecsHandler(command, waitHandle);

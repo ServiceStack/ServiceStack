@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -32,6 +32,9 @@ public static class ExpressionUtils
 
     public static string GetMemberName<T>(Expression<Func<T, object>> fieldExpr)
     {
+        if (fieldExpr == null)
+            throw new ArgumentNullException(nameof(fieldExpr));
+
         var m = GetMemberExpression(fieldExpr);
         if (m != null)
             return m.Member.Name;
@@ -41,6 +44,9 @@ public static class ExpressionUtils
 
     public static MemberExpression GetMemberExpression<T>(Expression<Func<T, object>> expr)
     {
+        if (expr == null)
+            return null;
+
         var member = expr.Body as MemberExpression;
         var unary = expr.Body as UnaryExpression;
         return member ?? unary?.Operand as MemberExpression;
@@ -61,9 +67,12 @@ public static class ExpressionUtils
 
     public static string[] GetFieldNames<T>(this Expression<Func<T, object>> expr)
     {
+        if (expr == null)
+            throw new ArgumentNullException(nameof(expr));
+
         if (expr.Body is MemberExpression member)
         {
-            if (member.Member.DeclaringType.IsAssignableFrom(typeof(T)))
+            if (member.Member.DeclaringType?.IsAssignableFrom(typeof(T)) == true)
                 return [member.Member.Name];
 
             var array = CachedExpressionCompiler.Evaluate(member);
@@ -81,7 +90,7 @@ public static class ExpressionUtils
         {
             var constantExprs = newArray.Expressions.OfType<ConstantExpression>().ToList();
             if (newArray.Expressions.Count == constantExprs.Count)
-                return constantExprs.Select(x => x.Value.ToString()).ToArray();
+                return constantExprs.Select(x => x.Value?.ToString()).ToArray();
 
             var array = CachedExpressionCompiler.Evaluate(newArray);
             if (array is string[] strArray)
@@ -102,6 +111,9 @@ public static class ExpressionUtils
 
     public static object GetValue(this MemberBinding binding)
     {
+        if (binding == null)
+            return null;
+
         switch (binding.BindingType)
         {
             case MemberBindingType.Assignment:

@@ -234,6 +234,8 @@ public static class ProcessUtils
         if (!process.Start())
         {
             result.ExitCode = process.ExitCode;
+            StringBuilderCache.Free(stdOutBuilder);
+            StringBuilderCacheAlt.Free(stdErrBuilder);
             return result;
         }
 
@@ -273,9 +275,9 @@ public static class ProcessUtils
         result.EndAt = DateTime.UtcNow;
         if (callbackTicks > 0)
         {
-            var callbackMs = (callbackTicks / Stopwatch.Frequency) * 1000;
+            var callbackMs = (long)((callbackTicks * 1000.0) / Stopwatch.Frequency);
             result.CallbackDurationMs = callbackMs;
-            result.DurationMs = sw.ElapsedMilliseconds - callbackMs;
+            result.DurationMs = Math.Max(0, sw.ElapsedMilliseconds - callbackMs);
         }
         else
         {

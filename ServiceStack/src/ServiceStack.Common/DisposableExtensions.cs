@@ -8,6 +8,7 @@ public static class DisposableExtensions
 {
     public static void Dispose(this IEnumerable<IDisposable> resources, ILog log)
     {
+        if (resources == null) return;
         foreach (var disposable in resources)
         {
             if (disposable == null)
@@ -39,7 +40,7 @@ public static class DisposableExtensions
     {
         using (disposable)
         {
-            runActionThenDispose(disposable);
+            runActionThenDispose?.Invoke(disposable);
         }
     }
 }

@@ -20,6 +20,9 @@ public static class SiteUtils
     /// </summary>
     public static string UrlFromSlug(string slug)
     {
+        if (string.IsNullOrEmpty(slug))
+            return slug;
+
         var url = slug;
         var isUrl = url.StartsWith("https://") || url.StartsWith("http://");
         var scheme = !isUrl && (url.StartsWith("http:") || url.StartsWith("https:"))
@@ -43,8 +46,8 @@ public static class SiteUtils
                         ? Math.Min(delim1Pos, delim2Pos)
                         : Math.Max(delim1Pos, delim2Pos);
                     var testPort = endPos >= 0
-                        ? atPort.Substring(0,endPos)
-                        : atPort.Substring(0,atPort.Length - 1);
+                        ? atPort.Substring(0, endPos)
+                        : atPort;
                     url = int.TryParse(testPort, out _)
                         ? url.LeftPart(':') + ':' + UnSlash(atPort)
                         : url.LeftPart(':') + '/' + UnSlash(atPort);
@@ -88,6 +91,9 @@ public static class SiteUtils
     /// </summary>
     public static string UrlToSlug(string url)
     {
+        if (string.IsNullOrEmpty(url))
+            return url;
+
         var slug = url;
         if (slug.StartsWith("https://"))
             slug = slug.Substring("https://".Length);

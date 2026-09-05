@@ -22,6 +22,7 @@ public static class ByteArrayExtensions
 
     public static byte[] ToSha1Hash(this byte[] bytes)
     {
+        if (bytes == null) return null;
         using var sha1 = Text.TextConfig.CreateSha();
         return sha1.ComputeHash(bytes);
     }

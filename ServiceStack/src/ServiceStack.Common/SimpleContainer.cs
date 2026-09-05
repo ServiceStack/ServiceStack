@@ -36,7 +36,7 @@ public class SimpleContainer : IContainer, IResolver
 
     public IContainer AddSingleton(Type serviceType, Func<object> factory)
     {
-        Factory[serviceType] = () => InstanceCache.GetOrAdd(serviceType, factory());
+        Factory[serviceType] = () => InstanceCache.GetOrAdd(serviceType, _ => factory());
         return this;
     }
 
@@ -99,13 +99,13 @@ public class SimpleContainer : IContainer, IResolver
         
     public void Dispose()
     {
-        var hold = InstanceCache;
+        var hold = InstanceCache.Values.ToArray();
         InstanceCache.Clear();
         foreach (var instance in hold)
         {
             try
             {
-                using (instance.Value as IDisposable) {}
+                using (instance as IDisposable) {}
             }
             catch { /* ignored */ }
         }

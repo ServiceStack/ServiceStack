@@ -8,6 +8,9 @@ public static class AssertExtensions
 {
     public static void ThrowOnFirstNull(params object[] objs)
     {
+        if (objs == null)
+            throw new ArgumentNullException(nameof(objs));
+
         foreach (var obj in objs)
         {
             ThrowIfNull(obj);

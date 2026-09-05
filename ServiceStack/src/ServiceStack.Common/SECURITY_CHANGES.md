@@ -116,3 +116,86 @@ This document details security, robustness, and stability fixes across `ServiceS
 - **Change**:
   - Added `byte[]` handling and routed the fallback safely to stream reading via `VirtualPathUtils.ReadAllBytes(this)`.
 
+---
+
+## 12. First Result Inversion Fix in `ExecUtils.ExecAllWithFirstOut`
+- **Severity**: High / Logic Bug
+- **Description**:
+  - `ExecUtils.ExecAllWithFirstOut<T, TReturn>` used `if (!Equals(firstResult, default(TReturn))) { firstResult = result; }`.
+  - When callers passed `firstResult` initialized to default (e.g. `null` or `0` or `false`), `firstResult` was NEVER set. If `firstResult` started non-default, every iteration overwrote it, yielding the last result instead of the first.
+- **Change**:
+  - Tracked whether the first result was set using a boolean flag (`!hasResult`), properly capturing the result of the first successful execution.
+  - Safe-guarded all `ExecAll*` catch blocks against null elements by using `instance?.GetType() ?? typeof(T)` for error logging.
+
+---
+
+## 13. Process Callback Duration Integer Truncation (`ProcessUtils.RunAsync`)
+- **Severity**: Medium / Diagnostic Inaccuracy
+- **Description**:
+  - `ProcessUtils.RunAsync` calculated `callbackMs = (callbackTicks / Stopwatch.Frequency) * 1000`.
+  - Due to integer division between `long` values, any callback taking less than 1 whole second (10,000,000 ticks) evaluated to `0`, discarding accurate callback durations and distorting process execution timing.
+- **Change**:
+  - Calculated duration as `(long)((callbackTicks * 1000.0) / Stopwatch.Frequency)`.
+  - Ensured `StringBuilderCache` buffers are freed if `process.Start()` fails.
+
+---
+
+## 14. SimpleContainer Singleton Lazy Evaluation & Disposal Leak Fix (`SimpleContainer`)
+- **Severity**: High / Resource Leak & Unnecessary Instantiation
+- **Description**:
+  - In `SimpleContainer.AddSingleton`, `Factory[serviceType] = () => InstanceCache.GetOrAdd(serviceType, factory());` eagerly invoked `factory()` on EVERY call to `Resolve()`.
+  - In `SimpleContainer.Dispose()`, `var hold = InstanceCache; InstanceCache.Clear();` cleared `hold` before the loop because `hold` referenced the same dictionary, meaning 0 cached `IDisposable` singletons were ever disposed.
+- **Change**:
+  - Replaced eager argument evaluation with `() => InstanceCache.GetOrAdd(serviceType, _ => factory())`.
+  - Snapshotted instances with `InstanceCache.Values.ToArray()` prior to clearing in `Dispose()`.
+
+---
+
+## 15. Default Fallback Value Discard Fix in `FuncUtils.TryExec<T>`
+- **Severity**: Medium / Logic Bug
+- **Description**:
+  - `FuncUtils.TryExec<T>(Func<T> func, T defaultValue)` caught exceptions and returned `default(T)` instead of the caller's `defaultValue`.
+- **Change**:
+  - Corrected return value to `defaultValue`.
+
+---
+
+## 16. Chained AppTask Execution Loop Abort Fix (`AppTasks.RanAsTask`)
+- **Severity**: Medium / Execution Flow Bug
+- **Description**:
+  - In `AppTasks.RanAsTask()`, `return exitCode;` was placed unconditionally inside the task loop.
+  - A chain of tasks like `APP_TASKS=task1;task2` stopped after running only `task1`.
+- **Change**:
+  - Loop now continues across all tasks when tasks succeed, returning immediately only on failure with the 1-based index exit code.
+
+---
+
+## 17. Case-Insensitive Matching Inversion in `EnumerableExtensions.FirstElementType`
+- **Severity**: Medium / Schema & Type Detection Defect
+- **Description**:
+  - `FirstElementType` had an inverted check in the fallback pass: `if (entry.Key.EqualsIgnoreCase(key)) continue;`, which skipped matching keys and returned the type of the first non-matching key.
+- **Change**:
+  - Corrected to `if (!entry.Key.EqualsIgnoreCase(key)) continue;`.
+
+---
+
+## 18. Thread Synchronization and Deadlock Prevention in `CommandsUtils`
+- **Severity**: High / Concurrency & Race Condition
+- **Description**:
+  - `CommandResultsHandler<T>.Execute()` appended results to a shared `List<T>` concurrently across thread pool workers without locking.
+  - If a command threw an exception, `waitHandle.Set()` was never invoked, causing the caller in `WaitAll` to hang until timeout.
+- **Change**:
+  - Synchronized `results.AddRange` with `lock (results)`.
+  - Wrapped execution in `try ... finally { waitHandle.Set(); }` across `CommandResultsHandler`, `CommandExecsHandler`, and `ActionExecHandler`.
+  - Disposed `WaitHandle` instances in `CommandsUtils.ExecuteAsyncCommandList` in a `finally` block.
+
+---
+
+## 19. Port Truncation in `SiteUtils.UrlFromSlug`
+- **Severity**: Low / URL Parsing
+- **Description**:
+  - Slugs with ports without delimiters (e.g. `techstacks.io:8`) stripped the last digit via `atPort.Substring(0, atPort.Length - 1)`.
+- **Change**:
+  - Used `atPort` directly when no delimiters follow.
+
+

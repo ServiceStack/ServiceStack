@@ -19,8 +19,21 @@ namespace ServiceStack.Support
 
         public bool Execute()
         {
-            results.AddRange(command.Execute());
-            waitHandle.Set();
+            try
+            {
+                var cmdResults = command.Execute();
+                if (cmdResults != null)
+                {
+                    lock (results)
+                    {
+                        results.AddRange(cmdResults);
+                    }
+                }
+            }
+            finally
+            {
+                waitHandle.Set();
+            }
             return true;
         }
     }

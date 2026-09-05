@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -83,6 +83,8 @@ public static class DictionaryExtensions
     public static List<T> ConvertAll<T, K, V>(IDictionary<K, V> map, Func<K, V, T> createFn)
     {
         var list = new List<T>();
+        if (map == null || createFn == null)
+            return list;
         map.Each((kvp) => list.Add(createFn(kvp.Key, kvp.Value)));
         return list;
     }
@@ -140,12 +142,16 @@ public static class DictionaryExtensions
     public static Dictionary<TKey, TValue> Merge<TKey, TValue>(this IDictionary<TKey, TValue> initial,
         params IEnumerable<KeyValuePair<TKey,TValue>>[] withSources)
     {
-        var to = new Dictionary<TKey, TValue>(initial);
-        foreach (var kvps in withSources)
+        var to = initial != null ? new Dictionary<TKey, TValue>(initial) : new Dictionary<TKey, TValue>();
+        if (withSources != null)
         {
-            foreach (var kvp in kvps)
+            foreach (var kvps in withSources)
             {
-                to[kvp.Key] = kvp.Value;
+                if (kvps == null) continue;
+                foreach (var kvp in kvps)
+                {
+                    to[kvp.Key] = kvp.Value;
+                }
             }
         }
         return to;

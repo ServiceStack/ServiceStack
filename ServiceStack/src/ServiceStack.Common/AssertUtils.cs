@@ -8,7 +8,7 @@ public static class AssertUtils
 {
     public static void AreNotNull<T>(params T[] fields)
     {
-        if (fields.Contains(default))
+        if (fields == null || fields.Contains(default))
         {
             throw new ArgumentNullException(typeof(T).Name);
         }
@@ -23,6 +23,9 @@ public static class AssertUtils
     /// <param name="fieldMap">The field map.</param>
     public static void AreNotNull(IDictionary<string, object> fieldMap)
     {
+        if (fieldMap == null)
+            throw new ArgumentNullException(nameof(fieldMap));
+
         foreach (var pair in fieldMap)
         {
             if (pair.Value == null)

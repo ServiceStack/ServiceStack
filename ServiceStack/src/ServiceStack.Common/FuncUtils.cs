@@ -36,17 +36,24 @@ public static class FuncUtils
     {
         try
         {
+            if (func == null) return defaultValue;
             return func();
         }
         catch (Exception ex)
         {
             Log.Error(ex.Message, ex);
         }
-        return default(T);
+        return defaultValue;
     }
 
     public static void WaitWhile(Func<bool> condition, int millisecondTimeout, int millisecondPollPeriod = 10)
     {
+        if (condition == null)
+            throw new ArgumentNullException(nameof(condition));
+        if (millisecondTimeout < 0)
+            throw new ArgumentOutOfRangeException(nameof(millisecondTimeout));
+
+        millisecondPollPeriod = Math.Max(1, millisecondPollPeriod);
         var timer = System.Diagnostics.Stopwatch.StartNew();
         while (condition())
         {

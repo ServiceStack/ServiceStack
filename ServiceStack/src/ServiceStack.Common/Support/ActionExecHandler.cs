@@ -17,8 +17,14 @@ namespace ServiceStack.Support
 
         public bool Execute()
         {
-            action();
-            waitHandle.Set();
+            try
+            {
+                action();
+            }
+            finally
+            {
+                waitHandle.Set();
+            }
             return true;
         }
     }

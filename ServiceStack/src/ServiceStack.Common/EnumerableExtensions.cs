@@ -481,6 +481,8 @@ public static class EnumerableExtensions
 
     public static Type FirstElementType(IEnumerable collection, string key)
     {
+        if (collection == null) return typeof(string);
+
         foreach (var o in collection)
         {
             if (o is IEnumerable<KeyValuePair<string, object>> d)
@@ -500,7 +502,7 @@ public static class EnumerableExtensions
             {
                 foreach (var entry in d)
                 {
-                    if (entry.Key.EqualsIgnoreCase(key)) continue;
+                    if (!entry.Key.EqualsIgnoreCase(key)) continue;
                     if (entry.Value == null) continue;
                     var entryType = entry.Value.GetType();
                     return Nullable.GetUnderlyingType(entryType) ?? entryType;
@@ -512,34 +514,52 @@ public static class EnumerableExtensions
      
     public static T[] CombineDistinct<T>(this T[] original, params T[][] others)
     {
-        var count = original.Length;
-        foreach (var arr in others)
+        if (original == null && (others == null || others.Length == 0))
+            return TypeConstants<T>.EmptyArray;
+
+        var to = new HashSet<T>();
+        if (original != null)
         {
-            count += arr.Length;
+            for (var i = 0; i < original.Length; i++)
+            {
+                to.Add(original[i]);
+            }
         }
-            
-        var all = new List<T>(count);
-        all.AddRange(original);
-        foreach (var arr in others)
+        if (others != null)
         {
-            all.AddRange(arr);
+            for (var i = 0; i < others.Length; i++)
+            {
+                var arr = others[i];
+                if (arr == null) continue;
+                for (var j = 0; j < arr.Length; j++)
+                {
+                    to.Add(arr[j]);
+                }
+            }
         }
-        var ret = all.Distinct().ToArray();
-        return ret;
+        return to.ToArray();
     }
 
     public static HashSet<T> CombineSet<T>(this T[] original, params T[][] others)
     {
         var to = new HashSet<T>();
-        foreach (var item in original)
+        if (original != null)
         {
-            to.Add(item);
-        }
-        foreach (var arr in others)
-        {
-            foreach (var item in arr)
+            for (var i = 0; i < original.Length; i++)
             {
-                to.Add(item);
+                to.Add(original[i]);
+            }
+        }
+        if (others != null)
+        {
+            for (var i = 0; i < others.Length; i++)
+            {
+                var arr = others[i];
+                if (arr == null) continue;
+                for (var j = 0; j < arr.Length; j++)
+                {
+                    to.Add(arr[j]);
+                }
             }
         }
         return to;

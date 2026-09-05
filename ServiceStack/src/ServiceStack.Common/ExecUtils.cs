@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +18,7 @@ public static class ExecUtils
 
     public static void ExecAll<T>(this IEnumerable<T> instances, Action<T> action)
     {
+        if (instances == null) return;
         foreach (var instance in instances)
         {
             try
@@ -26,13 +27,14 @@ public static class ExecUtils
             }
             catch (Exception ex)
             {
-                LogError(instance.GetType(), action.GetType().Name, ex);
+                LogError(instance?.GetType() ?? typeof(T), action.GetType().Name, ex);
             }
         }
     }
 
     public static async Task ExecAllAsync<T>(this IEnumerable<T> instances, Func<T,Task> action)
     {
+        if (instances == null) return;
         foreach (var instance in instances)
         {
             try
@@ -41,13 +43,14 @@ public static class ExecUtils
             }
             catch (Exception ex)
             {
-                LogError(instance.GetType(), action.GetType().Name, ex);
+                LogError(instance?.GetType() ?? typeof(T), action.GetType().Name, ex);
             }
         }
     }
 
     public static async Task<TReturn> ExecAllReturnFirstAsync<T,TReturn>(this IEnumerable<T> instances, Func<T,Task<TReturn>> action)
     {
+        if (instances == null) return default;
         TReturn firstResult = default;
         var i = 0; 
         foreach (var instance in instances)
@@ -60,7 +63,7 @@ public static class ExecUtils
             }
             catch (Exception ex)
             {
-                LogError(instance.GetType(), action.GetType().Name, ex);
+                LogError(instance?.GetType() ?? typeof(T), action.GetType().Name, ex);
             }
         }
         return firstResult;
@@ -68,25 +71,29 @@ public static class ExecUtils
 
     public static void ExecAllWithFirstOut<T, TReturn>(this IEnumerable<T> instances, Func<T, TReturn> action, ref TReturn firstResult)
     {
+        if (instances == null) return;
+        var hasResult = false;
         foreach (var instance in instances)
         {
             try
             {
                 var result = action(instance);
-                if (!Equals(firstResult, default(TReturn)))
+                if (!hasResult)
                 {
                     firstResult = result;
+                    hasResult = true;
                 }
             }
             catch (Exception ex)
             {
-                LogError(instance.GetType(), action.GetType().Name, ex);
+                LogError(instance?.GetType() ?? typeof(T), action.GetType().Name, ex);
             }
         }
     }
 
     public static TReturn ExecReturnFirstWithResult<T, TReturn>(this IEnumerable<T> instances, Func<T, TReturn> action)
     {
+        if (instances == null) return default;
         foreach (var instance in instances)
         {
             try
@@ -99,7 +106,7 @@ public static class ExecUtils
             }
             catch (Exception ex)
             {
-                LogError(instance.GetType(), action.GetType().Name, ex);
+                LogError(instance?.GetType() ?? typeof(T), action.GetType().Name, ex);
             }
         }
 
@@ -108,6 +115,7 @@ public static class ExecUtils
 
     public static async Task<TReturn> ExecReturnFirstWithResultAsync<T, TReturn>(this IEnumerable<T> instances, Func<T, Task<TReturn>> action)
     {
+        if (instances == null) return default;
         foreach (var instance in instances)
         {
             try
@@ -120,7 +128,7 @@ public static class ExecUtils
             }
             catch (Exception ex)
             {
-                LogError(instance.GetType(), action.GetType().Name, ex);
+                LogError(instance?.GetType() ?? typeof(T), action.GetType().Name, ex);
             }
         }
 
@@ -380,9 +388,8 @@ public static class ExecUtils
     /// <returns></returns>
     public static int CalculateFullJitterBackOffDelay(int retriesAttempted, int baseDelay, int maxBackOffMs)
     {
-        var random = new Random(Guid.NewGuid().GetHashCode());
         var ceil = CalculateExponentialDelay(retriesAttempted, baseDelay, maxBackOffMs);
-        return random.Next(ceil);
+        return ceil <= 0 ? 0 : StaticRandom.Next(ceil);
     }
 
     /// <summary>
@@ -411,13 +418,13 @@ public static class ExecUtils
     public static class StaticRandom
     {
 #if NET6_0_OR_GREATER
-        public static int Next(int maxValue) => Random.Shared.Next(maxValue);
+        public static int Next(int maxValue) => maxValue <= 0 ? 0 : Random.Shared.Next(maxValue);
 #else
         static int seed = Environment.TickCount;
         static readonly ThreadLocal<Random> random = new(() => new Random(Interlocked.Increment(ref seed)));
         public static int Next(int maxValue)
         {
-            return random.Value.Next(maxValue);
+            return maxValue <= 0 ? 0 : random.Value.Next(maxValue);
         }
 #endif
     }
@@ -430,8 +437,8 @@ public static class ExecUtils
     /// <returns></returns>
     public static int CalculateRetryDelayMs(int retryAttempt, RetryPolicy retry)
     {
-        var retryDelayMs = retry.DelayMs < 0 ? BaseDelayMs : retry.DelayMs;
-        var retryMaxDelayMs = retry.MaxDelayMs < 0 ? MaxBackOffMs : retry.MaxDelayMs;
+        var retryDelayMs = retry.DelayMs <= 0 ? BaseDelayMs : retry.DelayMs;
+        var retryMaxDelayMs = retry.MaxDelayMs <= 0 ? MaxBackOffMs : retry.MaxDelayMs;
         
         var delayMs = !retry.DelayFirst && retryAttempt == 1
             ? 0
