@@ -11,7 +11,7 @@ namespace ServiceStack.Server.Tests
 
         public static readonly string RabbitMQConnString = Environment.GetEnvironmentVariable("CI_RABBITMQ") ?? "localhost";
         public static readonly string SqlServerConnString = Environment.GetEnvironmentVariable("MSSQL_CONNECTION")
-            ?? "Server=localhost;Database=master;User Id=sa;Password=Test!tesT;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;";
+            ?? "Server=localhost;Database=master;User Id=sa;Password=p@55wOrd;MultipleActiveResultSets=True;Encrypt=False;TrustServerCertificate=True;";
 
         static Config()
         {
@@ -29,7 +29,18 @@ IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'test')
 BEGIN
     CREATE LOGIN [test] WITH PASSWORD = 'p@55wOrd', CHECK_POLICY = OFF;
 END;
+ELSE
+BEGIN
+    ALTER LOGIN [test] ENABLE;
+    ALTER LOGIN [test] WITH PASSWORD = 'p@55wOrd', CHECK_POLICY = OFF;
+END;
 ALTER SERVER ROLE sysadmin ADD MEMBER [test];
+";
+                cmd.ExecuteNonQuery();
+
+                // Run database-scoped setup separately. SQL Server resolves USE targets
+                // when compiling a batch, before CREATE DATABASE above can take effect.
+                cmd.CommandText = @"
 USE [test];
 IF NOT EXISTS (SELECT * FROM sys.filegroups WHERE type = 'FX')
 BEGIN
