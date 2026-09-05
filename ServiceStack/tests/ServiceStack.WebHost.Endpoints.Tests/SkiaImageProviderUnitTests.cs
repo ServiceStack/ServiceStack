@@ -1,4 +1,4 @@
-#if NET6_0_OR_GREATER
+#if SKIA
 using System;
 using System.IO;
 using NUnit.Framework;
