@@ -17,22 +17,35 @@ namespace ServiceStack.Server.Tests
         {
             try
             {
+                var testPassword = "p@55wOrd";
+                var mssqlEnv = Environment.GetEnvironmentVariable("MSSQL_CONNECTION");
+                if (!string.IsNullOrEmpty(mssqlEnv))
+                {
+                    try
+                    {
+                        var csb = new SqlConnectionStringBuilder(mssqlEnv);
+                        if (!string.IsNullOrEmpty(csb.Password))
+                            testPassword = csb.Password;
+                    }
+                    catch {}
+                }
+
                 using var conn = new SqlConnection("Server=localhost;Database=master;User Id=sa;Password=p@55wOrd;TrustServerCertificate=True;Connect Timeout=5;");
                 conn.Open();
                 using var cmd = conn.CreateCommand();
-                cmd.CommandText = @"
+                cmd.CommandText = $@"
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'test')
 BEGIN
     CREATE DATABASE [test];
 END;
 IF NOT EXISTS (SELECT * FROM sys.server_principals WHERE name = 'test')
 BEGIN
-    CREATE LOGIN [test] WITH PASSWORD = 'p@55wOrd', CHECK_POLICY = OFF;
+    CREATE LOGIN [test] WITH PASSWORD = '{testPassword.Replace("'", "''")}', CHECK_POLICY = OFF;
 END;
 ELSE
 BEGIN
     ALTER LOGIN [test] ENABLE;
-    ALTER LOGIN [test] WITH PASSWORD = 'p@55wOrd', CHECK_POLICY = OFF;
+    ALTER LOGIN [test] WITH PASSWORD = '{testPassword.Replace("'", "''")}', CHECK_POLICY = OFF;
 END;
 ALTER SERVER ROLE sysadmin ADD MEMBER [test];
 ";
