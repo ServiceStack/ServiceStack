@@ -65,16 +65,38 @@ namespace ServiceStack.Support
             this.FatalExceptions = new List<Exception>();
         }
 
-        public bool HasExceptions => this.DebugExceptions.Count > 0
-            || this.InfoExceptions.Count > 0
-            || this.WarnExceptions.Count > 0
-            || this.ErrorExceptions.Count > 0
-            || this.FatalExceptions.Count > 0;
+        public bool HasExceptions
+        {
+            get
+            {
+                lock (syncLock)
+                {
+                    return this.DebugExceptions.Count > 0
+                        || this.InfoExceptions.Count > 0
+                        || this.WarnExceptions.Count > 0
+                        || this.ErrorExceptions.Count > 0
+                        || this.FatalExceptions.Count > 0;
+                }
+            }
+        }
 
         private void AppendToLog(ICollection<string> logEntries, string format, params object[] args)
         {
             if (format == null) return;
-            AppendToLog(logEntries, string.Format(format, args));
+            if (args == null || args.Length == 0)
+            {
+                AppendToLog(logEntries, format);
+                return;
+            }
+
+            try
+            {
+                AppendToLog(logEntries, string.Format(format, args));
+            }
+            catch (FormatException)
+            {
+                AppendToLog(logEntries, format + " " + string.Join(", ", args));
+            }
         }
 
         private void AppendToLog(ICollection<string> logEntries, object message)
@@ -101,7 +123,7 @@ namespace ServiceStack.Support
 
         private void AppendToLog(ICollection<string> logEntries, string message)
         {
-            lock (this)
+            lock (syncLock)
             {
                 logEntries.Add(message);
                 CombinedLog.AppendLine(message);

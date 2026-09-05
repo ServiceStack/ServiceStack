@@ -55,7 +55,13 @@ public static class SvgCreator
         "#a29906",
     ];
 
-    public static string GetDarkColor(int index) => DarkColors[index % DarkColors.Length];
+    public static string GetDarkColor(int index)
+    {
+        if (DarkColors == null || DarkColors.Length == 0)
+            return "#334155";
+        var i = Math.Abs(index) % DarkColors.Length;
+        return DarkColors[i];
+    }
 
     public static string CreateSvg(char letter, string? bgColor = null, string? textColor = null)
     {
@@ -78,6 +84,9 @@ public static class SvgCreator
     
     public static string Decode(string dataUri)
     {
+        if (string.IsNullOrEmpty(dataUri))
+            return string.Empty;
+
         return dataUri                
             .Replace("'","\"")
             .Replace("%25","%")
@@ -95,7 +104,7 @@ public static class SvgCreator
             .Replace("%7D","}");
     }
 
-    public static string DataUriToSvg(string dataUri) => Decode(dataUri.RightPart(','));
+    public static string DataUriToSvg(string dataUri) => dataUri == null ? string.Empty : Decode(dataUri.RightPart(','));
 
     public static char GradeLetter(int votes) => votes >= 9
         ? 'A'

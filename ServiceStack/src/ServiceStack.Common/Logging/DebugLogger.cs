@@ -48,7 +48,20 @@ namespace ServiceStack.Logging
         private static void LogFormat(object message, params object[] args)
         {
             string msg = message?.ToString() ?? string.Empty;
-            System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
+            if (args == null || args.Length == 0)
+            {
+                System.Diagnostics.Debug.WriteLine(msg);
+                return;
+            }
+
+            try
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format(msg, args));
+            }
+            catch (FormatException)
+            {
+                System.Diagnostics.Debug.WriteLine(msg + " " + string.Join(", ", args));
+            }
         }
 
         /// <summary>

@@ -19,16 +19,27 @@ namespace ServiceStack.Reflection
 
         public static LateBoundMethod Create(MethodInfo method)
         {
+            if (method == null)
+                throw new System.ArgumentNullException(nameof(method));
+
             ParameterExpression instanceParameter = Expression.Parameter(typeof(object), "target");
             ParameterExpression argumentsParameter = Expression.Parameter(typeof(object[]), "arguments");
 
+            Expression instance = method.IsStatic
+                ? null
+                : Expression.Convert(instanceParameter, method.DeclaringType);
+
             MethodCallExpression call = Expression.Call(
-                Expression.Convert(instanceParameter, method.DeclaringType),
+                instance,
                 method,
                 CreateParameterExpressions(method, argumentsParameter));
 
+            Expression body = method.ReturnType == typeof(void)
+                ? Expression.Block(call, Expression.Constant(null, typeof(object)))
+                : Expression.Convert(call, typeof(object));
+
             Expression<LateBoundMethod> lambda = Expression.Lambda<LateBoundMethod>(
-                Expression.Convert(call, typeof(object)),
+                body,
                 instanceParameter,
                 argumentsParameter);
 
@@ -48,16 +59,27 @@ namespace ServiceStack.Reflection
 
         public static LateBoundVoid CreateVoid(MethodInfo method)
         {
+            if (method == null)
+                throw new System.ArgumentNullException(nameof(method));
+
             ParameterExpression instanceParameter = Expression.Parameter(typeof(object), "target");
             ParameterExpression argumentsParameter = Expression.Parameter(typeof(object[]), "arguments");
 
+            Expression instance = method.IsStatic
+                ? null
+                : Expression.Convert(instanceParameter, method.DeclaringType);
+
             MethodCallExpression call = Expression.Call(
-                Expression.Convert(instanceParameter, method.DeclaringType),
+                instance,
                 method,
                 CreateParameterExpressions(method, argumentsParameter));
 
+            Expression body = method.ReturnType == typeof(void)
+                ? (Expression)call
+                : Expression.Block(call, Expression.Empty());
+
             var lambda = Expression.Lambda<LateBoundVoid>(
-                Expression.Convert(call, method.ReturnParameter.ParameterType),
+                body,
                 instanceParameter,
                 argumentsParameter);
 

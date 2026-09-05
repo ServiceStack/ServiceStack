@@ -42,6 +42,9 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
     
     public To? DeserializeFromString<To>(string json)
     {
+        if (string.IsNullOrEmpty(json))
+            return default;
+
         if (JsonObjectTypes.Contains(typeof(To)))
             return (To)JSON.Deserialize(json, typeof(To));
         if (SystemJsonTypes.Contains(typeof(To)))
@@ -60,6 +63,11 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
 
     public object? DeserializeFromString(string json, Type type)
     {
+        if (type == null)
+            throw new ArgumentNullException(nameof(type));
+        if (string.IsNullOrEmpty(json))
+            return type.GetDefaultValue();
+
         if (JsonObjectTypes.Contains(type))
             return JSON.parse(json);
         if (SystemJsonTypes.Contains(type))
@@ -78,6 +86,9 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
 
     public string SerializeToString<TFrom>(TFrom from)
     {
+        if (from == null)
+            return "null";
+
         if (JsonObjectTypes.Contains(typeof(TFrom)))
             return JSON.stringify(from);
         if (SystemJsonTypes.Contains(typeof(TFrom)))

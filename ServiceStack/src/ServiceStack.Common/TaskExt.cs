@@ -8,27 +8,24 @@ public static class TaskExt
 {
     public static Task<object> AsTaskException(this Exception ex)
     {
-        var tcs = new TaskCompletionSource<object>();
-        tcs.SetException(ex);
-        return tcs.Task;
+        return Task.FromException<object>(ex);
     }
 
     public static Task<T> AsTaskException<T>(this Exception ex)
     {
-        var tcs = new TaskCompletionSource<T>();
-        tcs.SetException(ex);
-        return tcs.Task;
+        return Task.FromException<T>(ex);
     }
 
     public static Task<T> AsTaskResult<T>(this T result)
     {
-        var tcs = new TaskCompletionSource<T>();
-        tcs.SetResult(result);
-        return tcs.Task;
+        return Task.FromResult(result);
     }
 
     public static object GetResult(this Task task)
     {
+        if (task == null)
+            return null;
+
         try
         {
             if (!task.IsCompleted)
@@ -57,7 +54,17 @@ public static class TaskExt
 
     public static T GetResult<T>(this Task<T> task)
     {
-        return (T)((Task)task).GetResult();
+        if (task == null)
+            return default;
+
+        try
+        {
+            return task.GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            throw ex.UnwrapIfSingleException();
+        }
     }
         
     private static readonly TaskFactory SyncTaskFactory = new TaskFactory(CancellationToken.None,

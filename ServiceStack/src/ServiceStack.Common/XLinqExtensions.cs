@@ -192,9 +192,11 @@ public static class XLinqExtensions
     public static List<string> GetValues(this IEnumerable<XElement> els)
     {
         var values = new List<string>();
+        if (els == null) return values;
         foreach (var el in els)
         {
-            values.Add(el.Value);
+            if (el != null)
+                values.Add(el.Value);
         }
         return values;
     }
@@ -245,9 +247,10 @@ public static class XLinqExtensions
 
     public static XElement AnyElement(this IEnumerable<XElement> elements, string name)
     {
+        if (elements == null || name == null) return null;
         foreach (var element in elements)
         {
-            if (element.Name.LocalName == name)
+            if (element != null && element.Name.LocalName == name)
             {
                 return element;
             }
@@ -258,9 +261,11 @@ public static class XLinqExtensions
     public static IEnumerable<XElement> AllElements(this IEnumerable<XElement> elements, string name)
     {
         var els = new List<XElement>();
+        if (elements == null) return els;
         foreach (var element in elements)
         {
-            els.AddRange(AllElements(element, name));
+            if (element != null)
+                els.AddRange(AllElements(element, name));
         }
         return els;
     }
@@ -277,7 +282,7 @@ public static class XLinqExtensions
 
     public static XElement NextElement(this XElement element)
     {
-        var node = element.NextNode;
+        var node = element?.NextNode;
         while (node != null)
         {
             if (node.NodeType == XmlNodeType.Element)

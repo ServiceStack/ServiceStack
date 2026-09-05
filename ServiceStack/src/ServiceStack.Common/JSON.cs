@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -73,11 +73,11 @@ public static class JSON
             if (json.TryParseDouble(out var doubleValue))
                 return doubleValue;
         }
-        else if (firstChar == '{' || firstChar == '[' 
+        else if ((firstChar == '{' || firstChar == '[') 
                  && !isEscapedJsonString(json.TrimStart())) 
         {
             json.ParseJsToken(out var token);
-            return token.Evaluate(JS.CreateScope());
+            return token?.Evaluate(JS.CreateScope());
         }
         else if (json.Length == 4)
         {
@@ -99,7 +99,15 @@ public static class JSON
     
     public static object Deserialize(string json, Type type)
     {
+        if (type == null)
+            throw new ArgumentNullException(nameof(type));
+        if (string.IsNullOrEmpty(json))
+            return type.GetDefaultValue();
+
         var ret = parse(json);
+        if (ret == null)
+            return type.GetDefaultValue();
+
         if (ret is Dictionary<string, object> objDict)
         {
             if (type == typeof(Dictionary<string, object>))

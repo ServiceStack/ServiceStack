@@ -26,22 +26,36 @@ public class StartupTasks
         if (startupTask == null)
             throw new ArgumentNullException(nameof(startupTask));
 
-        Instance.Tasks[taskName] = startupTask;
+        var instance = Instance ??= new();
+        lock (instance.Tasks)
+        {
+            instance.Tasks[taskName] = startupTask;
+        }
     }
 
     public static void Run()
     {
-        foreach (var entry in Instance.Tasks.ToArray())
+        var instance = Instance;
+        if (instance == null) return;
+
+        KeyValuePair<string, Action>[] entries;
+        lock (instance.Tasks)
+        {
+            entries = instance.Tasks.ToArray();
+        }
+
+        var log = instance.Log ?? LogManager.GetLogger(typeof(StartupTasks));
+        foreach (var entry in entries)
         {
             try
             {
-                Instance.Log.Info($"Running StartupTask '{entry.Key}'...");
+                log.Info($"Running StartupTask '{entry.Key}'...");
                 entry.Value();
             }
             catch (Exception e)
             {
                 // Startup tasks are development conveniences and shouldn't prevent the host starting.
-                Instance.Log.Error($"StartupTask '{entry.Key}' failed", e);
+                log.Error($"StartupTask '{entry.Key}' failed", e);
             }
         }
     }

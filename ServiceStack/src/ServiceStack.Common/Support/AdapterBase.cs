@@ -17,22 +17,27 @@ namespace ServiceStack.Support
         /// </summary>
         protected T Execute<T>(Func<T> action)
         {
-            DateTime before = DateTime.UtcNow;
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Executing action '{action.Method.Name}'");
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var log = Log;
+            var isDebug = log?.IsDebugEnabled == true;
+            if (isDebug)
+                log.Debug($"Executing action '{action.Method.Name}'");
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 T result = action();
-                if (Log.IsDebugEnabled)
+                if (isDebug)
                 {
-                    var timeTaken = DateTime.UtcNow - before;
-                    this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+                    log.Debug($"Action '{action.Method.Name}' executed. Took {sw.Elapsed.TotalMilliseconds} ms.");
                 }
                 return result;
             }
             catch (Exception ex)
             {
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
+                log?.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
                 throw;
             }
         }
@@ -42,22 +47,27 @@ namespace ServiceStack.Support
         /// </summary>
         protected async Task<T> ExecuteAsync<T>(Func<Task<T>> action)
         {
-            var before = DateTime.UtcNow;
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Executing action '{action.Method.Name}'");
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var log = Log;
+            var isDebug = log?.IsDebugEnabled == true;
+            if (isDebug)
+                log.Debug($"Executing action '{action.Method.Name}'");
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 var result = await action();
-                if (Log.IsDebugEnabled)
+                if (isDebug)
                 {
-                    var timeTaken = DateTime.UtcNow - before;
-                    this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+                    log.Debug($"Action '{action.Method.Name}' executed. Took {sw.Elapsed.TotalMilliseconds} ms.");
                 }
                 return result;
             }
             catch (Exception ex)
             {
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
+                log?.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
                 throw;
             }
         }
@@ -67,22 +77,27 @@ namespace ServiceStack.Support
         /// </summary>
         protected async Task<T> ExecuteAsync<T>(Func<CancellationToken,Task<T>> action, CancellationToken token)
         {
-            var before = DateTime.UtcNow;
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Executing action '{action.Method.Name}'");
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var log = Log;
+            var isDebug = log?.IsDebugEnabled == true;
+            if (isDebug)
+                log.Debug($"Executing action '{action.Method.Name}'");
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 var result = await action(token);
-                if (Log.IsDebugEnabled)
+                if (isDebug)
                 {
-                    var timeTaken = DateTime.UtcNow - before;
-                    this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+                    log.Debug($"Action '{action.Method.Name}' executed. Took {sw.Elapsed.TotalMilliseconds} ms.");
                 }
                 return result;
             }
             catch (Exception ex)
             {
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
+                log?.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
                 throw;
             }
         }
@@ -92,21 +107,26 @@ namespace ServiceStack.Support
         /// </summary>
         protected void Execute(Action action)
         {
-            DateTime before = DateTime.UtcNow;
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Executing action '{action.Method.Name}'");
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var log = Log;
+            var isDebug = log?.IsDebugEnabled == true;
+            if (isDebug)
+                log.Debug($"Executing action '{action.Method.Name}'");
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 action();
-                if (Log.IsDebugEnabled)
+                if (isDebug)
                 {
-                    var timeTaken = DateTime.UtcNow - before;
-                    this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+                    log.Debug($"Action '{action.Method.Name}' executed. Took {sw.Elapsed.TotalMilliseconds} ms.");
                 }
             }
             catch (Exception ex)
             {
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
+                log?.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
                 throw;
             }
         }
@@ -116,21 +136,26 @@ namespace ServiceStack.Support
         /// </summary>
         protected async Task ExecuteAsync(Func<Task> action)
         {
-            DateTime before = DateTime.UtcNow;
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Executing action '{action.Method.Name}'");
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var log = Log;
+            var isDebug = log?.IsDebugEnabled == true;
+            if (isDebug)
+                log.Debug($"Executing action '{action.Method.Name}'");
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 await action();
-                if (Log.IsDebugEnabled)
+                if (isDebug)
                 {
-                    var timeTaken = DateTime.UtcNow - before;
-                    this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+                    log.Debug($"Action '{action.Method.Name}' executed. Took {sw.Elapsed.TotalMilliseconds} ms.");
                 }
             }
             catch (Exception ex)
             {
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
+                log?.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
                 throw;
             }
         }
@@ -140,21 +165,26 @@ namespace ServiceStack.Support
         /// </summary>
         protected async Task ExecuteAsync(Func<CancellationToken,Task> action, CancellationToken token)
         {
-            DateTime before = DateTime.UtcNow;
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Executing action '{action.Method.Name}'");
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var log = Log;
+            var isDebug = log?.IsDebugEnabled == true;
+            if (isDebug)
+                log.Debug($"Executing action '{action.Method.Name}'");
+
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 await action(token);
-                if (Log.IsDebugEnabled)
+                if (isDebug)
                 {
-                    var timeTaken = DateTime.UtcNow - before;
-                    this.Log.Debug($"Action '{action.Method.Name}' executed. Took {timeTaken.TotalMilliseconds} ms.");
+                    log.Debug($"Action '{action.Method.Name}' executed. Took {sw.Elapsed.TotalMilliseconds} ms.");
                 }
             }
             catch (Exception ex)
             {
-                this.Log.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
+                log?.Error($"There was an error executing Action '{action.Method.Name}'. Message: {ex.Message}", ex);
                 throw;
             }
         }

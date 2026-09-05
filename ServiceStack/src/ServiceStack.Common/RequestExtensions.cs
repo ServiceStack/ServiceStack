@@ -30,11 +30,14 @@ public static class RequestScriptUtils
 
     public static void AddToMap(this NameValueCollection nvc, Dictionary<string, string> map, HashSet<string> exclude = null)
     {
+        if (nvc == null || map == null)
+            return;
+
         for (int index = 0; index < nvc.Count; index++)
         {
             var name = nvc.GetKey(index);
                 
-            if (exclude != null && exclude.Contains(name))
+            if (name != null && exclude != null && exclude.Contains(name))
                 continue;
                 
             var values = nvc.GetValues(name); // Only use string name instead of index which returns multiple values 
@@ -42,7 +45,13 @@ public static class RequestScriptUtils
             if (name == null) //thank you .NET Framework!
             {
                 if (values?.Length > 0)
-                    map[values[0]] = null;
+                {
+                    foreach (var val in values)
+                    {
+                        if (val != null && (exclude == null || !exclude.Contains(val)))
+                            map[val] = null;
+                    }
+                }
                 continue;
             }
                 

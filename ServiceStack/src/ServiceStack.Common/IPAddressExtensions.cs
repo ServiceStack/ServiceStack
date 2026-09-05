@@ -15,6 +15,11 @@ public static class IPAddressExtensions
 {
     public static IPAddress GetBroadcastAddress(this IPAddress address, IPAddress subnetMask)
     {
+        if (address == null)
+            throw new ArgumentNullException(nameof(address));
+        if (subnetMask == null)
+            throw new ArgumentNullException(nameof(subnetMask));
+
         var ipAddressBytes = address.GetAddressBytes();
         var subnetMaskBytes = subnetMask.GetAddressBytes();
 
@@ -31,6 +36,11 @@ public static class IPAddressExtensions
 
     public static IPAddress GetNetworkAddress(this IPAddress address, IPAddress subnetMask)
     {
+        if (address == null)
+            throw new ArgumentNullException(nameof(address));
+        if (subnetMask == null)
+            throw new ArgumentNullException(nameof(subnetMask));
+
         var ipAddressBytes = address.GetAddressBytes();
         var subnetMaskBytes = subnetMask.GetAddressBytes();
 
@@ -39,6 +49,11 @@ public static class IPAddressExtensions
 
     public static byte[] GetNetworkAddressBytes(byte[] ipAddressBytes, byte[] subnetMaskBytes)
     {
+        if (ipAddressBytes == null)
+            throw new ArgumentNullException(nameof(ipAddressBytes));
+        if (subnetMaskBytes == null)
+            throw new ArgumentNullException(nameof(subnetMaskBytes));
+
         if (ipAddressBytes.Length != subnetMaskBytes.Length)
             throw new ArgumentException("Lengths of IP address and subnet mask do not match.");
 
@@ -52,6 +67,11 @@ public static class IPAddressExtensions
 
     public static bool IsInSameIpv6Subnet(this IPAddress address2, IPAddress address)
     {
+        if (address2 == null)
+            throw new ArgumentNullException(nameof(address2));
+        if (address == null)
+            throw new ArgumentNullException(nameof(address));
+
         if (address2.AddressFamily != AddressFamily.InterNetworkV6 || address.AddressFamily != AddressFamily.InterNetworkV6)
         {
             throw new ArgumentException("Both IPAddress must be IPV6 addresses");
@@ -64,10 +84,16 @@ public static class IPAddressExtensions
 
     public static bool IsInSameIpv6Subnet(this byte[] address1Bytes, byte[] address2Bytes)
     {
+        if (address1Bytes == null)
+            throw new ArgumentNullException(nameof(address1Bytes));
+        if (address2Bytes == null)
+            throw new ArgumentNullException(nameof(address2Bytes));
+
         if (address1Bytes.Length != address2Bytes.Length)
             throw new ArgumentException("Lengths of IP addresses do not match.");
 
-        for (var i = 0; i < 8; i++)
+        var checkLength = Math.Min(8, address1Bytes.Length);
+        for (var i = 0; i < checkLength; i++)
         {
             if (address1Bytes[i] != address2Bytes[i])
             {
@@ -80,6 +106,13 @@ public static class IPAddressExtensions
 
     public static bool IsInSameIpv4Subnet(this IPAddress address2, IPAddress address, IPAddress subnetMask)
     {
+        if (address2 == null)
+            throw new ArgumentNullException(nameof(address2));
+        if (address == null)
+            throw new ArgumentNullException(nameof(address));
+        if (subnetMask == null)
+            throw new ArgumentNullException(nameof(subnetMask));
+
         if (address2.AddressFamily != AddressFamily.InterNetwork || address.AddressFamily != AddressFamily.InterNetwork)
         {
             throw new ArgumentException("Both IPAddress must be IPV4 addresses");
@@ -92,6 +125,13 @@ public static class IPAddressExtensions
 
     public static bool IsInSameIpv4Subnet(this byte[] address1Bytes, byte[] address2Bytes, byte[] subnetMaskBytes)
     {
+        if (address1Bytes == null)
+            throw new ArgumentNullException(nameof(address1Bytes));
+        if (address2Bytes == null)
+            throw new ArgumentNullException(nameof(address2Bytes));
+        if (subnetMaskBytes == null)
+            throw new ArgumentNullException(nameof(subnetMaskBytes));
+
         if (address1Bytes.Length != address2Bytes.Length)
             throw new ArgumentException("Lengths of IP addresses do not match.");
 
@@ -122,9 +162,9 @@ public static class IPAddressExtensions
                 }
             }
         }
-        catch /*(NotImplementedException ex)*/
+        catch (Exception)
         {
-            //log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
+            // Catch all on platforms with unsupported or transient network interfaces
         }
         return map;
     }
@@ -148,9 +188,9 @@ public static class IPAddressExtensions
                 }
             }
         }
-        catch /*(NotImplementedException ex)*/
+        catch (Exception)
         {
-            //log.Warn("MONO does not support NetworkInterface.GetAllNetworkInterfaces(). Could not detect local ip subnets.", ex);
+            // Catch all on platforms with unsupported or transient network interfaces
         }
 
         return list;

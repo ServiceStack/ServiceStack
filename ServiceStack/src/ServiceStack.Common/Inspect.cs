@@ -35,8 +35,9 @@ public static class Inspect
                     ? inspectVarsPath.Replace('/','\\')
                     : inspectVarsPath.Replace('\\','/');
 
-                if (varsPath.IndexOf(Path.DirectorySeparatorChar) >= 0)
-                    Path.GetDirectoryName(varsPath).AssertDir();
+                var dir = Path.GetDirectoryName(varsPath);
+                if (!string.IsNullOrEmpty(dir))
+                    dir.AssertDir();
                     
                 File.WriteAllText(varsPath, anonArgs.ToSafeJson());
             }
@@ -59,6 +60,8 @@ public static class Inspect
     /// </summary>
     public static string dump<T>(T instance)
     {
+        if (instance == null)
+            return string.Empty;
         try
         {
             // convert into common common collection type for generic dump routine 
@@ -78,6 +81,8 @@ public static class Inspect
     {
         if (typeof(T).IsValueType || typeof(T) == typeof(string))
             return instance;
+        if (instance is IDictionary)
+            return instance.ToObjectDictionary();
         if (instance is IEnumerable e)
         {
             var elType = EnumerableUtils.FirstOrDefault(e);
@@ -151,8 +156,17 @@ public static class Inspect
     {
         if (instance is Dictionary<string, object> obj)
         {
+            if (obj.Count == 0)
+                return "{}";
+
             var sb = StringBuilderCache.Allocate();
-            var keyLen = obj.Keys.Map(x => x.Length).Max() + 2;
+            var maxLen = 0;
+            foreach (var key in obj.Keys)
+            {
+                if (key != null && key.Length > maxLen)
+                    maxLen = key.Length;
+            }
+            var keyLen = maxLen + 2;
             foreach (var entry in obj)
             {
                 var k = entry.Key;
@@ -228,7 +242,7 @@ public static class Inspect
             var c2 = sb[sb.Length - 2];
 
             var hasNewLine = c1 == '\n' && c2 == '\n'
-                             || (sb.Length > 4 && c1 == '\n' && c2 == '\r' && sb[sb.Length - 3] == '\n' && sb[sb.Length - 4] == '\r');
+                             || (sb.Length >= 4 && c1 == '\n' && c2 == '\r' && sb[sb.Length - 3] == '\n' && sb[sb.Length - 4] == '\r');
 
             if (!hasNewLine)
                 sb.AppendLine();

@@ -198,4 +198,66 @@ This document details security, robustness, and stability fixes across `ServiceS
 - **Change**:
   - Used `atPort` directly when no delimiters follow.
 
+---
+
+## 20. Empty Dictionary Sequence Crash in `Inspect.dumpInternal` & Type Mapping in `UseType`
+- **Severity**: Low / Crash Prevention
+- **Description**:
+  - `Inspect.dumpInternal` calculated `obj.Keys.Map(x => x.Length).Max() + 2` without checking if the dictionary had any entries. Dumping an empty dictionary threw `InvalidOperationException: Sequence contains no elements`.
+  - In `Inspect.UseType`, an empty dictionary implementing `IEnumerable` had no elements (`FirstOrDefault` returned null), erroneously falling through to `new List<object>(...)` and converting the dictionary to an empty list.
+- **Change**:
+  - Added empty count check returning `"{}"` immediately, and loop-based max key length calculation.
+  - Added explicit `if (instance is IDictionary) return instance.ToObjectDictionary();` check before checking `IEnumerable`.
+
+---
+
+## 21. Operator Precedence Bug in `JSON.parseSpan`
+- **Severity**: Medium / Security & Logic Bug
+- **Description**:
+  - In `JSON.cs`, `else if (firstChar == '{' || firstChar == '[' && !isEscapedJsonString(json.TrimStart()))` was evaluated as `firstChar == '{' || (firstChar == '[' && !isEscapedJsonString(json.TrimStart()))` because in C# `&&` binds tighter than `||`.
+  - For JSON objects starting with `{`, the escape check was bypassed completely.
+- **Change**:
+  - Properly parenthesized the condition: `(firstChar == '{' || firstChar == '[') && !isEscapedJsonString(json.TrimStart())`.
+
+---
+
+## 22. Exception Argument Inversion in `UrnId.Parse` & Zero-Allocation Hardening
+- **Severity**: Low / Robustness
+- **Description**:
+  - `UrnId.Parse` threw `new ArgumentException("Cannot parse invalid urn: '{0}'", urnId)`, where `urnId` was passed as `paramName` while the format placeholder was left unformatted.
+  - Calling `urnId.Contains(FieldSeperator.ToString())` allocated unnecessary strings on every check.
+- **Change**:
+  - Replaced with string interpolation `$"Cannot parse invalid urn: '{urnId}'", nameof(urnId)`.
+  - Switched separator check to zero-allocation char check `urnId.Contains(FieldSeperator)` and added null guards across `Create`, `CreateWithParts`, and generic `Create<T>`.
+
+---
+
+## 23. `PlatformNotSupportedException` in `ActionExecExtensions.ExecAllAndWait` on .NET Core
+- **Severity**: Medium / Modernization & Crash Prevention
+- **Description**:
+  - `ActionExecExtensions.ExecAllAndWait` called `action.BeginInvoke(...)`, which throws `PlatformNotSupportedException` on .NET Core / .NET 5+.
+  - `WaitHandle.WaitAll` has a maximum limit of 64 wait handles on Windows/BCL, throwing `NotSupportedException` if more than 64 actions were scheduled.
+- **Change**:
+  - Switched to `ExecAsync` on modern .NET with guaranteed `WaitHandle` disposal in `finally`.
+  - Added chunked wait loop when handles exceed 64 to prevent `NotSupportedException`.
+
+---
+
+## 24. Thread Synchronization & Deadlock Inconsistency in `InMemoryLogFactory`
+- **Severity**: Medium / Concurrency & Race Condition
+- **Description**:
+  - `InMemoryLogFactory` synchronized log writes using `lock (syncLock)` in some methods and `lock (this)` in others (such as `HasExceptions`). This inconsistent locking could lead to concurrent access races or deadlocks.
+- **Change**:
+  - Unified all synchronization on `syncLock`. Protected string formatting against `FormatException` for raw messages containing curly braces.
+
+---
+
+## 25. Concurrent Registration Race Condition in `StartupTasks`
+- **Severity**: Medium / Concurrency & Race Condition
+- **Description**:
+  - `StartupTasks.Register` mutated `Tasks` dictionary without thread synchronization during application/plugin startup.
+  - `StartupTasks.Run` enumerated `Tasks` directly while concurrent registrations could still take place, leading to `InvalidOperationException: Collection was modified`.
+- **Change**:
+  - Synchronized `Register` and snapshotted task actions in `Run` using `lock (Tasks)`.
+
 

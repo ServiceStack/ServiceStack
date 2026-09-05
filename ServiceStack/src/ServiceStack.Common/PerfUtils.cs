@@ -18,18 +18,22 @@ public static class PerfUtils
     /// <returns>time elapsed in micro seconds</returns>
     public static double MeasureFor(Action fn, int runForMs)
     {
+        if (fn == null)
+            throw new ArgumentNullException(nameof(fn));
+
         int iter = 0;
         var watch = new Stopwatch();
         watch.Start();
         long elapsed = 0;
-        while (elapsed < runForMs)
+        do
         {
             fn();
             elapsed = watch.ElapsedMilliseconds;
             iter++;
         }
+        while (elapsed < runForMs);
 
-        return 1000.0 * elapsed / iter;
+        return iter == 0 ? 0 : 1000.0 * elapsed / iter;
     }
 
     /// <summary>
@@ -49,6 +53,12 @@ public static class PerfUtils
         Action warmup = null,
         Action teardown = null)
     {
+        if (fn == null)
+            throw new ArgumentNullException(nameof(fn));
+
+        times = Math.Max(1, times);
+        runForMs = Math.Max(0, runForMs);
+
         setup?.Invoke();
 
         // Warmup for at least 100ms. Discard result.
@@ -59,7 +69,7 @@ public static class PerfUtils
 
         MeasureFor(() => warmup(), 100);
 
-        // Run the benchmark for at least 2000ms.
+        // Run the benchmark for at least runForMs.
         double result = MeasureFor(() =>
         {
             for (var i = 0; i < times; i++)

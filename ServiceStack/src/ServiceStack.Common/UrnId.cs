@@ -26,6 +26,9 @@ public class UrnId
 
     public static UrnId Parse(string urnId)
     {
+        if (string.IsNullOrEmpty(urnId))
+            throw new ArgumentNullException(nameof(urnId));
+
         var urnParts = urnId.Split(FieldSeperator);
         if (urnParts.Length == HasNoIdFieldName)
             return new UrnId { TypeName = urnParts[1], IdFieldValue = urnParts[2] };
@@ -33,24 +36,34 @@ public class UrnId
         if (urnParts.Length == HasIdFieldName)
             return new UrnId { TypeName = urnParts[1], IdFieldName = urnParts[2], IdFieldValue = urnParts[3] };
 
-        throw new ArgumentException("Cannot parse invalid urn: '{0}'", urnId);
+        throw new ArgumentException($"Cannot parse invalid urn: '{urnId}'", nameof(urnId));
     }
 
     public static string Create(string objectTypeName, string idFieldValue)
     {
-        if (objectTypeName.Contains(FieldSeperator.ToString()))
-            throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", "objectTypeName");
+        if (objectTypeName == null)
+            throw new ArgumentNullException(nameof(objectTypeName));
+        if (idFieldValue == null)
+            throw new ArgumentNullException(nameof(idFieldValue));
 
-        if (idFieldValue.Contains(FieldSeperator.ToString()))
-            throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
+        if (objectTypeName.Contains(FieldSeperator))
+            throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", nameof(objectTypeName));
+
+        if (idFieldValue.Contains(FieldSeperator))
+            throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", nameof(idFieldValue));
 
         return $"urn:{objectTypeName}:{idFieldValue}";
     }
 
     public static string CreateWithParts(string objectTypeName, params string[] keyParts)
     {
-        if (objectTypeName.Contains(FieldSeperator.ToString()))
-            throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", "objectTypeName");
+        if (objectTypeName == null)
+            throw new ArgumentNullException(nameof(objectTypeName));
+        if (objectTypeName.Contains(FieldSeperator))
+            throw new ArgumentException("objectTypeName cannot have the illegal characters: ':'", nameof(objectTypeName));
+
+        if (keyParts == null || keyParts.Length == 0)
+            return $"urn:{objectTypeName}:";
 
         var sb = StringBuilderCache.Allocate();
         foreach (var keyPart in keyParts)
@@ -75,13 +88,18 @@ public class UrnId
 
     public static string Create<T>(object idFieldValue)
     {
-        return Create(typeof(T), idFieldValue.ToString());
+        return Create(typeof(T), idFieldValue?.ToString() ?? string.Empty);
     }
 
     public static string Create(Type objectType, string idFieldValue)
     {
-        if (idFieldValue.Contains(FieldSeperator.ToString()))
-            throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
+        if (objectType == null)
+            throw new ArgumentNullException(nameof(objectType));
+        if (idFieldValue == null)
+            throw new ArgumentNullException(nameof(idFieldValue));
+
+        if (idFieldValue.Contains(FieldSeperator))
+            throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", nameof(idFieldValue));
 
         return $"urn:{objectType.Name}:{idFieldValue}";
     }
@@ -93,11 +111,18 @@ public class UrnId
 
     public static string Create(Type objectType, string idFieldName, string idFieldValue)
     {
-        if (idFieldValue.Contains(FieldSeperator.ToString()))
-            throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", "idFieldValue");
+        if (objectType == null)
+            throw new ArgumentNullException(nameof(objectType));
+        if (idFieldName == null)
+            throw new ArgumentNullException(nameof(idFieldName));
+        if (idFieldValue == null)
+            throw new ArgumentNullException(nameof(idFieldValue));
 
-        if (idFieldName.Contains(FieldSeperator.ToString()))
-            throw new ArgumentException("idFieldName cannot have the illegal characters: ':'", "idFieldName");
+        if (idFieldValue.Contains(FieldSeperator))
+            throw new ArgumentException("idFieldValue cannot have the illegal characters: ':'", nameof(idFieldValue));
+
+        if (idFieldName.Contains(FieldSeperator))
+            throw new ArgumentException("idFieldName cannot have the illegal characters: ':'", nameof(idFieldName));
 
         return $"urn:{objectType.Name}:{idFieldName}:{idFieldValue}";
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Configuration;
@@ -16,10 +16,13 @@ public class SimpleAppSettings : IAppSettings
 
     public List<string> GetAllKeys() => settings.Keys.ToList();
 
-    public bool Exists(string key) => settings.ContainsKey(key);
+    public bool Exists(string key) => key != null && settings.ContainsKey(key);
 
     public void Set<T>(string key, T value)
     {
+        if (key == null)
+            throw new ArgumentNullException(nameof(key));
+
         var textValue = value is string s
             ? s
             : value.ToJsv();
@@ -27,16 +30,33 @@ public class SimpleAppSettings : IAppSettings
         settings[key] = textValue;
     }
 
-    public string GetString(string key) => settings.TryGetValue(key, out string value)
+    public string GetString(string key) => key != null && settings.TryGetValue(key, out string value)
         ? value
         : null;
 
-    public IList<string> GetList(string key) => GetString(key).FromJsv<List<string>>();
+    public IList<string> GetList(string key)
+    {
+        var val = GetString(key);
+        return val != null ? val.FromJsv<List<string>>() ?? new List<string>() : new List<string>();
+    }
 
-    public IDictionary<string, string> GetDictionary(string key) => GetString(key).FromJsv<Dictionary<string, string>>();
-    public List<KeyValuePair<string, string>> GetKeyValuePairs(string key) => GetString(key).FromJsv<List<KeyValuePair<string, string>>>();
+    public IDictionary<string, string> GetDictionary(string key)
+    {
+        var val = GetString(key);
+        return val != null ? val.FromJsv<Dictionary<string, string>>() ?? new Dictionary<string, string>() : new Dictionary<string, string>();
+    }
 
-    public T Get<T>(string key) => GetString(key).FromJsv<T>();
+    public List<KeyValuePair<string, string>> GetKeyValuePairs(string key)
+    {
+        var val = GetString(key);
+        return val != null ? val.FromJsv<List<KeyValuePair<string, string>>>() ?? new List<KeyValuePair<string, string>>() : new List<KeyValuePair<string, string>>();
+    }
+
+    public T Get<T>(string key)
+    {
+        var val = GetString(key);
+        return val != null ? val.FromJsv<T>() : default;
+    }
 
     public T Get<T>(string key, T defaultValue)
     {

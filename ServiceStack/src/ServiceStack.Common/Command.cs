@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using ServiceStack.Text;
 
@@ -14,7 +14,7 @@ public class Command
 
     public ReadOnlyMemory<char> Original { get; set; }
 
-    public List<ReadOnlyMemory<char>> Args { get; internal set; } = new();
+    public List<ReadOnlyMemory<char>> Args { get; set; } = new();
 
     public ReadOnlyMemory<char> Suffix { get; set; }
 
@@ -26,7 +26,7 @@ public class Command
         while (cmdSpan.Length > endPos && char.IsWhiteSpace(cmdSpan[endPos]))
             endPos++;
 
-        if (cmdSpan.Length > endPos && cmdSpan.IndexOf("as ", endPos) == endPos)
+        if (cmdSpan.Length >= endPos + 3 && cmdSpan.Slice(endPos).StartsWith("as ".AsSpan(), StringComparison.OrdinalIgnoreCase))
             endPos += "as ".Length;
 
         while (cmdSpan.Length > endPos && char.IsWhiteSpace(cmdSpan[endPos]))
@@ -45,11 +45,14 @@ public class Command
     public virtual string ToDebugString()
     {
         var sb = StringBuilderCacheAlt.Allocate();
-        foreach (var arg in Args)
+        if (Args != null)
         {
-            if (sb.Length > 0)
-                sb.Append('|');
-            sb.Append(arg);
+            foreach (var arg in Args)
+            {
+                if (sb.Length > 0)
+                    sb.Append('|');
+                sb.Append(arg);
+            }
         }
 
         return $"[{Name}:{StringBuilderCacheAlt.ReturnAndFree(sb)}]{Suffix}";
@@ -58,11 +61,14 @@ public class Command
     public override string ToString()
     {
         var sb = StringBuilderCacheAlt.Allocate();
-        foreach (var arg in Args)
+        if (Args != null)
         {
-            if (sb.Length > 0)
-                sb.Append(',');
-            sb.Append(arg);
+            foreach (var arg in Args)
+            {
+                if (sb.Length > 0)
+                    sb.Append(',');
+                sb.Append(arg);
+            }
         }
 
         return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)}){Suffix}";

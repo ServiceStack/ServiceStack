@@ -17,6 +17,23 @@ public static class ActionExecExtensions
 {
     public static void ExecAllAndWait(this ICollection<Action> actions, TimeSpan timeout)
     {
+        if (actions == null)
+            throw new ArgumentNullException(nameof(actions));
+        if (actions.Count == 0)
+            return;
+
+#if NETCORE
+        var waitHandles = actions.ExecAsync();
+        try
+        {
+            WaitAll(waitHandles, timeout);
+        }
+        finally
+        {
+            foreach (var wh in waitHandles)
+                wh.Dispose();
+        }
+#else
         var waitHandles = new WaitHandle[actions.Count];
         var i = 0;
         foreach (var action in actions)
@@ -25,10 +42,14 @@ public static class ActionExecExtensions
         }
 
         WaitAll(waitHandles, timeout);
+#endif
     }
 
     public static List<WaitHandle> ExecAsync(this IEnumerable<Action> actions)
     {
+        if (actions == null)
+            throw new ArgumentNullException(nameof(actions));
+
         var waitHandles = new List<WaitHandle>();
         foreach (var action in actions)
         {
@@ -80,6 +101,20 @@ public static class ActionExecExtensions
             throw new ArgumentNullException(nameof(waitHandles));
         if (waitHandles.Length == 0)
             return true;
+
+        if (waitHandles.Length > 64)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            foreach (var waitHandle in waitHandles)
+            {
+                var remaining = timeOutMs == Timeout.Infinite
+                    ? Timeout.Infinite
+                    : Math.Max(0, timeOutMs - (int)sw.ElapsedMilliseconds);
+                if (!waitHandle.WaitOne(remaining))
+                    return false;
+            }
+            return true;
+        }
 
 #if NETCORE
         return WaitHandle.WaitAll(waitHandles, timeOutMs);
