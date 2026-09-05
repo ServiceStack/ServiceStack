@@ -9,34 +9,20 @@ namespace ServiceStack.Messaging;
 /// <typeparam name="T"></typeparam>
 public static class QueueNames<T>
 {
-    static QueueNames() 
-    {
-        Priority = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".priorityq");
-        In = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".inq");
-        Out = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".outq");
-        Dlq = QueueNames.ResolveQueueNameFn(typeof(T).Name, ".dlq");
-    }
+    public static string Priority => QueueNames.ResolveQueueNameFn(typeof(T).Name, ".priorityq");
 
-    public static string Priority { get; private set; }
+    public static string In => QueueNames.ResolveQueueNameFn(typeof(T).Name, ".inq");
 
-    public static string In { get; private set; }
+    public static string Out => QueueNames.ResolveQueueNameFn(typeof(T).Name, ".outq");
 
-    public static string Out { get; private set; }
+    public static string Dlq => QueueNames.ResolveQueueNameFn(typeof(T).Name, ".dlq");
 
-    public static string Dlq { get; private set; }
-
-    public static string[] AllQueueNames
-    {
-        get
-        {
-            return new[] {
-                In,
-                Priority,
-                Out,
-                Dlq,
-            };
-        }
-    }
+    public static string[] AllQueueNames => new[] {
+        In,
+        Priority,
+        Out,
+        Dlq,
+    };
 }
 
 /// <summary>
