@@ -9,6 +9,7 @@ internal static class HttpClientUtils
 {
     internal static HttpContent ToHttpContent(this IVirtualFile file)
     {
+        ArgumentNullException.ThrowIfNull(file);
         var fileContents = file.GetContents();
         
 #if NET6_0_OR_GREATER
@@ -44,6 +45,8 @@ internal static class HttpClientUtils
     
     internal static MultipartFormDataContent AddFile(this MultipartFormDataContent content, string fieldName, IVirtualFile file, string? mimeType=null)
     {
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(file);
         content.Add(file.ToHttpContent()
             .AddFileInfo(fieldName: fieldName, fileName: file.Name, mimeType: mimeType));
         return content;
@@ -51,17 +54,21 @@ internal static class HttpClientUtils
 
     internal static HttpContent AddFileInfo(this HttpContent content, string fieldName, string fileName, string? mimeType=null)
     {
-        content.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
+        ArgumentNullException.ThrowIfNull(content);
+        var safeFileName = string.IsNullOrEmpty(fileName) ? "file" : fileName;
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(safeFileName));
         content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data") {
             Name = fieldName,
-            FileName = fileName,
+            FileName = safeFileName,
         };
         return content;
     }
 
     internal static MultipartFormDataContent AddParam(this MultipartFormDataContent content, string key, string value)
     {
-        content.Add(new StringContent(value), $"\"{key}\"");
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(key);
+        content.Add(new StringContent(value ?? string.Empty), $"\"{key}\"");
         return content;
     }
 }

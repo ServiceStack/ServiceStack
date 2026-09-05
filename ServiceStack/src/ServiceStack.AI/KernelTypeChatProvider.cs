@@ -4,9 +4,15 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace ServiceStack.AI;
 
-public class KernelTypeChat(Kernel kernel) : ITypeChat
+public class KernelTypeChat : ITypeChat
 {
-    public Kernel Kernel { get; } = kernel;
+    public Kernel Kernel { get; }
+
+    public KernelTypeChat(Kernel kernel)
+    {
+        ArgumentNullException.ThrowIfNull(kernel);
+        Kernel = kernel;
+    }
 
     /// <summary>
     /// Service identifier.
@@ -22,12 +28,16 @@ public class KernelTypeChat(Kernel kernel) : ITypeChat
 
     public async Task<TypeChatResponse> TranslateMessageAsync(TypeChatRequest request, CancellationToken token = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
+
         var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage(request.Prompt);
-        var chatCompletionService = Kernel.GetRequiredService<IChatCompletionService>();
+        chatHistory.AddUserMessage(request.Prompt ?? string.Empty);
+        var chatCompletionService = !string.IsNullOrEmpty(ServiceId)
+            ? Kernel.GetRequiredService<IChatCompletionService>(ServiceId)
+            : Kernel.GetRequiredService<IChatCompletionService>();
         var result = await chatCompletionService.GetChatMessageContentAsync(chatHistory, new OpenAIPromptExecutionSettings {
             ModelId = ModelId,
         }, kernel:Kernel, cancellationToken: token);
-        return new TypeChatResponse { Result = result.Content! };
+        return new TypeChatResponse { Result = result?.Content ?? string.Empty };
     }
 }

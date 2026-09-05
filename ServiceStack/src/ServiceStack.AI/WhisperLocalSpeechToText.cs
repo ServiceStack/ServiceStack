@@ -15,6 +15,9 @@ public class WhisperLocalSpeechToText : ISpeechToText
 
     public async Task<TranscriptResult> TranscribeAsync(string recordingPath, CancellationToken token = default)
     {
+        if (string.IsNullOrEmpty(recordingPath))
+            throw new ArgumentNullException(nameof(recordingPath));
+
         var relativePath = recordingPath.TrimStart('/');
         var fileName = recordingPath.LastRightPart('/');
         var whisperPath = WhisperPath ?? ProcessUtils.FindExePath("whisper");
@@ -31,16 +34,25 @@ public class WhisperLocalSpeechToText : ISpeechToText
 
         var sb = StringBuilderCache.Allocate();
         var sbError = StringBuilderCacheAlt.Allocate();
-        await ProcessUtils.RunAsync(processInfo, TimeoutMs,
-            onOut: data => sb.AppendLine(data),
-            onError: data => sbError.AppendLine(data)).ConfigAwait();
+        string stdout;
+        string stderr;
+        try
+        {
+            await ProcessUtils.RunAsync(processInfo, TimeoutMs,
+                onOut: data => sb.AppendLine(data),
+                onError: data => sbError.AppendLine(data)).ConfigAwait();
+        }
+        finally
+        {
+            stdout = StringBuilderCache.ReturnAndFree(sb);
+            stderr = StringBuilderCacheAlt.ReturnAndFree(sbError);
+        }
         
-        var stdout = StringBuilderCache.ReturnAndFree(sb);
-        var stderr = StringBuilderCacheAlt.ReturnAndFree(sbError);
         string? text = null;
         string? json = null;
 
-        var jsonFile = processInfo.WorkingDirectory.CombineWith(fileName.LastLeftPart('.') + ".json");
+        var baseFileName = Path.GetFileNameWithoutExtension(fileName);
+        var jsonFile = processInfo.WorkingDirectory.CombineWith(baseFileName + ".json");
         if (File.Exists(jsonFile))
         {
 #if NET6_0_OR_GREATER
@@ -48,10 +60,11 @@ public class WhisperLocalSpeechToText : ISpeechToText
 #else
             json = File.ReadAllText(jsonFile);
 #endif            
-            var obj = (Dictionary<string,object>) JSON.parse(json);
-            text = obj.TryGetValue("text", out var oText)
-                ? oText as string
-                : null;
+            if (JSON.parse(json) is Dictionary<string, object> obj &&
+                obj.TryGetValue("text", out var oText))
+            {
+                text = oText as string;
+            }
         }
 
         if (text == null)
@@ -62,7 +75,7 @@ public class WhisperLocalSpeechToText : ISpeechToText
         var result = new TranscriptResult
         {
             Transcript = text,
-            ApiResponse = json!,
+            ApiResponse = json ?? string.Empty,
         };
         return result;
     }

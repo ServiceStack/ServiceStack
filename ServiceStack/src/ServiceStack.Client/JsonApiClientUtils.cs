@@ -162,7 +162,7 @@ public static class JsonApiClientUtils
 
     public static MultipartFormDataContent AddParam(this MultipartFormDataContent content, string key, string value)
     {
-        content.Add(new StringContent(value), $"\"{key}\"");
+        content.Add(new StringContent(value ?? string.Empty), $"\"{key}\"");
         return content;
     }
 
@@ -172,7 +172,7 @@ public static class JsonApiClientUtils
         {
             content.Add(new StringContent(str), $"\"{key}\"");
         }
-        else
+        else if (value != null)
         {
             content.Add(new StringContent(value.ToJsv(), encoding: null, mediaType: MimeTypes.Jsv), $"\"{key}\"");
         }
@@ -224,10 +224,11 @@ public static class JsonApiClientUtils
 
     public static HttpContent AddFileInfo(this HttpContent content, string fieldName, string fileName, string? mimeType=null)
     {
-        content.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
+        var safeFileName = string.IsNullOrEmpty(fileName) ? "file" : fileName;
+        content.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(safeFileName));
         content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data") {
             Name = fieldName,
-            FileName = fileName,
+            FileName = safeFileName,
         };
         return content;
     }

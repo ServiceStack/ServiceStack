@@ -23,4 +23,8 @@
         <PackageReference Include="Microsoft.SemanticKernel" Version="1.78.0" />
     </ItemGroup>
 
+    <ItemGroup>
+        <InternalsVisibleTo Include="ServiceStack.Extensions.Tests" />
+    </ItemGroup>
+
 </Project>
