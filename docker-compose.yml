@@ -34,6 +34,7 @@ services:
 
   # Microsoft SQL Server 2025 with the optional Full-Text Search package
   sqlserver:
+    platform: linux/amd64
     image: servicestack/sqlserver-fts:2025
     build:
       context: ./docker/sqlserver-fts
