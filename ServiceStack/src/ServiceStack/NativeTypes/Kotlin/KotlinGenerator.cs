@@ -118,7 +118,7 @@ public class KotlinGenerator : ILangGenerator
     /// <summary>
     /// Additional Options in Header Options
     /// </summary>
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     /// <summary>
     /// Emit code without Header Options
@@ -528,7 +528,7 @@ public class KotlinGenerator : ILangGenerator
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                 var initProp = (prop.IsRequired == true || Config.InitializeCollections) 
-                    && prop.IsEnumerable() && (feature?.ShouldInitializeCollection(type) ?? true) && !prop.IsInterface();
+                    && prop.IsEnumerable() && (feature?.ShouldInitializeCollection(type) ?? NativeTypesFeature.NonAutoQueryCollectionProperties(type)) && !prop.IsInterface();
                 var initializer = initProp 
                     ? propType == "ByteArray"
                         ? "ByteArray(0)"

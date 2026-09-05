@@ -48,18 +48,14 @@ public class StringBuilderWrapper
     public void Chop(char c)
     {
         if (sb.Length == 0) return;
-        var endsWithNewLine = sb[sb.Length - 1] == '\n';
-        while (sb.Length > 0 && sb[sb.Length - 1] != c)
+        var i = sb.Length - 1;
+        while (i >= 0 && (sb[i] == '\r' || sb[i] == '\n' || sb[i] == ' ' || sb[i] == '\t'))
         {
-            sb.Length--;
+            i--;
         }
-        if (sb.Length > 0 && sb[sb.Length - 1] == c)
+        if (i >= 0 && sb[i] == c)
         {
-            sb.Length--;
-        }
-        if (endsWithNewLine)
-        {
-            sb.AppendLine();
+            sb.Remove(i, 1);
         }
     }
 

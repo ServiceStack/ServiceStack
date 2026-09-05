@@ -273,14 +273,16 @@ public class RubyGenerator : ILangGenerator
     public static TextCase TextCase { get; set; } = TextCase.SnakeCase;
 
     public static Func<string, string> EnumNameFormat { get; set; } = name =>
-        // If already has part separators, just convert to upper case
-        name.IndexOf('_') >= 0
-            ? name.ToUpper()
-            // If has any lower case, convert to UPPER_CASE
-            : name.Any(char.IsLower)
-                ? name.ToLowercaseUnderscore().ToUpper()
-                // Leave as is
-                : name;
+        string.IsNullOrEmpty(name)
+            ? name
+            // If already has part separators, just convert to upper case
+            : name.IndexOf('_') >= 0
+                ? name.ToUpper()
+                // If has any lower case, convert to UPPER_CASE
+                : name.Any(char.IsLower)
+                    ? name.ToLowercaseUnderscore().ToUpper()
+                    // Leave as is
+                    : name;
 
     /// <summary>
     /// Add Code to top of generated code
@@ -290,7 +292,7 @@ public class RubyGenerator : ILangGenerator
     /// <summary>
     /// Additional Options in Header Options
     /// </summary>
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     /// <summary>
     /// Emit code without Header Options

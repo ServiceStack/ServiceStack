@@ -53,7 +53,7 @@ public class FSharpGenerator : ILangGenerator
     /// <summary>
     /// Additional Options in Header Options
     /// </summary>
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     /// <summary>
     /// Emit code without Header Options
@@ -411,7 +411,7 @@ public class FSharpGenerator : ILangGenerator
     {
         var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
-        if (Config.InitializeCollections && prop.IsEnumerable() && feature.ShouldInitializeCollection(type))
+        if (Config.InitializeCollections && prop.IsEnumerable() && (feature?.ShouldInitializeCollection(type) ?? NativeTypesFeature.NonAutoQueryCollectionProperties(type)))
         {
             return prop.IsArray()
                 ? "[||]" 

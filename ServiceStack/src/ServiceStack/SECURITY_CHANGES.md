@@ -616,3 +616,17 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - In `AutoQueryMetadataService.AnyAsync`: guarded against null `feature`, null `config`, null `Request`, and null `userSession`.
   - Replaced `inheritArgs.First()` / `inheritArgs.Last()` with `inheritArgs.FirstOrDefault()` / `inheritArgs.LastOrDefault()`.
 
+---
+
+## 21. NativeTypes Subsystem Modernization & Hardening
+- **All 16 Language Generators (`CSharp`, `TypeScript`, `Mjs`, `CommonJs`, `Dart`, `Java`, `Kotlin`, `Python`, `Php`, `Swift`, `VbNet`, `FSharp`, `Go`, `Rust`, `Ruby`, `Zig`)**:
+  - Defaulted `public List<string> AddQueryParamOptions { get; set; } = [];` across all generators to provide initialized collections and prevent `NullReferenceException` when callers access or mutate `AddQueryParamOptions` directly.
+  - Standardized collection property initialization fallback with `(feature?.ShouldInitializeCollection(type) ?? NativeTypesFeature.NonAutoQueryCollectionProperties(type))` across all generators (`CSharp`, `TypeScript`, `Mjs`, `Dart`, `Java`, `Kotlin`, `Python`, `Swift`, `VbNet`, `FSharp`), preventing `NullReferenceException` when executed without an active AppHost or when `NativeTypesFeature` is not registered.
+- **`StringBuilderWrapper.cs`**:
+  - Rewrote `Chop(char c)` to inspect only trailing whitespace and newlines before matching `c`. When `c` is not present at the end of the line/buffer, content is safely preserved rather than erroneously clearing the entire buffer.
+- **`RubyGenerator.cs`**:
+  - Added null/empty guard in `EnumNameFormat` (`string.IsNullOrEmpty(name) ? name : ...`) to prevent `ArgumentNullException` and `NullReferenceException` on null enum names.
+- **`DartGenerator.cs`**:
+  - Guarded `prop.PropertyType?.IsGenericParameter == true` in `RegisterPropertyType` to prevent `NullReferenceException` when DTO metadata is created dynamically or deserialized from REST metadata without CLR `Type` instances.
+
+

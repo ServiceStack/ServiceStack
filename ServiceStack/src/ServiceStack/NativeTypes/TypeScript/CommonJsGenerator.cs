@@ -20,7 +20,7 @@ public class CommonJsGenerator : ILangGenerator
     public static int BatchSize { get; set; } = 100;
     
     public bool WithoutOptions { get; set; }
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     public List<MetadataType> AllTypes => Gen.AllTypes;
     public string DictionaryDeclaration { get; set; } = CreateEmptyClass("Dictionary");

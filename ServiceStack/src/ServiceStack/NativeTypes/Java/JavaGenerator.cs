@@ -118,7 +118,7 @@ public class JavaGenerator : ILangGenerator
     /// <summary>
     /// Additional Options in Header Options
     /// </summary>
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     /// <summary>
     /// Emit code without Header Options
@@ -512,7 +512,7 @@ public class JavaGenerator : ILangGenerator
                 wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
 
                 var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
-                    && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                    && prop.IsEnumerable() && (feature?.ShouldInitializeCollection(type) ?? NativeTypesFeature.NonAutoQueryCollectionProperties(type)) && !prop.IsInterface()
                     ? propType.EndsWith("[]")
                         ? $"new {propType}{{}}"
                         : $"new {propType}()"

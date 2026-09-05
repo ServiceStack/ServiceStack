@@ -18,7 +18,7 @@ public class MjsGenerator : ILangGenerator
     /// Split assignment expression into smaller batches to avoid "Uncaught RangeError: Maximum call stack size exceeded" in Chrome/Blink
     /// </summary>
     public bool WithoutOptions { get; set; }
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
     public List<MetadataType> AllTypes => Gen.AllTypes;
     public string DictionaryDeclaration { get; set; } = CreateEmptyClass("Dictionary");
     public HashSet<string> AddedDeclarations { get; set; } = [];
@@ -408,7 +408,7 @@ public class MjsGenerator : ILangGenerator
             }
 
             var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
-                    && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                    && prop.IsEnumerable() && (feature?.ShouldInitializeCollection(type) ?? NativeTypesFeature.NonAutoQueryCollectionProperties(type)) && !prop.IsInterface()
                 ? prop.IsDictionary()
                     ? " = {}"
                     : " = []"

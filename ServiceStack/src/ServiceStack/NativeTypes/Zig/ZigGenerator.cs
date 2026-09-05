@@ -183,7 +183,7 @@ public class ZigGenerator : ILangGenerator
     /// <summary>
     /// Include Additional QueryString Params in Header Options
     /// </summary>
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     /// <summary>
     /// Emit code without Header Options

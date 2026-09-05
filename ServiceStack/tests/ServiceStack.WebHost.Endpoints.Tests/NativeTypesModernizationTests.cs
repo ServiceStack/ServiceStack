@@ -69,17 +69,23 @@ public class NativeTypesModernizationTests
         Assert.DoesNotThrow(() => wrapperEmpty.Chop(','));
         Assert.That(wrapperEmpty.Length, Is.EqualTo(0));
 
-        // Character not found
+        // Character not found - preserves content without wiping
         var sbMissing = new StringBuilder("hello world");
         var wrapperMissing = new StringBuilderWrapper(sbMissing);
         Assert.DoesNotThrow(() => wrapperMissing.Chop('z'));
-        Assert.That(wrapperMissing.Length, Is.EqualTo(0));
+        Assert.That(wrapperMissing.ToString(), Is.EqualTo("hello world"));
 
         // Normal chop with newline
         var sbNormal = new StringBuilder("foo, bar,\n");
         var wrapperNormal = new StringBuilderWrapper(sbNormal);
         wrapperNormal.Chop(',');
         Assert.That(wrapperNormal.ToString(), Is.EqualTo("foo, bar\n"));
+
+        // Normal chop without newline
+        var sbNoNewline = new StringBuilder("foo, bar,");
+        var wrapperNoNewline = new StringBuilderWrapper(sbNoNewline);
+        wrapperNoNewline.Chop(',');
+        Assert.That(wrapperNoNewline.ToString(), Is.EqualTo("foo, bar"));
     }
 
     [Test]
@@ -195,6 +201,122 @@ public class NativeTypesModernizationTests
         {
             var code = gen.GetCode(metadata, null, nativeTypesMeta);
             Assert.That(code, Is.Not.Null.And.Not.Empty, $"Generator {gen.GetType().Name} returned null or empty code with null request.");
+        }
+    }
+
+    [Test]
+    public void RubyGenerator_EnumNameFormat_handles_null_and_empty_safely()
+    {
+        Assert.That(RubyGenerator.EnumNameFormat(null), Is.Null);
+        Assert.That(RubyGenerator.EnumNameFormat(string.Empty), Is.EqualTo(string.Empty));
+        Assert.That(RubyGenerator.EnumNameFormat("my_enum_value"), Is.EqualTo("MY_ENUM_VALUE"));
+        Assert.That(RubyGenerator.EnumNameFormat("MyEnumValue"), Is.EqualTo("MY_ENUM_VALUE"));
+        Assert.That(RubyGenerator.EnumNameFormat("VALUE"), Is.EqualTo("VALUE"));
+    }
+
+    [Test]
+    public void All_16_Generators_safely_handle_null_AddQueryParamOptions()
+    {
+        var metadata = new MetadataTypes
+        {
+            Config = NativeTypesFeature.CreateMetadataTypesConfig(),
+            Types = [
+                new MetadataType
+                {
+                    Name = "SampleRequest",
+                    Namespace = "Sample",
+                    Properties = [
+                        new MetadataPropertyType { Name = "Query", Type = "String" }
+                    ]
+                }
+            ]
+        };
+
+        var generators = new ILangGenerator[]
+        {
+            new CSharpGenerator(metadata.Config),
+            new TypeScriptGenerator(metadata.Config),
+            new CommonJsGenerator(metadata.Config),
+            new MjsGenerator(metadata.Config),
+            new DartGenerator(metadata.Config),
+            new FSharpGenerator(metadata.Config),
+            new GoGenerator(metadata.Config),
+            new JavaGenerator(metadata.Config),
+            new KotlinGenerator(metadata.Config),
+            new PhpGenerator(metadata.Config),
+            new PythonGenerator(metadata.Config),
+            new RubyGenerator(metadata.Config),
+            new RustGenerator(metadata.Config),
+            new SwiftGenerator(metadata.Config),
+            new VbNetGenerator(metadata.Config),
+            new ZigGenerator(metadata.Config),
+        };
+
+        var nativeTypesMeta = new NativeTypesMetadata(new ServiceMetadata([]), metadata.Config);
+
+        foreach (var gen in generators)
+        {
+            // Explicitly set to null to test defensiveness even if uninitialized or assigned null
+            gen.AddQueryParamOptions = null;
+            Assert.DoesNotThrow(() =>
+            {
+                var code = gen.GetCode(metadata, null, nativeTypesMeta);
+                Assert.That(code, Is.Not.Null.And.Not.Empty);
+            }, $"Generator {gen.GetType().Name} threw when AddQueryParamOptions was null");
+        }
+    }
+
+    [Test]
+    public void All_Generators_initialize_collections_without_active_AppHost_or_Feature()
+    {
+        var config = NativeTypesFeature.CreateMetadataTypesConfig();
+        config.InitializeCollections = true;
+
+        var metadata = new MetadataTypes
+        {
+            Config = config,
+            Types = [
+                new MetadataType
+                {
+                    Name = "CollectionDto",
+                    Namespace = "TestNamespace",
+                    Properties = [
+                        new MetadataPropertyType { Name = "Items", Type = "List`1", GenericArgs = ["String"] },
+                        new MetadataPropertyType { Name = "Map", Type = "Dictionary`2", GenericArgs = ["String", "Int32"] }
+                    ]
+                }
+            ]
+        };
+
+        var generators = new ILangGenerator[]
+        {
+            new CSharpGenerator(metadata.Config),
+            new TypeScriptGenerator(metadata.Config),
+            new CommonJsGenerator(metadata.Config),
+            new MjsGenerator(metadata.Config),
+            new DartGenerator(metadata.Config),
+            new FSharpGenerator(metadata.Config),
+            new GoGenerator(metadata.Config),
+            new JavaGenerator(metadata.Config),
+            new KotlinGenerator(metadata.Config),
+            new PhpGenerator(metadata.Config),
+            new PythonGenerator(metadata.Config),
+            new RubyGenerator(metadata.Config),
+            new RustGenerator(metadata.Config),
+            new SwiftGenerator(metadata.Config),
+            new VbNetGenerator(metadata.Config),
+            new ZigGenerator(metadata.Config),
+        };
+
+        var nativeTypesMeta = new NativeTypesMetadata(new ServiceMetadata([]), metadata.Config);
+
+        foreach (var gen in generators)
+        {
+            Assert.DoesNotThrow(() =>
+            {
+                var code = gen.GetCode(metadata, null, nativeTypesMeta);
+                Assert.That(code, Is.Not.Null.And.Not.Empty);
+            }, $"Generator {gen.GetType().Name} failed during collection initialization when feature was null");
         }
     }
 }

@@ -67,7 +67,7 @@ public class CSharpGenerator : ILangGenerator
     /// <summary>
     /// Include Additional QueryString Params in Header Options
     /// </summary>
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     /// <summary>
     /// Emit code without Header Options
@@ -462,7 +462,7 @@ public class CSharpGenerator : ILangGenerator
                 var visibility = type.IsInterface() ? "" : "public ";
 
                 var initializer = (prop.IsRequired == true || Config.InitializeCollections) 
-                        && prop.IsEnumerable() && feature.ShouldInitializeCollection(type) && !prop.IsInterface()
+                        && prop.IsEnumerable() && (feature?.ShouldInitializeCollection(type) ?? NativeTypesFeature.NonAutoQueryCollectionProperties(type)) && !prop.IsInterface()
                     ? prop.IsDictionary()
                         ? " = new();"
                         : " = [];"

@@ -119,7 +119,7 @@ public class DartGenerator : ILangGenerator
     {
         var propType = GetPropertyType(prop);
         propType = PropertyTypeFilter?.Invoke(this, type, prop) ?? propType;
-        if (prop.IsEnumerable() && propType != "Uint8List" && feature.ShouldInitializeCollection(type))
+        if (prop.IsEnumerable() && propType != "Uint8List" && (feature?.ShouldInitializeCollection(type) ?? NativeTypesFeature.NonAutoQueryCollectionProperties(type)))
         {
             var val = prop.IsDictionary() ? "{}" : "[]";
             return forConstructor ? $"const {val}" : val;
@@ -323,7 +323,7 @@ public class DartGenerator : ILangGenerator
     /// <summary>
     /// Additional Options in Header Options
     /// </summary>
-    public List<string> AddQueryParamOptions { get; set; }
+    public List<string> AddQueryParamOptions { get; set; } = [];
 
     /// <summary>
     /// Emit code without Header Options
@@ -935,7 +935,7 @@ public class DartGenerator : ILangGenerator
             ? $"() => {defaultValue}"
             : null;
         
-        if (prop.PropertyType.IsGenericParameter)
+        if (prop.PropertyType?.IsGenericParameter == true)
             return;
 
         allTypesMap.TryGetValue(csharpType, out var metaType);
