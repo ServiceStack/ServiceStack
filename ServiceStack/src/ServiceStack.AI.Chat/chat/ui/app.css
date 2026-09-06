@@ -1466,6 +1466,15 @@
   .min-w-0 {
     min-width: 0px;
   }
+  .min-w-44 {
+    min-width: calc(var(--spacing) * 44);
+  }
+  .min-w-48 {
+    min-width: calc(var(--spacing) * 48);
+  }
+  .min-w-56 {
+    min-width: calc(var(--spacing) * 56);
+  }
   .min-w-\[4\.5rem\] {
     min-width: 4.5rem;
   }
@@ -1525,6 +1534,11 @@
   }
   .border-separate {
     border-collapse: separate;
+  }
+  .border-spacing-0 {
+    --tw-border-spacing-x: 0px;
+    --tw-border-spacing-y: 0px;
+    border-spacing: var(--tw-border-spacing-x) var(--tw-border-spacing-y);
   }
   .border-spacing-y-1 {
     --tw-border-spacing-y: var(--spacing);
@@ -2614,6 +2628,9 @@
   .bg-amber-100 {
     background-color: var(--color-amber-100);
   }
+  .bg-amber-500 {
+    background-color: var(--color-amber-500);
+  }
   .bg-black {
     background-color: var(--color-black);
   }
@@ -3225,6 +3242,9 @@
   }
   .bg-red-400 {
     background-color: var(--color-red-400);
+  }
+  .bg-red-500 {
+    background-color: var(--color-red-500);
   }
   .bg-red-600 {
     background-color: var(--color-red-600);
@@ -6542,6 +6562,9 @@
   .disabled\:text-slate-500:disabled {
     color: var(--color-slate-500);
   }
+  .disabled\:opacity-30:disabled {
+    opacity: 30%;
+  }
   .disabled\:opacity-40:disabled {
     opacity: 40%;
   }
@@ -6965,6 +6988,9 @@
       width: calc(var(--spacing) * 12);
       height: calc(var(--spacing) * 12);
     }
+    .lg\:h-\[32rem\] {
+      height: 32rem;
+    }
     .lg\:w-72 {
       width: calc(var(--spacing) * 72);
     }
@@ -7121,8 +7147,14 @@
     .xl\:grid-cols-3 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+    .xl\:grid-cols-4 {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
     .xl\:grid-cols-6 {
       grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+    .xl\:grid-cols-7 {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
     }
     .xl\:grid-cols-\[minmax\(0\,1fr\)_22rem\] {
       grid-template-columns: minmax(0,1fr) 22rem;
@@ -7150,6 +7182,9 @@
   }
   .dark\:border-amber-800:where(.dark, .dark *) {
     border-color: var(--color-amber-800);
+  }
+  .dark\:border-amber-900:where(.dark, .dark *) {
+    border-color: var(--color-amber-900);
   }
   .dark\:border-amber-900\/40:where(.dark, .dark *) {
     border-color: color-mix(in srgb, oklch(41.4% 0.112 45.904) 40%, transparent);
@@ -7246,6 +7281,9 @@
     @supports (color: color-mix(in lab, red, red)) {
       border-color: color-mix(in oklab, var(--color-green-800) 60%, transparent);
     }
+  }
+  .dark\:border-green-900:where(.dark, .dark *) {
+    border-color: var(--color-green-900);
   }
   .dark\:border-indigo-500:where(.dark, .dark *) {
     border-color: var(--color-indigo-500);

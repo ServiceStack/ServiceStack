@@ -63,6 +63,77 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void V1_privacy_and_grounding_controls_are_safe_by_default()
+    {
+        var analytics = GeminiSearch.NormalizeConfig().GetObject("analytics")!;
+        var behavior = GeminiAssistants.NormalizeConfig().GetObject("behavior")!;
+        var (fallback, noCitations) = GeminiAssistants.EnforceGrounding("Unsupported", new JsonArray(), behavior);
+        var evidence = new JsonArray(new JsonObject { ["title"] = "Guide", ["url"] = "https://docs.example/guide" });
+        var (answer, citations) = GeminiAssistants.EnforceGrounding("Supported", evidence, behavior);
+        Assert.Multiple(() =>
+        {
+            Assert.That(analytics.GetInt("retentionDays"), Is.EqualTo(90));
+            Assert.That(analytics.GetBool("anonymizeIp"), Is.True);
+            Assert.That(analytics.GetBool("respectDoNotTrack"), Is.True);
+            Assert.That(analytics.GetBool("excludeBots"), Is.True);
+            Assert.That(GeminiMetadata.AsList(analytics["deniedUserAgents"]), Does.Contain("gptbot"));
+            Assert.That(GeminiMetadata.AsList(analytics["deniedIpRanges"]), Is.Empty);
+            Assert.That(GeminiMetadata.AsList(analytics["excludedPaths"]), Is.Empty);
+            Assert.That(GeminiSearch.IsBot("Mozilla/5.0 compatible; Googlebot/2.1"), Is.True);
+            Assert.That(GeminiSearch.IsBot("Mozilla/5.0 Chrome/140 Safari/537.36"), Is.False);
+            Assert.That(GeminiSearch.AnonymizeIp("203.0.113.42"), Is.EqualTo("203.0.113.0"));
+            Assert.That(behavior.GetBool("strictGrounding"), Is.True);
+            Assert.That(fallback, Is.EqualTo(behavior.GetString("fallback")));
+            Assert.That(noCitations, Is.Empty);
+            Assert.That(answer, Is.EqualTo("Supported"));
+            Assert.That(citations, Has.Count.EqualTo(1));
+        });
+    }
+
+    [TestCase("203.0.113.42", "203.0.113.42")]
+    [TestCase("::ffff:203.0.113.42", "203.0.113.42")]
+    [TestCase("2001:db8::1", "2001:db8::1")]
+    [TestCase("not-an-ip", null)]
+    public void Normalizes_search_analytics_ip_addresses(string value, string? expected)
+    {
+        Assert.That(GeminiSearchGeo.NormalizeIpAddress(value), Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void Normalizes_and_applies_search_analytics_exclusions()
+    {
+        var config = GeminiSearch.NormalizeConfig(new JsonObject
+        {
+            ["analytics"] = new JsonObject
+            {
+                ["deniedUserAgents"] = new JsonArray(" GPTBot ", "gptbot", "Custom Monitor"),
+                ["deniedIpRanges"] = new JsonArray("114.119.*", "203.0.113.9", "2001:db8:1234::/48", "invalid"),
+                ["excludedPaths"] = new JsonArray("admin/*", "/health", "https://example.org/preview/*"),
+            },
+        }).GetObject("analytics")!;
+
+        var userAgents = GeminiMetadata.AsList(config["deniedUserAgents"]);
+        var ipRanges = GeminiMetadata.AsList(config["deniedIpRanges"]);
+        var paths = GeminiMetadata.AsList(config["excludedPaths"]);
+        Assert.Multiple(() =>
+        {
+            Assert.That(userAgents, Is.EqualTo(new[] { "gptbot", "custom monitor" }));
+            Assert.That(ipRanges, Is.EqualTo(new[] { "114.119.0.0/16", "203.0.113.9", "2001:db8:1234::/48" }));
+            Assert.That(paths, Is.EqualTo(new[] { "/admin/*", "/health", "/preview/*" }));
+            Assert.That(GeminiSearch.IsDeniedUserAgent("Mozilla/5.0 GPTBot/1.2", userAgents), Is.True, "user-agent substring");
+            Assert.That(GeminiSearch.IsDeniedUserAgent("Mozilla/5.0 Safari/605.1", userAgents), Is.False);
+            Assert.That(GeminiSearch.IsDeniedIp("114.119.42.8", ipRanges), Is.True, "IPv4 wildcard/CIDR");
+            Assert.That(GeminiSearch.IsDeniedIp("114.120.42.8", ipRanges), Is.False);
+            Assert.That(GeminiSearch.IsDeniedIp("203.0.113.9", ipRanges), Is.True, "exact IPv4");
+            Assert.That(GeminiSearch.IsDeniedIp("2001:db8:1234::99", ipRanges), Is.True, "IPv6 CIDR");
+            Assert.That(GeminiSearch.IsDeniedIp("2001:db8:1235::99", ipRanges), Is.False);
+            Assert.That(GeminiSearch.IsExcludedPath("https://example.org/admin/users?active=1", paths), Is.True, "absolute path glob");
+            Assert.That(GeminiSearch.IsExcludedPath("/health?full=true", paths), Is.True, "relative exact path");
+            Assert.That(GeminiSearch.IsExcludedPath("/docs/admin/start", paths), Is.False);
+        });
+    }
+
+    [Test]
     public void Creates_schema_and_round_trips_a_filestore()
     {
         var db = CreateDb();
@@ -655,6 +726,11 @@ public class AiChatGeminiTests
             ["appearance"] = new JsonObject { ["highlightColor"] = "blue" },
         }).GetObject("appearance")!.GetString("highlightColor"), Is.Empty);
         var shortcuts = GeminiSearch.NormalizeConfig().GetObject("behavior")!;
+        var analyticsConfig = GeminiSearch.NormalizeConfig().GetObject("analytics")!;
+        var enabledAnalytics = GeminiSearch.NormalizeConfig(new JsonObject
+        {
+            ["analytics"] = new JsonObject { ["enabled"] = true },
+        }).GetObject("analytics")!;
         var legacyShortcuts = GeminiSearch.NormalizeConfig(new JsonObject
         {
             ["behavior"] = new JsonObject { ["keyboardShortcut"] = false },
@@ -663,6 +739,8 @@ public class AiChatGeminiTests
         {
             Assert.That(shortcuts.GetBool("commandKShortcut"), Is.True);
             Assert.That(shortcuts.GetBool("slashShortcut"), Is.True);
+            Assert.That(analyticsConfig.GetBool("enabled"), Is.False);
+            Assert.That(enabledAnalytics.GetBool("enabled"), Is.True);
             Assert.That(legacyShortcuts.GetBool("commandKShortcut"), Is.False);
             Assert.That(legacyShortcuts.GetBool("slashShortcut"), Is.False);
             Assert.That(legacyShortcuts.ContainsKey("keyboardShortcut"), Is.False);
@@ -735,7 +813,39 @@ public class AiChatGeminiTests
         db.RecordSearchClick(widget.Id, storeId, User, firstQueryId, documentId, sectionId, 4,
             "OrmLite Configuration", "https://docs.example/ormlite", "content");
 
+        db.RecordSearchPageView(widget.Id, new JsonObject
+        {
+            ["clientId"] = "c1", ["sessionId"] = "s1", ["firstVisit"] = true,
+            ["pageUrl"] = "https://docs.example/testing", ["pagePath"] = "/testing",
+            ["pageTitle"] = "Testing", ["language"] = "en-AU", ["timezone"] = "Australia/Perth",
+            ["deviceType"] = "desktop", ["platform"] = "Linux", ["connectionType"] = "4g",
+            ["loadMs"] = 120, ["utmCampaign"] = "launch",
+        }, "https://docs.example", "test-agent", "::ffff:203.0.113.42", new GeminiSearchGeo
+        {
+            Asn = 64500, Organization = "Example Network", ContinentCode = "oc",
+            CountryCode = "au", CountryName = "Australia", RegionCode = "WA",
+            RegionName = "Western Australia", City = "Perth", PostalCode = "6000",
+            TimeZone = "Australia/Perth", Latitude = -31.9523, Longitude = 115.8613,
+        });
+        db.RecordSearchPageView(widget.Id, new JsonObject
+        {
+            ["clientId"] = "c1", ["sessionId"] = "s1",
+            ["pageUrl"] = "https://docs.example/other", ["pagePath"] = "/other",
+            ["pageTitle"] = "Other", ["language"] = "en-AU", ["timezone"] = "Australia/Perth",
+            ["deviceType"] = "desktop", ["platform"] = "Linux", ["loadMs"] = 80,
+        }, "https://docs.example", "test-agent");
+        db.RecordSearchPageView(widget.Id, new JsonObject
+        {
+            ["clientId"] = "c2", ["sessionId"] = "s2",
+            ["pageUrl"] = "https://docs.example/testing", ["pagePath"] = "/testing",
+            ["pageTitle"] = "Testing", ["referrer"] = "https://search.example/",
+            ["language"] = "en-US", ["timezone"] = "America/New_York",
+            ["deviceType"] = "mobile", ["platform"] = "Android", ["loadMs"] = 100,
+        }, "https://docs.example", "test-agent");
+
         var analytics = db.SearchAnalytics(widget.Id, User)!;
+        var traffic = db.SearchTrafficAnalytics(widget.Id, User, "1d")!;
+        var pagedTraffic = db.SearchTrafficAnalytics(widget.Id, User, "1d", recentSkip: 1, recentTake: 1)!;
         var group = analytics.GetArray("groups")![0]!.AsObject();
         Assert.Multiple(() =>
         {
@@ -754,12 +864,68 @@ public class AiChatGeminiTests
             Assert.That(popular.GetLong("documentId"), Is.EqualTo(documentId));
             Assert.That(popular.GetDouble("averagePosition"), Is.EqualTo(3));
             Assert.That(db.SearchQueryCounts([widget.Id])[widget.Id], Is.EqualTo(2));
+            Assert.That(db.SearchPageViewCount(widget.Id), Is.EqualTo(3));
+            Assert.That(traffic.GetLong("pageViews"), Is.EqualTo(3));
+            Assert.That(traffic.GetLong("visitors"), Is.EqualTo(2));
+            Assert.That(traffic.GetLong("newVisitors"), Is.EqualTo(1));
+            Assert.That(traffic.GetLong("sessions"), Is.EqualTo(2));
+            Assert.That(traffic.GetDouble("pagesPerSession"), Is.EqualTo(1.5));
+            Assert.That(traffic.GetDouble("bounceRate"), Is.EqualTo(50));
+            Assert.That(traffic.GetDouble("averageLoadMs"), Is.EqualTo(100));
+            Assert.That(traffic.GetLong("recentTotal"), Is.EqualTo(3));
+            Assert.That(traffic.GetArray("recentPageViews"), Has.Count.EqualTo(3));
+            Assert.That(pagedTraffic.GetLong("recentSkip"), Is.EqualTo(1));
+            Assert.That(pagedTraffic.GetLong("recentTake"), Is.EqualTo(1));
+            Assert.That(pagedTraffic.GetArray("recentPageViews"), Has.Count.EqualTo(1));
+            Assert.That(traffic.GetArray("timeline")!.Sum(x => x!.AsObject().GetLong("pageViews") ?? 0),
+                Is.EqualTo(3));
+            var topPage = traffic.GetArray("topPages")![0]!.AsObject();
+            Assert.That(topPage.GetString("path"), Is.EqualTo("/testing"));
+            Assert.That(topPage.GetLong("views"), Is.EqualTo(2));
+            Assert.That(traffic.GetArray("countries")![0]!.AsObject().GetString("value"),
+                Is.EqualTo("Australia"));
+            Assert.That(traffic.GetArray("regions")![0]!.AsObject().GetString("value"),
+                Is.EqualTo("Western Australia"));
+            Assert.That(traffic.GetArray("cities")![0]!.AsObject().GetString("value"),
+                Is.EqualTo("Perth"));
+            Assert.That(traffic.GetArray("organizations")![0]!.AsObject().GetString("value"),
+                Is.EqualTo("Example Network"));
+            var visitor = traffic.GetArray("recentPageViews")!
+                .Select(x => x!.AsObject()).First(x => x.GetString("ipAddress") == "203.0.113.42");
+            Assert.That(visitor.GetString("countryCode"), Is.EqualTo("AU"));
+            Assert.That(visitor.GetString("city"), Is.EqualTo("Perth"));
+            Assert.That(visitor.GetLong("asn"), Is.EqualTo(64500));
         });
 
+        using var conn = db.OpenDb();
+        var pageView = conn.Single<ChatSearchPageView>(x => x.SearchWidgetId == widget.Id
+            && x.IpAddress == "203.0.113.42");
+        Assert.Multiple(() =>
+        {
+            Assert.That(pageView, Is.Not.Null);
+            Assert.That(pageView!.GeoAsn, Is.EqualTo(64500));
+            Assert.That(pageView.GeoOrganization, Is.EqualTo("Example Network"));
+            Assert.That(pageView.GeoContinentCode, Is.EqualTo("OC"));
+            Assert.That(pageView.GeoCountryCode, Is.EqualTo("AU"));
+            Assert.That(pageView.GeoCountryName, Is.EqualTo("Australia"));
+            Assert.That(pageView.GeoRegionName, Is.EqualTo("Western Australia"));
+            Assert.That(pageView.GeoCity, Is.EqualTo("Perth"));
+            Assert.That(pageView.GeoTimeZone, Is.EqualTo("Australia/Perth"));
+            Assert.That(pageView.GeoLatitude, Is.EqualTo(-31.9523));
+            Assert.That(pageView.GeoLongitude, Is.EqualTo(115.8613));
+        });
+
+        var cleared = db.ClearSearchAnalytics(widget.Id, User)!;
+        Assert.Multiple(() =>
+        {
+            Assert.That(cleared.GetLong("searches"), Is.EqualTo(2));
+            Assert.That(cleared.GetLong("clicks"), Is.EqualTo(2));
+            Assert.That(cleared.GetLong("pageViews"), Is.EqualTo(3));
+        });
         Assert.That(db.DeleteSearchWidget(widget.Id, User, widget.Name), Is.True);
         Assert.That(db.SearchQueryCount(widget.Id), Is.Zero);
-        using var conn = db.OpenDb();
         Assert.That(conn.Count<ChatSearchClick>(x => x.SearchWidgetId == widget.Id), Is.Zero);
+        Assert.That(conn.Count<ChatSearchPageView>(x => x.SearchWidgetId == widget.Id), Is.Zero);
     }
 
     [Test]

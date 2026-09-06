@@ -23,6 +23,12 @@ public partial class GeminiExtension() : ChatExtension("gemini")
     GeminiSearchWorker? searchWorker;
     string? writeRole;
 
+    /// <summary>
+    /// Optional request-IP resolver used by opt-in Search analytics. When null, the extension tries
+    /// to resolve <see cref="IGeminiSearchGeoResolver"/> from the host IOC during installation.
+    /// </summary>
+    public IGeminiSearchGeoResolver? SearchGeoResolver { get; set; }
+
     public override void Install(ExtensionContext ctx)
     {
         // Keep extension and provider precedence identical.
@@ -47,6 +53,8 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         }
 
         db = new GeminiDb(chatDb);
+        SearchGeoResolver ??= ctx.Feature.Services.GetService(typeof(IGeminiSearchGeoResolver))
+            as IGeminiSearchGeoResolver;
         writeRole = ctx.Feature.ResolveVariable("$GEMINI_WRITE_ROLE")
             ?? ctx.Config.GetString("gemini_write_role");
         if (ctx.Feature.AutoInitSchema)

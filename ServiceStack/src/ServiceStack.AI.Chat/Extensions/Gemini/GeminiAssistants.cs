@@ -203,7 +203,8 @@ Use the retrieved documents as the primary authority for organization-specific i
         ["behavior"] = new JsonObject
         {
             ["template"] = "documentation", ["systemPrompt"] = PromptTemplates["documentation"],
-            ["grounded"] = true, ["citations"] = true, ["responseStyle"] = "balanced",
+            ["grounded"] = true, ["citations"] = true, ["strictGrounding"] = true,
+            ["minCitations"] = 1, ["responseStyle"] = "balanced",
             ["openMode"] = "", ["keyboardShortcut"] = true,
             ["fallback"] = "I couldn't find that in the available documents.",
             ["notice"] = "Conversations may be reviewed to improve support.",
@@ -291,6 +292,8 @@ Use the retrieved documents as the primary authority for organization-specific i
             .Trim().SafeSubstring(0, 12000);
         behavior["grounded"] = behavior.GetBool("grounded", true);
         behavior["citations"] = behavior.GetBool("citations", true);
+        behavior["strictGrounding"] = behavior.GetBool("strictGrounding", true);
+        behavior["minCitations"] = Bounded(behavior, "minCitations", 1, 1, 5);
         var responseStyle = behavior.GetString("responseStyle") ?? "balanced";
         behavior["responseStyle"] = new[] { "concise", "balanced", "detailed" }.Contains(responseStyle)
             ? responseStyle : "balanced";
@@ -373,6 +376,19 @@ Use the retrieved documents as the primary authority for organization-specific i
             .Where(x => x.Length > 0).Distinct().Take(100).Select(x => (JsonNode)x).ToArray());
         hosting["requestsPerMinute"] = Math.Clamp(hosting.GetInt("requestsPerMinute") ?? 30, 1, 1000);
         return config;
+    }
+
+    public static (string Answer, JsonArray Citations) EnforceGrounding(string? answer,
+        JsonArray? citations, JsonObject behavior)
+    {
+        citations ??= new JsonArray();
+        var strict = behavior.GetBool("grounded", true) && behavior.GetBool("strictGrounding", true);
+        if (strict && citations.Count < (behavior.GetInt("minCitations") ?? 1))
+            return (behavior.GetString("fallback") ?? "I couldn't find that in the available documents.", new JsonArray());
+        return (string.IsNullOrWhiteSpace(answer)
+                ? behavior.GetString("fallback") ?? "I couldn't find that in the available documents."
+                : answer.Trim(),
+            behavior.GetBool("citations", true) ? citations : new JsonArray());
     }
 
     public static string SystemInstruction(JsonObject behavior)

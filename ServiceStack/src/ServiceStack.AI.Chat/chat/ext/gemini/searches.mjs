@@ -1,5 +1,20 @@
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 import { CheckBox } from './explorer.mjs'
+import { Chart, registerables } from 'chart.js'
+Chart.register(...registerables)
+
+export const colors = [
+  { background: 'rgba(54, 162, 235, 0.2)', border: 'rgb(54, 162, 235)' },
+  { background: 'rgba(255, 99, 132, 0.2)', border: 'rgb(255, 99, 132)' },
+  { background: 'rgba(153, 102, 255, 0.2)', border: 'rgb(153, 102, 255)' },
+  { background: 'rgba(255, 206, 86, 0.2)', border: 'rgb(255, 206, 86)' },
+  { background: 'rgba(255, 159, 64, 0.2)', border: 'rgb(255, 159, 64)' },
+  { background: 'rgba(67, 56, 202, 0.2)', border: 'rgb(67, 56, 202)' },
+  { background: 'rgba(14, 116, 144, 0.2)', border: 'rgb(14, 116, 144)' },
+  { background: 'rgba(162, 28, 175, 0.2)', border: 'rgb(162, 28, 175)' },
+  { background: 'rgba(75, 192, 192, 0.2)', border: 'rgb(75, 192, 192)' },
+  { background: 'rgba(201, 203, 207, 0.2)', border: 'rgb(201, 203, 207)' },
+]
 
 let ext
 let ctx
@@ -11,10 +26,12 @@ const defaults = () => ({
   scope: {},
   ranking: { titleWeight: 8, headingWeight: 5, contentWeight: 1, phraseBoost: 4, exactTitleBoost: 6, freshnessWeight: 20, freshnessHalfLifeDays: 365, nativeWeight: 2, docTypeWeights: {} },
   behavior: { commandKShortcut: true, slashShortcut: true, minChars: 2, maxResults: 30, groupLimit: 8 },
+  analytics: { enabled: false, retentionDays: 90, anonymizeIp: true, respectDoNotTrack: true, excludeBots: true, requireConsent: false, deniedUserAgents: [...DEFAULT_DENIED_USER_AGENTS], deniedIpRanges: [], excludedPaths: [] },
   appearance: { theme: 'auto', highlightColor: '', fontFamily: '', position: 'bottom-right', launcherStyle: 'flat', mount: '', offset: { top: 20, right: 20, bottom: 20, left: 20 }, width: 420, dialogWidth: 760 },
   hosting: { allowedOrigins: [], requestsPerMinute: 120 },
 })
 const clone = value => JSON.parse(JSON.stringify(value))
+const DEFAULT_DENIED_USER_AGENTS = ['bytespider', 'gptbot', 'claudebot', 'amazonbot', 'imagesiftbot', 'semrushbot', 'dotbot', 'dataforseobot', 'whatsapp bot', 'petalbot']
 const SCOPE_FIELDS = ['category', 'docType', 'status', 'locale', 'product', 'versions', 'tags']
 const SYSTEM_FONT = "Inter, 'Inter Fallback', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'"
 const palettes = {
@@ -47,7 +64,8 @@ const DeleteSearchDialog = {
             <div class="overflow-hidden rounded-lg border text-sm" :class="$styles.chromeBorder">
               <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="$styles.chromeBorder"><span>Search configuration and widget ID</span><b>1</b></div>
               <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="$styles.chromeBorder"><span>Published widget deployment</span><b>{{ item?.published ? 1 : 0 }}</b></div>
-              <div class="flex items-center justify-between gap-4 px-3 py-2.5"><span>Retained customer searches</span><b>{{ Number(item?.searchCount || 0).toLocaleString() }}</b></div>
+              <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="$styles.chromeBorder"><span>Retained customer searches</span><b>{{ Number(item?.searchCount || 0).toLocaleString() }}</b></div>
+              <div class="flex items-center justify-between gap-4 px-3 py-2.5"><span>Retained page views</span><b>{{ Number(item?.pageViewCount || 0).toLocaleString() }}</b></div>
             </div>
             <label for="delete-search-confirmation" class="mt-5 block text-sm font-medium">Type <strong>{{ item?.name }}</strong> to confirm</label>
             <input id="delete-search-confirmation" type="text" :value="modelValue" @input="$emit('update:modelValue', $event.target.value)" :disabled="busy"
@@ -80,23 +98,72 @@ export const SearchesPanel = {
       <div data-tag="SearchesPanel" class="space-y-5 pb-8">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div><h2 class="text-lg font-semibold">Website Search</h2><p class="mt-1 text-sm" :class="$styles.muted">Publish a model-free documentation Search widget backed by this File Store's local index.</p></div>
-          <div class="flex gap-2">
-            <button v-if="draft?.id" type="button" @click="toggleSearches" class="rounded-md px-3 py-1.5 text-sm" :class="$styles.secondaryButton">{{ showSearches ? 'Hide Searches' : 'View Searches' }} ({{ Number(draft.searchCount || 0).toLocaleString() }})</button>
+          <div v-if="!editing" class="flex gap-2">
             <button type="button" @click="rebuild" :disabled="rebuilding" class="rounded-md px-3 py-1.5 text-sm font-medium" :class="$styles.secondaryButton">{{ rebuilding ? 'Queueing…' : 'Rebuild index' }}</button>
             <button type="button" @click="newWidget" class="rounded-md px-3 py-1.5 text-sm font-semibold" :class="$styles.primaryButton">New Search</button>
           </div>
         </div>
         <DeleteSearchDialog :open="deleteOpen" :busy="deleteBusy" :item="draft" v-model="deleteConfirmation" @close="closeDelete" @confirm="deletePermanently" />
 
-        <section v-if="showSearches && draft?.id" class="overflow-hidden rounded-xl border" :class="$styles.chromeBorder">
-          <div class="flex flex-wrap items-start justify-between gap-3 border-b px-5 py-4" :class="$styles.chromeBorder">
-            <div><h3 class="font-semibold">Customer searches</h3><p class="mt-1 text-xs" :class="$styles.muted">Related wording is grouped into search intents so demand and missing content are easier to measure.</p></div>
-            <button type="button" @click="loadSearchAnalytics" :disabled="searchesLoading" title="Refresh searches" aria-label="Refresh searches" class="rounded p-1 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:hover:bg-gray-800" :class="$styles.muted"><svg class="size-4" :class="{'animate-spin':searchesLoading}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" /></svg></button>
+        <div v-if="editing" class="flex items-end justify-between gap-4 border-b" :class="$styles.chromeBorder">
+          <nav class="flex min-w-0 gap-5" aria-label="Search sections">
+            <button v-for="section in searchSections" :key="section.value" type="button" @click="selectSearchSection(section.value)" :disabled="section.value !== 'edit' && !draft?.id" class="-mb-px border-b-2 px-0.5 pb-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-40" :class="activeSection === section.value ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : ['border-transparent',$styles.muted]">{{section.label}}</button>
+          </nav>
+          <button type="button" @click="close" class="shrink-0 pb-2 text-sm font-medium" :class="$styles.muted">Close Search</button>
+        </div>
+
+        <section v-if="activeSection !== 'edit' && draft?.id" class="overflow-hidden rounded-xl border" :class="$styles.chromeBorder">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4" :class="$styles.chromeBorder">
+            <p class="text-xs" :class="$styles.muted">{{activeSection === 'analytics' ? 'Analyze first-party website traffic collected by this Search widget.' : 'Related wording is grouped into search intents so demand and missing content are easier to measure.'}}</p>
+            <div class="flex items-center gap-2">
+              <button v-if="activeSection === 'analytics' && analyticsEnabled" type="button" @click="setTrafficAnalytics(false)" :disabled="analyticsBusy || saving" class="rounded-md border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30">{{analyticsBusy ? 'Disabling…' : 'Disable Analytics'}}</button>
+              <button type="button" @click="loadSearchAnalytics" :disabled="searchesLoading" title="Refresh searches" aria-label="Refresh searches" class="rounded p-1 transition-colors hover:bg-gray-100 disabled:opacity-50 dark:hover:bg-gray-800" :class="$styles.muted"><svg class="size-4" :class="{'animate-spin':searchesLoading}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" /></svg></button>
+            </div>
           </div>
-          <div v-if="searchesLoading && !searchAnalytics" class="p-8 text-center text-sm" :class="$styles.muted">Loading customer searches…</div>
+          <div v-if="searchesLoading && !searchAnalytics" class="p-8 text-center text-sm" :class="$styles.muted">Loading {{activeSection === 'analytics' ? 'website analytics' : 'customer searches'}}…</div>
           <template v-else-if="searchAnalytics">
-            <div class="grid grid-cols-2 gap-px border-b bg-gray-200 sm:grid-cols-3 xl:grid-cols-6 dark:bg-gray-700" :class="$styles.chromeBorder">
-              <div v-for="metric in searchMetrics" :key="metric.label" class="bg-white px-4 py-3 dark:bg-gray-950"><div class="text-xs uppercase tracking-wide" :class="$styles.muted">{{ metric.label }}</div><div class="mt-1 text-xl font-semibold tabular-nums">{{ metric.value }}</div></div>
+            <div v-if="activeSection === 'analytics'" class="p-5">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div><h4 class="font-semibold">Website traffic</h4><p class="mt-1 text-xs" :class="$styles.muted">Optional page-view analytics captured by this Search widget on every page where it is embedded.</p></div>
+                <div class="flex rounded-md border p-0.5" :class="$styles.chromeBorder"><button v-for="range in trafficRanges" :key="range.value" type="button" @click="selectTrafficPeriod(range.value)" class="rounded px-2.5 py-1 text-xs font-medium" :class="trafficPeriod === range.value ? $styles.primaryButton : $styles.muted">{{range.label}}</button></div>
+              </div>
+              <div v-if="!analyticsEnabled" class="mt-4 rounded-lg border border-dashed p-5 text-center"><p class="text-sm" :class="$styles.muted">Traffic analytics is off. Search queries and result clicks are still measured independently.</p><button type="button" @click="setTrafficAnalytics(true)" :disabled="analyticsBusy || saving" class="mt-3 rounded-md px-3 py-1.5 text-sm font-semibold disabled:opacity-50" :class="$styles.primaryButton">{{analyticsBusy ? 'Enabling…' : 'Capture Analytics'}}</button></div>
+              <template v-if="searchAnalytics.traffic">
+                <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7"><div v-for="metric in trafficMetrics" :key="metric.label" class="rounded-lg border p-3" :class="$styles.chromeBorder"><div class="text-xs uppercase tracking-wide" :class="$styles.muted">{{metric.label}}</div><div class="mt-1 text-xl font-semibold tabular-nums">{{metric.value}}</div></div></div>
+                <div class="mt-4 h-72 rounded-lg border p-3" :class="$styles.chromeBorder"><canvas ref="trafficChart"></canvas></div>
+                <div class="mt-4 grid items-stretch gap-4 lg:h-[32rem] lg:grid-cols-3">
+                  <div class="flex min-h-0 flex-col overflow-hidden rounded-lg border" :class="$styles.chromeBorder"><div class="border-b px-3 py-2 text-xs font-semibold uppercase tracking-wide" :class="[$styles.chromeBorder,$styles.muted]">Top pages</div><div class="min-h-0 flex-1 overflow-y-auto"><div v-for="item in searchAnalytics.traffic.topPages" :key="item.path" class="flex items-start justify-between gap-3 border-b px-3 py-2.5 last:border-b-0" :class="$styles.chromeBorder"><div class="min-w-0"><a v-if="item.url" :href="item.url" target="_blank" rel="noopener noreferrer" class="block truncate text-sm font-medium hover:underline" :title="item.title || item.path">{{item.title || item.path}}</a><div v-else class="truncate text-sm font-medium">{{item.title || item.path}}</div><div class="truncate text-xs" :class="$styles.muted">{{item.path}} · {{item.visitors}} visitors</div></div><b class="text-sm tabular-nums">{{item.views}}</b></div><p v-if="!searchAnalytics.traffic.topPages?.length" class="p-5 text-center text-sm" :class="$styles.muted">No page views yet.</p></div></div>
+                  <div class="flex min-h-0 flex-col overflow-hidden rounded-lg border" :class="$styles.chromeBorder"><div class="border-b px-3 py-2 text-xs font-semibold uppercase tracking-wide" :class="[$styles.chromeBorder,$styles.muted]">Top referrers</div><div class="min-h-0 flex-1 overflow-y-auto"><div v-for="item in searchAnalytics.traffic.topReferrers" :key="item.value" class="flex items-center justify-between gap-3 border-b px-3 py-2.5 text-sm last:border-b-0" :class="$styles.chromeBorder"><span class="min-w-0 truncate" :title="item.value">{{trafficLabel(item.value)}}</span><b class="tabular-nums">{{item.count}}</b></div><p v-if="!searchAnalytics.traffic.topReferrers?.length" class="p-5 text-center text-sm" :class="$styles.muted">No external referrers yet.</p></div></div>
+                  <div class="flex min-h-0 flex-col overflow-hidden rounded-lg border" :class="$styles.chromeBorder"><div class="border-b px-3 py-2 text-xs font-semibold uppercase tracking-wide" :class="[$styles.chromeBorder,$styles.muted]">Audience</div><div class="min-h-0 flex-1 overflow-y-auto"><div v-for="group in audienceGroups" :key="group.label" class="border-b p-3 last:border-b-0" :class="$styles.chromeBorder"><div class="mb-2 text-xs font-semibold uppercase tracking-wide" :class="$styles.muted">{{group.label}}</div><div class="flex flex-wrap gap-1.5"><span v-for="item in group.items.slice(0,6)" :key="item.value" class="rounded-full border px-2 py-0.5 text-xs" :class="$styles.chromeBorder">{{item.value}} <b>{{item.count}}</b></span><span v-if="!group.items.length" class="text-xs" :class="$styles.muted">No data</span></div></div></div></div>
+                </div>
+                <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                  <div v-for="group in geographyGroups" :key="group.label" class="overflow-hidden rounded-lg border" :class="$styles.chromeBorder">
+                    <div class="border-b px-3 py-2 text-xs font-semibold uppercase tracking-wide" :class="[$styles.chromeBorder,$styles.muted]">{{group.label}}</div>
+                    <div class="max-h-56 overflow-y-auto"><div v-for="item in group.items" :key="item.value" class="flex items-center justify-between gap-3 border-b px-3 py-2.5 text-sm last:border-b-0" :class="$styles.chromeBorder"><span class="min-w-0 truncate" :title="item.value">{{item.value}}</span><b class="tabular-nums">{{item.count}}</b></div><p v-if="!group.items.length" class="p-5 text-center text-sm" :class="$styles.muted">No resolved data.</p></div>
+                  </div>
+                </div>
+                <div class="mt-4 overflow-hidden rounded-lg border" :class="$styles.chromeBorder">
+                  <div class="flex items-center justify-between gap-3 border-b px-3 py-2" :class="$styles.chromeBorder">
+                    <div class="text-xs font-semibold uppercase tracking-wide" :class="$styles.muted">Recent visitors</div>
+                    <div v-if="visitorTotal" class="flex items-center gap-2 text-xs" :class="$styles.muted">
+                      <span class="tabular-nums">{{visitorStart}}–{{visitorEnd}} of {{visitorTotal.toLocaleString()}}</span>
+                      <button type="button" @click="previousVisitors" :disabled="!canPreviousVisitors || searchesLoading" title="Previous visitors" aria-label="Previous visitors" class="rounded p-1 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-gray-800"><svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12.5 15-5-5 5-5" /></svg></button>
+                      <button type="button" @click="nextVisitors" :disabled="!canNextVisitors || searchesLoading" title="Next visitors" aria-label="Next visitors" class="rounded p-1 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-30 dark:hover:bg-gray-800"><svg class="size-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7.5 5 5 5-5 5" /></svg></button>
+                    </div>
+                  </div>
+                  <div class="overflow-x-auto">
+                    <table class="min-w-full border-separate border-spacing-0 text-left text-sm">
+                      <thead><tr class="text-xs uppercase tracking-wide" :class="$styles.muted"><th class="whitespace-nowrap border-b px-3 py-2 font-semibold" :class="$styles.chromeBorder">IP address</th><th class="border-b px-3 py-2 font-semibold" :class="$styles.chromeBorder">Location</th><th class="border-b px-3 py-2 font-semibold" :class="$styles.chromeBorder">Network</th><th class="border-b px-3 py-2 font-semibold" :class="$styles.chromeBorder">Page</th><th class="whitespace-nowrap border-b px-3 py-2 text-right font-semibold" :class="$styles.chromeBorder">Seen</th></tr></thead>
+                      <tbody><tr v-for="item in searchAnalytics.traffic.recentPageViews" :key="item.createdAt + ':' + item.ipAddress + ':' + item.pagePath"><td class="whitespace-nowrap border-b px-3 py-2.5 align-top font-mono text-xs" :class="$styles.chromeBorder">{{item.ipAddress || ''}}</td><td class="min-w-48 border-b px-3 py-2.5 align-top" :class="$styles.chromeBorder"><div v-if="geoLocation(item)" class="font-medium">{{geoLocation(item)}}</div><div v-if="geoDetails(item)" class="mt-0.5 text-xs" :class="$styles.muted">{{geoDetails(item)}}</div></td><td class="min-w-44 border-b px-3 py-2.5 align-top" :class="$styles.chromeBorder"><div v-if="item.organization" class="font-medium">{{item.organization}}</div><div v-if="item.asn" class="mt-0.5 text-xs" :class="$styles.muted">AS{{item.asn}}</div></td><td class="min-w-56 max-w-md border-b px-3 py-2.5 align-top" :class="$styles.chromeBorder"><a v-if="item.pageUrl" :href="item.pageUrl" target="_blank" rel="noopener noreferrer" class="block truncate font-medium hover:underline" :title="item.pageTitle || item.pagePath">{{item.pageTitle || item.pagePath || item.pageUrl}}</a><div v-if="item.pagePath" class="mt-0.5 truncate text-xs" :class="$styles.muted">{{item.pagePath}}</div></td><td class="whitespace-nowrap border-b px-3 py-2.5 text-right align-top text-xs" :class="[$styles.chromeBorder,$styles.muted]"><time :datetime="item.createdAt" :title="formatSearchDate(item.createdAt)">{{formatRelativeTime(item.createdAt)}}</time></td></tr></tbody>
+                    </table>
+                    <p v-if="!searchAnalytics.traffic.recentPageViews?.length" class="p-6 text-center text-sm" :class="$styles.muted">No page views have been recorded for this period.</p>
+                  </div>
+                </div>
+              </template>
+            </div>
+            <template v-if="activeSection === 'searches'">
+            <div class="grid grid-cols-2 gap-3 border-b p-5 sm:grid-cols-3 xl:grid-cols-6" :class="$styles.chromeBorder">
+              <div v-for="metric in searchMetrics" :key="metric.label" class="rounded-lg border p-3" :class="$styles.chromeBorder"><div class="text-xs uppercase tracking-wide" :class="$styles.muted">{{ metric.label }}</div><div class="mt-1 text-xl font-semibold tabular-nums">{{ metric.value }}</div></div>
             </div>
             <div class="border-b" :class="$styles.chromeBorder">
               <div class="border-b bg-gray-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide dark:bg-gray-900" :class="[$styles.chromeBorder,$styles.muted]">Popular documents</div>
@@ -128,10 +195,12 @@ export const SearchesPanel = {
                 </div>
               </div>
             </div>
+            </template>
           </template>
         </section>
 
-        <div class="grid gap-3 sm:grid-cols-4">
+        <div v-if="!editing" class="rounded-lg border px-4 py-3" :class="[statusCards[0].health.tone,$styles.chromeBorder]"><div class="flex items-center justify-between gap-3"><div><b>{{statusCards[0].health.label}}</b><p class="mt-0.5 text-xs" :class="$styles.muted">{{statusCards[0].health.detail}}</p></div><span class="size-2.5 shrink-0 rounded-full" :class="statusCards[0].health.dot"></span></div><div v-if="index.errors?.length" class="mt-3 space-y-1 border-t pt-3 text-xs" :class="$styles.chromeBorder"><div v-for="error in index.errors" :key="error.documentId" class="truncate" :title="error.error"><b>{{error.name || ('Document ' + error.documentId)}}</b>: {{error.error}}</div></div></div>
+        <div v-if="!editing" class="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
           <div v-for="item in statusCards" :key="item.label" class="rounded-lg border p-3" :class="$styles.chromeBorder"><div class="text-xs uppercase tracking-wide" :class="$styles.muted">{{item.label}}</div><div class="mt-1 text-xl font-semibold tabular-nums">{{item.value}}</div></div>
         </div>
 
@@ -143,10 +212,9 @@ export const SearchesPanel = {
           <p v-if="!widgets.length" class="rounded-lg border p-8 text-center text-sm" :class="[$styles.chromeBorder,$styles.muted]">No Search widgets yet. The local index is still maintained automatically.</p>
         </div>
 
-        <div v-else class="space-y-5">
+        <div v-if="editing && activeSection === 'edit'" class="space-y-5">
           <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,0.8fr)]">
           <form @submit.prevent class="space-y-5 rounded-xl border p-5" :class="$styles.chromeBorder">
-            <div class="flex flex-wrap items-center justify-between gap-2"><h3 class="font-semibold">{{draft.id ? 'Edit Search' : 'New Search'}}</h3><button type="button" @click="close" class="text-sm" :class="$styles.muted">Close</button></div>
             <div class="flex flex-wrap items-end justify-between gap-3">
               <label class="block min-w-0 flex-1 text-sm font-medium">Name<input type="text" v-model="draft.name" :disabled="archived" required maxlength="200" class="mt-1 block w-full rounded-md px-3 py-2 disabled:opacity-60" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"></label>
               <div class="flex flex-wrap gap-2">
@@ -176,6 +244,17 @@ export const SearchesPanel = {
             </section>
             <label class="block text-sm font-medium">Results per page<input v-model.number="draft.config.behavior.maxResults" type="number" min="5" max="100" class="mt-1 block w-full rounded-md px-3 py-2" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"></label>
             <section class="rounded-lg border p-4 space-y-3" :class="$styles.chromeBorder"><div><h3 class="font-semibold">Document scope</h3><p class="text-xs" :class="$styles.muted">These filters are enforced by the server and cannot be changed by the host website.</p></div><div class="grid sm:grid-cols-2 gap-3"><div v-for="field in scopeFields" :key="field"><label class="block text-xs font-semibold">{{field}}</label><select v-model="draft.config.scope[field]" class="mt-1 w-full rounded-md" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"><option value="">Any value</option><option v-for="x in facetOptions(field)" :key="x.value" :value="x.value">{{x.value}} ({{x.count}})</option></select></div></div><p class="text-xs font-mono break-all" :class="$styles.muted">{{scopeSummary}}</p></section>
+            <section class="space-y-4 rounded-lg border p-4" :class="$styles.chromeBorder">
+              <div><h3 class="font-semibold">Analytics & privacy</h3><p class="text-xs" :class="$styles.muted">Controls optional website traffic capture. Traffic exclusions also omit matching customer searches and result clicks.</p></div>
+              <label class="block text-sm font-medium">Retention<select v-model.number="draft.config.analytics.retentionDays" class="mt-1 block w-full rounded-md px-3 py-2" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"><option :value="30">30 days</option><option :value="90">90 days</option><option :value="180">180 days</option><option :value="365">1 year</option><option :value="730">2 years</option></select></label>
+              <div class="grid gap-2 sm:grid-cols-2"><label class="inline-flex items-center gap-2 text-sm"><CheckBox v-model="draft.config.analytics.anonymizeIp"/> Anonymize IP addresses</label><label class="inline-flex items-center gap-2 text-sm"><CheckBox v-model="draft.config.analytics.respectDoNotTrack"/> Respect Do Not Track</label><label class="inline-flex items-center gap-2 text-sm"><CheckBox v-model="draft.config.analytics.excludeBots"/> Exclude known bots</label><label class="inline-flex items-center gap-2 text-sm"><CheckBox v-model="draft.config.analytics.requireConsent"/> Require consent callback</label></div>
+              <div class="grid gap-4 lg:grid-cols-2">
+                <label class="block text-sm font-medium">Denied user agents <span class="font-normal" :class="$styles.muted">(one substring per line)</span><textarea v-model.lazy="deniedUserAgents" rows="6" spellcheck="false" class="mt-1 block w-full rounded-md px-3 py-2 font-mono text-xs" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"></textarea><span class="mt-1 block text-xs" :class="$styles.muted">Case-insensitive. Disable known-bot detection to rely only on this editable list.</span></label>
+                <div><label class="block text-sm font-medium">Denied IP ranges <span class="font-normal" :class="$styles.muted">(one per line)</span><textarea v-model.lazy="deniedIpRanges" rows="6" spellcheck="false" placeholder="203.0.113.8&#10;114.119.*&#10;2001:db8::/32" class="mt-1 block w-full rounded-md px-3 py-2 font-mono text-xs" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"></textarea></label><div class="mt-1 flex items-center justify-between gap-3"><span class="text-xs" :class="$styles.muted">Exact IPv4/IPv6, CIDR, or trailing IPv4 wildcards.</span><button v-if="draft.requestIp" type="button" @click="excludeCurrentIp" class="shrink-0 text-xs font-medium underline" :class="$styles.muted">Exclude {{draft.requestIp}}</button></div></div>
+              </div>
+              <label class="block text-sm font-medium">Excluded page paths <span class="font-normal" :class="$styles.muted">(one glob per line)</span><textarea v-model.lazy="excludedPaths" rows="4" spellcheck="false" placeholder="/admin/*&#10;/health&#10;/preview/*" class="mt-1 block w-full rounded-md px-3 py-2 font-mono text-xs" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"></textarea><span class="mt-1 block text-xs" :class="$styles.muted"><code>*</code> matches any text and <code>?</code> matches one character. Query strings are ignored.</span></label>
+              <button v-if="draft.id" type="button" @click="purgeAnalytics" :disabled="analyticsBusy" class="rounded-md border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30">Clear retained analytics</button>
+            </section>
             <label class="block text-sm font-medium">Allowed origins <span class="font-normal" :class="$styles.muted">(one per line; empty allows all)</span><textarea v-model="origins" rows="3" class="mt-1 block w-full rounded-md px-3 py-2 font-mono text-xs" :class="[$styles.bgInput,$styles.textInput,$styles.borderInput]"></textarea></label>
             <div class="flex flex-wrap items-center justify-between gap-3 border-t pt-4" :class="$styles.chromeBorder">
               <div class="flex flex-wrap gap-x-5 gap-y-2"><label class="inline-flex items-center gap-2 text-sm"><CheckBox v-model="draft.config.behavior.commandKShortcut"/> Open with <kbd>Ctrl/⌘ K</kbd></label><label class="inline-flex items-center gap-2 text-sm"><CheckBox v-model="draft.config.behavior.slashShortcut"/> Open with <kbd>/</kbd></label></div>
@@ -187,6 +266,8 @@ export const SearchesPanel = {
                 <div class="relative"><textarea readonly rows="3" :value="draft.embedCode" class="w-full rounded-md border bg-gray-50 px-2.5 py-1.5 pr-9 font-mono text-xs font-normal dark:bg-gray-950" :class="$styles.chromeBorder"></textarea><button type="button" @click="copyEmbed" class="absolute right-2 top-2 rounded p-1 text-gray-500 hover:bg-black/5 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200" :title="copiedEmbed ? 'Copied to clipboard' : 'Copy embed code'"><svg v-if="copiedEmbed" class="size-4 text-green-600 dark:text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="m9.55 18l-5.7-5.7l1.425-1.425L9.55 15.15l9.175-9.175L20.15 7.4z"/></svg><svg v-else xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24"><path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2m0 16H8V7h11z"/></svg></button></div>
                 <div class="flex gap-2"><button type="button" @click="save(false)" :disabled="saving" class="rounded-md border px-3 py-1.5 text-sm hover:bg-gray-50 disabled:opacity-50 dark:hover:bg-gray-800" :class="$styles.secondaryButton">Unpublish</button><button type="button" @click="regenerate" :disabled="saving" class="rounded-md border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30">Regenerate ID</button></div>
               </template>
+              <button type="button" @click="copyEmbed(true)" class="rounded-md border px-3 py-1.5 text-sm" :class="$styles.secondaryButton">Run diagnostics</button>
+              <div v-if="draft.diagnostics" class="overflow-hidden rounded-md border text-xs" :class="$styles.chromeBorder"><div v-for="check in draft.diagnostics.checks" :key="check.name" class="flex gap-2 border-b px-3 py-2 last:border-b-0" :class="$styles.chromeBorder"><span class="mt-1 size-2 shrink-0 rounded-full" :class="check.status === 'pass' ? 'bg-green-500' : check.status === 'warn' ? 'bg-amber-500' : 'bg-red-500'"></span><div><b>{{check.name}}</b><div :class="$styles.muted">{{check.message}}</div></div></div></div>
               <div class="flex flex-wrap gap-2"><button v-if="archived" type="button" @click="restore" :disabled="saving" class="rounded-md px-3 py-1.5 text-sm font-medium disabled:opacity-50" :class="$styles.secondaryButton">Restore Search</button><button v-else type="button" @click="archive" :disabled="saving" class="rounded-md border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30">Archive search</button><button type="button" @click="openDelete" :disabled="saving" class="rounded-md border border-red-600 bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:border-red-700 hover:bg-red-700 disabled:opacity-50">Delete permanently</button></div>
             </section>
             <div class="flex flex-wrap items-center justify-end gap-2 border-t pt-4" :class="$styles.chromeBorder">
@@ -235,9 +316,17 @@ export const SearchesPanel = {
     const documentPreview = ref(null), previewLoading = ref(false)
     const previewInput = ref(null), previewResults = ref(null), previewDocumentBody = ref(null), selectedResult = ref(-1)
     const copiedEmbed = ref(false), deleteOpen = ref(false), deleteBusy = ref(false), deleteConfirmation = ref('')
-    const showSearches = ref(false), searchesLoading = ref(false), searchAnalytics = ref(null)
+    const activeSection = ref('edit'), searchesLoading = ref(false), searchAnalytics = ref(null)
+    const searchSections = computed(() => [
+      { value: 'edit', label: draft.value?.id ? 'Edit Search' : 'New Search' },
+      { value: 'searches', label: 'Customer searches' },
+      { value: 'analytics', label: 'Website Analytics' }])
+    const analyticsBusy = ref(false), trafficPeriod = ref('30d'), trafficChart = ref(null)
+    const visitorPage = ref(0), visitorPageSize = 10
+    const trafficRanges = [{ value: '1d', label: '24 hours' }, { value: '7d', label: '7 days' }, { value: '30d', label: '30 days' }, { value: '90d', label: '90 days' }]
+    let trafficChartInstance = null
     const savedSnapshot = ref('')
-    const formSnapshot = computed(() => JSON.stringify({ name:String(draft.value?.name || '').trim(), config:draft.value?.config || null }))
+    const formSnapshot = computed(() => JSON.stringify({ name: String(draft.value?.name || '').trim(), config: draft.value?.config || null }))
     const dirty = computed(() => formSnapshot.value !== savedSnapshot.value)
     const archived = computed(() => !!draft.value?.id && Number(draft.value.enabled) === 0)
     const canSaveDraft = computed(() => !archived.value && !!String(draft.value?.name || '').trim() && (dirty.value || !draft.value?.id))
@@ -278,25 +367,37 @@ export const SearchesPanel = {
     const previewItems = computed(() => testGroups.value.flatMap(group => (group.items || []).map(item => ({ item, group }))))
     const shortcutLabel = computed(() => commandKEnabled.value ? (isMac ? '⌘K' : 'Ctrl K') : slashOnly.value ? '/' : '')
     const rankingFields = [
-      { key:'titleWeight', label:'Title weight', hint:'Matches in the document title.' },
-      { key:'headingWeight', label:'Heading weight', hint:'Matches in section headings.' },
-      { key:'contentWeight', label:'Content weight', hint:'Matches in body text.' },
-      { key:'phraseBoost', label:'Exact phrase boost', hint:'Query words found together.' },
-      { key:'exactTitleBoost', label:'Exact title boost', hint:'The whole title equals the query.' },
-      { key:'freshnessWeight', label:'Freshness weight', hint:'Preference for recently updated sources.' },
+      { key: 'titleWeight', label: 'Title weight', hint: 'Matches in the document title.' },
+      { key: 'headingWeight', label: 'Heading weight', hint: 'Matches in section headings.' },
+      { key: 'contentWeight', label: 'Content weight', hint: 'Matches in body text.' },
+      { key: 'phraseBoost', label: 'Exact phrase boost', hint: 'Query words found together.' },
+      { key: 'exactTitleBoost', label: 'Exact title boost', hint: 'The whole title equals the query.' },
+      { key: 'freshnessWeight', label: 'Freshness weight', hint: 'Preference for recently updated sources.' },
     ]
     const rankingDocTypes = computed(() => [...new Set([
       ...facetOptions('docType').map(x => String(x.value)),
       ...Object.keys(draft.value?.config?.ranking?.docTypeWeights || {}),
-    ])].filter(Boolean).sort((a,b) => a.localeCompare(b)))
-    const scopeSummary = computed(() => Object.entries(draft.value?.config?.scope || {}).filter(([,value]) => value).map(([key,value]) => `${key} = ${value}`).join(' · ') || 'All documents in this File Store')
+    ])].filter(Boolean).sort((a, b) => a.localeCompare(b)))
+    const scopeSummary = computed(() => Object.entries(draft.value?.config?.scope || {}).filter(([, value]) => value).map(([key, value]) => `${key} = ${value}`).join(' · ') || 'All documents in this File Store')
     const origins = computed({ get: () => draft.value?.config.hosting.allowedOrigins.join('\n') || '', set: v => { if (draft.value) draft.value.config.hosting.allowedOrigins = String(v).split(/[,\n]/).map(x => x.trim()).filter(Boolean) } })
+    const analyticsList = key => computed({ get: () => draft.value?.config?.analytics?.[key]?.join('\n') || '', set: v => { if (draft.value) draft.value.config.analytics[key] = [...new Set(String(v).split(/\r?\n/).map(x => x.trim()).filter(Boolean))] } })
+    const deniedUserAgents = analyticsList('deniedUserAgents')
+    const deniedIpRanges = analyticsList('deniedIpRanges')
+    const excludedPaths = analyticsList('excludedPaths')
     const statusCards = computed(() => [
-      { label: 'Documents', value: Number(index.value.documents || 0).toLocaleString() },
+      { label: 'Documents', value: Number(index.value.documents || 0).toLocaleString(), health: indexHealth.value },
       { label: 'Indexed', value: Number(index.value.indexed || 0).toLocaleString() },
+      { label: 'Pending', value: Number(index.value.pending || 0).toLocaleString() },
+      { label: 'Failed', value: Number(index.value.failed || 0).toLocaleString() },
       { label: 'Sections', value: Number(index.value.sections || 0).toLocaleString() },
       { label: 'Provider', value: index.value.provider || '—' },
     ])
+    const indexHealth = computed(() => {
+      const failed = Number(index.value.failed || 0), pending = Number(index.value.pending || 0)
+      if (failed) return { label: 'Index needs attention', detail: `${failed} document${failed === 1 ? '' : 's'} failed indexing. Rebuild after correcting the source or parser error.`, dot: 'bg-red-500', tone: 'border-red-300 bg-red-50 dark:border-red-900 dark:bg-red-950/20' }
+      if (pending) return { label: 'Index is updating', detail: `${pending} document${pending === 1 ? '' : 's'} queued${index.value.oldestPendingAt ? ` since ${formatRelativeTime(index.value.oldestPendingAt)}` : ''}.`, dot: 'bg-amber-500', tone: 'border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20' }
+      return { label: 'Index healthy', detail: index.value.lastIndexedAt ? `Last indexed ${formatRelativeTime(index.value.lastIndexedAt)}.` : 'Ready for imported documents.', dot: 'bg-green-500', tone: 'border-green-300 bg-green-50 dark:border-green-900 dark:bg-green-950/20' }
+    })
     const searchMetrics = computed(() => [
       { label: 'Total searches', value: Number(searchAnalytics.value?.total || 0).toLocaleString() },
       { label: 'Result clicks', value: Number(searchAnalytics.value?.totalClicks || 0).toLocaleString() },
@@ -305,42 +406,167 @@ export const SearchesPanel = {
       { label: 'No results', value: Number(searchAnalytics.value?.noResults || 0).toLocaleString() },
       { label: 'Avg. results', value: Number(searchAnalytics.value?.averageResults || 0).toLocaleString() },
     ])
-    async function load() { const [list, status] = await Promise.all([ext.getJson(`/filestores/${props.storeId}/searches`), ext.getJson(`/filestores/${props.storeId}/search-index`)]); if (!list.error) { widgets.value = list.response || []; emit('count', widgets.value.filter(x => x.enabled !== 0).length) } if (!status.error) index.value = status.response || {}; if (props.routeSearch) { const found = widgets.value.find(x => String(x.id) === String(props.routeSearch)); if (found) edit(found) } }
+    const analyticsEnabled = computed(() => draft.value?.config?.analytics?.enabled === true)
+    const trafficMetrics = computed(() => {
+      const value = searchAnalytics.value?.traffic || {}
+      return [
+        { label: 'Page views', value: Number(value.pageViews || 0).toLocaleString() },
+        { label: 'Visitors', value: Number(value.visitors || 0).toLocaleString() },
+        { label: 'New visitors', value: Number(value.newVisitors || 0).toLocaleString() },
+        { label: 'Sessions', value: Number(value.sessions || 0).toLocaleString() },
+        { label: 'Pages/session', value: Number(value.pagesPerSession || 0).toLocaleString() },
+        { label: 'Bounce rate', value: `${Number(value.bounceRate || 0).toLocaleString()}%` },
+        { label: 'Avg. load', value: value.averageLoadMs ? `${Number(value.averageLoadMs).toLocaleString()} ms` : '—' },
+      ]
+    })
+    const visitorTotal = computed(() => Number(searchAnalytics.value?.traffic?.recentTotal ?? searchAnalytics.value?.traffic?.pageViews ?? 0))
+    const visitorRows = computed(() => searchAnalytics.value?.traffic?.recentPageViews || [])
+    const visitorStart = computed(() => visitorRows.value.length ? visitorPage.value * visitorPageSize + 1 : 0)
+    const visitorEnd = computed(() => visitorPage.value * visitorPageSize + visitorRows.value.length)
+    const canPreviousVisitors = computed(() => visitorPage.value > 0)
+    const canNextVisitors = computed(() => visitorEnd.value < visitorTotal.value)
+    const audienceGroups = computed(() => {
+      const value = searchAnalytics.value?.traffic || {}
+      return [
+        { label: 'Devices', items: value.devices || [] },
+        { label: 'Languages', items: value.languages || [] },
+        { label: 'Timezones', items: value.timezones || [] },
+        { label: 'Platforms', items: value.platforms || [] },
+        { label: 'Connections', items: value.connections || [] },
+        { label: 'Campaigns', items: value.campaigns || [] },
+      ]
+    })
+    const geographyGroups = computed(() => {
+      const value = searchAnalytics.value?.traffic || {}
+      return [
+        { label: 'Countries', items: value.countries || [] },
+        { label: 'Regions', items: value.regions || [] },
+        { label: 'Cities', items: value.cities || [] },
+        { label: 'Networks', items: value.organizations || [] },
+      ]
+    })
+    const geoLocation = item => [...new Set([item?.city, item?.region, item?.country].filter(Boolean))].join(', ')
+    const geoDetails = item => {
+      const coordinates = item?.latitude != null && item?.longitude != null ? `${item.latitude}, ${item.longitude}` : ''
+      return [item?.countryCode, item?.postalCode, item?.timeZone, coordinates].filter(Boolean).join(' · ')
+    }
+    async function load() { const [list, status] = await Promise.all([ext.getJson(`/filestores/${props.storeId}/searches`), ext.getJson(`/filestores/${props.storeId}/search-index`)]); if (!list.error) { widgets.value = list.response || []; emit('count', widgets.value.filter(x => x.enabled !== 0).length) } if (!status.error) index.value = status.response || {}; if (props.routeSearch && String(draft.value?.id || '') !== String(props.routeSearch)) { const found = widgets.value.find(x => String(x.id) === String(props.routeSearch)); if (found) edit(found) } }
     function markClean() { savedSnapshot.value = formSnapshot.value }
-    function clearSearchAnalytics() { showSearches.value = false; searchAnalytics.value = null }
-    function edit(widget) { if (draft.value?.id !== widget.id) clearSearchAnalytics(); draft.value = clone(widget); draft.value.config = { ...defaults(), ...draft.value.config, identity: { ...defaults().identity, ...draft.value.config?.identity }, scope: { ...draft.value.config?.scope }, ranking: { ...defaults().ranking, ...draft.value.config?.ranking, docTypeWeights: { ...draft.value.config?.ranking?.docTypeWeights } }, behavior: { ...defaults().behavior, ...draft.value.config?.behavior }, appearance: { ...defaults().appearance, ...draft.value.config?.appearance, offset: { ...defaults().appearance.offset, ...draft.value.config?.appearance?.offset } }, hosting: { ...defaults().hosting, ...draft.value.config?.hosting } }; markClean(); deleteOpen.value = false; deleteConfirmation.value = ''; emit('navigate', { search: widget.id }) }
-    function newWidget() { clearSearchAnalytics(); draft.value = { name: 'Documentation Search', published: false, enabled: 1, config: defaults() }; markClean(); deleteOpen.value = false; deleteConfirmation.value = ''; emit('navigate', { search: null }) }
-    function close() { clearSearchAnalytics(); draft.value = null; deleteOpen.value = false; deleteConfirmation.value = ''; emit('navigate', { search: null }) }
+    function destroyTrafficChart() { trafficChartInstance?.destroy(); trafficChartInstance = null }
+    function clearSearchAnalytics() { searchAnalytics.value = null; visitorPage.value = 0; destroyTrafficChart() }
+    function edit(widget, section = 'edit') { if (draft.value?.id !== widget.id) clearSearchAnalytics(); activeSection.value = section; draft.value = clone(widget); draft.value.config = { ...defaults(), ...draft.value.config, identity: { ...defaults().identity, ...draft.value.config?.identity }, scope: { ...draft.value.config?.scope }, ranking: { ...defaults().ranking, ...draft.value.config?.ranking, docTypeWeights: { ...draft.value.config?.ranking?.docTypeWeights } }, behavior: { ...defaults().behavior, ...draft.value.config?.behavior }, analytics: { ...defaults().analytics, ...draft.value.config?.analytics }, appearance: { ...defaults().appearance, ...draft.value.config?.appearance, offset: { ...defaults().appearance.offset, ...draft.value.config?.appearance?.offset } }, hosting: { ...defaults().hosting, ...draft.value.config?.hosting } }; markClean(); deleteOpen.value = false; deleteConfirmation.value = ''; emit('navigate', { search: widget.id }) }
+    function newWidget() { clearSearchAnalytics(); activeSection.value = 'edit'; draft.value = { name: 'Documentation Search', published: false, enabled: 1, config: defaults() }; markClean(); deleteOpen.value = false; deleteConfirmation.value = ''; emit('navigate', { search: null }) }
+    function close() { clearSearchAnalytics(); activeSection.value = 'edit'; draft.value = null; deleteOpen.value = false; deleteConfirmation.value = ''; emit('navigate', { search: null }) }
     async function loadSearchAnalytics() {
       if (!draft.value?.id) return
       searchesLoading.value = true
       try {
-        const api = await ext.getJson(`/searches/${draft.value.id}/analytics?groupTake=50&recentTake=100`)
+        const visitorSkip = visitorPage.value * visitorPageSize
+        const api = await ext.getJson(`/searches/${draft.value.id}/analytics?groupTake=50&recentTake=100&period=${trafficPeriod.value}&visitorSkip=${visitorSkip}&visitorTake=${visitorPageSize}`)
         if (api.error) return ext.setError(api.error)
         searchAnalytics.value = api.response || {}
         const count = Number(searchAnalytics.value.total || 0)
         draft.value.searchCount = count
-        widgets.value = widgets.value.map(x => x.id === draft.value.id ? { ...x, searchCount:count } : x)
+        widgets.value = widgets.value.map(x => x.id === draft.value.id ? { ...x, searchCount: count } : x)
+        await nextTick()
+        if (activeSection.value === 'analytics') renderTrafficChart()
       } finally { searchesLoading.value = false }
     }
-    async function toggleSearches() { showSearches.value = !showSearches.value; if (showSearches.value) await loadSearchAnalytics() }
+    async function selectSearchSection(section) {
+      if (section !== 'edit' && !draft.value?.id) return
+      activeSection.value = section
+      destroyTrafficChart()
+      if (section === 'analytics') visitorPage.value = 0
+      if (section !== 'edit') await loadSearchAnalytics()
+    }
     function formatSearchDate(value) { if (!value) return 'unknown'; const date = new Date(value); return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString() }
+    function formatRelativeTime(value) {
+      if (!value) return ''
+      const date = new Date(value)
+      if (Number.isNaN(date.getTime())) return String(value)
+      const seconds = Math.round((date.getTime() - Date.now()) / 1000)
+      const relative = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' })
+      const ranges = [[60, 'second', 1], [60, 'minute', 60], [24, 'hour', 3600], [30, 'day', 86400], [12, 'month', 2592000], [Infinity, 'year', 31536000]]
+      const absolute = Math.abs(seconds)
+      for (const [limit, unit, divisor] of ranges) {
+        const value = Math.round(seconds / divisor)
+        if (absolute < limit * divisor) return relative.format(value, unit)
+      }
+      return ''
+    }
     function searchSource(item) { const value = item?.pageUrl || item?.origin; if (!value) return ''; try { const url = new URL(value); return `${url.host}${url.pathname === '/' ? '' : url.pathname}` } catch (_) { return String(value) } }
-    async function save(published, extra={}) {
-      if (archived.value) return ext.setError({ message:'Restore this Search widget before editing or publishing it' })
+    function trafficLabel(value) { if (!value) return 'Direct'; try { const url = new URL(value); return url.host + (url.pathname === '/' ? '' : url.pathname) } catch (_) { return String(value) } }
+    function trafficBucketLabel(value) {
+      if (!value) return ''
+      const hourly = searchAnalytics.value?.traffic?.bucket === 'hour'
+      const date = new Date(hourly ? `${value}:00:00` : `${value}T00:00:00`)
+      return hourly ? date.toLocaleTimeString([], { hour: 'numeric' }) : date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+    }
+    function renderTrafficChart() {
+      destroyTrafficChart()
+      const timeline = searchAnalytics.value?.traffic?.timeline || []
+      if (!trafficChart.value || !timeline.length) return
+      const text = pageDark.value ? '#d1d5db' : '#4b5563'
+      const grid = pageDark.value ? 'rgba(156,163,175,.16)' : 'rgba(107,114,128,.14)'
+      trafficChartInstance = new Chart(trafficChart.value.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: timeline.map(x => trafficBucketLabel(x.bucket)), datasets: [
+            { label: 'Page views', data: timeline.map(x => x.pageViews), borderColor: colors[0].border, backgroundColor: colors[0].background, borderWidth: 1, fill: true, tension: .25, pointRadius: 2 },
+            { label: 'Visitors', data: timeline.map(x => x.visitors), borderColor: colors[1].border, backgroundColor: colors[1].background, borderWidth: 1, tension: .25, pointRadius: 2 },
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, plugins: { legend: { labels: { color: text } } }, scales: { x: { ticks: { color: text, maxTicksLimit: 12 }, grid: { color: grid } }, y: { beginAtZero: true, ticks: { color: text, precision: 0 }, grid: { color: grid } } } },
+      })
+    }
+    async function selectTrafficPeriod(value) { if (trafficPeriod.value === value) return; trafficPeriod.value = value; visitorPage.value = 0; await loadSearchAnalytics() }
+    async function previousVisitors() { if (!canPreviousVisitors.value || searchesLoading.value) return; visitorPage.value--; await loadSearchAnalytics() }
+    async function nextVisitors() { if (!canNextVisitors.value || searchesLoading.value) return; visitorPage.value++; await loadSearchAnalytics() }
+    async function setTrafficAnalytics(enabled) {
+      if (!draft.value?.id || archived.value) return
+      const previous = analyticsEnabled.value
+      draft.value.config.analytics.enabled = enabled
+      analyticsBusy.value = true
+      try {
+        const saved = await save(!!draft.value.published, { successMessage: enabled ? 'Website analytics enabled' : 'Website analytics disabled' })
+        if (!saved) draft.value.config.analytics.enabled = previous
+      } finally { analyticsBusy.value = false }
+    }
+    async function purgeAnalytics() {
+      if (!draft.value?.id || !confirm('Permanently clear all retained searches, clicks, and page views for this Search widget?')) return
+      analyticsBusy.value = true
+      try {
+        const api = await ext.postJson(`/searches/${draft.value.id}/analytics/clear`, {})
+        if (api.error) return ext.setError(api.error)
+        clearSearchAnalytics(); await loadSearchAnalytics(); await load()
+        ctx?.toast?.('Search analytics cleared')
+      } finally { analyticsBusy.value = false }
+    }
+    function excludeCurrentIp() {
+      const ip = String(draft.value?.requestIp || '').trim()
+      if (!ip) return
+      const values = draft.value.config.analytics.deniedIpRanges || (draft.value.config.analytics.deniedIpRanges = [])
+      if (!values.some(x => String(x).toLowerCase() === ip.toLowerCase())) values.push(ip)
+      ctx?.toast?.(`${ip} added to denied IP ranges`)
+    }
+    async function save(published, extra = {}) {
+      if (archived.value) return ext.setError({ message: 'Restore this Search widget before editing or publishing it' })
       const name = String(draft.value?.name || '').trim()
-      if (!name) return ext.setError({ message:'Name is required' })
+      if (!name) { ext.setError({ message: 'Name is required' }); return false }
       const existed = !!draft.value.id, wasPublished = !!draft.value.published
       saving.value = true
       try {
-        const body = { name, published, config:clone(draft.value.config), ...extra }
+        const { successMessage, ...requestExtra } = extra
+        const body = { name, published, config: clone(draft.value.config), ...requestExtra }
         const api = draft.value.id ? await ext.putJson(`/searches/${draft.value.id}`, body) : await ext.postJson(`/filestores/${props.storeId}/searches`, body)
-        if (api.error) return ext.setError(api.error)
+        if (api.error) { ext.setError(api.error); return false }
+        const section = activeSection.value
         await load()
         const fresh = widgets.value.find(x => x.id === api.response.id) || api.response
-        edit(fresh)
-        const message = extra.regeneratePublicId ? 'Search ID regenerated' : published ? (wasPublished ? 'Published Search updated' : 'Search published') : wasPublished ? 'Search unpublished' : existed ? 'Draft saved' : 'Draft created'
+        edit(fresh, section)
+        const message = successMessage || (requestExtra.regeneratePublicId ? 'Search ID regenerated' : published ? (wasPublished ? 'Published Search updated' : 'Search published') : wasPublished ? 'Search unpublished' : existed ? 'Draft saved' : 'Draft created')
         ctx?.toast?.(message)
+        return true
       } finally { saving.value = false }
     }
     async function archive() {
@@ -370,11 +596,11 @@ export const SearchesPanel = {
     async function rebuild() { rebuilding.value = true; try { const api = await ext.postJson(`/filestores/${props.storeId}/search-index/rebuild`, {}); if (api.error) return ext.setError(api.error); await load() } finally { rebuilding.value = false } }
     let testTimer = 0, testRequest = 0
     function mergeTestGroups(incoming) {
-      const groups = testGroups.value.map(group => ({ ...group, items:[...(group.items || [])] }))
+      const groups = testGroups.value.map(group => ({ ...group, items: [...(group.items || [])] }))
       const groupLimit = Number(draft.value?.config?.behavior?.groupLimit || 8)
       for (const incomingGroup of incoming || []) {
         let group = groups.find(x => String(x.documentId) === String(incomingGroup.documentId))
-        if (!group) { group = { ...incomingGroup, items:[] }; groups.push(group) }
+        if (!group) { group = { ...incomingGroup, items: [] }; groups.push(group) }
         const ids = new Set(group.items.map(x => String(x.id)))
         for (const item of incomingGroup.items || []) {
           if (group.items.length >= groupLimit) break
@@ -383,7 +609,7 @@ export const SearchesPanel = {
       }
       return groups
     }
-    async function testSearch(append=false) {
+    async function testSearch(append = false) {
       append = append === true
       const query = testQuery.value.trim()
       if (append && (!testHasMore.value || testLoadingMore.value)) return
@@ -418,7 +644,7 @@ export const SearchesPanel = {
       if (!item.previewUrl) return
       previewLoading.value = true; documentPreview.value = null
       try { const response = await fetch(item.previewUrl, { headers: { Accept: 'application/json' } }); if (!response.ok) throw new Error(`Document preview failed (${response.status})`); const data = await response.json(); documentPreview.value = { title: data.title || group.title, markdown: data.markdown || '' } }
-      catch (error) { ext.setError(error) } finally { previewLoading.value = false; await nextTick(); previewDocumentBody.value?.focus({ preventScroll:true }) }
+      catch (error) { ext.setError(error) } finally { previewLoading.value = false; await nextTick(); previewDocumentBody.value?.focus({ preventScroll: true }) }
     }
     function resultParts(item, field) {
       const parts = item?.[`${field}Parts`]
@@ -453,8 +679,8 @@ export const SearchesPanel = {
         && !/^(INPUT|TEXTAREA|SELECT)$/.test(event.target?.tagName || '') && !event.target?.isContentEditable
       if (commandK || slash) { openPreview(); event.preventDefault(); event.stopPropagation() }
     }
-    async function copyEmbed() { await navigator.clipboard.writeText(draft.value.embedCode); copiedEmbed.value = true; setTimeout(() => copiedEmbed.value = false, 2000) }
-    async function regenerate() { if (confirm('Regenerate the public ID? Existing embed codes will stop working.')) await save(true, { regeneratePublicId:true }) }
+    async function copyEmbed(diagnostics = false) { if (diagnostics === true) { const api = await ext.getJson(`/searches/${draft.value.id}/diagnostics`); if (api.error) return ext.setError(api.error); draft.value.diagnostics = api.response; return } await navigator.clipboard.writeText(draft.value.embedCode); copiedEmbed.value = true; setTimeout(() => copiedEmbed.value = false, 2000) }
+    async function regenerate() { if (confirm('Regenerate the public ID? Existing embed codes will stop working.')) await save(true, { regeneratePublicId: true }) }
     function openDelete() { if (!draft.value?.id) return; deleteConfirmation.value = ''; deleteOpen.value = true }
     function closeDelete() { if (deleteBusy.value) return; deleteOpen.value = false; deleteConfirmation.value = '' }
     async function deletePermanently() {
@@ -462,7 +688,7 @@ export const SearchesPanel = {
       deleteBusy.value = true
       let api
       try {
-        api = await ext.deleteJson(`/searches/${draft.value.id}/permanent`, { headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ confirm:deleteConfirmation.value }) })
+        api = await ext.deleteJson(`/searches/${draft.value.id}/permanent`, { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ confirm: deleteConfirmation.value }) })
       } finally { deleteBusy.value = false }
       if (api.error) return ext.setError(api.error)
       close()
@@ -474,16 +700,17 @@ export const SearchesPanel = {
     function resetHighlightColor() { draft.value.config.appearance.highlightColor = '' }
     function setFontFamily(value) { draft.value.config.appearance.fontFamily = String(value || '').replace(/[\x00-\x1f{};]/g, '').trim().slice(0, 300) }
     function resetFontFamily() { draft.value.config.appearance.fontFamily = '' }
-    function facetOptions(field) { return (props.facets?.[field]?.values || []).map(x => typeof x === 'object' ? x : { value:x, count:'' }) }
+    function facetOptions(field) { return (props.facets?.[field]?.values || []).map(x => typeof x === 'object' ? x : { value: x, count: '' }) }
     function docTypeWeight(docType) { return Number(draft.value?.config?.ranking?.docTypeWeights?.[docType] || 0) }
     function setDocTypeWeight(docType, value) { const weight = Math.min(50, Math.max(-20, Number(value) || 0)); const weights = draft.value.config.ranking.docTypeWeights; if (weight) weights[docType] = weight; else delete weights[docType] }
     function resetRanking() { draft.value.config.ranking = clone(defaults().ranking) }
     watch(testQuery, () => { clearTimeout(testTimer); selectedResult.value = -1; testTimer = setTimeout(testSearch, 180) })
-    watch(() => draft.value?.config?.ranking, () => { if (testQuery.value.trim()) { clearTimeout(testTimer); testTimer = setTimeout(testSearch, 180) } }, { deep:true })
+    watch(() => draft.value?.config?.ranking, () => { if (testQuery.value.trim()) { clearTimeout(testTimer); testTimer = setTimeout(testSearch, 180) } }, { deep: true })
+    watch(pageDark, () => nextTick(renderTrafficChart))
     const syncPageTheme = () => pageDark.value = (savedColorScheme() || (colorSchemeMedia.matches ? 'dark' : 'light')) === 'dark'
-    const onStorage = event => { if (event.key === 'color-scheme') syncPageTheme() }
+    const onStorage = event => { if (event.key === 'color-scheme') { syncPageTheme(); nextTick(renderTrafficChart) } }
     const themeObserver = new MutationObserver(syncPageTheme)
-    watch(() => props.storeId, load); onMounted(() => { load(); window.addEventListener('keydown', onKeydown, true); window.addEventListener('storage', onStorage); colorSchemeMedia.addEventListener?.('change', syncPageTheme); document.addEventListener('visibilitychange', syncPageTheme); themeObserver.observe(document.documentElement, { attributes:true, attributeFilter:['class','style'] }) }); onUnmounted(() => { clearTimeout(testTimer); window.removeEventListener('keydown', onKeydown, true); window.removeEventListener('storage', onStorage); colorSchemeMedia.removeEventListener?.('change', syncPageTheme); document.removeEventListener('visibilitychange', syncPageTheme); themeObserver.disconnect() })
-    return { widgets, draft, editing, saving, copiedEmbed, dirty, archived, canSaveDraft, canPublish, deleteOpen, deleteBusy, deleteConfirmation, index, rebuilding, testQuery, testGroups, testLoadingMore, previewOpen, documentPreview, previewLoading, previewInput, previewResults, previewDocumentBody, selectedResult, themes, isMac, origins, statusCards, showSearches, searchesLoading, searchAnalytics, searchMetrics, previewPalette, previewIsDark, previewDialogStyle, previewBorderStyle, previewMutedStyle, adminMatchStyle, previewMatchStyle, highlightColorValue, hasHighlightColor, fontFamily, hasFontFamily, previewResultStyle, previewSelectedStyle, previewLauncherStyle, previewLauncherIconStyle, shortcutLabel, rankingFields, rankingDocTypes, docTypeWeight, setDocTypeWeight, resetRanking, offsetSides:['top','right','bottom','left'], scopeFields:SCOPE_FIELDS, scopeSummary, facetOptions, edit, newWidget, close, save, archive, restore, rebuild, loadSearchAnalytics, toggleSearches, formatSearchDate, searchSource, testSearch, onPreviewResultsScroll, openPreview, openResult, resultParts, resultIndex, isSelected, selectResult, onPreviewInputKeydown, closeDocumentPreview, escapePreview, copyEmbed, regenerate, openDelete, closeDelete, deletePermanently, setHighlightColor, setHighlightColorText, resetHighlightColor, setFontFamily, resetFontFamily }
+    watch(() => props.storeId, load); onMounted(() => { load(); window.addEventListener('keydown', onKeydown, true); window.addEventListener('storage', onStorage); colorSchemeMedia.addEventListener?.('change', syncPageTheme); document.addEventListener('visibilitychange', syncPageTheme); themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] }) }); onUnmounted(() => { clearTimeout(testTimer); destroyTrafficChart(); window.removeEventListener('keydown', onKeydown, true); window.removeEventListener('storage', onStorage); colorSchemeMedia.removeEventListener?.('change', syncPageTheme); document.removeEventListener('visibilitychange', syncPageTheme); themeObserver.disconnect() })
+    return { widgets, draft, editing, activeSection, searchSections, selectSearchSection, saving, copiedEmbed, dirty, archived, canSaveDraft, canPublish, deleteOpen, deleteBusy, deleteConfirmation, index, rebuilding, testQuery, testGroups, testLoadingMore, previewOpen, documentPreview, previewLoading, previewInput, previewResults, previewDocumentBody, selectedResult, themes, isMac, origins, deniedUserAgents, deniedIpRanges, excludedPaths, excludeCurrentIp, statusCards, searchesLoading, searchAnalytics, searchMetrics, analyticsBusy, analyticsEnabled, trafficPeriod, trafficRanges, trafficChart, trafficMetrics, visitorTotal, visitorStart, visitorEnd, canPreviousVisitors, canNextVisitors, previousVisitors, nextVisitors, audienceGroups, geographyGroups, geoLocation, geoDetails, trafficLabel, selectTrafficPeriod, setTrafficAnalytics, purgeAnalytics, previewPalette, previewIsDark, previewDialogStyle, previewBorderStyle, previewMutedStyle, adminMatchStyle, previewMatchStyle, highlightColorValue, hasHighlightColor, fontFamily, hasFontFamily, previewResultStyle, previewSelectedStyle, previewLauncherStyle, previewLauncherIconStyle, shortcutLabel, rankingFields, rankingDocTypes, docTypeWeight, setDocTypeWeight, resetRanking, offsetSides: ['top', 'right', 'bottom', 'left'], scopeFields: SCOPE_FIELDS, scopeSummary, facetOptions, edit, newWidget, close, save, archive, restore, rebuild, loadSearchAnalytics, formatSearchDate, formatRelativeTime, searchSource, testSearch, onPreviewResultsScroll, openPreview, openResult, resultParts, resultIndex, isSelected, selectResult, onPreviewInputKeydown, closeDocumentPreview, escapePreview, copyEmbed, regenerate, openDelete, closeDelete, deletePermanently, setHighlightColor, setHighlightColorText, resetHighlightColor, setFontFamily, resetFontFamily }
   }
 }

@@ -16,6 +16,7 @@ public partial class GeminiExtension
         ctx.AddGet("filestores/{id}/assistants", ListAssistantsAsync);
         ctx.AddPost("filestores/{id}/assistants", CreateAssistantAsync);
         ctx.AddGet("assistants/{id}", GetAssistantAsync);
+        ctx.AddGet("assistants/{id}/diagnostics", AssistantDiagnosticsAsync);
         ctx.AddPut("assistants/{id}", UpdateAssistantAsync);
         ctx.AddGet("assistants/{id}/delete-summary", AssistantDeleteSummaryAsync);
         ctx.AddDelete("assistants/{id}", ArchiveAssistantAsync);
@@ -52,6 +53,35 @@ public partial class GeminiExtension
         var counts = db.AssistantConversationCounts(rows.Select(x => x.Id));
         return Task.FromResult<object?>(new JsonArray(rows
             .Select(x => (JsonNode)AssistantDto(x, req, counts.GetValueOrDefault(x.Id))).ToArray()));
+    }
+
+    Task<object?> AssistantDiagnosticsAsync(ChatRequestContext req)
+    {
+        var assistant = db.GetAssistant(IdOf(req), UserOf(req));
+        if (assistant == null) return Task.FromResult<object?>(ChatResult.NotFound("Assistant does not exist"));
+        var store = db.GetFilestore(assistant.FilestoreId, assistant.User);
+        var docs = db.QueryAllDocuments(assistant.FilestoreId, assistant.User).ToList();
+        var config = GeminiAssistants.NormalizeConfig(ChatJson.TryParseObject(assistant.Config));
+        var checks = new JsonArray();
+        void Add(string name, string status, string message) => checks.Add(new JsonObject
+            { ["name"] = name, ["status"] = status, ["message"] = message });
+        Add("Published", assistant.Enabled && assistant.PublishedAt != null ? "pass" : "fail",
+            assistant.Enabled && assistant.PublishedAt != null ? "The public Assistant deployment is enabled." : "Publish this Assistant before embedding it.");
+        Add("Public File Store", store?.Visibility == "public" ? "pass" : "fail",
+            store?.Visibility == "public" ? "Anonymous retrieval is enabled." : "The File Store must be public.");
+        var active = docs.Count(x => x.State == "STATE_ACTIVE");
+        var failed = docs.Count(x => x.State == "STATE_FAILED" || !string.IsNullOrEmpty(x.Error));
+        Add("Gemini knowledge", active > 0 ? failed > 0 ? "warn" : "pass" : "fail",
+            $"{active} active and {failed} failed documents.");
+        Add("Model", "pass", GeminiAssistants.ResolveModel(config,
+            Ctx.Feature.ResolveVariable("$GEMINI_ASSISTANT_MODEL") ?? "gemini-flash-latest"));
+        var origins = GeminiMetadata.AsList(config.GetObject("hosting")?["allowedOrigins"]);
+        Add("Allowed origins", origins.Count > 0 ? "pass" : "warn",
+            origins.Count > 0 ? $"Restricted to {origins.Count} configured origin(s)." : "All origins are currently allowed.");
+        Add("Widget endpoint", assistant.Enabled && assistant.PublishedAt != null ? "pass" : "fail",
+            AssistantBaseUrl(req).CombineWith($"ext/gemini/public/assistants/widget.js?g={assistant.PublicId}"));
+        return Task.FromResult<object?>(new JsonObject
+            { ["ready"] = checks.OfType<JsonObject>().All(x => x.GetString("status") != "fail"), ["checks"] = checks });
     }
 
     async Task<object?> CreateAssistantAsync(ChatRequestContext req)
@@ -379,15 +409,18 @@ public partial class GeminiExtension
         try
         {
             var (behavior, model, generation) = AssistantGeneration(store, history, config);
+            var strictGrounding = behavior.GetBool("grounded", true) && behavior.GetBool("strictGrounding", true);
             await foreach (var chunk in client.GenerateContentStreamAsync(model, generation))
             {
                 var delta = ResultText(chunk);
                 if (delta.Length > 0)
                 {
                     chunks.Append(delta);
-                    await WriteAsync(new JsonObject { ["delta"] = delta }).ConfigAwait();
+                    if (!strictGrounding)
+                        await WriteAsync(new JsonObject { ["delta"] = delta }).ConfigAwait();
                 }
-                foreach (var citation in ResultCitations(chunk, behavior.GetBool("citations", true)).OfType<JsonObject>())
+                foreach (var citation in ResultCitations(chunk,
+                             behavior.GetBool("citations", true) || strictGrounding).OfType<JsonObject>())
                 {
                     var key = $"{citation.GetString("title")}\u001f{citation.GetString("url")}";
                     // ResultCitations owns each node through its temporary JsonArray. Clone it
@@ -396,10 +429,11 @@ public partial class GeminiExtension
                 }
             }
             var answer = chunks.ToString().Trim();
-            if (answer.Length == 0) answer = behavior.GetString("fallback")!;
             citations = ResolveCitationUrls(citations, store, assistant.User);
+            (answer, citations) = GeminiAssistants.EnforceGrounding(answer, citations, behavior);
             db.AddAssistantMessage(conversation, "assistant", answer, citations);
-            if (chunks.Length == 0) await WriteAsync(new JsonObject { ["delta"] = answer }).ConfigAwait();
+            if (strictGrounding || chunks.Length == 0)
+                await WriteAsync(new JsonObject { ["delta"] = answer }).ConfigAwait();
             await WriteAsync(new JsonObject
             {
                 ["done"] = true, ["citations"] = citations, ["conversationId"] = conversation.Id,
@@ -448,9 +482,10 @@ public partial class GeminiExtension
         var (behavior, model, generation) = AssistantGeneration(store, messages, config);
         var result = await client.GenerateContentAsync(model, generation).ConfigAwait();
         var answer = ResultText(result).Trim();
-        if (answer.Length == 0) answer = behavior.GetString("fallback")!;
-        var citations = ResolveCitationUrls(ResultCitations(result, behavior.GetBool("citations", true)), store, assistant.User);
-        return (answer, citations);
+        var strictGrounding = behavior.GetBool("grounded", true) && behavior.GetBool("strictGrounding", true);
+        var citations = ResolveCitationUrls(ResultCitations(result,
+            behavior.GetBool("citations", true) || strictGrounding), store, assistant.User);
+        return GeminiAssistants.EnforceGrounding(answer, citations, behavior);
     }
 
     static string ResultText(JsonObject result)

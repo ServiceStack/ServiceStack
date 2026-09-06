@@ -27,6 +27,8 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
     }
     const hosts = launcherHost ? [host, launcherHost] : [host]
     const behavior = CONFIG.behavior || {}
+    const analytics = CONFIG.analytics || {}
+    const analyticsEnabled = CONFIG.analyticsEnabled === true && !!CONFIG.analyticsUrl
     const markdownParser = typeof MARKDOWN !== 'undefined' && typeof MARKDOWN?.parse === 'function' ? MARKDOWN : null
     const platform = navigator.userAgentData?.platform || navigator.platform || ''
     const isMac = /Mac|iPhone|iPad|iPod/i.test(platform)
@@ -187,6 +189,90 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
     let activeQuery = '', activeSearchEventId = null, nextSkip = 0, hasMore = false, loadingMore = false
     const recentKey = `gemini-search:${CONFIG.searchId}:recent`
     const recentLimit = 8
+
+    const analyticsId = () => {
+        try { return crypto.randomUUID() }
+        catch (_) { return `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}` }
+    }
+    const analyticsIdentity = () => {
+        const clientKey = `gemini-search:${CONFIG.searchId}:client`
+        const sessionKey = `gemini-search:${CONFIG.searchId}:session`
+        const now = Date.now()
+        let clientId = '', firstVisit = false, session = null
+        try {
+            clientId = localStorage.getItem(clientKey) || ''
+            if (!clientId) { clientId = analyticsId(); localStorage.setItem(clientKey, clientId); firstVisit = true }
+            session = JSON.parse(localStorage.getItem(sessionKey) || 'null')
+            if (!session?.id || now - Number(session.lastAt || 0) > 30 * 60 * 1000) session = { id:analyticsId() }
+            session.lastAt = now
+            localStorage.setItem(sessionKey, JSON.stringify(session))
+        } catch (_) {
+            clientId = clientId || analyticsId()
+            session = { id:analyticsId(), lastAt:now }
+        }
+        return { clientId, sessionId:session.id, firstVisit }
+    }
+    let pageViewTracked = false
+    const analyticsAllowed = async () => {
+        if (analytics.respectDoNotTrack !== false &&
+            (navigator.doNotTrack === '1' || window.doNotTrack === '1')) return false
+        if (!analytics.requireConsent) return true
+        try {
+            const callback = window.ServiceStackSearchAnalyticsConsent
+            return typeof callback === 'function' && await callback({
+                searchId:CONFIG.searchId, origin:location.origin, pageUrl:location.href,
+            }) === true
+        } catch (_) { return false }
+    }
+    const trackPageView = async () => {
+        if (!analyticsEnabled || pageViewTracked) return
+        if (!await analyticsAllowed()) return
+        pageViewTracked = true
+        const identity = analyticsIdentity()
+        const params = new URLSearchParams(location.search)
+        const navigation = performance.getEntriesByType?.('navigation')?.[0]
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || {}
+        const width = Math.max(document.documentElement.clientWidth || 0, innerWidth || 0)
+        const touchPoints = Number(navigator.maxTouchPoints || 0)
+        const deviceType = width <= 767 ? 'mobile' : width <= 1024 && touchPoints ? 'tablet' : 'desktop'
+        const elapsed = value => Math.max(0, Math.min(Math.round(Number(value || 0)), 3600000))
+        const payload = JSON.stringify({
+            ...identity,
+            pageUrl:location.href,
+            pagePath:location.pathname + location.search,
+            pageTitle:document.title,
+            referrer:document.referrer || null,
+            language:navigator.language || null,
+            languages:Array.isArray(navigator.languages) ? navigator.languages.join(',') : null,
+            timezone:Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+            platform:navigator.userAgentData?.platform || navigator.platform || null,
+            deviceType,
+            screenWidth:screen.width,
+            screenHeight:screen.height,
+            viewportWidth:width,
+            viewportHeight:Math.max(document.documentElement.clientHeight || 0, innerHeight || 0),
+            devicePixelRatio:devicePixelRatio || 1,
+            colorDepth:screen.colorDepth || 0,
+            touchPoints,
+            connectionType:connection.effectiveType || connection.type || null,
+            downlink:Number(connection.downlink || 0),
+            rtt:elapsed(connection.rtt),
+            saveData:connection.saveData === true,
+            navigationType:navigation?.type || null,
+            durationMs:elapsed(navigation?.duration),
+            domContentLoadedMs:elapsed(navigation?.domContentLoadedEventEnd),
+            loadMs:elapsed(navigation?.loadEventEnd),
+            utmSource:params.get('utm_source'),
+            utmMedium:params.get('utm_medium'),
+            utmCampaign:params.get('utm_campaign'),
+            utmTerm:params.get('utm_term'),
+            utmContent:params.get('utm_content'),
+        })
+        fetch(CONFIG.analyticsUrl, {
+            method:'POST', body:payload, keepalive:true, credentials:'omit',
+            headers:{ 'Content-Type':'text/plain;charset=UTF-8', Accept:'application/json' },
+        }).catch(() => { /* Analytics must never affect the host page or Search. */ })
+    }
 
     const open = () => { backdrop.classList.add('open'); if (!input.value.trim()) renderRecent(); setTimeout(() => input.focus(), 0) }
     const closeDocument = () => { documentBackdrop.classList.remove('open'); input.focus() }
@@ -457,6 +543,10 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
     dialog.addEventListener('click', event => event.stopPropagation())
     renderRecent()
     document.body.appendChild(host)
+    if (analyticsEnabled) {
+        if (document.readyState === 'complete') setTimeout(trackPageView, 0)
+        else addEventListener('load', trackPageView, { once:true })
+    }
     if (launcherHost) {
         const launcherShadow = launcherHost.attachShadow({ mode: 'open' })
         launcherShadow.innerHTML = `<style>${styles}</style>`

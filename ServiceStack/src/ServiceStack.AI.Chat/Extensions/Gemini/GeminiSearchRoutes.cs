@@ -10,6 +10,7 @@ public partial class GeminiExtension
 {
     readonly GeminiAssistantMinuteLimiter searchLimiter = new();
     readonly GeminiAssistantMinuteLimiter searchClickLimiter = new();
+    readonly GeminiAssistantMinuteLimiter searchPageViewLimiter = new();
 
     void InstallSearchRoutes(ExtensionContext ctx)
     {
@@ -17,6 +18,8 @@ public partial class GeminiExtension
         ctx.AddPost("filestores/{id}/searches", CreateSearchWidgetAsync);
         ctx.AddGet("searches/{id}", GetSearchWidgetAsync);
         ctx.AddGet("searches/{id}/analytics", SearchAnalyticsAsync);
+        ctx.AddPost("searches/{id}/analytics/clear", ClearSearchAnalyticsAsync);
+        ctx.AddGet("searches/{id}/diagnostics", SearchDiagnosticsAsync);
         ctx.AddPut("searches/{id}", UpdateSearchWidgetAsync);
         ctx.AddDelete("searches/{id}", ArchiveSearchWidgetAsync);
         ctx.AddPost("searches/{id}/restore", RestoreSearchWidgetAsync);
@@ -28,16 +31,20 @@ public partial class GeminiExtension
         ctx.AddGet("public/searches/widget.js", PublicSearchScriptAsync, allowAnon: true);
         ctx.AddGet("public/searches/{publicId}/results", PublicSearchResultsAsync, allowAnon: true);
         ctx.AddPost("public/searches/{publicId}/clicks", PublicSearchClickAsync, allowAnon: true);
+        ctx.AddPost("public/searches/{publicId}/pageviews", PublicSearchPageViewAsync, allowAnon: true);
         ctx.AddGet("public/searches/{publicId}/documents/{documentId}", PublicSearchDocumentAsync, allowAnon: true);
     }
 
-    JsonObject SearchWidgetDto(ChatSearchWidget widget, ChatRequestContext req, long? searchCount = null)
+    JsonObject SearchWidgetDto(ChatSearchWidget widget, ChatRequestContext req, long? searchCount = null,
+        long? pageViewCount = null)
     {
         var config = GeminiSearch.NormalizeConfig(ChatJson.TryParseObject(widget.Config));
         var src = AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/widget.js?g={widget.PublicId}");
         var dto = widget.ToDto(); dto["config"] = config;
         dto["published"] = widget.Enabled && widget.PublishedAt != null;
         dto["searchCount"] = searchCount ?? db.SearchQueryCount(widget.Id);
+        dto["pageViewCount"] = pageViewCount ?? db.SearchPageViewCount(widget.Id);
+        dto["requestIp"] = GeminiSearchGeo.NormalizeIpAddress(req.Request.RemoteIp);
         dto["scriptUrl"] = src; dto["embedCode"] = $"<script src=\"{src}\" async></script>";
         return dto;
     }
@@ -48,8 +55,10 @@ public partial class GeminiExtension
         if (db.GetFilestore(storeId, user) == null) return Task.FromResult<object?>(ChatResult.NotFound("File Store does not exist"));
         var widgets = db.QuerySearchWidgets(storeId, user, true);
         var counts = db.SearchQueryCounts(widgets.Select(x => x.Id));
+        var pageViews = db.SearchPageViewCounts(widgets.Select(x => x.Id));
         return Task.FromResult<object?>(new JsonArray(widgets
-            .Select(x => (JsonNode)SearchWidgetDto(x, req, counts.GetValueOrDefault(x.Id))).ToArray()));
+            .Select(x => (JsonNode)SearchWidgetDto(x, req, counts.GetValueOrDefault(x.Id),
+                pageViews.GetValueOrDefault(x.Id))).ToArray()));
     }
 
     async Task<object?> CreateSearchWidgetAsync(ChatRequestContext req)
@@ -81,9 +90,53 @@ public partial class GeminiExtension
 
     Task<object?> SearchAnalyticsAsync(ChatRequestContext req)
     {
-        var result = db.SearchAnalytics(IdOf(req), UserOf(req),
+        var id = IdOf(req); var user = UserOf(req);
+        var widget = db.GetSearchWidget(id, user);
+        if (widget == null) return Task.FromResult<object?>(ChatResult.NotFound("Search widget does not exist"));
+        var config = GeminiSearch.NormalizeConfig(ChatJson.TryParseObject(widget.Config));
+        db.ClearSearchAnalytics(id, user,
+            DateTime.Now.AddDays(-(config.GetObject("analytics").GetInt("retentionDays") ?? 90)));
+        var result = db.SearchAnalytics(id, user,
             req.QueryString("groupTake").ToInt(50), req.QueryString("recentTake").ToInt(100));
-        return Task.FromResult<object?>(result != null ? result : ChatResult.NotFound("Search widget does not exist"));
+        if (result == null) return Task.FromResult<object?>(ChatResult.NotFound("Search widget does not exist"));
+        var enabled = config.GetObject("analytics").GetBool("enabled");
+        result["trafficEnabled"] = enabled;
+        result["requestIp"] = GeminiSearchGeo.NormalizeIpAddress(req.Request.RemoteIp);
+        result["traffic"] = db.SearchTrafficAnalytics(id, user, req.QueryString("period") ?? "30d",
+            req.QueryString("visitorSkip").ToInt(), req.QueryString("visitorTake").ToInt(10));
+        return Task.FromResult<object?>(result);
+    }
+
+    async Task<object?> ClearSearchAnalyticsAsync(ChatRequestContext req)
+    {
+        await AssertWriteAsync(req).ConfigAwait();
+        var result = db.ClearSearchAnalytics(IdOf(req), UserOf(req));
+        return result != null ? result : ChatResult.NotFound("Search widget does not exist");
+    }
+
+    Task<object?> SearchDiagnosticsAsync(ChatRequestContext req)
+    {
+        var widget = db.GetSearchWidget(IdOf(req), UserOf(req));
+        if (widget == null) return Task.FromResult<object?>(ChatResult.NotFound("Search widget does not exist"));
+        var store = db.GetFilestore(widget.FilestoreId, widget.User);
+        var stats = db.SearchStats(widget.FilestoreId, widget.User);
+        var config = GeminiSearch.NormalizeConfig(ChatJson.TryParseObject(widget.Config));
+        var checks = new JsonArray();
+        void Add(string name, string status, string message) => checks.Add(new JsonObject
+            { ["name"] = name, ["status"] = status, ["message"] = message });
+        Add("Published", widget.Enabled && widget.PublishedAt != null ? "pass" : "fail",
+            widget.Enabled && widget.PublishedAt != null ? "The public Search deployment is enabled." : "Publish this Search before embedding it.");
+        Add("Public File Store", store?.Visibility == "public" ? "pass" : "fail",
+            store?.Visibility == "public" ? "Anonymous read access is enabled." : "The File Store must be public.");
+        Add("Search index", stats.Indexed > 0 ? stats.Failed > 0 ? "warn" : "pass" : "fail",
+            $"{stats.Indexed} indexed, {stats.Pending} pending, {stats.Failed} failed documents.");
+        var origins = GeminiMetadata.AsList(config.GetObject("hosting")?["allowedOrigins"]);
+        Add("Allowed origins", origins.Count > 0 ? "pass" : "warn",
+            origins.Count > 0 ? $"Restricted to {origins.Count} configured origin(s)." : "All origins are currently allowed.");
+        Add("Widget endpoint", widget.Enabled && widget.PublishedAt != null ? "pass" : "fail",
+            AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/widget.js?g={widget.PublicId}"));
+        return Task.FromResult<object?>(new JsonObject
+            { ["ready"] = checks.OfType<JsonObject>().All(x => x.GetString("status") != "fail"), ["checks"] = checks });
     }
 
     async Task<object?> UpdateSearchWidgetAsync(ChatRequestContext req)
@@ -216,7 +269,8 @@ public partial class GeminiExtension
         return Task.FromResult<object?>(new JsonObject
         {
             ["documents"]=stats.Documents,["indexed"]=stats.Indexed,["pending"]=stats.Pending,
-            ["failed"]=stats.Failed,["sections"]=stats.Sections,["provider"]=stats.Provider,
+            ["failed"]=stats.Failed,["stale"]=stats.Stale,["sections"]=stats.Sections,["provider"]=stats.Provider,
+            ["lastIndexedAt"]=stats.LastIndexedAt,["oldestPendingAt"]=stats.OldestPendingAt,["errors"]=stats.Errors,
             ["worker"]=searchWorker?.Status()??new JsonObject{{"running",false}},
         });
     }
@@ -257,8 +311,15 @@ public partial class GeminiExtension
                 ["placeholder"]=config.GetObject("identity").GetString("placeholder"),["emptyText"]=config.GetObject("identity").GetString("emptyText"),
                 ["tooltip"]=config.GetObject("identity").GetString("tooltip"),
                 ["behavior"]=config["behavior"]?.DeepClone(),["appearance"]=config["appearance"]?.DeepClone(),
+                ["analyticsEnabled"]=config.GetObject("analytics").GetBool("enabled"),
+                ["analytics"]=new JsonObject
+                {
+                    ["respectDoNotTrack"] = config.GetObject("analytics").GetBool("respectDoNotTrack", true),
+                    ["requireConsent"] = config.GetObject("analytics").GetBool("requireConsent"),
+                },
                 ["searchUrl"]=AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/{widget.PublicId}/results"),
                 ["clickUrl"]=AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/{widget.PublicId}/clicks"),
+                ["analyticsUrl"]=AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/{widget.PublicId}/pageviews"),
             };
             var script=$"(()=>{{const CONFIG={publicConfig.ToJsonString(ChatJson.Options)};const SCRIPT=document.currentScript;"
                 + $"const MARKDOWN=(()=>{{\n{markdown}\n}})();const mount=()=>{{\n{source}\n}};"
@@ -290,11 +351,23 @@ public partial class GeminiExtension
                 $"ext/gemini/public/searches/{widget.PublicId}/documents/{row.DocumentId}"));
         stopwatch.Stop();
         long? searchEventId = null;
+        var analytics = config.GetObject("analytics");
+        var deniedUserAgents = GeminiMetadata.AsList(analytics["deniedUserAgents"]);
+        var deniedIpRanges = GeminiMetadata.AsList(analytics["deniedIpRanges"]);
+        var excludedPaths = GeminiMetadata.AsList(analytics["excludedPaths"]);
+        var recordAnalytics = !(analytics.GetBool("excludeBots", true) && GeminiSearch.IsBot(req.Request.UserAgent))
+            && !GeminiSearch.IsDeniedUserAgent(req.Request.UserAgent, deniedUserAgents)
+            && !GeminiSearch.IsDeniedIp(req.Request.RemoteIp, deniedIpRanges)
+            && !GeminiSearch.IsExcludedPath(req.Request.Headers["Referer"], excludedPaths);
         try
         {
-            if (skip == 0)
+            if (skip == 0 && recordAnalytics)
+            {
+                db.ClearSearchAnalytics(widget.Id, widget.User, DateTime.Now.AddDays(
+                    -(config.GetObject("analytics").GetInt("retentionDays") ?? 90)));
                 searchEventId = db.RecordSearchQuery(widget.Id, query, origin, req.Request.Headers["Referer"],
                     req.Request.UserAgent, rows.Count, groups.Count, (int)Math.Min(stopwatch.ElapsedMilliseconds, int.MaxValue));
+            }
         }
         catch (Exception e) { Log.LogWarning(e, "Failed recording Search analytics"); }
         var result=new JsonObject{{"query",query},{"groups",groups},{"hasMore",hasMore},{"nextSkip",skip+rows.Count},
@@ -312,6 +385,12 @@ public partial class GeminiExtension
             GeminiMetadata.AsList(config.GetObject("hosting")?["allowedOrigins"]));
         var headers = CorsHeaders(origin, allowed);
         if (!allowed) return Error("This website is not allowed to use this Search widget", "OriginNotAllowed", 403, headers);
+        var analytics = config.GetObject("analytics");
+        if ((analytics.GetBool("excludeBots", true) && GeminiSearch.IsBot(req.Request.UserAgent)) ||
+            GeminiSearch.IsDeniedUserAgent(req.Request.UserAgent, GeminiMetadata.AsList(analytics["deniedUserAgents"])) ||
+            GeminiSearch.IsDeniedIp(req.Request.RemoteIp, GeminiMetadata.AsList(analytics["deniedIpRanges"])) ||
+            GeminiSearch.IsExcludedPath(req.Request.Headers["Referer"], GeminiMetadata.AsList(analytics["excludedPaths"])))
+            return new ChatResult { Status = 204, Headers = headers };
         var searchLimit = config.GetObject("hosting").GetInt("requestsPerMinute") ?? 120;
         var clickLimit = Math.Max(searchLimit * 4, 120);
         if (!searchClickLimiter.Allow($"{widget.Id}:{req.Request.RemoteIp ?? "unknown"}", clickLimit))
@@ -335,6 +414,73 @@ public partial class GeminiExtension
                 body.GetString("sourceUrl"), body.GetString("resultType"));
         }
         catch (Exception e) { Log.LogWarning(e, "Failed recording Search result click"); }
+        return new ChatResult { Status = 204, Headers = headers };
+    }
+
+    async Task<object?> PublicSearchPageViewAsync(ChatRequestContext req)
+    {
+        var (widget, store) = PublicSearch(req.GetPathParam("publicId"));
+        if (widget == null || store == null) return ChatResult.NotFound("Search is unavailable");
+        var config = GeminiSearch.NormalizeConfig(ChatJson.TryParseObject(widget.Config));
+        var origin = req.Request.Headers[HttpHeaders.Origin];
+        var allowed = GeminiAssistants.OriginAllowed(origin,
+            GeminiMetadata.AsList(config.GetObject("hosting")?["allowedOrigins"]));
+        var headers = CorsHeaders(origin, allowed);
+        if (!allowed) return Error("This website is not allowed to use this Search widget", "OriginNotAllowed", 403, headers);
+        if (!config.GetObject("analytics").GetBool("enabled"))
+            return new ChatResult { Status = 204, Headers = headers };
+        var analytics = config.GetObject("analytics");
+        if (analytics.GetBool("respectDoNotTrack", true) && req.Request.Headers["DNT"] == "1")
+            return new ChatResult { Status = 204, Headers = headers };
+        if (analytics.GetBool("excludeBots", true) && GeminiSearch.IsBot(req.Request.UserAgent))
+            return new ChatResult { Status = 204, Headers = headers };
+        if (GeminiSearch.IsDeniedUserAgent(req.Request.UserAgent,
+                GeminiMetadata.AsList(analytics["deniedUserAgents"])))
+            return new ChatResult { Status = 204, Headers = headers };
+        var ipAddress = GeminiSearchGeo.NormalizeIpAddress(req.Request.RemoteIp);
+        if (GeminiSearch.IsDeniedIp(ipAddress, GeminiMetadata.AsList(analytics["deniedIpRanges"])))
+            return new ChatResult { Status = 204, Headers = headers };
+        var searchLimit = config.GetObject("hosting").GetInt("requestsPerMinute") ?? 120;
+        var pageViewLimit = Math.Max(searchLimit * 10, 600);
+        if (!searchPageViewLimiter.Allow($"{widget.Id}:{req.Request.RemoteIp ?? "unknown"}", pageViewLimit))
+        {
+            headers["Retry-After"] = "60";
+            return Error("Too many Analytics events. Please wait a moment and try again.", "RateLimited", 429, headers);
+        }
+        JsonObject body;
+        try { body = await req.GetJsonBodyAsync().ConfigAwait(); }
+        catch { return Error("Invalid page view", "ValidationError", 400, headers); }
+        var pageUrl = (body.GetString("pageUrl") ?? req.Request.Headers["Referer"] ?? "").Trim().SafeSubstring(0, 2000);
+        if (!Uri.TryCreate(pageUrl, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https"))
+            return Error("Invalid page URL", "ValidationError", 400, headers);
+        if (GeminiSearch.IsExcludedPath(uri.AbsolutePath, GeminiMetadata.AsList(analytics["excludedPaths"])))
+            return new ChatResult { Status = 204, Headers = headers };
+        if (string.IsNullOrEmpty(body.GetString("pagePath"))) body["pagePath"] = uri.PathAndQuery;
+        body["pageUrl"] = pageUrl;
+        GeminiSearchGeo? geo = null;
+        if (ipAddress != null && SearchGeoResolver != null)
+        {
+            try
+            {
+                geo = await SearchGeoResolver.ResolveAsync(ipAddress, req.Request.RequestAborted).ConfigAwait();
+            }
+            catch (OperationCanceledException) when (req.Request.RequestAborted.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                Log.LogWarning(e, "Failed resolving Search analytics visitor geography");
+            }
+        }
+        var storedIp = analytics.GetBool("anonymizeIp", true) ? GeminiSearch.AnonymizeIp(ipAddress) : ipAddress;
+        try
+        {
+            db.ClearSearchAnalytics(widget.Id, widget.User,
+                DateTime.Now.AddDays(-(analytics.GetInt("retentionDays") ?? 90)));
+            db.RecordSearchPageView(widget.Id, body, origin, req.Request.UserAgent, storedIp, geo);
+        }
+        catch (Exception e) { Log.LogWarning(e, "Failed recording Search page view"); }
         return new ChatResult { Status = 204, Headers = headers };
     }
 

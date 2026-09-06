@@ -17,6 +17,11 @@ public static partial class GeminiSearch
     static readonly HashSet<string> SearchGroupStopWords =
         ["a", "an", "and", "are", "for", "how", "in", "is", "of", "on", "the", "to", "with"];
     static readonly HashSet<string> LauncherStyles = ["raised", "flat", "inset"];
+    public static readonly string[] DefaultDeniedUserAgents =
+    [
+        "bytespider", "gptbot", "claudebot", "amazonbot", "imagesiftbot", "semrushbot",
+        "dotbot", "dataforseobot", "whatsapp bot", "petalbot",
+    ];
 
     static int Bounded(int? value, int fallback, int min, int max) => Math.Clamp(value ?? fallback, min, max);
     static double Bounded(double? value, double fallback, double min, double max) => Math.Clamp(value ?? fallback, min, max);
@@ -54,6 +59,7 @@ public static partial class GeminiSearch
         var rawScope = supplied.GetObject("scope") ?? new JsonObject();
         var ranking = NormalizeRanking(supplied.GetObject("ranking"));
         var rawBehavior = supplied.GetObject("behavior") ?? new JsonObject();
+        var rawAnalytics = supplied.GetObject("analytics") ?? new JsonObject();
         var rawAppearance = supplied.GetObject("appearance") ?? new JsonObject();
         var rawHosting = supplied.GetObject("hosting") ?? new JsonObject();
         var scope = new JsonObject();
@@ -75,6 +81,13 @@ public static partial class GeminiSearch
             ? rawBehavior.GetBool("keyboardShortcut") : (bool?)null;
         var origins = rawHosting.GetArray("allowedOrigins")?.Select(x => x?.GetValue<string>()?.Trim().TrimEnd('/'))
             .Where(x => !string.IsNullOrEmpty(x)).Distinct().Take(100).ToArray() ?? [];
+        var deniedUserAgents = rawAnalytics.TryGetPropertyValue("deniedUserAgents", out var deniedUserAgentNode)
+            ? NormalizeRules(GeminiMetadata.AsList(deniedUserAgentNode), x => x.ToLowerInvariant(), 100, 200)
+            : DefaultDeniedUserAgents;
+        var deniedIpRanges = NormalizeRules(GeminiMetadata.AsList(rawAnalytics["deniedIpRanges"]),
+            NormalizeIpRule, 100, 100);
+        var excludedPaths = NormalizeRules(GeminiMetadata.AsList(rawAnalytics["excludedPaths"]),
+            NormalizePathRule, 100, 500);
         return new JsonObject
         {
             ["identity"] = new JsonObject
@@ -95,6 +108,18 @@ public static partial class GeminiSearch
                 ["minChars"] = Bounded(rawBehavior.GetInt("minChars"), 2, 1, 10),
                 ["maxResults"] = Bounded(rawBehavior.GetInt("maxResults"), 30, 5, 100),
                 ["groupLimit"] = Bounded(rawBehavior.GetInt("groupLimit"), 8, 1, 30),
+            },
+            ["analytics"] = new JsonObject
+            {
+                ["enabled"] = rawAnalytics.GetBool("enabled"),
+                ["retentionDays"] = Bounded(rawAnalytics.GetInt("retentionDays"), 90, 1, 3650),
+                ["anonymizeIp"] = rawAnalytics.GetBool("anonymizeIp", true),
+                ["respectDoNotTrack"] = rawAnalytics.GetBool("respectDoNotTrack", true),
+                ["excludeBots"] = rawAnalytics.GetBool("excludeBots", true),
+                ["requireConsent"] = rawAnalytics.GetBool("requireConsent"),
+                ["deniedUserAgents"] = new JsonArray(deniedUserAgents.Select(x => (JsonNode)x).ToArray()),
+                ["deniedIpRanges"] = new JsonArray(deniedIpRanges.Select(x => (JsonNode)x).ToArray()),
+                ["excludedPaths"] = new JsonArray(excludedPaths.Select(x => (JsonNode)x).ToArray()),
             },
             ["appearance"] = new JsonObject
             {
@@ -120,6 +145,134 @@ public static partial class GeminiSearch
                 ["requestsPerMinute"] = Bounded(rawHosting.GetInt("requestsPerMinute"), 120, 1, 5000),
             },
         };
+    }
+
+    public static bool IsBot(string? userAgent) => !string.IsNullOrEmpty(userAgent) &&
+        Regex.IsMatch(userAgent,
+            "bot|crawler|spider|slurp|bingpreview|headlesschrome|lighthouse|pagespeed|" +
+            "uptimerobot|pingdom|statuscake|facebookexternalhit|twitterbot|linkedinbot|" +
+            "whatsapp|google-inspectiontool", RegexOptions.IgnoreCase);
+
+    static string[] NormalizeRules(IEnumerable<string> values, Func<string, string?> normalize, int take, int maxLength) =>
+        values.Select(x => normalize(x.Trim().SafeSubstring(0, maxLength)))
+            .Where(x => !string.IsNullOrEmpty(x)).Cast<string>()
+            .Distinct(StringComparer.OrdinalIgnoreCase).Take(take).ToArray();
+
+    static string? NormalizePathRule(string value)
+    {
+        value = value.Trim();
+        if (value.Length == 0) return null;
+        if (Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https")
+            value = uri.AbsolutePath;
+        if (!value.StartsWith('/')) value = "/" + value;
+        return value;
+    }
+
+    public static bool IsDeniedUserAgent(string? userAgent, IEnumerable<string> deniedUserAgents) =>
+        !string.IsNullOrEmpty(userAgent) && deniedUserAgents.Any(rule =>
+            !string.IsNullOrWhiteSpace(rule) && userAgent.Contains(rule.Trim(), StringComparison.OrdinalIgnoreCase));
+
+    public static string? NormalizeIpRule(string? value)
+    {
+        value = value?.Trim();
+        if (string.IsNullOrEmpty(value)) return null;
+        if (value.Contains('*'))
+        {
+            var parts = value.Split('.');
+            if (parts.Length is < 1 or > 4) return null;
+            Array.Resize(ref parts, 4);
+            var wildcard = false;
+            var prefix = 0;
+            var bytes = new byte[4];
+            for (var i = 0; i < 4; i++)
+            {
+                var part = parts[i];
+                if (string.IsNullOrEmpty(part)) part = "*";
+                if (part == "*") wildcard = true;
+                else
+                {
+                    if (wildcard || !byte.TryParse(part, out bytes[i])) return null;
+                    prefix += 8;
+                }
+            }
+            return prefix == 32 ? new IPAddress(bytes).ToString() : $"{new IPAddress(bytes)}/{prefix}";
+        }
+        var slash = value.IndexOf('/');
+        var addressText = slash >= 0 ? value[..slash] : value;
+        if (!IPAddress.TryParse(addressText, out var address)) return null;
+        if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4();
+        if (slash < 0) return address.ToString();
+        var bitCount = address.GetAddressBytes().Length * 8;
+        if (!int.TryParse(value[(slash + 1)..], out var prefixLength) || prefixLength < 0 || prefixLength > bitCount)
+            return null;
+        var networkBytes = address.GetAddressBytes();
+        MaskAddress(networkBytes, prefixLength);
+        return prefixLength == bitCount
+            ? new IPAddress(networkBytes).ToString()
+            : $"{new IPAddress(networkBytes)}/{prefixLength}";
+    }
+
+    static void MaskAddress(byte[] bytes, int prefixLength)
+    {
+        var wholeBytes = prefixLength / 8;
+        var remainingBits = prefixLength % 8;
+        if (remainingBits > 0 && wholeBytes < bytes.Length)
+            bytes[wholeBytes++] &= (byte)(0xff << (8 - remainingBits));
+        for (var i = wholeBytes; i < bytes.Length; i++) bytes[i] = 0;
+    }
+
+    public static bool IsDeniedIp(string? value, IEnumerable<string> deniedIpRanges)
+    {
+        var normalizedAddress = GeminiSearchGeo.NormalizeIpAddress(value);
+        if (normalizedAddress == null || !IPAddress.TryParse(normalizedAddress, out var address)) return false;
+        var addressBytes = address.GetAddressBytes();
+        foreach (var rawRule in deniedIpRanges)
+        {
+            var rule = NormalizeIpRule(rawRule);
+            if (rule == null) continue;
+            var slash = rule.IndexOf('/');
+            if (slash < 0)
+            {
+                if (string.Equals(normalizedAddress, rule, StringComparison.OrdinalIgnoreCase)) return true;
+                continue;
+            }
+            if (!IPAddress.TryParse(rule[..slash], out var network) ||
+                !int.TryParse(rule[(slash + 1)..], out var prefixLength)) continue;
+            var networkBytes = network.GetAddressBytes();
+            if (networkBytes.Length != addressBytes.Length) continue;
+            var candidate = addressBytes.ToArray();
+            MaskAddress(candidate, prefixLength);
+            if (candidate.SequenceEqual(networkBytes)) return true;
+        }
+        return false;
+    }
+
+    public static bool IsExcludedPath(string? value, IEnumerable<string> excludedPaths)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return false;
+        var path = Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https"
+            ? uri.AbsolutePath
+            : value.Split('?', '#')[0];
+        if (!path.StartsWith('/')) path = "/" + path;
+        return excludedPaths.Any(rawRule =>
+        {
+            var rule = NormalizePathRule(rawRule);
+            if (rule == null) return false;
+            var pattern = "^" + Regex.Escape(rule).Replace("\\*", ".*").Replace("\\?", ".") + "$";
+            return Regex.IsMatch(path, pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+        });
+    }
+
+    public static string? AnonymizeIp(string? value)
+    {
+        if (!IPAddress.TryParse(value, out var address)) return null;
+        if (address.IsIPv4MappedToIPv6) address = address.MapToIPv4();
+        var bytes = address.GetAddressBytes();
+        if (bytes.Length == 4)
+            bytes[3] = 0;
+        else
+            Array.Clear(bytes, 6, bytes.Length - 6); // retain an IPv6 /48 network only
+        return new IPAddress(bytes).ToString();
     }
 
     public static List<ChatSearchResult> RankResults(IEnumerable<ChatSearchResult> candidates, string query,

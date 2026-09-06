@@ -17,8 +17,12 @@ public class ChatSearchStats
     public long Indexed { get; set; }
     public long Pending { get; set; }
     public long Failed { get; set; }
+    public long Stale { get; set; }
     public long Sections { get; set; }
     public string Provider { get; set; } = "like";
+    public DateTime? LastIndexedAt { get; set; }
+    public DateTime? OldestPendingAt { get; set; }
+    public JsonArray Errors { get; set; } = new();
 }
 
 class ChatSearchQueryAggregate
@@ -54,6 +58,43 @@ class ChatSearchDocumentClickAggregate
     public long UniqueSearches { get; set; }
     public double AveragePosition { get; set; }
     public DateTime LastClickedAt { get; set; }
+}
+
+class ChatSearchTrafficTotals
+{
+    public long PageViews { get; set; }
+    public long Visitors { get; set; }
+    public long Sessions { get; set; }
+    public double? AverageLoadMs { get; set; }
+}
+
+class ChatSearchTrafficBucket
+{
+    public string? Bucket { get; set; }
+    public long PageViews { get; set; }
+    public long Visitors { get; set; }
+    public long Sessions { get; set; }
+}
+
+class ChatSearchTrafficValue
+{
+    public string? Value { get; set; }
+    public long Count { get; set; }
+}
+
+class ChatSearchTrafficPage
+{
+    public string? Path { get; set; }
+    public string? Title { get; set; }
+    public string? Url { get; set; }
+    public long Views { get; set; }
+    public long Visitors { get; set; }
+}
+
+class ChatSearchTrafficSessionSummary
+{
+    public long Sessions { get; set; }
+    public long Bounced { get; set; }
 }
 
 public partial class GeminiDb
@@ -114,6 +155,23 @@ public partial class GeminiDb
         return conn.Count<ChatSearchQuery>(x => x.SearchWidgetId == searchWidgetId);
     }
 
+    public Dictionary<long, long> SearchPageViewCounts(IEnumerable<long> searchWidgetIds)
+    {
+        var ids = searchWidgetIds.Distinct().ToList();
+        if (ids.Count == 0) return [];
+        using var conn = OpenDb();
+        var q = conn.From<ChatSearchPageView>().Where(x => ids.Contains(x.SearchWidgetId))
+            .GroupBy(x => x.SearchWidgetId)
+            .Select(x => new { x.SearchWidgetId, Count = Sql.Count("*") });
+        return conn.Dictionary<long, long>(q);
+    }
+
+    public long SearchPageViewCount(long searchWidgetId)
+    {
+        using var conn = OpenDb();
+        return conn.Count<ChatSearchPageView>(x => x.SearchWidgetId == searchWidgetId);
+    }
+
     public bool SearchWidgetNameExists(long filestoreId, string name, string? user, long? excludeId = null)
     {
         using var conn = OpenDb();
@@ -155,10 +213,28 @@ public partial class GeminiDb
         if (confirmation != widget.Name) throw new ArgumentException($"Type \"{widget.Name}\" to confirm permanent deletion");
         using var conn = OpenDb(); using var tx = conn.OpenTransaction();
         conn.Delete<ChatSearchClick>(x => x.SearchWidgetId == widget.Id);
+        conn.Delete<ChatSearchPageView>(x => x.SearchWidgetId == widget.Id);
         conn.Delete<ChatSearchQuery>(x => x.SearchWidgetId == widget.Id);
         var deleted = conn.DeleteById<ChatSearchWidget>(widget.Id) > 0;
         tx.Commit();
         return deleted;
+    }
+
+    public JsonObject? ClearSearchAnalytics(long id, string? user, DateTime? before = null)
+    {
+        if (GetSearchWidget(id, user) == null) return null;
+        using var conn = OpenDb(); using var tx = conn.OpenTransaction();
+        var clicks = before == null
+            ? conn.Delete<ChatSearchClick>(x => x.SearchWidgetId == id)
+            : conn.Delete<ChatSearchClick>(x => x.SearchWidgetId == id && x.CreatedAt < before);
+        var pageViews = before == null
+            ? conn.Delete<ChatSearchPageView>(x => x.SearchWidgetId == id)
+            : conn.Delete<ChatSearchPageView>(x => x.SearchWidgetId == id && x.CreatedAt < before);
+        var searches = before == null
+            ? conn.Delete<ChatSearchQuery>(x => x.SearchWidgetId == id)
+            : conn.Delete<ChatSearchQuery>(x => x.SearchWidgetId == id && x.CreatedAt < before);
+        tx.Commit();
+        return new JsonObject { ["searches"] = searches, ["clicks"] = clicks, ["pageViews"] = pageViews };
     }
 
     public long RecordSearchQuery(long searchWidgetId, string query, string? origin, string? pageUrl,
@@ -210,6 +286,196 @@ public partial class GeminiDb
                 ?? document.DisplayName ?? document.SourceKey ?? "Document", 500),
             SourceUrl = url, ResultType = Limit(section?.Kind ?? resultType ?? "content", 50),
         }, selectIdentity: true);
+    }
+
+    public long RecordSearchPageView(long searchWidgetId, JsonObject values, string? origin, string? userAgent,
+        string? ipAddress = null, GeminiSearchGeo? geo = null)
+    {
+        static string? Text(string? value, int max)
+        {
+            value = value?.Trim();
+            return string.IsNullOrEmpty(value) ? null : value.Length <= max ? value : value[..max];
+        }
+        static int IntNumber(int? value, int max) => Math.Clamp(value ?? 0, 0, max);
+        static double DoubleNumber(double? value, double max) => Math.Clamp(value ?? 0, 0, max);
+        static double? Coordinate(double? value, double min, double max) =>
+            value is not null && value >= min && value <= max ? value : null;
+        var now = DateTime.Now;
+        var pageView = new ChatSearchPageView
+        {
+            SearchWidgetId = searchWidgetId, CreatedAt = now,
+            HourKey = now.ToString("yyyy-MM-dd'T'HH"), DayKey = now.ToString("yyyy-MM-dd"),
+            ClientId = Text(values.GetString("clientId"), 100),
+            SessionId = Text(values.GetString("sessionId"), 100),
+            FirstVisit = values.GetBool("firstVisit"),
+            Origin = Text(origin, 500), PageUrl = Text(values.GetString("pageUrl"), 2000),
+            PagePath = Text(values.GetString("pagePath"), 2000),
+            PageTitle = Text(values.GetString("pageTitle"), 500),
+            Referrer = Text(values.GetString("referrer"), 2000),
+            IpAddress = Text(GeminiSearchGeo.NormalizeIpAddress(ipAddress), 45),
+            UserAgent = Text(userAgent, 1000), Language = Text(values.GetString("language"), 50),
+            Languages = Text(values.GetString("languages"), 500),
+            Timezone = Text(values.GetString("timezone"), 100),
+            Platform = Text(values.GetString("platform"), 100),
+            DeviceType = Text(values.GetString("deviceType"), 20),
+            ScreenWidth = IntNumber(values.GetInt("screenWidth"), 20000),
+            ScreenHeight = IntNumber(values.GetInt("screenHeight"), 20000),
+            ViewportWidth = IntNumber(values.GetInt("viewportWidth"), 20000),
+            ViewportHeight = IntNumber(values.GetInt("viewportHeight"), 20000),
+            DevicePixelRatio = DoubleNumber(values.GetDouble("devicePixelRatio"), 20),
+            ColorDepth = IntNumber(values.GetInt("colorDepth"), 128),
+            TouchPoints = IntNumber(values.GetInt("touchPoints"), 100),
+            ConnectionType = Text(values.GetString("connectionType"), 50),
+            Downlink = DoubleNumber(values.GetDouble("downlink"), 100000),
+            Rtt = IntNumber(values.GetInt("rtt"), 3600000), SaveData = values.GetBool("saveData"),
+            NavigationType = Text(values.GetString("navigationType"), 50),
+            DurationMs = IntNumber(values.GetInt("durationMs"), 3600000),
+            DomContentLoadedMs = IntNumber(values.GetInt("domContentLoadedMs"), 3600000),
+            LoadMs = IntNumber(values.GetInt("loadMs"), 3600000),
+            UtmSource = Text(values.GetString("utmSource"), 300),
+            UtmMedium = Text(values.GetString("utmMedium"), 300),
+            UtmCampaign = Text(values.GetString("utmCampaign"), 300),
+            UtmTerm = Text(values.GetString("utmTerm"), 300),
+            UtmContent = Text(values.GetString("utmContent"), 300),
+            GeoAsn = geo?.Asn is >= 0 ? geo.Asn : null,
+            GeoOrganization = Text(geo?.Organization, 300),
+            GeoContinentCode = Text(geo?.ContinentCode, 2)?.ToUpperInvariant(),
+            GeoCountryCode = Text(geo?.CountryCode, 2)?.ToUpperInvariant(),
+            GeoCountryName = Text(geo?.CountryName, 100),
+            GeoRegionCode = Text(geo?.RegionCode, 20),
+            GeoRegionName = Text(geo?.RegionName, 100),
+            GeoCity = Text(geo?.City, 100),
+            GeoPostalCode = Text(geo?.PostalCode, 20),
+            GeoTimeZone = Text(geo?.TimeZone, 100),
+            GeoLatitude = Coordinate(geo?.Latitude, -90, 90),
+            GeoLongitude = Coordinate(geo?.Longitude, -180, 180),
+        };
+        using var conn = OpenDb();
+        return conn.Insert(pageView, selectIdentity: true);
+    }
+
+    public JsonObject? SearchTrafficAnalytics(long searchWidgetId, string? user, string? period = "30d",
+        int recentSkip = 0, int recentTake = 10)
+    {
+        if (GetSearchWidget(searchWidgetId, user) == null) return null;
+        recentSkip = Math.Max(recentSkip, 0);
+        recentTake = Math.Clamp(recentTake, 1, 100);
+        var normalizedPeriod = period?.ToLowerInvariant() switch
+        {
+            "1d" => "1d", "7d" => "7d", "90d" => "90d", _ => "30d",
+        };
+        var hourly = normalizedPeriod == "1d";
+        var count = normalizedPeriod switch { "1d" => 24, "7d" => 7, "90d" => 90, _ => 30 };
+        var now = DateTime.Now;
+        var end = hourly
+            ? new DateTime(now.Year, now.Month, now.Day, now.Hour, 0, 0, now.Kind)
+            : now.Date;
+        var start = hourly ? end.AddHours(-(count - 1)) : end.AddDays(-(count - 1));
+        using var conn = OpenDb();
+        var dialect = conn.GetDialectProvider();
+        var model = typeof(ChatSearchPageView).GetModelMetadata();
+        var table = dialect.GetQuotedTableName(typeof(ChatSearchPageView));
+        string Col(string name) => dialect.GetQuotedColumnName(model.GetFieldDefinition(name));
+        var widgetCol = Col(nameof(ChatSearchPageView.SearchWidgetId));
+        var createdCol = Col(nameof(ChatSearchPageView.CreatedAt));
+        var clientCol = Col(nameof(ChatSearchPageView.ClientId));
+        var sessionCol = Col(nameof(ChatSearchPageView.SessionId));
+        var loadCol = Col(nameof(ChatSearchPageView.LoadMs));
+        var args = new { id = searchWidgetId, since = start };
+        var totals = conn.SqlList<ChatSearchTrafficTotals>(
+            $"SELECT COUNT(*) AS PageViews,COUNT(DISTINCT {clientCol}) AS Visitors," +
+            $"COUNT(DISTINCT {sessionCol}) AS Sessions,AVG(1.0 * NULLIF({loadCol},0)) AS AverageLoadMs " +
+            $"FROM {table} WHERE {widgetCol}=@id AND {createdCol}>=@since", args)
+            .FirstOrDefault() ?? new ChatSearchTrafficTotals();
+        var newVisitors = conn.Count<ChatSearchPageView>(x => x.SearchWidgetId == searchWidgetId
+            && x.CreatedAt >= start && x.FirstVisit);
+        var sessionSummary = conn.SqlList<ChatSearchTrafficSessionSummary>(
+            $"SELECT COUNT(*) AS Sessions,SUM(CASE WHEN views=1 THEN 1 ELSE 0 END) AS Bounced FROM (" +
+            $"SELECT {sessionCol},COUNT(*) AS views FROM {table} WHERE {widgetCol}=@id AND " +
+            $"{createdCol}>=@since AND {sessionCol} IS NOT NULL GROUP BY {sessionCol}) session_counts", args)
+            .FirstOrDefault() ?? new ChatSearchTrafficSessionSummary();
+        var keyColumn = Col(hourly ? nameof(ChatSearchPageView.HourKey) : nameof(ChatSearchPageView.DayKey));
+        var buckets = conn.SqlList<ChatSearchTrafficBucket>(
+            $"SELECT {keyColumn} AS Bucket,COUNT(*) AS PageViews,COUNT(DISTINCT {clientCol}) AS Visitors," +
+            $"COUNT(DISTINCT {sessionCol}) AS Sessions FROM {table} WHERE {widgetCol}=@id AND " +
+            $"{createdCol}>=@since GROUP BY {keyColumn} ORDER BY {keyColumn}", args)
+            .Where(x => x.Bucket != null).ToDictionary(x => x.Bucket!);
+        var timeline = new JsonArray();
+        for (var i = 0; i < count; i++)
+        {
+            var key = (hourly ? start.AddHours(i) : start.AddDays(i)).ToString(hourly ? "yyyy-MM-dd'T'HH" : "yyyy-MM-dd");
+            buckets.TryGetValue(key, out var item);
+            timeline.Add(new JsonObject { ["bucket"] = key, ["pageViews"] = item?.PageViews ?? 0,
+                ["visitors"] = item?.Visitors ?? 0, ["sessions"] = item?.Sessions ?? 0 });
+        }
+        List<ChatSearchTrafficValue> Distribution(string field, int take = 20)
+        {
+            var column = Col(field);
+            return conn.SqlList<ChatSearchTrafficValue>(
+                $"SELECT {column} AS Value,COUNT(*) AS Count FROM {table} WHERE {widgetCol}=@id AND " +
+                $"{createdCol}>=@since AND {column} IS NOT NULL AND {column}<>'' GROUP BY {column} " +
+                "ORDER BY Count DESC", args).Take(take).ToList();
+        }
+        JsonArray Values(string field) => new(Distribution(field).Select(x => (JsonNode)new JsonObject
+            { ["value"] = x.Value, ["count"] = x.Count }).ToArray());
+        var pathCol = Col(nameof(ChatSearchPageView.PagePath));
+        var titleCol = Col(nameof(ChatSearchPageView.PageTitle));
+        var urlCol = Col(nameof(ChatSearchPageView.PageUrl));
+        var pages = conn.SqlList<ChatSearchTrafficPage>(
+            $"SELECT {pathCol} AS Path,MAX({titleCol}) AS Title,MAX({urlCol}) AS Url,COUNT(*) AS Views," +
+            $"COUNT(DISTINCT {clientCol}) AS Visitors FROM {table} WHERE {widgetCol}=@id AND " +
+            $"{createdCol}>=@since AND {pathCol} IS NOT NULL AND {pathCol}<>'' GROUP BY {pathCol} " +
+            "ORDER BY Views DESC", args).Take(50).ToList();
+        var recentPageViews = conn.Select(conn.From<ChatSearchPageView>()
+            .Where(x => x.SearchWidgetId == searchWidgetId && x.CreatedAt >= start)
+            .OrderByDescending(x => x.CreatedAt)
+            .ThenByDescending(x => x.Id)
+            .Limit(recentSkip, recentTake));
+        return new JsonObject
+        {
+            ["period"] = normalizedPeriod, ["bucket"] = hourly ? "hour" : "day",
+            ["from"] = ChatDb.ToDateNode(start), ["to"] = ChatDb.ToDateNode(now),
+            ["pageViews"] = totals.PageViews, ["visitors"] = totals.Visitors,
+            ["newVisitors"] = newVisitors,
+            ["sessions"] = totals.Sessions,
+            ["pagesPerSession"] = totals.Sessions == 0 ? 0 : Math.Round(totals.PageViews / (double)totals.Sessions, 2),
+            ["bounceRate"] = totals.Sessions == 0 ? 0 : Math.Round(sessionSummary.Bounced * 100d / totals.Sessions, 1),
+            ["averageLoadMs"] = Math.Round(totals.AverageLoadMs ?? 0), ["timeline"] = timeline,
+            ["recentTotal"] = totals.PageViews, ["recentSkip"] = recentSkip, ["recentTake"] = recentTake,
+            ["topPages"] = new JsonArray(pages.Select(x => (JsonNode)new JsonObject { ["path"] = x.Path,
+                ["title"] = x.Title, ["url"] = x.Url, ["views"] = x.Views, ["visitors"] = x.Visitors }).ToArray()),
+            ["topReferrers"] = Values(nameof(ChatSearchPageView.Referrer)),
+            ["languages"] = Values(nameof(ChatSearchPageView.Language)),
+            ["timezones"] = Values(nameof(ChatSearchPageView.Timezone)),
+            ["devices"] = Values(nameof(ChatSearchPageView.DeviceType)),
+            ["platforms"] = Values(nameof(ChatSearchPageView.Platform)),
+            ["connections"] = Values(nameof(ChatSearchPageView.ConnectionType)),
+            ["campaigns"] = Values(nameof(ChatSearchPageView.UtmCampaign)),
+            ["countries"] = Values(nameof(ChatSearchPageView.GeoCountryName)),
+            ["regions"] = Values(nameof(ChatSearchPageView.GeoRegionName)),
+            ["cities"] = Values(nameof(ChatSearchPageView.GeoCity)),
+            ["organizations"] = Values(nameof(ChatSearchPageView.GeoOrganization)),
+            ["recentPageViews"] = new JsonArray(recentPageViews.Select(x => (JsonNode)new JsonObject
+            {
+                ["createdAt"] = ChatDb.ToDateNode(x.CreatedAt),
+                ["ipAddress"] = x.IpAddress,
+                ["pageUrl"] = x.PageUrl,
+                ["pagePath"] = x.PagePath,
+                ["pageTitle"] = x.PageTitle,
+                ["continentCode"] = x.GeoContinentCode,
+                ["countryCode"] = x.GeoCountryCode,
+                ["country"] = x.GeoCountryName,
+                ["regionCode"] = x.GeoRegionCode,
+                ["region"] = x.GeoRegionName,
+                ["city"] = x.GeoCity,
+                ["postalCode"] = x.GeoPostalCode,
+                ["timeZone"] = x.GeoTimeZone,
+                ["latitude"] = x.GeoLatitude,
+                ["longitude"] = x.GeoLongitude,
+                ["asn"] = x.GeoAsn,
+                ["organization"] = x.GeoOrganization,
+            }).ToArray()),
+        };
     }
 
     public JsonObject? SearchAnalytics(long searchWidgetId, string? user, int groupTake = 50, int recentTake = 100)
@@ -413,7 +679,15 @@ public partial class GeminiDb
         {
             Documents = rows.Count, Indexed = rows.Count(x => x.SearchHash != null && x.SearchIndexedHash == x.SearchHash),
             Pending = rows.Count(x => x.SearchHash != null && x.SearchIndexedHash != x.SearchHash),
-            Failed = rows.Count(x => !string.IsNullOrEmpty(x.SearchError)), Sections = conn.Count(sections), Provider = searchProvider.StatusName,
+            Failed = rows.Count(x => !string.IsNullOrEmpty(x.SearchError)),
+            Stale = rows.Count(x => x.SearchIndexedHash != null && x.SearchHash != null && x.SearchIndexedHash != x.SearchHash),
+            Sections = conn.Count(sections), Provider = searchProvider.StatusName,
+            LastIndexedAt = rows.Max(x => x.SearchIndexedAt),
+            OldestPendingAt = rows.Where(x => x.SearchHash != null && x.SearchIndexedHash != x.SearchHash)
+                .Select(x => (DateTime?)x.UpdatedAt).Min(),
+            Errors = new JsonArray(rows.Where(x => !string.IsNullOrEmpty(x.SearchError)).Take(5).Select(x =>
+                (JsonNode)new JsonObject { ["documentId"] = x.Id, ["name"] = x.DisplayName ?? x.SourceKey,
+                    ["error"] = x.SearchError?.SafeSubstring(0, 500), ["updatedAt"] = x.UpdatedAt }).ToArray()),
         };
     }
 

@@ -774,6 +774,15 @@ const DeleteStoreDialog = {
                                 <span>Local search sections</span><b>{{ Number(summary.searchSections || 0).toLocaleString() }}</b>
                             </div>
                             <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Customer searches</span><b>{{ Number(summary.searches || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Search result clicks</span><b>{{ Number(summary.searchClicks || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
+                                <span>Website page views</span><b>{{ Number(summary.searchPageViews || 0).toLocaleString() }}</b>
+                            </div>
+                            <div class="flex items-center justify-between gap-4 border-b px-3 py-2.5" :class="[$styles.chromeBorder]">
                                 <span>Customer conversations</span><b>{{ Number(summary.conversations || 0).toLocaleString() }}</b>
                             </div>
                             <div class="flex items-center justify-between gap-4 px-3 py-2.5">

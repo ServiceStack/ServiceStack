@@ -291,6 +291,67 @@ public class ChatSearchClick
     [StringLength(50)] public string? ResultType { get; set; }
 }
 
+/// <summary>An anonymous page view captured by an analytics-enabled public Search widget.</summary>
+[CompositeIndex(nameof(SearchWidgetId), nameof(CreatedAt))]
+[CompositeIndex(nameof(SearchWidgetId), nameof(DayKey))]
+[CompositeIndex(nameof(SearchWidgetId), nameof(ClientId))]
+[CompositeIndex(nameof(SearchWidgetId), nameof(SessionId))]
+public class ChatSearchPageView
+{
+    [AutoIncrement] public long Id { get; set; }
+    public long SearchWidgetId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    [StringLength(13)] public string? HourKey { get; set; }
+    [StringLength(10)] public string? DayKey { get; set; }
+    [StringLength(100)] public string? ClientId { get; set; }
+    [StringLength(100)] public string? SessionId { get; set; }
+    public bool FirstVisit { get; set; }
+    [StringLength(500)] public string? Origin { get; set; }
+    [StringLength(2000)] public string? PageUrl { get; set; }
+    [StringLength(2000)] public string? PagePath { get; set; }
+    [StringLength(500)] public string? PageTitle { get; set; }
+    [StringLength(2000)] public string? Referrer { get; set; }
+    [StringLength(45)] public string? IpAddress { get; set; }
+    [StringLength(1000)] public string? UserAgent { get; set; }
+    [StringLength(50)] public string? Language { get; set; }
+    [StringLength(500)] public string? Languages { get; set; }
+    [StringLength(100)] public string? Timezone { get; set; }
+    [StringLength(100)] public string? Platform { get; set; }
+    [StringLength(20)] public string? DeviceType { get; set; }
+    public int ScreenWidth { get; set; }
+    public int ScreenHeight { get; set; }
+    public int ViewportWidth { get; set; }
+    public int ViewportHeight { get; set; }
+    public double DevicePixelRatio { get; set; }
+    public int ColorDepth { get; set; }
+    public int TouchPoints { get; set; }
+    [StringLength(50)] public string? ConnectionType { get; set; }
+    public double Downlink { get; set; }
+    public int Rtt { get; set; }
+    public bool SaveData { get; set; }
+    [StringLength(50)] public string? NavigationType { get; set; }
+    public int DurationMs { get; set; }
+    public int DomContentLoadedMs { get; set; }
+    public int LoadMs { get; set; }
+    [StringLength(300)] public string? UtmSource { get; set; }
+    [StringLength(300)] public string? UtmMedium { get; set; }
+    [StringLength(300)] public string? UtmCampaign { get; set; }
+    [StringLength(300)] public string? UtmTerm { get; set; }
+    [StringLength(300)] public string? UtmContent { get; set; }
+    public long? GeoAsn { get; set; }
+    [StringLength(300)] public string? GeoOrganization { get; set; }
+    [StringLength(2)] public string? GeoContinentCode { get; set; }
+    [StringLength(2)] public string? GeoCountryCode { get; set; }
+    [StringLength(100)] public string? GeoCountryName { get; set; }
+    [StringLength(20)] public string? GeoRegionCode { get; set; }
+    [StringLength(100)] public string? GeoRegionName { get; set; }
+    [StringLength(100)] public string? GeoCity { get; set; }
+    [StringLength(20)] public string? GeoPostalCode { get; set; }
+    [StringLength(100)] public string? GeoTimeZone { get; set; }
+    public double? GeoLatitude { get; set; }
+    public double? GeoLongitude { get; set; }
+}
+
 /// <summary>A heading-aware local-search section extracted from a cached document.</summary>
 public class ChatSearchSection
 {
