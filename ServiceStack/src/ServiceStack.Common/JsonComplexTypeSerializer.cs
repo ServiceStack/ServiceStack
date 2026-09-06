@@ -42,7 +42,7 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
     
     public To? DeserializeFromString<To>(string json)
     {
-        if (string.IsNullOrEmpty(json))
+        if (IsNull(json))
             return default;
 
         if (JsonObjectTypes.Contains(typeof(To)))
@@ -65,7 +65,7 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
     {
         if (type == null)
             throw new ArgumentNullException(nameof(type));
-        if (string.IsNullOrEmpty(json))
+        if (IsNull(json))
             return type.GetDefaultValue();
 
         if (JsonObjectTypes.Contains(type))
@@ -104,5 +104,8 @@ public class JsonComplexTypeSerializer : Text.IStringSerializer
             _ => throw new NotSupportedException(DefaultSerializer.ToString())
         };
     }
+
+    private static bool IsNull(string? json) =>
+        string.IsNullOrWhiteSpace(json) || json.Trim().Equals("null", StringComparison.Ordinal);
 }
 #endif

@@ -48,7 +48,10 @@ public class CommonDiagnosticAndLoggingModernizationTests
         var serializer = new JsonComplexTypeSerializer();
         Assert.That(serializer.DeserializeFromString<string>(null), Is.Null);
         Assert.That(serializer.DeserializeFromString<string>(string.Empty), Is.Null);
+        Assert.That(serializer.DeserializeFromString<ResponseStatus>("null"), Is.Null);
+        Assert.That(serializer.DeserializeFromString<ResponseStatus>("  null  "), Is.Null);
         Assert.That(serializer.DeserializeFromString(string.Empty, typeof(string)), Is.Null);
+        Assert.That(serializer.DeserializeFromString("null", typeof(ResponseStatus)), Is.Null);
         Assert.That(serializer.SerializeToString<string>(null), Is.EqualTo("null"));
     }
 #endif

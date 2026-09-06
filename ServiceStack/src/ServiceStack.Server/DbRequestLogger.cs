@@ -562,7 +562,8 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
 
         var tableExists = db.TableExists<AnalyticsReports>();
         var lastLogId = tableExists
-            ? db.Single(db.From<RequestLog>().OrderByDescending(x => x.Id).Limit(1))?.Id
+            ? db.Scalar<long?>(db.From<RequestLog>()
+                .Select(x => x.Id).OrderByDescending(x => x.Id).Limit(1))
             : null;
 
         AnalyticsReports? cachedReport = null;
@@ -621,9 +622,9 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
 
         var tableExists = db.TableExists<ApiAnalytics>();
         var lastLogId = tableExists
-            ? db.Single(db.From<RequestLog>()
+            ? db.Scalar<long?>(db.From<RequestLog>()
                 .Where(x => x.OperationName == op)
-                .OrderByDescending(x => x.Id).Limit(1))?.Id
+                .Select(x => x.Id).OrderByDescending(x => x.Id).Limit(1))
             : null;
 
         ApiAnalytics? apiAnalytics = null;
@@ -695,9 +696,9 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
 
         var tableExists = db.TableExists<UserAnalytics>();
         var lastLogId = tableExists
-            ? db.Single(db.From<RequestLog>()
+            ? db.Scalar<long?>(db.From<RequestLog>()
                 .Where(x => x.UserAuthId == userId)
-                .OrderByDescending(x => x.Id).Limit(1))?.Id
+                .Select(x => x.Id).OrderByDescending(x => x.Id).Limit(1))
             : null;
 
         UserAnalytics? userAnalytics = null;
@@ -774,9 +775,9 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
 
         var tableExists = db.TableExists<ApiKeyAnalytics>();
         var lastLogId = tableExists
-            ? db.Single(db.From<RequestLog>()
+            ? db.Scalar<long?>(db.From<RequestLog>()
                 .And(headers + " LIKE {0}", $"%Bearer {apiKey}%")
-                .OrderByDescending(x => x.Id).Limit(1))?.Id
+                .Select(x => x.Id).OrderByDescending(x => x.Id).Limit(1))
             : null;
 
         ApiKeyAnalytics? apiKeyAnalytics = null;
@@ -850,9 +851,9 @@ public class DbRequestLogger : InMemoryRollingRequestLogger, IRequiresSchema,
 
         var tableExists = db.TableExists<IpAnalytics>();
         var lastLogId = tableExists
-            ? db.Single(db.From<RequestLog>()
+            ? db.Scalar<long?>(db.From<RequestLog>()
                 .And(x => x.IpAddress == ip)
-                .OrderByDescending(x => x.Id).Limit(1))?.Id
+                .Select(x => x.Id).OrderByDescending(x => x.Id).Limit(1))
             : null;
 
         IpAnalytics? apiKeyAnalytics = null;
