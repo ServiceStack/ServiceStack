@@ -196,6 +196,7 @@ Use the retrieved documents as the primary authority for organization-specific i
         {
             ["title"] = "Ask our assistant", ["description"] = "Answers grounded in our documentation.",
             ["welcome"] = "Hi! What can I help you find?",
+            ["tooltip"] = "",
             ["suggestions"] = new JsonArray("What can you help me with?"),
         },
         ["scope"] = new JsonObject(),
@@ -210,7 +211,7 @@ Use the retrieved documents as the primary authority for organization-specific i
         ["appearance"] = new JsonObject
         {
             ["theme"] = "auto", ["colors"] = new JsonObject(), ["fonts"] = new JsonObject(),
-            ["position"] = "bottom-right", ["icon"] = "sparkles",
+            ["position"] = "bottom-right", ["mount"] = "", ["icon"] = "sparkles",
             ["button"] = new JsonObject
             {
                 ["size"] = 50, ["iconSize"] = 26, ["background"] = "", ["iconColor"] = "#ffffff",
@@ -265,6 +266,7 @@ Use the retrieved documents as the primary authority for organization-specific i
         config["identity"] = identity;
         foreach (var key in new[] { "title", "description", "welcome" })
             identity[key] = Text(identity, key);
+        identity["tooltip"] = Text(identity, "tooltip", max: 200);
         var suggestions = identity.GetArray("suggestions")
             ?? (identity.GetString("suggestions") is { } one ? new JsonArray(one) : new JsonArray());
         identity["suggestions"] = new JsonArray(suggestions.Select(x => x?.ToString().Trim().SafeSubstring(0, 200))
@@ -304,6 +306,7 @@ Use the retrieved documents as the primary authority for organization-specific i
         appearance["theme"] = new[] { "auto", "light", "dark", "nord", "matrix", "soft-pink" }.Contains(theme) ? theme : "auto";
         var position = appearance.GetString("position") ?? "bottom-right";
         appearance["position"] = new[] { "bottom-left", "bottom-right" }.Contains(position) ? position : "bottom-right";
+        appearance["mount"] = CleanSelector(Text(appearance, "mount", max: 300));
         var icon = appearance.GetString("icon") ?? "sparkles";
         appearance["icon"] = new[] { "sparkles", "chat", "help" }.Contains(icon) ? icon : "sparkles";
         var panelSize = appearance.GetString("panelSize") ?? "standard";
@@ -446,6 +449,9 @@ Use the retrieved documents as the primary authority for organization-specific i
 
     static int EffectivePort(Uri uri) => uri.IsDefaultPort ? uri.Scheme == "https" ? 443 : 80 : uri.Port;
     static string CleanFont(string value) => Regex.Replace(value, "[\\x00-\\x1f{};]", "").Trim();
+
+    /// <summary>Sanitize a host-page CSS selector used to mount a widget launcher inline.</summary>
+    public static string CleanSelector(string value) => Regex.Replace(value, "[\\x00-\\x1f<>{}\\\\;]", "").Trim();
 
     [GeneratedRegex("^#[0-9a-fA-F]{6}$")]
     private static partial Regex HexColor();

@@ -1088,6 +1088,9 @@ export const ChatBody = {
                     <div v-if="!$ai.hasAccess">
                         <SignIn @done="$ai.signIn($event)" />
                     </div>
+                    <div v-else-if="!hasThreads" class="text-center py-12" :class="[$styles.muted]">
+                        Chat history is unavailable.
+                    </div>
                     <!-- Welcome message when no thread is selected -->
                     <div v-else-if="!currentThread" class="text-center py-12">
                         <Welcome />
@@ -1364,7 +1367,7 @@ export const ChatBody = {
             </div>
 
             <!-- Input Area -->
-            <div v-if="$ai.hasAccess" :class="$ctx.cls('chat-input', 'flex-shrink-0 px-6 py-4 border-t ' + $styles.chromeBorder + ' ' + $styles.bgChat)">
+            <div v-if="$ai.hasAccess && hasThreads" :class="$ctx.cls('chat-input', 'flex-shrink-0 px-6 py-4 border-t ' + $styles.chromeBorder + ' ' + $styles.bgChat)">
                 <ChatPrompt :model="$chat.getSelectedModel()" />
             </div>
         </div>
@@ -1375,7 +1378,8 @@ export const ChatBody = {
         const config = ctx.state.config
         const threads = ctx.threads
         const chatPrompt = ctx.chat
-        const { currentThread } = threads
+        const hasThreads = !!threads
+        const currentThread = threads?.currentThread || ref(null)
 
         const router = useRouter()
         const route = useRoute()
@@ -1502,7 +1506,7 @@ export const ChatBody = {
         watch(() => route.params.id, async (newId) => {
             // console.debug('watch route.params.id', newId)
             ctx.clearError()
-            threads.setCurrentThreadFromRoute(newId, router)
+            threads?.setCurrentThreadFromRoute(newId, router)
 
             if (!newId) {
                 chatPrompt.reset()
@@ -1787,6 +1791,7 @@ export const ChatBody = {
             setPrefs,
             config,
             models,
+            hasThreads,
             currentThread,
             currentThreadMessages,
             isToolCallsOnly,

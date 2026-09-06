@@ -757,8 +757,12 @@ export class AppContext {
     }
 
     getTheme(theme) {
-        return this.state.themes[theme]
-            || this.state.themes[this.getColorScheme()]
+        const themes = this.state.themes || {}
+        const colorScheme = this.getColorScheme()
+        return themes[theme]
+            || themes[colorScheme]
+            || this.ai[theme]
+            || this.ai[colorScheme]
             || this.ai.light
     }
 

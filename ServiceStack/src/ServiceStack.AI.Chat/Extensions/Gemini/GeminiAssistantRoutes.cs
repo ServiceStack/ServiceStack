@@ -266,6 +266,7 @@ public partial class GeminiExtension
                 ["title"] = config.GetObject("identity").GetString("title"),
                 ["description"] = config.GetObject("identity").GetString("description"),
                 ["welcome"] = config.GetObject("identity").GetString("welcome"),
+                ["tooltip"] = config.GetObject("identity").GetString("tooltip"),
                 ["suggestions"] = config.GetObject("identity")?["suggestions"]?.DeepClone(),
                 ["notice"] = behavior.GetString("notice"),
                 ["launch"] = new JsonObject
@@ -279,7 +280,7 @@ public partial class GeminiExtension
             var source = $"(()=>{{const CONFIG={publicConfig.ToJsonString(ChatJson.Options)};"
                 + $"const SCRIPT=document.currentScript;const MARKDOWN=(()=>{{\n{markdown}\n}})();"
                 + $"const mount=()=>{{\n{widget}\n}};"
-                + "if(document.body)mount();else addEventListener('DOMContentLoaded',mount,{once:true});})();";
+                + "if(document.readyState!=='loading')mount();else addEventListener('DOMContentLoaded',mount,{once:true});})();";
             return Task.FromResult<object?>(new ChatResult
             {
                 ContentType = "application/javascript", Headers = headers, Text = source,

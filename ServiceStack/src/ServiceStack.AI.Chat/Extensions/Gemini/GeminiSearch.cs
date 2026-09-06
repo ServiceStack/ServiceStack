@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -9,17 +10,49 @@ namespace ServiceStack.AI;
 /// <summary>Configuration and heading-aware extraction for the independent local Search feature.</summary>
 public static partial class GeminiSearch
 {
-    public const string IndexVersion = "2";
+    public const string IndexVersion = "4";
     public static readonly string[] ScopeFields = ["category", "docType", "status", "locale", "product", "versions", "tags"];
     static readonly HashSet<string> Themes = ["auto", "light", "dark", "nord", "matrix", "soft-pink"];
+    static readonly HashSet<string> Positions = ["top-left", "top-right", "bottom-left", "bottom-right"];
+    static readonly HashSet<string> SearchGroupStopWords =
+        ["a", "an", "and", "are", "for", "how", "in", "is", "of", "on", "the", "to", "with"];
+    static readonly HashSet<string> LauncherStyles = ["raised", "flat", "inset"];
 
     static int Bounded(int? value, int fallback, int min, int max) => Math.Clamp(value ?? fallback, min, max);
+    static double Bounded(double? value, double fallback, double min, double max) => Math.Clamp(value ?? fallback, min, max);
+    static double? Number(JsonObject? value, string name) => value.GetDouble(name) ?? value.GetLong(name);
+
+    public static JsonObject NormalizeRanking(JsonObject? supplied = null)
+    {
+        supplied ??= new JsonObject();
+        var rawTypes = supplied.GetObject("docTypeWeights") ?? new JsonObject();
+        var docTypeWeights = new JsonObject();
+        foreach (var (key, _) in rawTypes.Take(50))
+        {
+            var name = key.Trim().SafeSubstring(0, 100);
+            var weight = Bounded(Number(rawTypes, key), 0, -20, 50);
+            if (name.Length > 0 && weight != 0) docTypeWeights[name] = weight;
+        }
+        return new JsonObject
+        {
+            ["titleWeight"] = Bounded(Number(supplied, "titleWeight"), 8, 0, 50),
+            ["headingWeight"] = Bounded(Number(supplied, "headingWeight"), 5, 0, 50),
+            ["contentWeight"] = Bounded(Number(supplied, "contentWeight"), 1, 0, 50),
+            ["phraseBoost"] = Bounded(Number(supplied, "phraseBoost"), 4, 0, 50),
+            ["exactTitleBoost"] = Bounded(Number(supplied, "exactTitleBoost"), 6, 0, 50),
+            ["freshnessWeight"] = Bounded(Number(supplied, "freshnessWeight"), 20, 0, 50),
+            ["freshnessHalfLifeDays"] = Bounded(supplied.GetInt("freshnessHalfLifeDays"), 365, 1, 3650),
+            ["nativeWeight"] = Bounded(Number(supplied, "nativeWeight"), 2, 0, 20),
+            ["docTypeWeights"] = docTypeWeights,
+        };
+    }
 
     public static JsonObject NormalizeConfig(JsonObject? supplied = null)
     {
         supplied ??= new JsonObject();
         var identity = supplied.GetObject("identity") ?? new JsonObject();
         var rawScope = supplied.GetObject("scope") ?? new JsonObject();
+        var ranking = NormalizeRanking(supplied.GetObject("ranking"));
         var rawBehavior = supplied.GetObject("behavior") ?? new JsonObject();
         var rawAppearance = supplied.GetObject("appearance") ?? new JsonObject();
         var rawHosting = supplied.GetObject("hosting") ?? new JsonObject();
@@ -30,6 +63,14 @@ public static partial class GeminiSearch
         if (!Themes.Contains(theme)) theme = "auto";
         var highlightColor = rawAppearance.GetString("highlightColor")?.Trim() ?? "";
         if (!Regex.IsMatch(highlightColor, "^#[0-9a-fA-F]{6}$")) highlightColor = "";
+        var fontFamily = Regex.Replace(rawAppearance.GetString("fontFamily") ?? "", "[\\x00-\\x1f{};]", "")
+            .Trim().SafeSubstring(0, 300);
+        var position = rawAppearance.GetString("position") ?? "bottom-right";
+        if (!Positions.Contains(position)) position = "bottom-right";
+        var launcherStyle = rawAppearance.GetString("launcherStyle") ?? "flat";
+        if (!LauncherStyles.Contains(launcherStyle)) launcherStyle = "flat";
+        var mount = GeminiAssistants.CleanSelector((rawAppearance.GetString("mount") ?? "").Trim().SafeSubstring(0, 300));
+        var rawOffset = rawAppearance.GetObject("offset") ?? new JsonObject();
         var legacyShortcut = rawBehavior.TryGetPropertyValue("keyboardShortcut", out _)
             ? rawBehavior.GetBool("keyboardShortcut") : (bool?)null;
         var origins = rawHosting.GetArray("allowedOrigins")?.Select(x => x?.GetValue<string>()?.Trim().TrimEnd('/'))
@@ -41,8 +82,10 @@ public static partial class GeminiSearch
                 ["title"] = (identity.GetString("title") ?? "Search documentation").Trim().SafeSubstring(0, 200),
                 ["placeholder"] = (identity.GetString("placeholder") ?? "Search docs").Trim().SafeSubstring(0, 120),
                 ["emptyText"] = (identity.GetString("emptyText") ?? "No matching documents found.").Trim().SafeSubstring(0, 300),
+                ["tooltip"] = (identity.GetString("tooltip") ?? "").Trim().SafeSubstring(0, 200),
             },
             ["scope"] = scope,
+            ["ranking"] = ranking,
             ["behavior"] = new JsonObject
             {
                 ["commandKShortcut"] = rawBehavior.TryGetPropertyValue("commandKShortcut", out _)
@@ -57,6 +100,17 @@ public static partial class GeminiSearch
             {
                 ["theme"] = theme,
                 ["highlightColor"] = highlightColor,
+                ["fontFamily"] = fontFamily,
+                ["position"] = position,
+                ["launcherStyle"] = launcherStyle,
+                ["mount"] = mount,
+                ["offset"] = new JsonObject
+                {
+                    ["top"] = Bounded(rawOffset.GetInt("top"), 20, 0, 400),
+                    ["right"] = Bounded(rawOffset.GetInt("right"), 20, 0, 400),
+                    ["bottom"] = Bounded(rawOffset.GetInt("bottom"), 20, 0, 400),
+                    ["left"] = Bounded(rawOffset.GetInt("left"), 20, 0, 400),
+                },
                 ["width"] = Bounded(rawAppearance.GetInt("width"), 420, 240, 900),
                 ["dialogWidth"] = Bounded(rawAppearance.GetInt("dialogWidth"), 760, 420, 1200),
             },
@@ -66,6 +120,65 @@ public static partial class GeminiSearch
                 ["requestsPerMinute"] = Bounded(rawHosting.GetInt("requestsPerMinute"), 120, 1, 5000),
             },
         };
+    }
+
+    public static List<ChatSearchResult> RankResults(IEnumerable<ChatSearchResult> candidates, string query,
+        IReadOnlyDictionary<long, ChatDocument>? documents = null, JsonObject? ranking = null)
+    {
+        var rows = candidates.ToList();
+        if (rows.Count == 0) return rows;
+        var config = NormalizeRanking(ranking);
+        var normalizedQuery = NormalizeSearchQuery(query);
+        var tokens = normalizedQuery.Split(' ', StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+        documents ??= new Dictionary<long, ChatDocument>();
+
+        (double Coverage, bool Phrase, bool Exact) Quality(string? value)
+        {
+            var text = NormalizeSearchQuery(value);
+            if (text.Length == 0 || tokens.Length == 0) return (0, false, false);
+            var coverage = tokens.Count(token => text.Contains(token, StringComparison.Ordinal)) / (double)tokens.Length;
+            return (coverage, text.Contains(normalizedQuery, StringComparison.Ordinal), text == normalizedQuery);
+        }
+
+        var titleWeight = config.GetDouble("titleWeight")!.Value;
+        var headingWeight = config.GetDouble("headingWeight")!.Value;
+        var contentWeight = config.GetDouble("contentWeight")!.Value;
+        var phraseBoost = config.GetDouble("phraseBoost")!.Value;
+        var exactTitleBoost = config.GetDouble("exactTitleBoost")!.Value;
+        var freshnessWeight = config.GetDouble("freshnessWeight")!.Value;
+        var halfLifeDays = config.GetInt("freshnessHalfLifeDays")!.Value;
+        var nativeWeight = config.GetDouble("nativeWeight")!.Value;
+        var typeWeights = config.GetObject("docTypeWeights")!;
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        return rows.Select((row, position) =>
+            {
+                var title = Quality(row.DocumentTitle);
+                var heading = Quality(row.Heading);
+                var content = Quality(row.Content);
+                var score = titleWeight * title.Coverage + headingWeight * heading.Coverage
+                    + contentWeight * content.Coverage;
+                if (title.Phrase || heading.Phrase || content.Phrase) score += phraseBoost;
+                if (title.Exact) score += exactTitleBoost;
+                documents.TryGetValue(row.DocumentId, out var document);
+                var updated = document?.SourceUpdatedAt;
+                var updatedAt = updated > 0
+                    ? DateTimeOffset.FromUnixTimeSeconds(updated.Value)
+                    : document?.UploadedAt is { } uploadedAt
+                        ? new DateTimeOffset(uploadedAt.ToUniversalTime())
+                        : document == null ? (DateTimeOffset?)null : new DateTimeOffset(document.CreatedAt.ToUniversalTime());
+                if (updatedAt != null && freshnessWeight > 0)
+                {
+                    var ageDays = Math.Max(0, now - updatedAt.Value.ToUnixTimeSeconds()) / 86400d;
+                    score += freshnessWeight * Math.Pow(.5, ageDays / halfLifeDays);
+                }
+                var docType = row.DocType ?? document?.DocType;
+                if (docType != null) score += typeWeights.GetDouble(docType) ?? 0;
+                var nativeQuality = rows.Count == 1 ? 1 : 1 - position / (double)(rows.Count - 1);
+                score += nativeWeight * nativeQuality;
+                row.Score = Math.Round(score, 6);
+                return (Row: row, Score: score, Position: position);
+            })
+            .OrderByDescending(x => x.Score).ThenBy(x => x.Position).Select(x => x.Row).ToList();
     }
 
     public static JsonObject ValidateConfig(JsonObject? supplied = null)
@@ -86,6 +199,38 @@ public static partial class GeminiSearch
 
     public static string NewPublicId() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(18))
         .Replace("+", "").Replace("/", "").Replace("=", "");
+
+    public static string NormalizeSearchQuery(string? value)
+    {
+        var decomposed = (value ?? "").Trim().ToLowerInvariant().Normalize(NormalizationForm.FormD);
+        var text = new string(decomposed.Where(x => CharUnicodeInfo.GetUnicodeCategory(x) != UnicodeCategory.NonSpacingMark).ToArray());
+        return string.Join(' ', Regex.Matches(text, @"[\p{L}\p{N}_]+")
+            .Select(x => x.Value)).SafeSubstring(0, 300);
+    }
+
+    static string SearchTokenRoot(string token)
+    {
+        foreach (var (suffix, minimum) in new[]
+                 {
+                     ("ations", 7), ("ation", 7), ("ments", 7), ("ment", 7), ("ings", 6),
+                     ("ing", 6), ("ies", 5), ("ed", 5), ("es", 5), ("e", 6), ("s", 4),
+                 })
+        {
+            if (token.Length < minimum || !token.EndsWith(suffix, StringComparison.Ordinal)) continue;
+            return token[..^suffix.Length] + (suffix == "ies" ? "y" : "");
+        }
+        return token;
+    }
+
+    public static string SearchQueryGroupKey(string? value)
+    {
+        var normalized = NormalizeSearchQuery(value);
+        var tokens = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Where(x => !SearchGroupStopWords.Contains(x)).Select(SearchTokenRoot)
+            .Distinct(StringComparer.Ordinal).OrderBy(x => x, StringComparer.Ordinal);
+        var key = string.Join(' ', tokens);
+        return key.Length > 0 ? key : normalized;
+    }
 
     public static string DesiredHash(ChatDocument doc)
     {
@@ -112,6 +257,43 @@ public static partial class GeminiSearch
         return Regex.Replace(text, "\\s+", " ").Trim();
     }
 
+    static string CleanSearchMarkdown(string? value)
+    {
+        static string CleanFragment(string fragment)
+        {
+            var inlineCode = new List<string>();
+            fragment = Regex.Replace(fragment, @"`([^`\n]*)`", match =>
+            {
+                inlineCode.Add(match.Groups[1].Value);
+                return $"\u0001CODE{inlineCode.Count - 1}\u0002";
+            });
+            fragment = Regex.Replace(fragment, @"^\s*:{3,}.*$", "", RegexOptions.Multiline);
+            fragment = Regex.Replace(fragment, @"<!--[\s\S]*?-->", " ");
+            fragment = Regex.Replace(fragment,
+                @"<(script|style|noscript|svg|form|iframe)\b[^>]*>[\s\S]*?</\1\s*>", " ",
+                RegexOptions.IgnoreCase);
+            fragment = Regex.Replace(fragment,
+                @"<h([1-6])\b[^>]*>([\s\S]*?)</h\1\s*>", match =>
+                {
+                    var level = int.Parse(match.Groups[1].Value);
+                    var content = Regex.Replace(match.Groups[2].Value, "<[^>]+>", " ");
+                    content = Regex.Replace(content, "\\s+", " ").Trim();
+                    return $"\n{new string('#', level)} {content}\n";
+                }, RegexOptions.IgnoreCase);
+            fragment = Regex.Replace(fragment,
+                @"</?(?:address|article|aside|blockquote|div|dl|dt|dd|fieldset|figcaption|figure|footer|header|hr|li|main|nav|ol|p|pre|section|table|tbody|td|tfoot|th|thead|tr|ul)\b[^>]*>|<br\s*/?>",
+                "\n", RegexOptions.IgnoreCase);
+            fragment = Regex.Replace(fragment, "<[^>]+>", " ");
+            fragment = WebUtility.HtmlDecode(fragment);
+            for (var i = 0; i < inlineCode.Count; i++)
+                fragment = fragment.Replace($"\u0001CODE{i}\u0002", inlineCode[i]);
+            return fragment;
+        }
+
+        var parts = Regex.Split(value ?? "", @"(```[\s\S]*?```|~~~[\s\S]*?~~~)");
+        return string.Concat(parts.Select((part, index) => index % 2 == 1 ? "\n" : CleanFragment(part)));
+    }
+
     static string Slugify(string value)
     {
         var decomposed = value.Normalize(NormalizationForm.FormD);
@@ -123,6 +305,7 @@ public static partial class GeminiSearch
     public static List<ChatSearchSection> SplitSections(string? text, ChatDocument doc, int chunkChars = 1400,
         string? documentTitle = null)
     {
+        text = CleanSearchMarkdown(text);
         var title = Regex.Replace(Plain(documentTitle ?? doc.DisplayName ?? doc.SourceKey ?? "Document", preserveUnderscores: true),
             @"\.(?:md|mdx|markdown|html?|txt)$", "", RegexOptions.IgnoreCase);
         var baseUrl = doc.SourceUrl ?? doc.Url ?? "";

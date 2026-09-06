@@ -223,7 +223,7 @@ public partial class GeminiExtension
         foreach (var entry in plan.Added.Concat(plan.Changed).Concat(plan.MetadataOnly))
         {
             var bytes = Encoding.UTF8.GetBytes(entry.Text); var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-            var ext = Path.GetExtension(entry.SourceKey).TrimStart('.'); if (ext is "html" or "htm") ext = "md"; if (ext.Length == 0) ext = "txt";
+            var ext = Path.GetExtension(entry.SourceKey).TrimStart('.'); if (GeminiIngest.IsHtmlExtension(ext)) ext = "md"; if (ext.Length == 0) ext = "txt";
             var filename = $"{hash}.{ext}"; var relative = $"{hash[..2]}/{filename}"; var fullPath = Ctx.GetCachePath(relative);
             Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!); await File.WriteAllBytesAsync(fullPath, bytes).ConfigAwait();
             var doc = entry.Id != null ? db.GetDocument(entry.Id.Value, UserOf(req))! : new ChatDocument

@@ -16,12 +16,12 @@ const cloneJson = value => JSON.parse(JSON.stringify(value ?? null))
 export const IMPORT_TABS = [
     {
         id: 'upload', label: 'Upload files',
-        blurb: 'Drop files in, including a .zip archive - which are expanded and individually imported with its folder structure becoming the category.',
+        blurb: 'Drop files in, including a .zip archive - which are expanded and individually imported with its folder structure becoming the category. HTML and Razor .cshtml files are converted to Markdown.',
         recurring: false, fields: [],
     },
     {
         id: 'folder', label: 'Folder', sourceType: 'folder',
-        blurb: 'Index a folder on this machine and keep it in sync.',
+        blurb: 'Index a folder on this machine and keep it in sync. HTML and Razor .cshtml files are converted to Markdown before import.',
         recurring: true,
         // A `pair` shares one grid cell, so the two settings that both shape the category sit
         // together and the glob fields get a row of their own.

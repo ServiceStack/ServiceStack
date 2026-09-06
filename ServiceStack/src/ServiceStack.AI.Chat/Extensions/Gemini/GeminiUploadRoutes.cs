@@ -37,7 +37,18 @@ public partial class GeminiExtension
             if (filename.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
                 parts.AddRange(ExpandZip(bytes, category, metadata));
             else
-                parts.Add(new UploadPart(filename, filename, bytes, MimeTypes.GetMimeType(filename), category));
+            {
+                var ext = Path.GetExtension(filename).TrimStart('.').ToLowerInvariant();
+                if (GeminiIngest.IsHtmlExtension(ext))
+                {
+                    var extracted = GeminiIngest.Extract(bytes, filename, new JsonObject { ["minWords"] = 0 });
+                    if (extracted.Skip != null) continue;
+                    var markdownName = Path.ChangeExtension(filename, ".md");
+                    parts.Add(new UploadPart(markdownName, extracted.Frontmatter.GetString("title") ?? markdownName,
+                        Encoding.UTF8.GetBytes(extracted.Text!), MimeTypes.MarkdownText, category));
+                }
+                else parts.Add(new UploadPart(filename, filename, bytes, MimeTypes.GetMimeType(filename), category));
+            }
         }
 
         var ids = new List<long>();
@@ -93,7 +104,7 @@ public partial class GeminiExtension
             if (extracted.Skip == null)
             {
                 bytes = Encoding.UTF8.GetBytes(extracted.Text!);
-                if (ext is "html" or "htm") { displayName = Path.ChangeExtension(displayName, ".md"); key = Path.ChangeExtension(key, ".md"); }
+                if (GeminiIngest.IsHtmlExtension(ext)) { displayName = Path.ChangeExtension(displayName, ".md"); key = Path.ChangeExtension(key, ".md"); }
             }
             else if (ext is not ("pdf" or "docx" or "pptx" or "xlsx"))
                 continue;

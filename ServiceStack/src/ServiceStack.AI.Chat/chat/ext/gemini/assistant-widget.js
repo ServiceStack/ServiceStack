@@ -26,32 +26,82 @@ const newSessionId = () => crypto.randomUUID ? crypto.randomUUID() :
 let sessionId = stored.sessionId || newSessionId();
 let messages = Array.isArray(stored.messages) ? stored.messages.slice(-30) : [];
 
+const mountSelector = String(('mount' in overrides ? overrides.mount : appearance.mount) || '').trim();
+function resolveMount() {
+    if (!mountSelector || /^(?:none|off|false)$/i.test(mountSelector)) return null;
+    let element;
+    try { element = document.querySelector(mountSelector); }
+    catch { console.warn(`Gemini Assistant: ignoring invalid mount selector ${JSON.stringify(mountSelector)}.`); return null; }
+    if (!element) console.warn(`Gemini Assistant: mount element ${JSON.stringify(mountSelector)} was not found; using the floating launcher.`);
+    return element;
+}
+const mountElement = resolveMount();
 const host = document.createElement('div');
 host.style.cssText = 'all:initial';
 host.setAttribute('data-gemini-assistant', CONFIG.assistantId);
-host.dataset.position = appearance.position;
-host.dataset.theme = appearance.theme;
+// The panel always overlays from document.body so an inline launcher cannot trap it inside a
+// transformed ancestor, and so opening the assistant never reflows the host page.
+const launcherHost = mountElement ? document.createElement('div') : null;
+if (launcherHost) {
+    launcherHost.style.cssText = 'all:initial;display:inline-flex;vertical-align:middle';
+    launcherHost.setAttribute('data-gemini-assistant-launcher', CONFIG.assistantId);
+    launcherHost.dataset.inline = '';
+    host.dataset.anchored = '';
+}
+const hosts = launcherHost ? [host, launcherHost] : [host];
+for (const element of hosts) element.dataset.position = appearance.position;
 const colorNames = ['accent-bg','panel-bg','conversation-bg','assistant-bg','assistant-border','user-bg','user-border','primary-text','muted-text','assistant-text','user-text','link-text','error-text','warning-text','panel-border','focus-border'];
 const colorScheme = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
+const savedColorScheme = () => {
+    try { const value = localStorage.getItem('color-scheme'); return value === 'dark' || value === 'light' ? value : null; }
+    catch { return null; }
+};
+// 'auto' follows the host page's saved color-scheme first, then the OS preference
+const resolveTheme = () => appearance.theme === 'auto'
+    ? savedColorScheme() || (colorScheme?.matches ? 'dark' : 'light')
+    : appearance.theme;
 function applyThemeColors() {
-    colorNames.forEach(name => host.style.removeProperty(`--${name}`));
-    host.style.removeProperty('--font-family');
-    const theme = appearance.theme === 'auto' ? (colorScheme?.matches ? 'dark' : 'light') : appearance.theme;
+    const theme = resolveTheme();
     const colors = appearance.colors[theme] || {};
-    colorNames.forEach(name => { if (/^#[0-9a-f]{6}$/i.test(colors[name] || '')) host.style.setProperty(`--${name}`, colors[name]); });
-    if (appearance.fonts[theme]) host.style.setProperty('--font-family', appearance.fonts[theme]);
-    if (accentOverride) host.style.setProperty('--accent-bg', accentOverride);
+    for (const element of hosts) {
+        element.dataset.theme = theme;
+        colorNames.forEach(name => element.style.removeProperty(`--${name}`));
+        element.style.removeProperty('--font-family');
+        colorNames.forEach(name => { if (/^#[0-9a-f]{6}$/i.test(colors[name] || '')) element.style.setProperty(`--${name}`, colors[name]); });
+        if (appearance.fonts[theme]) element.style.setProperty('--font-family', appearance.fonts[theme]);
+        if (accentOverride) element.style.setProperty('--accent-bg', accentOverride);
+    }
 }
 applyThemeColors();
-if (appearance.theme === 'auto') colorScheme?.addEventListener?.('change', applyThemeColors);
+const syncAutoTheme = event => {
+    if (appearance.theme !== 'auto' || (event?.key && event.key !== 'color-scheme')) return;
+    applyThemeColors();
+};
+addEventListener('storage', syncAutoTheme);
+colorScheme?.addEventListener?.('change', syncAutoTheme);
+document.addEventListener('visibilitychange', syncAutoTheme);
+new MutationObserver(syncAutoTheme).observe(document.documentElement, { attributes:true, attributeFilter:['class','style'] });
 document.body.appendChild(host);
 const shadow = host.attachShadow({ mode: 'open' });
 
-shadow.innerHTML = `<style>
-:host{all:initial;--accent-bg:#2563eb;--panel-bg:#fff;--conversation-bg:#f8fafc;--assistant-bg:#fff;--assistant-border:#dbe2ea;--user-bg:#e8f0ff;--user-border:#bfdbfe;--primary-text:#172033;--muted-text:#64748b;--assistant-text:#172033;--user-text:#172033;--link-text:#2563eb;--error-text:#dc2626;--warning-text:#d97706;--panel-border:#dbe2ea;--focus-border:#93c5fd;--font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--shadow:0 20px 55px rgba(15,23,42,.24);font-family:var(--font-family);color:var(--primary-text)}
+const styles = `
+:host{all:initial;--accent-bg:#2563eb;--panel-bg:#fff;--conversation-bg:#f8fafc;--assistant-bg:#fff;--assistant-border:#dbe2ea;--user-bg:#e8f0ff;--user-border:#bfdbfe;--primary-text:#172033;--muted-text:#64748b;--assistant-text:#172033;--user-text:#172033;--link-text:#2563eb;--error-text:#dc2626;--warning-text:#d97706;--panel-border:#dbe2ea;--focus-border:#93c5fd;--font-family:Inter,"Inter Fallback",system-ui,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--shadow:0 20px 55px rgba(15,23,42,.24);font-family:var(--font-family);color:var(--primary-text)}
 :host([hidden]){display:none}
 .root,.root *,.root *::before,.root *::after{box-sizing:border-box}.root{position:fixed;z-index:2147483000;bottom:20px;right:20px;display:flex;flex-direction:column;align-items:flex-end;gap:12px;pointer-events:none;font-family:var(--font-family);font-size:16px;font-style:normal;font-weight:400;line-height:1.45;color:var(--primary-text);text-align:left;text-transform:none;letter-spacing:normal;word-spacing:normal}.root button,.root textarea{font-family:var(--font-family);font-style:normal;letter-spacing:normal;text-transform:none}.root h2,.root p,.root form{padding:0}
 :host([data-position="bottom-left"]) .root{right:auto;left:20px;align-items:flex-start}
+.launcher-wrap{position:relative;display:inline-flex;pointer-events:auto}
+.tooltip{position:absolute;z-index:1;width:max-content;max-width:220px;padding:6px 10px;border-radius:9px;border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--primary-text);font:12px/1.45 var(--font-family);box-shadow:0 6px 20px rgba(15,23,42,.18);bottom:calc(100% + 9px);right:0;opacity:0;visibility:hidden;transition:opacity .14s ease,visibility 0s linear .14s}
+.tooltip:after{content:"";position:absolute;width:7px;height:7px;bottom:-4px;right:18px;background:var(--panel-bg);border:1px solid var(--panel-border);border-left:0;border-top:0;transform:rotate(45deg)}
+.launcher-wrap:hover .tooltip,.launcher:focus-visible+.tooltip{opacity:1;visibility:visible;transition-delay:.25s,0s}
+.tooltip.suppressed{display:none}
+:host([data-position="bottom-left"]) .tooltip{right:auto;left:0}
+:host([data-position="bottom-left"]) .tooltip:after{right:auto;left:18px}
+:host([data-inline]) .tooltip{top:calc(100% + 9px);bottom:auto;left:50%;right:auto;transform:translateX(-50%)}
+:host([data-inline]) .tooltip:after{top:-4px;bottom:auto;left:calc(50% - 4px);right:auto;border:1px solid var(--panel-border);border-right:0;border-bottom:0}
+@media(prefers-reduced-motion:reduce){.tooltip{transition:none}}
+:host([data-inline]) .root{position:static;inset:auto;display:inline-flex;flex-direction:row;align-items:center;gap:0;pointer-events:auto}
+:host([data-anchored]) .root{position:fixed;top:var(--anchor-top,20px);left:var(--anchor-left,20px);right:auto;bottom:auto;align-items:flex-start}
+:host([data-anchored]) .panel{transform-origin:top left}
 .launcher{width:50px;height:50px;border:0;border-radius:50%;display:grid;place-items:center;pointer-events:auto;background:var(--accent-bg);color:#fff;box-shadow:0 10px 30px rgba(15,23,42,.28);cursor:pointer;overflow:hidden;transition:filter .16s ease}.launcher:hover{filter:brightness(.94)}.launcher:focus-visible,.close:focus-visible,.maximize:focus-visible,.clear:focus-visible,.send:focus-visible,.suggestion:focus-visible,textarea:focus-visible{outline:3px solid var(--focus-border);outline-offset:2px}.launcher svg,.launcher img{display:block;width:26px;height:26px}.launcher img{object-fit:contain}
 .panel{width:min(390px,calc(100vw - 28px));height:min(610px,calc(100vh - 110px));display:grid;grid-template-rows:auto 1fr auto;visibility:hidden;opacity:0;pointer-events:none;transform:translateY(18px) scale(.94);transform-origin:bottom right;transition:opacity .18s ease,transform .22s cubic-bezier(.2,.8,.2,1),visibility 0s linear .22s;background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.panel.open{visibility:visible;opacity:1;pointer-events:auto;transform:translateY(0) scale(1);transition-delay:0s}:host([data-position="bottom-left"]) .panel{transform-origin:bottom left}.panel.compact{width:min(350px,calc(100vw - 28px));height:min(510px,calc(100vh - 110px))}.panel.maximized,.panel.compact.maximized{position:fixed;inset:16px;width:auto;height:auto;max-width:none;max-height:none;border-radius:14px;z-index:2147483001}
 .header{display:flex;gap:12px;align-items:flex-start;padding:16px 16px 14px;background:var(--accent-bg);color:#fff}.heading{min-width:0;flex:1;cursor:pointer}.title-row{display:flex;align-items:center;gap:4px}.title{font-size:16px;font-weight:700;margin:0}.description{font-size:12px;opacity:.84;margin:3px 0 0}.maximize,.close{width:30px;height:30px;border:0;background:transparent;color:inherit;padding:5px;border-radius:6px;cursor:pointer;display:grid;place-items:center;line-height:1}.maximize{opacity:0;pointer-events:none;transition:opacity .15s ease}.header:hover .maximize,.header:focus-within .maximize{opacity:1;pointer-events:auto}.maximize:hover,.close:hover{background:rgba(255,255,255,.14)}.maximize svg{width:17px;height:17px}.close svg{width:18px;height:18px}
@@ -62,17 +112,17 @@ shadow.innerHTML = `<style>
 :host([data-theme="matrix"]){--accent-bg:#0d542b;--panel-bg:#000000;--conversation-bg:#020a04;--assistant-bg:#000000;--assistant-border:#008236;--assistant-text:#86efac;--user-bg:#052e16;--user-border:#166534;--user-text:#4ade80;--primary-text:#4ade80;--muted-text:#15803d;--panel-border:#166534;--link-text:#4ade80;--focus-border:#22c55e;--error-text:#f87171;--warning-text:#facc15;--font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;--shadow:0 20px 60px rgba(0,0,0,.75)}
 :host([data-theme="matrix"]) .panel{box-shadow:0 0 28px rgba(34,197,94,.16),var(--shadow)}
 :host([data-theme="soft-pink"]){--accent-bg:#ec4899;--panel-bg:#ffffff;--conversation-bg:#fdf2f8;--assistant-bg:#fce7f3;--assistant-border:#f9a8d4;--assistant-text:#831843;--user-bg:#f1f5f9;--user-border:#cbd5e1;--user-text:#1e293b;--primary-text:#831843;--muted-text:#9d174d;--panel-border:#fbcfe8;--link-text:#ec4899;--focus-border:#f472b6;--error-text:#e11d48;--warning-text:#d97706;--shadow:0 20px 55px rgba(131,24,67,.20)}
-@media(prefers-color-scheme:dark){:host([data-theme="auto"]){--accent-bg:#2563eb;--panel-bg:#0f172a;--conversation-bg:#111827;--assistant-bg:#1f2937;--assistant-border:#374151;--assistant-text:#f3f4f6;--user-bg:#1d4ed8;--user-border:#3b82f6;--user-text:#ffffff;--primary-text:#f3f4f6;--muted-text:#9ca3af;--panel-border:#334155;--link-text:#60a5fa;--focus-border:#93c5fd;--error-text:#f87171;--warning-text:#fbbf24;--shadow:0 20px 60px rgba(0,0,0,.55)}}
 @media(max-width:520px){.root{bottom:12px;right:12px}:host([data-position="bottom-left"]) .root{left:12px}.panel,.panel.compact{width:calc(100vw - 24px);height:min(680px,calc(100vh - 88px))}.panel.maximized,.panel.compact.maximized{inset:0;width:100vw;height:100vh;border-radius:0}}
 @media(prefers-reduced-motion:reduce){.launcher,.body,.panel{transition:none;scroll-behavior:auto}}
-</style>
+`;
+shadow.innerHTML = `<style>${styles}</style>
 <div class="root">
   <section class="panel ${appearance.panelSize === 'compact' ? 'compact' : ''}" role="dialog" aria-label="${escapeAttr(CONFIG.title)}" aria-hidden="true">
     <header class="header"><div class="heading"><div class="title-row"><h2 class="title"></h2><button class="maximize" type="button" aria-label="Maximize assistant" title="Maximize"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg></button></div><p class="description"></p></div><button class="close" type="button" aria-label="Close assistant"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button></header>
     <main class="body" aria-live="polite"><div class="messages"></div><div class="thread-actions"><button class="clear" type="button" title="Clear this conversation and start a new one">clear</button></div></main>
     <footer class="composer"><form class="form"><textarea rows="1" maxlength="8000" aria-label="Message" placeholder="Ask a question…"></textarea><button class="send" type="submit" aria-label="Send message">➤</button></form><p class="notice"></p></footer>
   </section>
-  <button class="launcher" type="button" aria-label="Open assistant" aria-expanded="false"></button>
+  <span class="launcher-wrap"><button class="launcher" type="button" aria-label="Open assistant" aria-expanded="false"></button></span>
 </div>`;
 
 function escapeAttr(value) { return String(value || '').replace(/[&<>"']/g, ''); }
@@ -98,6 +148,18 @@ function sourceTitle(source) {
 }
 const panel = shadow.querySelector('.panel');
 const launcher = shadow.querySelector('.launcher');
+const launcherWrap = shadow.querySelector('.launcher-wrap');
+const tooltipText = String(CONFIG.tooltip || '').trim();
+let tooltip = null;
+if (tooltipText) {
+    tooltip = document.createElement('span');
+    tooltip.className = 'tooltip';
+    tooltip.id = `gemini-assistant-tooltip-${CONFIG.assistantId}`;
+    tooltip.setAttribute('role', 'tooltip');
+    tooltip.textContent = tooltipText;
+    launcherWrap.append(tooltip);
+    launcher.setAttribute('aria-describedby', tooltip.id);
+}
 const closeButton = shadow.querySelector('.close');
 const heading = shadow.querySelector('.heading');
 const maximizeButton = shadow.querySelector('.maximize');
@@ -136,6 +198,12 @@ if (/^data:image\/(?:png|jpeg|gif|webp|svg\+xml)(?:;charset=[^;,]+)?(?:;base64)?
 } else {
     launcher.innerHTML = icons[appearance.icon] || icons.sparkles;
     const icon = launcher.querySelector('svg'); icon.style.width = `${launcherIconSize}px`; icon.style.height = `${launcherIconSize}px`;
+}
+if (launcherHost) {
+    const launcherShadow = launcherHost.attachShadow({ mode: 'open' });
+    launcherShadow.innerHTML = `<style>${styles}</style><div class="root"></div>`;
+    launcherShadow.querySelector('.root').append(launcherWrap);
+    mountElement.append(launcherHost);
 }
 
 function save() {
@@ -244,13 +312,29 @@ const restoreIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
         <path d="M0 0h24v24H0z" fill="none" />
         <path fill="currentColor" d="M8.5 3.75a.75.75 0 0 0-1.5 0v2.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 0 0 1.5h2.5A2.25 2.25 0 0 0 8.5 6.25zm0 16.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 0-.75-.75h-2.5a.75.75 0 0 1 0-1.5h2.5a2.25 2.25 0 0 1 2.25 2.25zM16.25 3a.75.75 0 0 0-.75.75v2.5a2.25 2.25 0 0 0 2.25 2.25h2.5a.75.75 0 0 0 0-1.5h-2.5a.75.75 0 0 1-.75-.75v-2.5a.75.75 0 0 0-.75-.75m-.75 17.25a.75.75 0 0 0 1.5 0v-2.5a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 0 0-1.5h-2.5a2.25 2.25 0 0 0-2.25 2.25z" />
     </svg>`;
+function positionPanel() {
+    if (!launcherHost || panel.classList.contains('maximized')) return;
+    const anchor = launcher.getBoundingClientRect();
+    const margin = 8, gap = 10;
+    const width = panel.offsetWidth, height = panel.offsetHeight;
+    const below = anchor.bottom + gap, above = anchor.top - gap - height;
+    const top = below + height <= innerHeight - margin ? below
+        : above >= margin ? above
+        : Math.max(margin, innerHeight - height - margin);
+    const left = Math.min(Math.max(margin, anchor.left), Math.max(margin, innerWidth - width - margin));
+    host.style.setProperty('--anchor-top', `${Math.round(top)}px`);
+    host.style.setProperty('--anchor-left', `${Math.round(left)}px`);
+}
 function setMaximized(maximized) {
     panel.classList.toggle('maximized', maximized);
     maximizeButton.innerHTML = maximized ? restoreIcon : maximizeIcon;
     maximizeButton.setAttribute('aria-label', maximized ? 'Restore assistant window' : 'Maximize assistant');
     maximizeButton.title = maximized ? 'Restore' : 'Maximize';
+    if (!maximized) positionPanel();
 }
 function setOpen(open) {
+    if (open) positionPanel();
+    tooltip?.classList.toggle('suppressed', open);
     panel.classList.toggle('open', open); panel.setAttribute('aria-hidden', String(!open));
     launcher.setAttribute('aria-expanded', String(open)); launcher.setAttribute('aria-label', open ? 'Close assistant' : 'Open assistant');
     if (!open) setMaximized(false);
@@ -311,6 +395,11 @@ async function submitMessage(value) {
     } finally {
         send.disabled = false; input.disabled = false; save(); render(); input.focus();
     }
+}
+if (launcherHost) {
+    const reposition = () => { if (panel.classList.contains('open')) positionPanel(); };
+    addEventListener('resize', reposition);
+    addEventListener('scroll', reposition, { passive:true, capture:true });
 }
 launcher.addEventListener('click', () => setOpen(!panel.classList.contains('open')));
 closeButton.addEventListener('click', () => setOpen(false));

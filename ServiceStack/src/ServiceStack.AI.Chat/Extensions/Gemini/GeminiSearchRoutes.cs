@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
@@ -8,12 +9,14 @@ namespace ServiceStack.AI;
 public partial class GeminiExtension
 {
     readonly GeminiAssistantMinuteLimiter searchLimiter = new();
+    readonly GeminiAssistantMinuteLimiter searchClickLimiter = new();
 
     void InstallSearchRoutes(ExtensionContext ctx)
     {
         ctx.AddGet("filestores/{id}/searches", ListSearchWidgetsAsync);
         ctx.AddPost("filestores/{id}/searches", CreateSearchWidgetAsync);
         ctx.AddGet("searches/{id}", GetSearchWidgetAsync);
+        ctx.AddGet("searches/{id}/analytics", SearchAnalyticsAsync);
         ctx.AddPut("searches/{id}", UpdateSearchWidgetAsync);
         ctx.AddDelete("searches/{id}", ArchiveSearchWidgetAsync);
         ctx.AddPost("searches/{id}/restore", RestoreSearchWidgetAsync);
@@ -24,15 +27,17 @@ public partial class GeminiExtension
         ctx.AddPost("filestores/{id}/search-index/rebuild", RebuildSearchIndexAsync);
         ctx.AddGet("public/searches/widget.js", PublicSearchScriptAsync, allowAnon: true);
         ctx.AddGet("public/searches/{publicId}/results", PublicSearchResultsAsync, allowAnon: true);
+        ctx.AddPost("public/searches/{publicId}/clicks", PublicSearchClickAsync, allowAnon: true);
         ctx.AddGet("public/searches/{publicId}/documents/{documentId}", PublicSearchDocumentAsync, allowAnon: true);
     }
 
-    JsonObject SearchWidgetDto(ChatSearchWidget widget, ChatRequestContext req)
+    JsonObject SearchWidgetDto(ChatSearchWidget widget, ChatRequestContext req, long? searchCount = null)
     {
         var config = GeminiSearch.NormalizeConfig(ChatJson.TryParseObject(widget.Config));
         var src = AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/widget.js?g={widget.PublicId}");
         var dto = widget.ToDto(); dto["config"] = config;
         dto["published"] = widget.Enabled && widget.PublishedAt != null;
+        dto["searchCount"] = searchCount ?? db.SearchQueryCount(widget.Id);
         dto["scriptUrl"] = src; dto["embedCode"] = $"<script src=\"{src}\" async></script>";
         return dto;
     }
@@ -41,8 +46,10 @@ public partial class GeminiExtension
     {
         var user = UserOf(req); var storeId = IdOf(req);
         if (db.GetFilestore(storeId, user) == null) return Task.FromResult<object?>(ChatResult.NotFound("File Store does not exist"));
-        return Task.FromResult<object?>(new JsonArray(db.QuerySearchWidgets(storeId, user, true)
-            .Select(x => (JsonNode)SearchWidgetDto(x, req)).ToArray()));
+        var widgets = db.QuerySearchWidgets(storeId, user, true);
+        var counts = db.SearchQueryCounts(widgets.Select(x => x.Id));
+        return Task.FromResult<object?>(new JsonArray(widgets
+            .Select(x => (JsonNode)SearchWidgetDto(x, req, counts.GetValueOrDefault(x.Id))).ToArray()));
     }
 
     async Task<object?> CreateSearchWidgetAsync(ChatRequestContext req)
@@ -70,6 +77,13 @@ public partial class GeminiExtension
     {
         var widget = db.GetSearchWidget(IdOf(req), UserOf(req));
         return Task.FromResult<object?>(widget == null ? ChatResult.NotFound("Search widget does not exist") : SearchWidgetDto(widget, req));
+    }
+
+    Task<object?> SearchAnalyticsAsync(ChatRequestContext req)
+    {
+        var result = db.SearchAnalytics(IdOf(req), UserOf(req),
+            req.QueryString("groupTake").ToInt(50), req.QueryString("recentTake").ToInt(100));
+        return Task.FromResult<object?>(result != null ? result : ChatResult.NotFound("Search widget does not exist"));
     }
 
     async Task<object?> UpdateSearchWidgetAsync(ChatRequestContext req)
@@ -157,8 +171,11 @@ public partial class GeminiExtension
         var user=UserOf(req); var storeId=IdOf(req);
         if(db.GetFilestore(storeId,user)==null) return Task.FromResult<object?>(ChatResult.NotFound("File Store does not exist"));
         var query=req.QueryString("q")??""; var take=Math.Clamp(req.QueryString("take").ToInt(30),1,100);
-        var rows=db.SearchSections(storeId,query,user,take:take);
-        return Task.FromResult<object?>(new JsonObject{{"query",query},{"groups",GroupSearchResults(rows,query,
+        var skip=Math.Clamp(req.QueryString("skip").ToInt(),0,1000);
+        var ranking=ChatJson.TryParseObject(req.QueryString("ranking"));
+        var rows=db.SearchSections(storeId,query,user,take:take+1,ranking:ranking,skip:skip);
+        var hasMore=rows.Count>take; rows=rows.Take(take).ToList();
+        return Task.FromResult<object?>(new JsonObject{{"query",query},{"hasMore",hasMore},{"nextSkip",skip+rows.Count},{"groups",GroupSearchResults(rows,query,
             previewUrl: row => AssistantBaseUrl(req).CombineWith(
                 $"ext/gemini/filestores/{storeId}/search-documents/{row.DocumentId}"))}});
     }
@@ -238,12 +255,14 @@ public partial class GeminiExtension
             {
                 ["searchId"]=widget.PublicId,["title"]=config.GetObject("identity").GetString("title"),
                 ["placeholder"]=config.GetObject("identity").GetString("placeholder"),["emptyText"]=config.GetObject("identity").GetString("emptyText"),
+                ["tooltip"]=config.GetObject("identity").GetString("tooltip"),
                 ["behavior"]=config["behavior"]?.DeepClone(),["appearance"]=config["appearance"]?.DeepClone(),
                 ["searchUrl"]=AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/{widget.PublicId}/results"),
+                ["clickUrl"]=AssistantBaseUrl(req).CombineWith($"ext/gemini/public/searches/{widget.PublicId}/clicks"),
             };
             var script=$"(()=>{{const CONFIG={publicConfig.ToJsonString(ChatJson.Options)};const SCRIPT=document.currentScript;"
                 + $"const MARKDOWN=(()=>{{\n{markdown}\n}})();const mount=()=>{{\n{source}\n}};"
-                + "if(document.body)mount();else addEventListener('DOMContentLoaded',mount,{once:true});})();";
+                + "if(document.readyState!=='loading')mount();else addEventListener('DOMContentLoaded',mount,{once:true});})();";
             return Task.FromResult<object?>(new ChatResult{ContentType="application/javascript",Headers=headers,Text=script});
         }
         catch(Exception e){Log.LogError(e,"Failed generating Gemini Search widget script");return Task.FromResult<object?>(new ChatResult{ContentType="application/javascript",Headers=headers,Text="console.error(\"Gemini Search widget failed to load. Check the server logs for details.\");"});}
@@ -258,13 +277,65 @@ public partial class GeminiExtension
         var limit=config.GetObject("hosting").GetInt("requestsPerMinute")??120;
         if(!searchLimiter.Allow($"{widget.Id}:{req.Request.RemoteIp??"unknown"}",limit)){headers["Retry-After"]="60";return Task.FromResult<object?>(Error("Too many searches. Please wait a moment and try again.","RateLimited",429,headers));}
         var query=(req.QueryString("q")??"").Trim().SafeSubstring(0,200); var behavior=config.GetObject("behavior")!;
-        if(query.Length<(behavior.GetInt("minChars")??2))return Task.FromResult<object?>(new ChatResult{ContentType=MimeTypes.Json,Headers=headers,Text=new JsonObject{{"query",query},{"groups",new JsonArray()}}.ToJsonString(ChatJson.Options)});
-        var rows=db.SearchSections(store.Id,query,widget.User,config.GetObject("scope"),behavior.GetInt("maxResults")??30);
-        var result=new JsonObject{{"query",query},{"groups",GroupSearchResults(rows,query,
+        var skip=Math.Clamp(req.QueryString("skip").ToInt(),0,1000);
+        if(query.Length<(behavior.GetInt("minChars")??2))return Task.FromResult<object?>(new ChatResult{ContentType=MimeTypes.Json,Headers=headers,Text=new JsonObject{{"query",query},{"groups",new JsonArray()},{"hasMore",false},{"nextSkip",0}}.ToJsonString(ChatJson.Options)});
+        var stopwatch = Stopwatch.StartNew();
+        var take=behavior.GetInt("maxResults")??30;
+        var rows=db.SearchSections(store.Id,query,widget.User,config.GetObject("scope"),take+1,
+            config.GetObject("ranking"),skip);
+        var hasMore=rows.Count>take; rows=rows.Take(take).ToList();
+        var groups=GroupSearchResults(rows,query,
             behavior.GetInt("groupLimit")??8,
             row => AssistantBaseUrl(req).CombineWith(
-                $"ext/gemini/public/searches/{widget.PublicId}/documents/{row.DocumentId}"))}};
+                $"ext/gemini/public/searches/{widget.PublicId}/documents/{row.DocumentId}"));
+        stopwatch.Stop();
+        long? searchEventId = null;
+        try
+        {
+            if (skip == 0)
+                searchEventId = db.RecordSearchQuery(widget.Id, query, origin, req.Request.Headers["Referer"],
+                    req.Request.UserAgent, rows.Count, groups.Count, (int)Math.Min(stopwatch.ElapsedMilliseconds, int.MaxValue));
+        }
+        catch (Exception e) { Log.LogWarning(e, "Failed recording Search analytics"); }
+        var result=new JsonObject{{"query",query},{"groups",groups},{"hasMore",hasMore},{"nextSkip",skip+rows.Count},
+            {"searchEventId",searchEventId}};
         return Task.FromResult<object?>(new ChatResult{ContentType=MimeTypes.Json,Headers=headers,Text=result.ToJsonString(ChatJson.Options)});
+    }
+
+    async Task<object?> PublicSearchClickAsync(ChatRequestContext req)
+    {
+        var (widget, store) = PublicSearch(req.GetPathParam("publicId"));
+        if (widget == null || store == null) return ChatResult.NotFound("Search is unavailable");
+        var config = GeminiSearch.NormalizeConfig(ChatJson.TryParseObject(widget.Config));
+        var origin = req.Request.Headers[HttpHeaders.Origin];
+        var allowed = GeminiAssistants.OriginAllowed(origin,
+            GeminiMetadata.AsList(config.GetObject("hosting")?["allowedOrigins"]));
+        var headers = CorsHeaders(origin, allowed);
+        if (!allowed) return Error("This website is not allowed to use this Search widget", "OriginNotAllowed", 403, headers);
+        var searchLimit = config.GetObject("hosting").GetInt("requestsPerMinute") ?? 120;
+        var clickLimit = Math.Max(searchLimit * 4, 120);
+        if (!searchClickLimiter.Allow($"{widget.Id}:{req.Request.RemoteIp ?? "unknown"}", clickLimit))
+        {
+            headers["Retry-After"] = "60";
+            return Error("Too many Search interactions. Please wait a moment and try again.", "RateLimited", 429, headers);
+        }
+        JsonObject body;
+        try { body = await req.GetJsonBodyAsync().ConfigAwait(); }
+        catch { return Error("Invalid click event", "ValidationError", 400, headers); }
+        var searchEventId = body.GetLong("searchEventId") ?? 0;
+        var documentId = body.GetLong("documentId") ?? 0;
+        var sectionId = body.GetLong("sectionId");
+        var position = body.GetInt("position") ?? 0;
+        if (searchEventId <= 0 || documentId <= 0 || position <= 0)
+            return Error("Invalid click event", "ValidationError", 400, headers);
+        try
+        {
+            db.RecordSearchClick(widget.Id, store.Id, widget.User, searchEventId, documentId,
+                sectionId > 0 ? sectionId : null, position, body.GetString("documentTitle"),
+                body.GetString("sourceUrl"), body.GetString("resultType"));
+        }
+        catch (Exception e) { Log.LogWarning(e, "Failed recording Search result click"); }
+        return new ChatResult { Status = 204, Headers = headers };
     }
 
     async Task<object?> PublicSearchDocumentAsync(ChatRequestContext req)

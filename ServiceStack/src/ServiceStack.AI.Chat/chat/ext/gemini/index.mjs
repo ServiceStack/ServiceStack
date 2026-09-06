@@ -2569,7 +2569,7 @@ export default {
         initSources(ext)
         initImport(ext)
         initAssistants(ext, ctx, { GeminiModelSelector })
-        initSearches(ext)
+        initSearches(ext, ctx)
         initExplorer(ext)
 
         ctx.setLeftIcons({

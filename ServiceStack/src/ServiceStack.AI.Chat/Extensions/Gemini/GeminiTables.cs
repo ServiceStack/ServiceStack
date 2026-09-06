@@ -255,6 +255,42 @@ public class ChatSearchWidget
     [StringLength(StringLengthAttribute.MaxText)] public string? Config { get; set; }
 }
 
+/// <summary>A retained public Search request used to understand demand and missing coverage.</summary>
+[CompositeIndex(nameof(SearchWidgetId), nameof(CreatedAt))]
+[CompositeIndex(nameof(SearchWidgetId), nameof(GroupKey))]
+public class ChatSearchQuery
+{
+    [AutoIncrement] public long Id { get; set; }
+    public long SearchWidgetId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    [StringLength(200)] public string? Query { get; set; }
+    [StringLength(300)] public string? NormalizedQuery { get; set; }
+    [StringLength(500)] public string? GroupKey { get; set; }
+    [StringLength(500)] public string? Origin { get; set; }
+    [StringLength(2000)] public string? PageUrl { get; set; }
+    [StringLength(1000)] public string? UserAgent { get; set; }
+    public int ResultCount { get; set; }
+    public int DocumentCount { get; set; }
+    public int DurationMs { get; set; }
+}
+
+/// <summary>A selected public Search result used to measure document popularity and search CTR.</summary>
+[CompositeIndex(nameof(SearchWidgetId), nameof(CreatedAt))]
+[CompositeIndex(nameof(SearchWidgetId), nameof(DocumentId))]
+public class ChatSearchClick
+{
+    [AutoIncrement] public long Id { get; set; }
+    [Index] public long SearchQueryId { get; set; }
+    public long SearchWidgetId { get; set; }
+    public long DocumentId { get; set; }
+    public long? SectionId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public int Position { get; set; }
+    [StringLength(500)] public string? DocumentTitle { get; set; }
+    [StringLength(2000)] public string? SourceUrl { get; set; }
+    [StringLength(50)] public string? ResultType { get; set; }
+}
+
 /// <summary>A heading-aware local-search section extracted from a cached document.</summary>
 public class ChatSearchSection
 {

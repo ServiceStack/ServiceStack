@@ -77,7 +77,7 @@ public static class GeminiIngest
 {
     public const string ExtractorVersion = "1";
     public const int DefaultMinWords = 25;
-    static readonly HashSet<string> HtmlExts = new(StringComparer.OrdinalIgnoreCase) { "html", "htm" };
+    static readonly HashSet<string> HtmlExts = new(StringComparer.OrdinalIgnoreCase) { "html", "htm", "xhtml", "cshtml" };
     static readonly HashSet<string> BinaryExts = new(StringComparer.OrdinalIgnoreCase) { "pdf", "docx", "pptx", "xlsx" };
     static readonly HashSet<string> CodeExts = new(StringComparer.OrdinalIgnoreCase)
         { "cs", "js", "mjs", "ts", "tsx", "jsx", "py", "java", "go", "rs", "sh", "sql", "json", "xml", "yaml", "yml", "css", "scss", "vue", "svelte" };
@@ -253,6 +253,7 @@ public static class GeminiIngest
         var front = new JsonObject();
         if (HtmlExts.Contains(ext))
         {
+            if (ext == "cshtml") text = StripRazorCode(text);
             if (options.GetString("selector") is { Length: > 0 } selector)
                 text = SelectHtml(text, selector);
             text = new HtmlToMarkdownParser().Parse(text);
@@ -268,6 +269,34 @@ public static class GeminiIngest
         if (!CodeExts.Contains(ext) && minWords > 0 && text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length < minWords)
             return (null, front, $"under {minWords} words");
         return (text, front, null);
+    }
+
+    public static bool IsHtmlExtension(string? extension) => extension != null && HtmlExts.Contains(extension.TrimStart('.'));
+
+    /// <summary>Remove line-oriented Razor directives and code blocks before parsing .cshtml as HTML.</summary>
+    public static string StripRazorCode(string text)
+    {
+        var output = new List<string>();
+        int? blockIndent = null;
+        foreach (var line in text.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n'))
+        {
+            var expanded = line.Replace("\t", "    ");
+            var trimmed = expanded.TrimStart();
+            var indent = expanded.Length - trimmed.Length;
+            if (blockIndent != null)
+            {
+                if (trimmed.StartsWith('}') && indent <= blockIndent.Value) blockIndent = null;
+                continue;
+            }
+            if (trimmed.StartsWith('@')) continue;
+            if (trimmed.StartsWith('{'))
+            {
+                if (!trimmed[1..].Contains('}')) blockIndent = indent;
+                continue;
+            }
+            output.Add(line);
+        }
+        return string.Join('\n', output);
     }
 
     /// <summary>Scope HTML extraction to the first matching tag, .class or #id selector.</summary>
@@ -532,7 +561,10 @@ public static class GeminiIngest
                         derived.Metadata["sourceUrl"] = expandedUrl;
                 }
                 var contentHash = ContentHash(extracted.Text!, volatilePatterns); var metadataHash = MetadataHash(derived.Metadata);
-                var entry = new GeminiIngestEntry { SourceKey = item.Key, DisplayName = extracted.Frontmatter.GetString("title") ?? item.Title, Text = extracted.Text!, Size = raw.Length,
+                var displayName = extracted.Frontmatter.GetString("title") ?? item.Title;
+                if (IsHtmlExtension(Path.GetExtension(item.Key)) && extracted.Frontmatter.GetString("title") == null)
+                    displayName = Path.ChangeExtension(displayName, ".md");
+                var entry = new GeminiIngestEntry { SourceKey = item.Key, DisplayName = displayName, Text = extracted.Text!, Size = raw.Length,
                     ContentHash = contentHash, MetadataHash = metadataHash, SourceEtag = item.Etag, ExtractorVer = source.ExtractorVer ?? ExtractorVersion,
                     Metadata = derived.Metadata };
                 if (!existing.TryGetValue(item.Key, out var prior)) { plan.Added.Add(entry); plan.Bytes += raw.Length; }

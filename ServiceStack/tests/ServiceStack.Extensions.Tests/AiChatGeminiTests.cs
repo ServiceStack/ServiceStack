@@ -296,6 +296,15 @@ public class AiChatGeminiTests
         var conversationId = db.CreateAssistantConversation(assistant, "session-filestore-delete",
             "https://docs.example", "https://docs.example/start", "tests");
         db.AddAssistantMessage(db.GetAssistantConversation(conversationId)!, "user", "Help");
+        var search = new ChatSearchWidget
+        {
+            FilestoreId = filestoreId, User = User, CreatedAt = now, UpdatedAt = now,
+            Name = "Docs Search", PublicId = GeminiSearch.NewPublicId(), Enabled = true,
+            PublishedAt = now, Config = GeminiSearch.NormalizeConfig().ToJsonString(),
+        };
+        search.Id = db.InsertSearchWidget(search);
+        db.RecordSearchQuery(search.Id, "integration tests", "https://docs.example",
+            "https://docs.example/testing", "tests", 3, 1, 5);
 
         var summary = db.FilestoreDeleteSummary(filestoreId, User)!;
         Assert.Multiple(() =>
@@ -308,6 +317,8 @@ public class AiChatGeminiTests
             Assert.That(summary.GetInt("publishedAssistants"), Is.EqualTo(1));
             Assert.That(summary.GetInt("conversations"), Is.EqualTo(1));
             Assert.That(summary.GetLong("messages"), Is.EqualTo(1));
+            Assert.That(summary.GetInt("searchWidgets"), Is.EqualTo(1));
+            Assert.That(summary.GetLong("searches"), Is.EqualTo(1));
             Assert.That(db.FilestoreDeleteSummary(filestoreId, "not-the-owner"), Is.Null);
         });
         Assert.Throws<ArgumentException>(() => db.DeleteFilestore(filestoreId, User, "Wrong name"));
@@ -322,6 +333,7 @@ public class AiChatGeminiTests
             Assert.That(db.GetDocument(sourceDocument, User), Is.Null);
             Assert.That(db.GetAssistant(assistant.Id, User), Is.Null);
             Assert.That(db.GetAssistantConversation(conversationId), Is.Null);
+            Assert.That(db.SearchQueryCount(search.Id), Is.Zero);
             Assert.That(conn.Count<ChatSource>(x => x.Id == sourceId), Is.Zero);
             Assert.That(conn.Count<ChatSourceRun>(x => x.SourceId == sourceId), Is.Zero);
             Assert.That(db.GetFilestore(otherId, User), Is.Not.Null);
@@ -519,6 +531,14 @@ public class AiChatGeminiTests
             new JsonObject { ["category"] = "guides", ["docType"] = "guide" }), Is.Not.Empty);
         Assert.That(db.SearchSections(storeId, "integration", User,
             new JsonObject { ["category"] = "api" }), Is.Empty);
+        var firstPage = db.SearchSections(storeId, "tests", User, take: 1);
+        var secondPage = db.SearchSections(storeId, "tests", User, take: 1, skip: 1);
+        Assert.Multiple(() =>
+        {
+            Assert.That(firstPage, Has.Count.EqualTo(1));
+            Assert.That(secondPage, Has.Count.EqualTo(1));
+            Assert.That(secondPage[0].Id, Is.Not.EqualTo(firstPage[0].Id));
+        });
 
         var stats = db.SearchStats(storeId, User);
         Assert.Multiple(() =>
@@ -544,6 +564,30 @@ public class AiChatGeminiTests
         {
             Assert.That(filename[0].DocumentTitle, Is.EqualTo("2025-10-15_ormlite-new-configuration"));
             Assert.That(frontmatter[0].DocumentTitle, Is.EqualTo("New OrmLite Configuration"));
+        });
+    }
+
+    [Test]
+    public void Local_search_strips_layout_html_code_fences_and_container_directives()
+    {
+        var doc = new ChatDocument
+        {
+            DisplayName = "autoquery.md", SourceUrl = "https://docs.example/autoquery",
+        };
+        var sections = GeminiSearch.SplitSections(
+            "<div class=\"not-prose hide-title\"><h1 class=\"title\">\nAutoQuery " +
+            "<span>Home</span>\n</h1>" +
+            "<p>Build <strong>typed</strong> APIs &amp; clients.</p></div>\n\n" +
+            ":::{.shadow .rounded-md}\n![Banner](/banner.webp)\n:::\n\n" +
+            "```html\n<div class=\"sample\">Example</div>\n```", doc);
+        var content = string.Join(' ', sections.Select(x => x.Content));
+        Assert.Multiple(() =>
+        {
+            Assert.That(sections[0].Heading, Is.EqualTo("AutoQuery Home"));
+            Assert.That(content, Does.Contain("Build typed APIs & clients."));
+            Assert.That(content, Does.Not.Contain("not-prose"));
+            Assert.That(content, Does.Not.Contain(":::"));
+            Assert.That(content, Does.Not.Contain("<div class=\"sample\">Example</div>"));
         });
     }
 
@@ -599,6 +643,8 @@ public class AiChatGeminiTests
             ["appearance"] = new JsonObject
             {
                 ["theme"] = "nord", ["accent"] = "#ff0000", ["highlightColor"] = "#12abEF",
+                ["fontFamily"] = "Inter;{}", ["position"] = "top-left",
+                ["offset"] = new JsonObject { ["top"] = -5, ["right"] = 999 },
             },
         }).GetObject("appearance")!;
         Assert.That(appearance.GetString("theme"), Is.EqualTo("nord"));
@@ -620,7 +666,100 @@ public class AiChatGeminiTests
             Assert.That(legacyShortcuts.GetBool("commandKShortcut"), Is.False);
             Assert.That(legacyShortcuts.GetBool("slashShortcut"), Is.False);
             Assert.That(legacyShortcuts.ContainsKey("keyboardShortcut"), Is.False);
+            Assert.That(appearance.GetString("fontFamily"), Is.EqualTo("Inter"));
+            Assert.That(appearance.GetString("position"), Is.EqualTo("top-left"));
+            Assert.That(appearance.GetString("launcherStyle"), Is.EqualTo("flat"));
+            Assert.That(appearance.GetObject("offset")!.GetInt("top"), Is.Zero);
+            Assert.That(appearance.GetObject("offset")!.GetInt("right"), Is.EqualTo(400));
+            Assert.That(appearance.GetObject("offset")!.GetInt("bottom"), Is.EqualTo(20));
         });
+    }
+
+    [Test]
+    public void Local_search_portable_ranking_prefers_fresh_pages_and_configured_document_types()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var rows = new System.Collections.Generic.List<ChatSearchResult>
+        {
+            new() { Id = 1, DocumentId = 1, DocumentTitle = "Search tuning", Heading = "Other", Content = "search tuning", DocType = "archive" },
+            new() { Id = 2, DocumentId = 2, DocumentTitle = "Release", Heading = "Other", Content = "search tuning", DocType = "guide" },
+        };
+        var documents = new System.Collections.Generic.Dictionary<long, ChatDocument>
+        {
+            [1] = new() { Id = 1, SourceUpdatedAt = now - 86400L * 365 * 5, DocType = "archive" },
+            [2] = new() { Id = 2, SourceUpdatedAt = now, DocType = "guide" },
+        };
+        Assert.That(GeminiSearch.RankResults(rows, "search tuning", documents)[0].DocumentId, Is.EqualTo(2));
+        var configured = new JsonObject
+        {
+            ["freshnessWeight"] = 0, ["nativeWeight"] = 0,
+            ["docTypeWeights"] = new JsonObject { ["archive"] = 20 },
+        };
+        Assert.That(GeminiSearch.RankResults(rows, "search tuning", documents, configured)[0].DocumentId,
+            Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Search_analytics_groups_related_queries_and_tracks_no_results()
+    {
+        var db = CreateDb();
+        var storeId = AddFilestore(db, "Search Analytics");
+        var now = DateTime.Now;
+        var widget = new ChatSearchWidget
+        {
+            FilestoreId = storeId, User = User, CreatedAt = now, UpdatedAt = now,
+            Name = "Docs Search", PublicId = GeminiSearch.NewPublicId(), Enabled = true,
+            PublishedAt = now, Config = GeminiSearch.NormalizeConfig().ToJsonString(),
+        };
+        widget.Id = db.InsertSearchWidget(widget);
+        var documentId = AddDocument(db, storeId, "OrmLite Configuration.md", new string('a', 64));
+        var document = db.GetDocument(documentId, User)!;
+        document.SourceUrl = "https://docs.example/ormlite";
+        document.SearchHash = "click-metrics";
+        db.UpdateDocument(document);
+        db.ReplaceSearchSections(document,
+            GeminiSearch.SplitSections("# OrmLite Configuration\n\nConfigure OrmLite.", document),
+            document.SearchHash);
+        var sectionId = db.SearchSections(storeId, "configure", User).First().Id;
+
+        Assert.That(GeminiSearch.NormalizeSearchQuery("  Café   Configuration! "),
+            Is.EqualTo("cafe configuration"));
+        Assert.That(GeminiSearch.SearchQueryGroupKey("How to configure OrmLite"),
+            Is.EqualTo(GeminiSearch.SearchQueryGroupKey("OrmLite configuration")));
+
+        var firstQueryId = db.RecordSearchQuery(widget.Id, "How to configure OrmLite", "https://docs.example",
+            "https://docs.example/ormlite", "test-agent", 4, 2, 12);
+        db.RecordSearchQuery(widget.Id, "OrmLite configuration", null, null, null, 0, 0, 8);
+        db.RecordSearchClick(widget.Id, storeId, User, firstQueryId, documentId, sectionId, 2,
+            "OrmLite Configuration", "https://docs.example/ormlite", "content");
+        db.RecordSearchClick(widget.Id, storeId, User, firstQueryId, documentId, sectionId, 4,
+            "OrmLite Configuration", "https://docs.example/ormlite", "content");
+
+        var analytics = db.SearchAnalytics(widget.Id, User)!;
+        var group = analytics.GetArray("groups")![0]!.AsObject();
+        Assert.Multiple(() =>
+        {
+            Assert.That(analytics.GetLong("total"), Is.EqualTo(2));
+            Assert.That(analytics.GetLong("uniqueQueries"), Is.EqualTo(2));
+            Assert.That(analytics.GetLong("relatedGroups"), Is.EqualTo(1));
+            Assert.That(analytics.GetLong("noResults"), Is.EqualTo(1));
+            Assert.That(analytics.GetLong("totalClicks"), Is.EqualTo(2));
+            Assert.That(analytics.GetLong("clickedSearches"), Is.EqualTo(1));
+            Assert.That(analytics.GetDouble("clickThroughRate"), Is.EqualTo(50));
+            Assert.That(group.GetLong("count"), Is.EqualTo(2));
+            Assert.That(group.GetLong("clickCount"), Is.EqualTo(2));
+            Assert.That(group.GetDouble("clickThroughRate"), Is.EqualTo(50));
+            Assert.That(group.GetArray("variants"), Has.Count.EqualTo(2));
+            var popular = analytics.GetArray("popularDocuments")![0]!.AsObject();
+            Assert.That(popular.GetLong("documentId"), Is.EqualTo(documentId));
+            Assert.That(popular.GetDouble("averagePosition"), Is.EqualTo(3));
+            Assert.That(db.SearchQueryCounts([widget.Id])[widget.Id], Is.EqualTo(2));
+        });
+
+        Assert.That(db.DeleteSearchWidget(widget.Id, User, widget.Name), Is.True);
+        Assert.That(db.SearchQueryCount(widget.Id), Is.Zero);
+        using var conn = db.OpenDb();
+        Assert.That(conn.Count<ChatSearchClick>(x => x.SearchWidgetId == widget.Id), Is.Zero);
     }
 
     [Test]
@@ -744,6 +883,23 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void Razor_is_stripped_then_converted_to_markdown()
+    {
+        var razor = "@page\n@model DocsPage\n<div>\n<h1>Visible docs</h1>\n@if (Model.Internal)\n{\n"
+            + "  <p>Hidden Razor content</p>\n}\n<p>This public documentation has enough useful words for readers.</p>\n</div>";
+        var extracted = GeminiIngest.Extract(System.Text.Encoding.UTF8.GetBytes(razor), "index.cshtml",
+            new JsonObject { ["minWords"] = 0 });
+        Assert.Multiple(() =>
+        {
+            Assert.That(extracted.Skip, Is.Null);
+            Assert.That(extracted.Text, Does.Contain("Visible docs"));
+            Assert.That(extracted.Text, Does.Contain("public documentation"));
+            Assert.That(extracted.Text, Does.Not.Contain("@page"));
+            Assert.That(extracted.Text, Does.Not.Contain("Hidden Razor content"));
+        });
+    }
+
+    [Test]
     public void Html_to_markdown_preserves_text_boundaries_after_nested_blocks()
     {
         var html = "<dt><div><span>01</span></div>AI Ready</dt>"
@@ -817,6 +973,69 @@ public class AiChatGeminiTests
             Is.EqualTo("gemini-flash-latest"));
         Assert.That(GeminiAssistants.NormalizeConfig().GetObject("behavior")!
             .GetBool("keyboardShortcut"), Is.True);
+    }
+
+    [Test]
+    public void Launcher_tooltips_are_opt_in_and_bounded()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(GeminiSearch.NormalizeConfig().GetObject("identity")!.GetString("tooltip"), Is.Empty);
+            Assert.That(GeminiAssistants.NormalizeConfig().GetObject("identity")!.GetString("tooltip"), Is.Empty);
+            Assert.That(GeminiSearch.NormalizeConfig(new JsonObject
+            {
+                ["identity"] = new JsonObject { ["tooltip"] = "  Search the docs  " },
+            }).GetObject("identity")!.GetString("tooltip"), Is.EqualTo("Search the docs"));
+            Assert.That(GeminiAssistants.NormalizeConfig(new JsonObject
+            {
+                ["identity"] = new JsonObject { ["tooltip"] = "  Ask our assistant  " },
+            }).GetObject("identity")!.GetString("tooltip"), Is.EqualTo("Ask our assistant"));
+            Assert.That(GeminiAssistants.NormalizeConfig(new JsonObject
+            {
+                ["identity"] = new JsonObject { ["tooltip"] = new string('x', 400) },
+            }).GetObject("identity")!.GetString("tooltip"), Has.Length.EqualTo(200));
+        });
+    }
+
+    [Test]
+    public void Search_launcher_style_defaults_to_flat_and_rejects_unknown_values()
+    {
+        Assert.Multiple(() =>
+        {
+            foreach (var style in new[] { "raised", "flat", "inset" })
+                Assert.That(GeminiSearch.NormalizeConfig(new JsonObject
+                {
+                    ["appearance"] = new JsonObject { ["launcherStyle"] = style },
+                }).GetObject("appearance")!.GetString("launcherStyle"), Is.EqualTo(style));
+            Assert.That(GeminiSearch.NormalizeConfig(new JsonObject
+            {
+                ["appearance"] = new JsonObject { ["launcherStyle"] = "sunken" },
+            }).GetObject("appearance")!.GetString("launcherStyle"), Is.EqualTo("flat"));
+            Assert.That(GeminiSearch.NormalizeConfig().GetObject("appearance")!
+                .GetString("launcherStyle"), Is.EqualTo("flat"));
+        });
+    }
+
+    [Test]
+    public void Inline_mount_selectors_are_sanitized_and_default_to_the_floating_launcher()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(GeminiAssistants.NormalizeConfig().GetObject("appearance")!.GetString("mount"), Is.Empty);
+            Assert.That(GeminiSearch.NormalizeConfig().GetObject("appearance")!.GetString("mount"), Is.Empty);
+            Assert.That(GeminiAssistants.NormalizeConfig(new JsonObject
+            {
+                ["appearance"] = new JsonObject { ["mount"] = "  #docs-nav .assistant-slot  " },
+            }).GetObject("appearance")!.GetString("mount"), Is.EqualTo("#docs-nav .assistant-slot"));
+            Assert.That(GeminiSearch.NormalizeConfig(new JsonObject
+            {
+                ["appearance"] = new JsonObject { ["mount"] = "[data-search=\"top\"]" },
+            }).GetObject("appearance")!.GetString("mount"), Is.EqualTo("[data-search=\"top\"]"));
+            Assert.That(GeminiAssistants.NormalizeConfig(new JsonObject
+            {
+                ["appearance"] = new JsonObject { ["mount"] = "#nav</style><script>alert(1)</script>" },
+            }).GetObject("appearance")!.GetString("mount"), Is.EqualTo("#nav/stylescriptalert(1)/script"));
+        });
     }
 
     [Test]

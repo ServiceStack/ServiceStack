@@ -23,7 +23,9 @@ public class ConfigureAiChat : IHostingStartup
         .ConfigureServices((context, services) => {
 
             services.AddPlugin(new ChatFeature {
+#if PGSQL || MSSQL || MYSQL
                 NamedConnection = "northwind",
+#endif
                 // RequireAuth = false, // open access, runs as the "default" user
                 Extensions = {
                     new BookingToolsExtension(),

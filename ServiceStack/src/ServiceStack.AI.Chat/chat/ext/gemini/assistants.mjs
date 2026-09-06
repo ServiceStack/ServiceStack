@@ -129,10 +129,10 @@ const BUTTON_COLOR_FIELDS = [
 
 const defaults = () => ({
     model: '',
-    identity: { title: 'Ask our assistant', description: 'Answers grounded in our documentation.', welcome: 'Hi! How can I help you today?', suggestions: ['What can you help me with?'] },
+    identity: { title: 'Ask our assistant', description: 'Answers grounded in our documentation.', welcome: 'Hi! How can I help you today?', tooltip: '', suggestions: ['What can you help me with?'] },
     scope: {},
     behavior: { template: 'documentation', systemPrompt: PROMPTS.documentation, grounded: true, citations: true, responseStyle: 'balanced', openMode: '', keyboardShortcut: true, fallback: "I couldn't find that in the available documents.", notice: 'Conversations may be reviewed to improve support.' },
-    appearance: { theme: 'auto', colors: {}, fonts: {}, position: 'bottom-right', icon: 'sparkles', button: {...DEFAULT_BUTTON}, panelSize: 'standard' },
+    appearance: { theme: 'auto', colors: {}, fonts: {}, position: 'bottom-right', mount: '', icon: 'sparkles', button: {...DEFAULT_BUTTON}, panelSize: 'standard' },
     hosting: { allowedOrigins: [], requestsPerMinute: 30 },
 })
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -150,7 +150,7 @@ const RIGHT_COLOR_GROUPS = [
     colorGroup('Text colors', [['primary-text','Primary'], ['muted-text','Muted'], ['link-text','Link'], ['error-text','Error'], ['warning-text','Warning']]),
 ]
 const LOWER_COLOR_COLUMNS = [LEFT_COLOR_GROUPS, RIGHT_COLOR_GROUPS]
-const SYSTEM_FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'"
+const SYSTEM_FONT = "Inter, 'Inter Fallback', system-ui, ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 const MONO_FONT = "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace"
 const FONT_PRESETS = { light:SYSTEM_FONT, dark:SYSTEM_FONT, nord:SYSTEM_FONT, matrix:MONO_FONT, 'soft-pink':SYSTEM_FONT }
 const LAUNCHER_ICONS = {
@@ -379,6 +379,10 @@ export const AssistantsPanel = {
                     <textarea v-model="config.identity.welcome" rows="2" class="mt-1 w-full rounded-md" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"></textarea>
                   </div>
                   <div>
+                    <label class="block text-xs font-semibold">Button tooltip <span class="font-normal" :class="$styles.muted">(optional)</span></label>
+                    <input type="text" v-model.trim="config.identity.tooltip" maxlength="200" placeholder="No tooltip" class="mt-1 w-full rounded-md" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]">
+                  </div>
+                  <div>
                     <div class="flex items-center justify-between gap-2">
                       <label class="block text-xs font-semibold">Suggested questions</label>
                       <button type="button" @click="addSuggestion()" :disabled="config.identity.suggestions.length >= 6" title="Add suggested question" class="size-7 grid place-items-center rounded-md border border-transparent text-lg leading-none text-gray-400 hover:text-gray-700 hover:border-gray-300 focus-visible:border-gray-300 dark:text-gray-500 dark:hover:text-gray-200 dark:hover:border-gray-600 dark:focus-visible:border-gray-600 disabled:opacity-40">+</button>
@@ -555,6 +559,7 @@ export const AssistantsPanel = {
                     <div><label class="text-xs font-semibold">Shadow</label><select v-model="config.appearance.button.shadow" class="mt-1 w-full rounded-md" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"><option value="none">None</option><option value="subtle">Subtle</option><option value="medium">Medium</option><option value="strong">Strong</option></select></div>
                     <div><label class="text-xs font-semibold">Border width</label><input v-model.number="config.appearance.button.borderWidth" type="number" min="0" max="8" class="mt-1 w-full rounded-md" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"><span class="block mt-1 text-xs" :class="$styles.muted">0–8 px</span></div>
                     <div v-for="color in buttonColorFields" :key="color.key" class="text-xs"><span class="font-semibold">{{ color.label }}</span><div class="mt-1 flex items-center gap-2"><input type="color" :value="buttonColorValue(color.key)" @input="setButtonColor(color.key, $event.target.value)" :aria-label="'Choose ' + color.label + ' color'" class="size-9 shrink-0 rounded border cursor-pointer" :class="$styles.chromeBorder"><input type="text" :value="buttonColorValue(color.key)" @change="setButtonColorText(color.key, $event)" @keydown.enter.prevent="$event.target.blur()" maxlength="7" pattern="#[0-9a-fA-F]{6}" spellcheck="false" :aria-label="color.label + ' hex color'" class="min-w-0 w-24 rounded-md border px-2 py-1.5 text-xs font-mono font-normal bg-white dark:bg-gray-900" :class="$styles.chromeBorder"><button v-if="hasButtonColorOverride(color.key)" type="button" @click="resetButtonColor(color.key)" class="text-xs underline" :class="$styles.muted">reset</button></div></div>
+                    <div class="sm:col-span-2"><label class="text-xs font-semibold">Mount element <span class="font-normal" :class="$styles.muted">(optional CSS selector)</span></label><input type="text" v-model.trim="config.appearance.mount" maxlength="300" placeholder="#assistant-slot" spellcheck="false" class="mt-1 w-full rounded-md font-mono text-xs" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"><span class="block mt-1 text-xs" :class="$styles.muted">Renders the launcher inside this element (e.g. a nav bar) instead of a floating corner button, and anchors the panel to it. The panel still overlays the page. The host page can override it with <code>data-mount</code> on the script tag.</span></div>
                     <div><label class="text-xs font-semibold">Built-in icon</label><select v-model="config.appearance.icon" :disabled="!!launcherDataUri" class="mt-1 w-full rounded-md disabled:opacity-50" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"><option value="sparkles">Sparkles</option><option value="chat">Chat</option><option value="help">Help</option></select></div>
                   </div>
                   <div><label class="text-xs font-semibold">Custom icon Data URI</label><textarea v-model.trim="config.appearance.button.iconDataUri" rows="3" maxlength="200000" placeholder="data:image/svg+xml,... or data:image/png;base64,..." class="mt-1 w-full rounded-md font-mono text-xs" :class="[$styles.bgInput, $styles.textInput, $styles.borderInput]"></textarea><span class="block mt-1 text-xs" :class="$styles.muted">Supports PNG, JPEG, GIF, WebP, and SVG images. When set, it replaces the built-in icon.</span></div>
