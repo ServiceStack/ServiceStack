@@ -106,7 +106,8 @@ public class GeminiUploadWorker
         var token = source.Token;
         try
         {
-            ctx.Log.LogInformation("Gemini UploadWorker started (concurrency={Concurrency})", concurrency);
+            ctx.Log.LogInformation("Gemini UploadWorker started with {Pending} queued documents (concurrency={Concurrency})",
+                total, concurrency);
             // documents already handled in this run: updates may not be visible to the next read yet
             var completed = new HashSet<long>();
             var filestoreIds = new HashSet<long>();
@@ -192,7 +193,10 @@ public class GeminiUploadWorker
                 }
             }
             source.Dispose();
-            ctx.Log.LogInformation("Gemini UploadWorker stopped");
+            var status = Status();
+            ctx.Log.LogInformation(
+                "Gemini UploadWorker stopped (total={Total}, done={Done}, failed={Failed}, cancelled={Cancelled})",
+                status.GetLong("total"), status.GetLong("done"), status.GetLong("failed"), status.GetBool("cancelled"));
         }
     }
 

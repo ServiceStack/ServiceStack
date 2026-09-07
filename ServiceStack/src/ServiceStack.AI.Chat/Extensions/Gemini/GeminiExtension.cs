@@ -529,9 +529,18 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
             hashCounts[remote.MetadataHash] = hashCounts.GetValueOrDefault(remote.MetadataHash) + 1;
         }
 
+        var pendingUploads = new List<ChatDocument>();
         foreach (var local in localDocs)
         {
-            if (!matchedLocalIds.Contains(local.Id))
+            if (matchedLocalIds.Contains(local.Id))
+                continue;
+
+            // A document which has never completed an upload is queued work, not remote drift.
+            // Labelling it MISSING_FROM_REMOTE hides the upload affordance and previously made a
+            // store sync appear to strand interrupted uploads.
+            if (local.UploadedAt == null && local.Error == null && local.TombstonedAt == null)
+                pendingUploads.Add(local);
+            else
                 remoteMissing.Add(local);
         }
 
@@ -551,6 +560,12 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         await stores.RefreshAsync(filestore).ConfigAwait();
         db.EnsureSearchDesiredHashes();
         searchWorker?.Start();
+        if (pendingUploads.Count > 0)
+        {
+            Log.LogInformation("Store sync found {Count} queued Gemini uploads; ensuring UploadWorker is running",
+                pendingUploads.Count);
+            worker?.Start();
+        }
 
         Log.LogInformation(
             "Sync complete: remote={Remote}, local={Local}, matched={Matched}, missing_metadata={MissingMetadata}, unmatched={Unmatched}",
@@ -565,6 +580,7 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
             ["Unmatched Fields"] = Issue(unmatched.Count, unmatched.Take(5).Select(FileNameOf)),
             ["Duplicate Documents"] = Issue(duplicates.Count, duplicates.Take(5).Select(FileNameOf)),
             ["Source Changes"] = Issue(sourceChanges.Count, sourceChanges.Take(5)),
+            ["Pending Uploads"] = Issue(pendingUploads.Count, pendingUploads.Take(5).Select(FileNameOf)),
             ["New Source Documents"] = new JsonObject {
                 ["count"] = newSourceDocuments.Count,
                 ["docs"] = new JsonArray(newSourceDocuments.Take(5)

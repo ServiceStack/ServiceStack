@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.AI;
@@ -117,15 +118,29 @@ public partial class GeminiExtension
         await AssertWriteAsync(req).ConfigAwait();
         var body = await req.GetJsonBodyAsync().ConfigAwait();
         var pending = db.PendingMetadata(IdOf(req), UserOf(req));
+        // Also recover documents incorrectly classified by an earlier store sync while their
+        // initial upload was still pending. These have no UploadedAt, so PendingMetadata omits them.
+        var missingUploads = db.QueryAllDocuments(IdOf(req), UserOf(req))
+            .Where(x => x.State == "MISSING_FROM_REMOTE" && x.TombstonedAt == null)
+            .ToList();
         if (body.GetArray("ids") is { Count: > 0 } ids)
         {
             var wanted = ids.Select(x => x!.GetValue<long>()).ToHashSet();
             pending = pending.Where(x => wanted.Contains(x.Doc.Id)).ToList();
+            missingUploads = missingUploads.Where(x => wanted.Contains(x.Id)).ToList();
         }
         foreach (var row in pending) db.ResetDocumentUpload(row.Doc.Id);
+        foreach (var doc in missingUploads)
+        {
+            db.ResetDocumentUpload(doc.Id);
+            db.UpdateDocumentState(doc.Id, "STATE_PENDING");
+        }
         worker?.Start();
-        return new JsonObject { ["queued"] = pending.Count,
-            ["ids"] = new JsonArray(pending.Select(x => (JsonNode)x.Doc.Id).ToArray()) };
+        var queuedIds = pending.Select(x => x.Doc.Id).Concat(missingUploads.Select(x => x.Id)).Distinct().ToArray();
+        Log.LogInformation("Queued {Count} Gemini documents for upload ({Recovered} recovered from MISSING_FROM_REMOTE)",
+            queuedIds.Length, missingUploads.Count);
+        return new JsonObject { ["queued"] = queuedIds.Length, ["recovered"] = missingUploads.Count,
+            ["ids"] = new JsonArray(queuedIds.Select(x => (JsonNode)x).ToArray()) };
     }
 
     Task<object?> WorkerStatusAsync(ChatRequestContext req) =>

@@ -54,7 +54,8 @@ public partial class GeminiExtension
                 }
             }
         }
-        foreach (var local in localById.Values.Where(x => x.State == "MISSING_FROM_REMOTE"))
+        // Never prune an initial/interrupted upload: its cached source can still be retried.
+        foreach (var local in localById.Values.Where(x => x.State == "MISSING_FROM_REMOTE" && x.UploadedAt != null))
         {
             if (samples.Count < 5) samples.Add(local.DisplayName ?? local.Name ?? local.Id.ToString());
             staleRemoved++;
