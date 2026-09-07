@@ -5,7 +5,7 @@ namespace ServiceStack.AI;
 
 /// <summary>
 /// The auth seam of the Chat UI, replacing llms-py's pluggable AuthProvider (credentials/github_auth
-/// extensions) with ServiceStack Identity Auth. The username partitions all per-user data
+/// extensions) with ServiceStack Auth. The username partitions all per-user data
 /// (db 'user' columns + App_Data/chat/user/&lt;user&gt;/ paths).
 /// </summary>
 public interface IChatAuth

@@ -41,7 +41,7 @@ public class ChatLimits
 /// <summary>
 /// ServiceStack plugin hosting the llms-py v4 web app: OpenAI-compatible /v1/chat/completions,
 /// the Chat UI (synced verbatim from llms-py), and its modular extensions — using
-/// ServiceStack Identity Auth, OrmLite persistence and App_Data/chat file storage.
+/// ServiceStack Auth, OrmLite persistence and App_Data/chat file storage.
 /// </summary>
 public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServices, IPreInitPlugin, IRequireLoadAsync
 {

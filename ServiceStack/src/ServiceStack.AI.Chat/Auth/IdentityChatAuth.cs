@@ -12,8 +12,8 @@ namespace ServiceStack.AI;
 
 /// <summary>
 /// Default IChatAuth using ASP.NET Identity Auth (ClaimsPrincipal from the authentication cookie),
-/// with optional API Key support (Authorization: Bearer) when ApiKeysFeature is registered —
-/// used both by the stock 'apikey' SignIn UI and programmatic clients.
+/// classic ServiceStack Auth sessions, and optional API Key support (Authorization: Bearer) when
+/// ApiKeysFeature is registered — used by the SignIn UI and programmatic clients.
 /// </summary>
 public class IdentityChatAuth(ChatFeature feature) : IChatAuth
 {
@@ -24,6 +24,17 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
         var user = request.GetClaimsPrincipal();
         return user.IsAuthenticated() ? user : null;
     }
+
+    public IAuthSession? GetAuthSession(IRequest request)
+    {
+        var session = request.Items.TryGetValue(Keywords.Session, out var value)
+            ? value as IAuthSession
+            : request.GetSession();
+        return session?.IsAuthenticated == true ? session : null;
+    }
+
+    static string? GetSessionUserName(IAuthSession session) =>
+        session.UserAuthName ?? session.UserName ?? session.Email ?? session.UserAuthId;
 
     public string? GetUserName(IRequest request)
     {
@@ -37,7 +48,11 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
         var user = GetClaimsPrincipal(request);
         if (user != null)
             return user.GetUserName();
-        return GetApiKeyUserName(request);
+        var apiKeyUserName = GetApiKeyUserName(request);
+        if (apiKeyUserName != null)
+            return apiKeyUserName;
+        var session = GetAuthSession(request);
+        return session != null ? GetSessionUserName(session) : null;
     }
 
     /// <summary>
@@ -58,6 +73,10 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
         var apiKey = request.GetApiKey();
         if (apiKey != null)
             return apiKey.HasScope(requiredRole) || apiKey.HasScope(RoleNames.Admin);
+
+        var session = GetAuthSession(request);
+        if (session != null)
+            return session.Roles?.Contains(requiredRole) == true || session.Roles?.Contains(RoleNames.Admin) == true;
 
         return false;
     }
@@ -125,25 +144,42 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
         if (user == null)
         {
             var apiKey = request.GetApiKey();
-            if (apiKey == null)
-                return null;
-            authProvider = "apikey";
-            // resolve the key's user for richer profile info when available
-            var userResolver = request.GetService<IUserResolver>();
-            if (userResolver != null && apiKey.UserAuthId != null)
+            if (apiKey != null)
             {
-                user = await userResolver.CreateClaimsPrincipalAsync(request, apiKey.UserAuthId).ConfigAwait();
+                authProvider = "apikey";
+                // resolve the key's user for richer profile info when available
+                var userResolver = request.GetService<IUserResolver>();
+                if (userResolver != null && apiKey.UserAuthId != null)
+                {
+                    user = await userResolver.CreateClaimsPrincipalAsync(request, apiKey.UserAuthId).ConfigAwait();
+                }
+                if (user == null || !user.IsAuthenticated())
+                {
+                    return new JsonObject
+                    {
+                        ["userId"] = apiKey.UserAuthId ?? apiKey.Key,
+                        ["userName"] = apiKey.UserAuthId ?? "user",
+                        ["displayName"] = apiKey.UserAuthId ?? "user",
+                        ["profileUrl"] = "/avatar/user",
+                        ["roles"] = new JsonArray(apiKey.HasScope(RoleNames.Admin) ? [(JsonNode)RoleNames.Admin] : []),
+                        ["authProvider"] = authProvider,
+                    };
+                }
             }
-            if (user == null || !user.IsAuthenticated())
+            else
             {
+                var session = GetAuthSession(request);
+                if (session == null)
+                    return null;
+                var userName = GetSessionUserName(session);
                 return new JsonObject
                 {
-                    ["userId"] = apiKey.UserAuthId ?? apiKey.Key,
-                    ["userName"] = apiKey.UserAuthId ?? "user",
-                    ["displayName"] = apiKey.UserAuthId ?? "user",
-                    ["profileUrl"] = "/avatar/user",
-                    ["roles"] = new JsonArray(apiKey.HasScope(RoleNames.Admin) ? [(JsonNode)RoleNames.Admin] : []),
-                    ["authProvider"] = authProvider,
+                    ["userId"] = session.UserAuthId ?? userName,
+                    ["userName"] = userName,
+                    ["displayName"] = session.DisplayName ?? session.UserName ?? userName,
+                    ["profileUrl"] = session.GetProfileUrl() ?? "/avatar/user",
+                    ["roles"] = new JsonArray((session.Roles ?? []).Select(x => (JsonNode)x).ToArray()),
+                    ["authProvider"] = session.AuthProvider ?? "session",
                 };
             }
         }
@@ -192,6 +228,9 @@ public class IdentityChatAuth(ChatFeature feature) : IChatAuth
         if (user != null && user.HasRole(RoleNames.Admin))
             return true;
         var apiKey = request.GetApiKey();
-        return apiKey?.HasScope(RoleNames.Admin) == true;
+        if (apiKey?.HasScope(RoleNames.Admin) == true)
+            return true;
+        var session = GetAuthSession(request);
+        return session?.Roles?.Contains(RoleNames.Admin) == true;
     }
 }
