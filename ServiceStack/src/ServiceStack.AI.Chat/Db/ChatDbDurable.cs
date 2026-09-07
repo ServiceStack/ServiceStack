@@ -6,7 +6,7 @@ namespace ServiceStack.AI;
 
 public partial class ChatDb
 {
-    static readonly System.Collections.Concurrent.ConcurrentDictionary<long, object> MessageBackfillLocks = new();
+    static readonly System.Collections.Concurrent.ConcurrentDictionary<long, object> MessageSyncLocks = new();
 
     public long CreateAgentRun(long threadId, string? user, string? model, int maxSteps = 250)
     {
@@ -134,7 +134,7 @@ public partial class ChatDb
 
     public void EnsureChatMessages(long threadId)
     {
-        lock (MessageBackfillLocks.GetOrAdd(threadId, static _ => new object()))
+        lock (MessageSyncLocks.GetOrAdd(threadId, static _ => new object()))
         {
             using var db = OpenDb();
             using var tx = db.OpenTransaction();
@@ -152,6 +152,15 @@ public partial class ChatDb
 
     public void SyncChatMessages(long threadId, JsonArray messages, bool rewrite = false,
         long? runId = null, long? stepId = null)
+    {
+        lock (MessageSyncLocks.GetOrAdd(threadId, static _ => new object()))
+        {
+            SyncChatMessagesLocked(threadId, messages, rewrite, runId, stepId);
+        }
+    }
+
+    void SyncChatMessagesLocked(long threadId, JsonArray messages, bool rewrite,
+        long? runId, long? stepId)
     {
         using var db = OpenDb();
         using var tx = db.OpenTransaction();

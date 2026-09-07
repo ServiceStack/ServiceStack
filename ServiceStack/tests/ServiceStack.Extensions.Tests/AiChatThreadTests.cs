@@ -443,6 +443,38 @@ public class ChatThreadTests
     }
 
     [Test]
+    public async Task Concurrent_message_syncs_allocate_unique_sequences()
+    {
+        var (_, db, id) = CreateThreadApi(new JsonArray());
+        using var ready = new CountdownEvent(20);
+        using var start = new ManualResetEventSlim();
+        var tasks = Enumerable.Range(1, 20).Select(i => Task.Run(() =>
+        {
+            ready.Signal();
+            start.Wait();
+            db.SyncChatMessages(id, new JsonArray(new JsonObject
+            {
+                ["role"] = "user",
+                ["content"] = $"message {i}",
+                ["timestamp"] = i,
+            }));
+        })).ToArray();
+        ready.Wait();
+
+        start.Set();
+        await Task.WhenAll(tasks);
+
+        var rows = db.GetActiveMessagesAfter(id, 0);
+        Assert.Multiple(() =>
+        {
+            Assert.That(rows, Has.Count.EqualTo(20));
+            Assert.That(rows.Select(x => x.GetLong("_sequence")),
+                Is.EqualTo(Enumerable.Range(1, 20).Select(x => (long?)x)));
+            Assert.That(rows.Select(x => x.GetLong("timestamp")).Distinct().Count(), Is.EqualTo(20));
+        });
+    }
+
+    [Test]
     public void Payload_sizing_and_token_estimation_do_not_take_ownership_of_message_nodes()
     {
         var rows = new System.Collections.Generic.List<JsonObject>
