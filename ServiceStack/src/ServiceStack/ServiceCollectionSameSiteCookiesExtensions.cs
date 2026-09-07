@@ -1,6 +1,7 @@
 #if NET6_0_OR_GREATER
 #nullable enable
 using System;
+using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.CookiePolicy;
@@ -99,12 +100,14 @@ public static class ServiceCollectionSameSiteCookiesExtensions
         return false;
     }
 
+    /// <summary>
+    /// Configures a default HttpClient for HttpUtils and registers it with the DI container.
+    /// </summary>
     public static IHttpClientBuilder AddHttpUtilsClient(this IServiceCollection services)
     {
         HostContext.ConfigureAppHost(appHost => HttpUtils.CreateClient = () => 
             appHost.TryResolve<IHttpClientFactory>().CreateClient(nameof(HttpUtils)));
         return services.AddHttpClient(nameof(HttpUtils));
     }
-    
 }
 #endif

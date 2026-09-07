@@ -77,11 +77,6 @@ public class ConfigureAiChat : IHostingStartup
             // Keep typed PDF models in sync with published templates on each debug restart.
             // Templates you've since edited the model of are left alone, as are any named in Exclude.
             StartupTasks.Register("pdf", () => appHost.GetPlugin<PdfFeature>().GeneratePdfs());
-
-            // Keep local ServiceStack References in sync with server DTO changes on each debug restart.
-            StartupTasks.Register("dtos", () =>
-                appHost.GetPlugin<NativeTypesFeature>().GenerateDtos());
-            
         });
 }
 

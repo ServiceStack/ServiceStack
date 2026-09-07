@@ -101,6 +101,10 @@ public class AppHost() : AppHostBase("My App"), IHostingStartup
                     return null;
                 };
             });
+        })
+        .ConfigureAppHost(afterAppHostInit:appHost => {
+            // Keep local ServiceStack References in sync with server DTO changes on each debug restart.
+            StartupTasks.Register("dtos", () => appHost.GetPlugin<NativeTypesFeature>().GenerateDtos());
         });
 
     // Configure your AppHost with the necessary configuration and dependencies your App needs
