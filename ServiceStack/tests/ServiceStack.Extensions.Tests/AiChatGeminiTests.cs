@@ -152,6 +152,28 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void Can_drop_schema()
+    {
+        var db = CreateDb();
+        using (var conn = db.OpenDb())
+        {
+            Assert.That(conn.TableExists<ChatFilestore>(), Is.True);
+            Assert.That(conn.TableExists<ChatSearchSection>(), Is.True);
+            Assert.That(conn.TableExists("ChatSearchSectionFts"), Is.True);
+        }
+
+        db.DropSchema();
+
+        using (var conn = db.OpenDb())
+        {
+            Assert.That(conn.TableExists<ChatFilestore>(), Is.False);
+            Assert.That(conn.TableExists<ChatSearchSection>(), Is.False);
+            Assert.That(conn.TableExists("ChatSearchSectionFts"), Is.False);
+        }
+        Assert.DoesNotThrow(db.DropSchema);
+    }
+
+    [Test]
     public void Applies_the_file_search_store_resource_to_a_filestore()
     {
         var db = CreateDb();

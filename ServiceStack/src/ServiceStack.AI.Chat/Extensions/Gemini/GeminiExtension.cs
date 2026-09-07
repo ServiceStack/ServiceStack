@@ -11,7 +11,7 @@ namespace ServiceStack.AI;
 /// OpenAI-shaped `file_search` tool, which <see cref="GoogleProvider"/> forwards to Gemini.
 /// Self-disables when no Gemini API key is configured.
 /// </summary>
-public partial class GeminiExtension() : ChatExtension("gemini")
+public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
 {
     /// <summary>Url prefix of the content-addressed cache documents are stored in</summary>
     public const string CacheUrlBase = "/~cache/";
@@ -59,7 +59,7 @@ public partial class GeminiExtension() : ChatExtension("gemini")
             ?? ctx.Config.GetString("gemini_write_role");
         if (ctx.Feature.AutoInitSchema)
         {
-            db.InitSchema();
+            InitSchema();
         }
 
         client = new GeminiClient(ctx.Feature.HttpClientFactory, apiKey);
@@ -111,6 +111,16 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         ctx.AddPost("imports/{name}/transform", TransformCrawlImportAsync);
         InstallAssistantRoutes(ctx);
         InstallSearchRoutes(ctx);
+    }
+
+    public void InitSchema()
+    {
+        db.InitSchema();
+    }
+
+    public void DropSchema()
+    {
+        db.DropSchema();
     }
 
     /// <summary>Resume any uploads that were still queued when the app last shut down</summary>

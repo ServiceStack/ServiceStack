@@ -383,6 +383,29 @@ public class ChatThreadTests
         db.GetThread(id, ChatDb.DefaultUser)!.ToDto()["messages"]!.AsArray();
 
     [Test]
+    public void Can_drop_chat_schema()
+    {
+        var (_, db, _) = CreateThreadApi(new JsonArray());
+
+        db.DropSchema();
+
+        using (var conn = db.OpenDb())
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(conn.TableExists<ChatMessage>(), Is.False);
+                Assert.That(conn.TableExists<ContextSnapshot>(), Is.False);
+                Assert.That(conn.TableExists<AgentStep>(), Is.False);
+                Assert.That(conn.TableExists<AgentRun>(), Is.False);
+                Assert.That(conn.TableExists<ChatRequest>(), Is.False);
+                Assert.That(conn.TableExists<ChatMedia>(), Is.False);
+                Assert.That(conn.TableExists<ChatThread>(), Is.False);
+            });
+        }
+        Assert.DoesNotThrow(db.DropSchema);
+    }
+
+    [Test]
     public void Durable_schema_backfills_legacy_history_and_pages_without_duplicates()
     {
         var (_, db, id) = CreateThreadApi(History());
@@ -624,5 +647,34 @@ public class ChatThreadTests
         Assert.That(coordinator.HasPending(threadId, ChatDb.DefaultUser), Is.False);
         using (var conn = db.OpenDb())
             Assert.That(conn.Select<ChatToolApproval>().Single().Status, Is.EqualTo(ApiToolApprovalStatus.Canceled));
+    }
+
+    [Test]
+    public void Can_drop_api_tool_approval_schema()
+    {
+        var dbFactory = new OrmLiteConnectionFactory(
+            $"DataSource=file:approvals{Guid.NewGuid():n}?mode=memory&cache=shared", SqliteDialect.Provider);
+        var db = new ChatDb(dbFactory);
+        db.InitSchema();
+        var coordinator = new ApiToolApprovalCoordinator(new ApiToolsExtension(),
+            new ExtensionContext(new ChatFeature
+            {
+                ChatDb = db,
+                ThreadApi = new DbThreadApi(db, new ThreadUpdates(), NullLogger.Instance),
+            }, "api_tools"));
+        coordinator.InitSchema();
+
+        coordinator.DropSchema();
+
+        using (var conn = db.OpenDb())
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(conn.TableExists<ChatToolApproval>(), Is.False);
+                Assert.That(conn.TableExists<ChatToolApprovalBatch>(), Is.False);
+                Assert.That(conn.TableExists<ChatThread>(), Is.True);
+            });
+        }
+        Assert.DoesNotThrow(coordinator.DropSchema);
     }
 }

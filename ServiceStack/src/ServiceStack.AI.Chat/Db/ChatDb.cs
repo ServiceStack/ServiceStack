@@ -58,6 +58,19 @@ public partial class ChatDb(IDbConnectionFactory dbFactory, string? namedConnect
         AddMissingColumns<ContextSnapshot>(db);
     }
 
+    public void DropSchema()
+    {
+        using var db = OpenDb();
+        db.DropTables(
+            typeof(ChatMessage),
+            typeof(ContextSnapshot),
+            typeof(AgentStep),
+            typeof(AgentRun),
+            typeof(ChatRequest),
+            typeof(ChatMedia),
+            typeof(ChatThread));
+    }
+
     /// <summary>Add columns missing from a table created by an earlier version (also used by extension tables)</summary>
     public static void AddMissingColumns<T>(IDbConnection db)
     {

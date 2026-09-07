@@ -10,7 +10,7 @@ namespace ServiceStack.AI;
 /// background completions, the long-poll update channel that streams responses to the browser,
 /// and the chat filters that record token/cost accounting.
 /// </summary>
-public partial class AppExtension() : ChatExtension("app")
+public partial class AppExtension() : ChatExtension("app"), IHasSchema
 {
     public ChatDb Db { get; private set; } = null!;
     public ThreadUpdates Updates { get; } = new();
@@ -22,7 +22,7 @@ public partial class AppExtension() : ChatExtension("app")
             "ChatFeature.ChatDb is required by the app extension — register an IDbConnectionFactory");
         if (ctx.Feature.AutoInitSchema)
         {
-            Db.InitSchema();
+            InitSchema();
         }
 
         threadApi = new DbThreadApi(Db, Updates, ctx.Log);
@@ -42,6 +42,16 @@ public partial class AppExtension() : ChatExtension("app")
         RegisterAvatarRoutes(ctx);
         RegisterFilters(ctx);
         InstallDurableAgents(ctx);
+    }
+
+    public void InitSchema()
+    {
+        Db.InitSchema();
+    }
+
+    public void DropSchema()
+    {
+        Db.DropSchema();
     }
 
     // ── Threads ──

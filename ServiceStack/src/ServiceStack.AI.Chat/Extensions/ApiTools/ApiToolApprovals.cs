@@ -86,7 +86,7 @@ public static class ApiToolApprovalBatchStatus
 
 /// <summary>Persistence, authenticated routes, execution, and continuation for api_call approvals.</summary>
 public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionContext ctx)
-    : IChatToolApprovalCoordinator
+    : IChatToolApprovalCoordinator, IHasSchema
 {
     readonly ChatDb db = ctx.Feature.ChatDb!;
     IThreadApi Threads => ctx.Threads;
@@ -95,17 +95,30 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
     {
         if (ctx.Feature.AutoInitSchema)
         {
-            using var conn = db.OpenDb();
-            conn.CreateTableIfNotExists<ChatToolApprovalBatch>();
-            conn.CreateTableIfNotExists<ChatToolApproval>();
-            ChatDb.AddMissingColumns<ChatToolApprovalBatch>(conn);
-            ChatDb.AddMissingColumns<ChatToolApproval>(conn);
+            InitSchema();
         }
 
         ctx.AddGet("approvals/{threadId}", ListAsync);
         ctx.AddPost("approvals/{id}/approve", ApproveAsync);
         ctx.AddPost("approvals/{id}/reject", RejectAsync);
         ctx.AddPost("approval-batches/{id}/continue", ContinueAsync);
+    }
+
+    public void InitSchema()
+    {
+        using var conn = db.OpenDb();
+        conn.CreateTableIfNotExists<ChatToolApprovalBatch>();
+        conn.CreateTableIfNotExists<ChatToolApproval>();
+        ChatDb.AddMissingColumns<ChatToolApprovalBatch>(conn);
+        ChatDb.AddMissingColumns<ChatToolApproval>(conn);
+    }
+
+    public void DropSchema()
+    {
+        using var conn = db.OpenDb();
+        conn.DropTables(
+            typeof(ChatToolApproval),
+            typeof(ChatToolApprovalBatch));
     }
 
     public async Task PauseAsync(IReadOnlyList<PendingChatToolCall> calls, ChatContext context)
@@ -561,4 +574,5 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
         ["updatedAt"] = ChatDb.ToDateString(row.UpdatedAt),
         ["completedAt"] = ChatDb.ToDateNode(row.CompletedAt),
     };
+
 }

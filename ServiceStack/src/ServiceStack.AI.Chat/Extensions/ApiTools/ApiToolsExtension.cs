@@ -14,7 +14,7 @@ namespace ServiceStack.AI;
 /// and only the APIs an Agent actually uses cost it their schema.
 /// </para>
 /// </summary>
-public class ApiToolsExtension() : ChatExtension("api_tools")
+public class ApiToolsExtension() : ChatExtension("api_tools"), IHasSchema
 {
     /// <summary>
     /// Which APIs EnableApiTools exposes. [Tool] APIs are always included; use IncludeTags to
@@ -36,6 +36,7 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
 
     ExtensionContext ctx = null!;
     ApiToolRegistry registry = null!;
+    ApiToolApprovalCoordinator? approvals;
     public ApiToolRegistry? Registry => registry;
 
     public override void Install(ExtensionContext ctx)
@@ -123,11 +124,15 @@ public class ApiToolsExtension() : ChatExtension("api_tools")
         if (ctx.Feature.ChatDb != null)
         {
             ctx.RegisterUiExtension("/custom/ApiApprovalForm.mjs");
-            var approvals = new ApiToolApprovalCoordinator(this, ctx);
+            approvals = new ApiToolApprovalCoordinator(this, ctx);
             approvals.Install();
             ctx.Feature.ToolApprovalCoordinator = approvals;
         }
     }
+
+    public void InitSchema() => approvals?.InitSchema();
+
+    public void DropSchema() => approvals?.DropSchema();
 
     Task<object?> SearchAsync(JsonObject args, ChatContext context)
     {

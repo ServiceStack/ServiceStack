@@ -110,6 +110,26 @@ internal sealed class GeminiSearchDbProvider
 
     public void DisableNative() => NativeEnabled = false;
 
+    public void DropSchema(IDbConnection conn)
+    {
+        var dialect = conn.GetDialectProvider();
+        var table = dialect.GetQuotedTableName(typeof(ChatSearchSection));
+        var model = typeof(ChatSearchSection).GetModelMetadata();
+
+        switch (Kind)
+        {
+            case GeminiSearchDbKind.Sqlite:
+                conn.ExecuteSql("DROP TABLE IF EXISTS ChatSearchSectionFts");
+                break;
+            case GeminiSearchDbKind.SqlServer:
+                var objectName = dialect.GetTableName(model).Replace("'", "''");
+                conn.ExecuteSql($"IF EXISTS (SELECT 1 FROM sys.fulltext_indexes WHERE object_id=OBJECT_ID(N'{objectName}')) DROP FULLTEXT INDEX ON {table}");
+                conn.ExecuteSql("IF EXISTS (SELECT 1 FROM sys.fulltext_catalogs c WHERE c.name='ChatSearchCatalog' AND NOT EXISTS (SELECT 1 FROM sys.fulltext_indexes i WHERE i.fulltext_catalog_id=c.fulltext_catalog_id)) DROP FULLTEXT CATALOG ChatSearchCatalog");
+                break;
+        }
+        NativeEnabled = false;
+    }
+
     public GeminiSearchDbQuery? BuildNativeQuery(IDbConnection conn, long storeId, string query,
         IReadOnlyList<string> tokens, string? user, JsonObject? scope, int take)
     {

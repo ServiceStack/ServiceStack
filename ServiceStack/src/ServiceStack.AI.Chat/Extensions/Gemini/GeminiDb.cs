@@ -42,6 +42,26 @@ public partial class GeminiDb(ChatDb db)
         InitSearchSchema(conn);
     }
 
+    public void DropSchema()
+    {
+        using var conn = OpenDb();
+        GeminiSearchDbProvider.Detect(conn).DropSchema(conn);
+        conn.DropTables(
+            typeof(ChatSearchClick),
+            typeof(ChatSearchPageView),
+            typeof(ChatSearchSection),
+            typeof(ChatSearchQuery),
+            typeof(ChatSearchWidget),
+            typeof(ChatAssistantMessage),
+            typeof(ChatAssistantConversation),
+            typeof(ChatAssistant),
+            typeof(ChatSourceRun),
+            typeof(ChatDocument),
+            typeof(ChatSource),
+            typeof(ChatFilestore));
+        searchProvider = null!;
+    }
+
     public static readonly Dictionary<string, string> FilestoreColumns = ChatDb.ColumnsOf<ChatFilestore>();
     public static readonly Dictionary<string, string> DocumentColumns = ChatDb.ColumnsOf<ChatDocument>();
 

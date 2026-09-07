@@ -743,6 +743,17 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         }
     }
 
+    public void DropSchema()
+    {
+        foreach (var extension in installedExtensions
+                     .Select(x => x.Extension)
+                     .OfType<IHasSchema>()
+                     .Reverse())
+        {
+            extension.DropSchema();
+        }
+    }
+
     async Task LoadProvidersAsync(CancellationToken token = default)
     {
         foreach (var provider in Providers.Values)

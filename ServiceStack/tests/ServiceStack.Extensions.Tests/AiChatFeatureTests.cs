@@ -1,7 +1,9 @@
 #nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using NUnit.Framework;
 using ServiceStack.AI;
 
@@ -57,5 +59,48 @@ public class AiChatFeatureTests
 
         Assert.DoesNotThrow(() => feature.RunShutdownHandlers());
         Assert.That(ran, Is.EqualTo(new[] { "after" }));
+    }
+
+    [Test]
+    public void Every_schema_owning_extension_implements_IHasSchema()
+    {
+        Assert.Multiple(() =>
+        {
+            Assert.That(new AppExtension(), Is.InstanceOf<IHasSchema>());
+            Assert.That(new GeminiExtension(), Is.InstanceOf<IHasSchema>());
+            Assert.That(new ApiToolsExtension(), Is.InstanceOf<IHasSchema>());
+        });
+    }
+
+    [Test]
+    public void Drops_installed_extension_schemas_in_reverse_order()
+    {
+        var feature = new ChatFeature();
+        var dropped = new List<string>();
+        var first = new TestSchemaExtension("first", dropped);
+        var withoutSchema = new TestExtension("without-schema");
+        var last = new TestSchemaExtension("last", dropped);
+        var installed = (IList)typeof(ChatFeature)
+            .GetField("installedExtensions", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(feature)!;
+        installed.Add(((ChatExtension)first, new ExtensionContext(feature, first.Name)));
+        installed.Add(((ChatExtension)withoutSchema, new ExtensionContext(feature, withoutSchema.Name)));
+        installed.Add(((ChatExtension)last, new ExtensionContext(feature, last.Name)));
+
+        feature.DropSchema();
+
+        Assert.That(dropped, Is.EqualTo(new[] { "last", "first" }));
+    }
+
+    sealed class TestExtension(string name) : ChatExtension(name)
+    {
+        public override void Install(ExtensionContext ctx) { }
+    }
+
+    sealed class TestSchemaExtension(string name, List<string> dropped) : ChatExtension(name), IHasSchema
+    {
+        public override void Install(ExtensionContext ctx) { }
+        public void InitSchema() { }
+        public void DropSchema() => dropped.Add(Name);
     }
 }
