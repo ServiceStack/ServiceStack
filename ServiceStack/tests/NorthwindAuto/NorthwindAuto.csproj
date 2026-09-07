@@ -10,7 +10,11 @@
 <!--    <DefineConstants>$(DefineConstants);MYSQL</DefineConstants>-->
 <!--    <DefineConstants>$(DefineConstants);SQLITE</DefineConstants>-->
   </PropertyGroup>
-
+    
+  <ItemGroup>
+    <Compile Remove="App_Data\**\*" />
+  </ItemGroup>
+    
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.*" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.*" />

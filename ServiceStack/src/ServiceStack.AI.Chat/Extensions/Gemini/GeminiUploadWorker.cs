@@ -212,6 +212,30 @@ public class GeminiUploadWorker
             var storeName = filestore.Name
                 ?? throw new Exception("Filestore has no name (not created in Gemini?)");
 
+            // The process can stop after Gemini commits an upload but before UploadedAt is saved.
+            // If the named active remote copy already carries this exact content hash, adopt it
+            // instead of uploading a duplicate and leaving the queue spinner running forever.
+            if (doc.Name != null)
+            {
+                try
+                {
+                    var remote = GeminiRemoteDocument.From(
+                        await client.GetDocumentAsync(doc.Name, token).ConfigAwait());
+                    if (remote.State == "STATE_ACTIVE" && remote.MetadataHash == doc.Hash)
+                    {
+                        remote.ApplyTo(doc);
+                        db.UpdateDocument(doc);
+                        ctx.Log.LogInformation("Recovered completed Gemini upload for {Document}", doc.DisplayName);
+                        return true;
+                    }
+                }
+                catch (GeminiApiException e) when (e.StatusCode == 404) { }
+                catch (Exception e) when (e is not OperationCanceledException)
+                {
+                    ctx.Log.LogWarning(e, "Could not verify prior Gemini upload for {Document}", doc.DisplayName);
+                }
+            }
+
             if (doc.Url == null || !doc.Url.StartsWith(GeminiExtension.CacheUrlBase))
                 throw new Exception("Invalid URL");
             var fullPath = ctx.GetCachePath(doc.Url[GeminiExtension.CacheUrlBase.Length..]);
@@ -260,6 +284,7 @@ public class GeminiUploadWorker
                 ?? throw new Exception("Gemini upload did not return a document name");
 
             doc.UploadedAt = DateTime.Now;
+            doc.StartedAt = null;
             doc.Name = documentName;
             db.UpdateDocument(doc);
 

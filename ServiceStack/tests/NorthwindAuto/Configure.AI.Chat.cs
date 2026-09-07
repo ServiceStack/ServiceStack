@@ -55,6 +55,9 @@ public class ConfigureAiChat : IHostingStartup
                 }),
             });
 
+            services.AddSingleton<IGeminiSearchGeoResolver,
+                FreeIpApiGeminiSearchGeoResolver>();
+
             services.ConfigurePlugin<MetadataFeature>(feature => {
                 feature.AddPluginLink("/chat", "AI Chat");
             });

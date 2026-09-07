@@ -32,7 +32,7 @@ export const META_LIST_FIELDS = [
     { key: 'tags', label: 'Tags', placeholder: 'security, report' },
 ]
 
-export const SOURCE_URL_VARIABLES = ['category', 'fullPath', 'path', 'pathNoExt', 'dir', 'name', 'filename', 'ext', 'title']
+export const SOURCE_URL_VARIABLES = ['category', 'fullPath', 'path', 'pathNoExt', 'dir', 'name', 'filename', 'ext', 'title', 'route']
 const SOURCE_URL_VARIABLE_KEYS = new Set(SOURCE_URL_VARIABLES.map(x => x.toLowerCase()))
 
 export function sourceUrlTemplateError(value) {
@@ -64,7 +64,7 @@ export const IMPORT_FIELDS = META_FIELDS.map(f => f.key === 'sourceUrl' ? {
     ...f,
     variables: SOURCE_URL_VARIABLES,
     placeholder: 'https://docs.acme.com/{category}/{name}',
-    hint: 'Build the URL per document. Supports regex with {name:/pattern/} - where first capture group is used.',
+    hint: 'Build the URL per document. Use {route} for a Razor @page route; regex {name:/pattern/} uses its first capture group.',
 } : f)
 
 /**

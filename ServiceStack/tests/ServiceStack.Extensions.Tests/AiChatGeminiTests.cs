@@ -939,10 +939,22 @@ public class AiChatGeminiTests
         Assert.That(GeminiIngest.ExpandTemplate(
                 @"https://docs.example/{name:/servicestack/}", values),
             Is.EqualTo("https://docs.example/servicestack"));
+        var routeValues = GeminiIngest.TemplateValues("Pages/Docs.cshtml", route: "/add-servicestack-reference");
+        Assert.That(GeminiIngest.ExpandTemplate("https://docs.example{route}", routeValues),
+            Is.EqualTo("https://docs.example/add-servicestack-reference"));
+        Assert.That(GeminiIngest.ExpandTemplate("https://docs.example/{route}", routeValues),
+            Is.EqualTo("https://docs.example/add-servicestack-reference"));
+        Assert.That(GeminiIngest.ExtractRazorRoute("\uFEFF@page \"/pdf\"\n<h1>PDF</h1>"), Is.EqualTo("/pdf"));
+        Assert.That(GeminiIngest.ExtractRazorRoute("@page \"/products/{id}\""), Is.Null);
+        Assert.That(GeminiIngest.ExtractRazorRoute("@page \"/products/{id:int?}\""), Is.Null);
         var warnings = new System.Collections.Generic.List<string>();
         Assert.That(GeminiIngest.ExpandTemplate(
             @"https://docs.example/{name:/^release-(.+)$/}", values, warnings.Add), Is.Null);
         Assert.That(warnings.Single(), Does.Contain("omitting Source URL"));
+        warnings.Clear();
+        Assert.That(GeminiIngest.ExpandTemplate("https://docs.example{route}",
+            GeminiIngest.TemplateValues("guide.md"), warnings.Add), Is.Null);
+        Assert.That(warnings.Single(), Does.Contain("{route}"));
         Assert.Throws<ArgumentException>(() => GeminiIngest.ValidateTemplate(
             @"https://docs.example/{name:/([/}"));
     }
@@ -1006,6 +1018,34 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void Folder_import_can_require_a_resolved_source_url()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "gemini-source-url-" + Guid.NewGuid().ToString("n"));
+        Directory.CreateDirectory(root);
+        var body = string.Join(' ', Enumerable.Repeat("documentation", 40));
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "Routed.cshtml"), "@page \"/routed\"\n<h1>Routed</h1>\n" + body);
+            File.WriteAllText(Path.Combine(root, "Partial.cshtml"), "<h1>Partial</h1>\n" + body);
+            var source = new ChatSource
+            {
+                Type = "folder",
+                Config = new JsonObject { ["path"] = root, ["requireSourceUrl"] = true }.ToJsonString(),
+                Rules = new JsonObject { ["defaults"] = new JsonObject
+                    { ["sourceUrl"] = "https://docs.example{route}" } }.ToJsonString(),
+                ExtractorVer = "1",
+            };
+
+            var plan = GeminiIngest.BuildPlan(source, []);
+            Assert.That(plan.Added.Select(x => x.SourceKey), Is.EqualTo(new[] { "Routed.cshtml" }));
+            Assert.That(plan.Added[0].Metadata.GetString("sourceUrl"), Is.EqualTo("https://docs.example/routed"));
+            Assert.That(plan.Skipped.Single().GetString("sourceKey"), Is.EqualTo("Partial.cshtml"));
+            Assert.That(plan.Skipped.Single().GetString("reason"), Is.EqualTo("Source URL is required"));
+        }
+        finally { Directory.Delete(root, recursive: true); }
+    }
+
+    [Test]
     public void Folder_imports_inherit_nested_import_json_metadata()
     {
         var root = Path.Combine(Path.GetTempPath(), "gemini-manifest-" + Guid.NewGuid().ToString("n"));
@@ -1051,13 +1091,14 @@ public class AiChatGeminiTests
     [Test]
     public void Razor_is_stripped_then_converted_to_markdown()
     {
-        var razor = "@page\n@model DocsPage\n<div>\n<h1>Visible docs</h1>\n@if (Model.Internal)\n{\n"
+        var razor = "@page \"/add-servicestack-reference\"\n@model DocsPage\n<div>\n<h1>Visible docs</h1>\n@if (Model.Internal)\n{\n"
             + "  <p>Hidden Razor content</p>\n}\n<p>This public documentation has enough useful words for readers.</p>\n</div>";
         var extracted = GeminiIngest.Extract(System.Text.Encoding.UTF8.GetBytes(razor), "index.cshtml",
             new JsonObject { ["minWords"] = 0 });
         Assert.Multiple(() =>
         {
             Assert.That(extracted.Skip, Is.Null);
+            Assert.That(extracted.Frontmatter.GetString("route"), Is.EqualTo("/add-servicestack-reference"));
             Assert.That(extracted.Text, Does.Contain("Visible docs"));
             Assert.That(extracted.Text, Does.Contain("public documentation"));
             Assert.That(extracted.Text, Does.Not.Contain("@page"));

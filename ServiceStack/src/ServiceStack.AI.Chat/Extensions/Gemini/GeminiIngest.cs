@@ -253,7 +253,11 @@ public static class GeminiIngest
         var front = new JsonObject();
         if (HtmlExts.Contains(ext))
         {
-            if (ext == "cshtml") text = StripRazorCode(text);
+            if (ext == "cshtml")
+            {
+                if (ExtractRazorRoute(text) is { } route) front["route"] = route;
+                text = StripRazorCode(text);
+            }
             if (options.GetString("selector") is { Length: > 0 } selector)
                 text = SelectHtml(text, selector);
             text = new HtmlToMarkdownParser().Parse(text);
@@ -272,6 +276,15 @@ public static class GeminiIngest
     }
 
     public static bool IsHtmlExtension(string? extension) => extension != null && HtmlExts.Contains(extension.TrimStart('.'));
+
+    /// <summary>Extract the route template declared by a leading Razor <c>@page "/route"</c> directive.</summary>
+    public static string? ExtractRazorRoute(string text)
+    {
+        var match = Regex.Match(text ?? "", "(?m)^\\s*\\uFEFF?\\s*@page\\s+[\\\"'](?<route>/[^\\\"']*)[\\\"']", RegexOptions.CultureInvariant);
+        if (!match.Success) return null;
+        var route = match.Groups["route"].Value;
+        return route.Contains('{') || route.Contains('}') ? null : route;
+    }
 
     /// <summary>Remove line-oriented Razor directives and code blocks before parsing .cshtml as HTML.</summary>
     public static string StripRazorCode(string text)
@@ -382,7 +395,8 @@ public static class GeminiIngest
         return (metadata, matched);
     }
 
-    public static JsonObject TemplateValues(string sourceKey, string? category = null, string? title = null, string? root = null)
+    public static JsonObject TemplateValues(string sourceKey, string? category = null, string? title = null,
+        string? root = null, string? route = null)
     {
         var key = sourceKey.Replace('\\', '/').TrimStart('/'); var slash = key.LastIndexOf('/');
         var dir = slash >= 0 ? key[..slash] : ""; var filename = slash >= 0 ? key[(slash + 1)..] : key;
@@ -395,7 +409,7 @@ public static class GeminiIngest
             ["fullpath"] = key, ["path"] = relative,
             ["pathnoext"] = ext.Length > 0 ? relative[..^(ext.Length + 1)] : relative,
             ["dir"] = dir, ["filename"] = filename, ["name"] = name, ["ext"] = ext,
-            ["category"] = category ?? "", ["title"] = title ?? name,
+            ["category"] = category ?? "", ["title"] = title ?? name, ["route"] = route ?? "",
         };
     }
 
@@ -407,7 +421,7 @@ public static class GeminiIngest
     {
         if (string.IsNullOrEmpty(template)) return;
         var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            { "category", "fullPath", "path", "pathNoExt", "dir", "name", "filename", "ext", "title" };
+            { "category", "fullPath", "path", "pathNoExt", "dir", "name", "filename", "ext", "title", "route" };
         foreach (Match match in TemplatePlaceholder.Matches(template))
         {
             var name = match.Groups["name"].Value;
@@ -432,6 +446,11 @@ public static class GeminiIngest
         {
             var name = match.Groups["name"].Value;
             var value = values.GetString(name.ToLowerInvariant()) ?? match.Value;
+            if (name.Equals("route", StringComparison.OrdinalIgnoreCase) && value.Length == 0)
+            {
+                warning = "Source URL variable '{route}' is unavailable for this document; omitting Source URL";
+                return "";
+            }
             if (!match.Groups["pattern"].Success) return value;
 
             var extract = Regex.Match(value, match.Groups["pattern"].Value,
@@ -553,12 +572,19 @@ public static class GeminiIngest
                 if (derived.Metadata.GetString("sourceUrl") is { } sourceUrl)
                 {
                     var expandedUrl = ExpandTemplate(sourceUrl,
-                        TemplateValues(item.Key, category, item.Title, categoryConfig.GetString("root")),
+                        TemplateValues(item.Key, category, item.Title, categoryConfig.GetString("root"),
+                            extracted.Frontmatter.GetString("route")),
                         warning => onWarning?.Invoke($"{item.Key}: {warning}"));
                     if (expandedUrl == null)
                         derived.Metadata.Remove("sourceUrl");
                     else
                         derived.Metadata["sourceUrl"] = expandedUrl;
+                }
+                if (config.GetBool("requireSourceUrl") && string.IsNullOrWhiteSpace(derived.Metadata.GetString("sourceUrl")))
+                {
+                    seen.Remove(item.Key);
+                    plan.Skipped.Add(new JsonObject { ["sourceKey"] = item.Key, ["reason"] = "Source URL is required" });
+                    continue;
                 }
                 var contentHash = ContentHash(extracted.Text!, volatilePatterns); var metadataHash = MetadataHash(derived.Metadata);
                 var displayName = extracted.Frontmatter.GetString("title") ?? item.Title;

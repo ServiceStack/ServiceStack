@@ -4,7 +4,7 @@ namespace ServiceStack.AI;
 
 public partial class GeminiExtension
 {
-    /// <summary>Remove unreachable duplicate remote copies, retaining the newest copy per content hash.</summary>
+    /// <summary>Remove unreachable duplicate remote copies and stale local rows whose Gemini document no longer exists.</summary>
     async Task<object?> PruneFilestoreAsync(ChatRequestContext req)
     {
         await AssertWriteAsync(req).ConfigAwait();
@@ -24,6 +24,7 @@ public partial class GeminiExtension
         var errors = new JsonArray();
         var documents = 0;
         var removed = 0;
+        var staleRemoved = 0;
 
         foreach (var group in remoteByHash)
         {
@@ -53,10 +54,17 @@ public partial class GeminiExtension
                 }
             }
         }
-        if (!dryRun && removed > 0) await stores.RefreshAsync(id, user).ConfigAwait();
+        foreach (var local in localById.Values.Where(x => x.State == "MISSING_FROM_REMOTE"))
+        {
+            if (samples.Count < 5) samples.Add(local.DisplayName ?? local.Name ?? local.Id.ToString());
+            staleRemoved++;
+            if (!dryRun) db.DeleteDocument(local.Id, user);
+        }
+        if (!dryRun && (removed > 0 || staleRemoved > 0)) await stores.RefreshAsync(id, user).ConfigAwait();
         return new JsonObject
         {
             ["dryRun"] = dryRun, ["documents"] = documents, ["removed"] = removed,
+            ["staleRemoved"] = staleRemoved,
             ["samples"] = samples, ["errors"] = errors,
         };
     }

@@ -380,8 +380,74 @@ public partial class GeminiExtension() : ChatExtension("gemini")
         await AssertWriteAsync(req).ConfigAwait();
         var user = UserOf(req);
         var id = IdOf(req);
+        var body = await req.GetJsonBodyAsync().ConfigAwait();
+        var addAllSourceDocuments = body.GetBool("addAllSourceDocuments");
+        var selectedSourceDocuments = body.GetArray("sourceDocuments")?
+            .Select(x => x?.GetValue<string>()).Where(x => x != null).Cast<string>().ToHashSet()
+            ?? [];
         var filestore = db.GetFilestore(id, user)
             ?? throw new Exception("Filestore does not exist");
+
+        // Re-run recurring imports first, so Store Sync detects and queues changes to the
+        // original files as well as reconciling the resulting local catalogue with Gemini.
+        var sourceChanges = new List<string>();
+        var newSourceDocuments = new JsonArray();
+        foreach (var source in db.QuerySources(id, user))
+        {
+            ChatSourceRun? run = null;
+            var candidateStart = newSourceDocuments.Count;
+            try
+            {
+                var sourceDocs = db.SelectDocuments(new JsonObject {
+                    ["filter"] = new JsonObject { ["sourceId"] = source.Id }
+                }, user, true);
+                var plan = await Task.Run(() => GeminiIngest.BuildPlan(source, sourceDocs,
+                    onWarning: warning => Log.LogWarning("{Warning}", warning))).ConfigAwait();
+                foreach (var entry in plan.Added.ToList())
+                {
+                    var key = $"{source.Id}:{entry.SourceKey}";
+                    if (addAllSourceDocuments || selectedSourceDocuments.Contains(key)) continue;
+                    var candidate = entry.ToDto();
+                    candidate["key"] = key;
+                    candidate["sourceId"] = source.Id;
+                    candidate["sourceName"] = source.Name;
+                    newSourceDocuments.Add(candidate);
+                    plan.Added.Remove(entry);
+                }
+                var refusal = GeminiIngest.DeleteRefusal(plan, sourceDocs.Count);
+                if (refusal != null)
+                {
+                    Log.LogWarning("{Refusal}", refusal);
+                    plan.Removed.Clear();
+                }
+                sourceChanges.AddRange(plan.Added.Select(x => x.SourceKey));
+                sourceChanges.AddRange(plan.Changed.Select(x => x.SourceKey));
+                sourceChanges.AddRange(plan.MetadataOnly.Select(x => x.SourceKey));
+                sourceChanges.AddRange(plan.Removed.Select(x => x.SourceKey ?? x.DisplayName ?? "Document"));
+                run = new ChatSourceRun { SourceId = source.Id, User = user, StartedAt = DateTime.Now,
+                    Status = "running", DryRun = false };
+                run.Id = db.InsertSourceRun(run);
+                var summary = plan.Summary();
+                var sourceCandidates = new JsonArray(newSourceDocuments.Skip(candidateStart)
+                    .Select(x => x?.DeepClone()).ToArray());
+                summary["newSourceDocuments"] = sourceCandidates;
+                summary["newSourceCount"] = sourceCandidates.Count;
+                PopulateRun(run, plan, summary);
+                await ApplyPlanAsync(plan, source, req).ConfigAwait();
+                run.CompletedAt = DateTime.Now; run.Status = "completed"; db.UpdateSourceRun(run);
+                source.LastRunId = run.Id; source.LastRunAt = DateTime.Now; source.Error = null; db.UpdateSource(source);
+            }
+            catch (Exception e)
+            {
+                if (run != null)
+                {
+                    run.CompletedAt = DateTime.Now; run.Status = "failed"; run.Error = ChatJson.ToErrorMessage(e);
+                    db.UpdateSourceRun(run);
+                }
+                Log.LogWarning(e, "Could not scan saved import {SourceId} during store sync", source.Id);
+            }
+        }
+        if (sourceChanges.Count > 0) { worker?.Start(); searchWorker?.Start(); }
 
         var localDocs = db.QueryAllDocuments(id, user).ToList();
         var localById = localDocs.ToDictionary(x => x.Id);
@@ -488,6 +554,14 @@ public partial class GeminiExtension() : ChatExtension("gemini")
             ["Metadata Mismatch"] = Issue(metadataMismatch.Count, metadataMismatch.Take(5).Select(FileNameOf)),
             ["Unmatched Fields"] = Issue(unmatched.Count, unmatched.Take(5).Select(FileNameOf)),
             ["Duplicate Documents"] = Issue(duplicates.Count, duplicates.Take(5).Select(FileNameOf)),
+            ["Source Changes"] = Issue(sourceChanges.Count, sourceChanges.Take(5)),
+            ["New Source Documents"] = new JsonObject {
+                ["count"] = newSourceDocuments.Count,
+                ["docs"] = new JsonArray(newSourceDocuments.Take(5)
+                    .Select(x => (JsonNode?)x?["sourceKey"]?.DeepClone()).ToArray()),
+                ["items"] = newSourceDocuments,
+            },
+            ["newSourceDocuments"] = newSourceDocuments.DeepClone(),
             ["Local Search"] = new JsonObject { ["queued"] = db.SearchStats(id, user).Pending },
             ["Summary"] = new JsonObject
             {

@@ -288,6 +288,16 @@ export const ImportPanel = {
                         </div>
                     </div>
 
+                    <label v-if="tab !== 'crawl'" class="flex items-start gap-2.5 text-sm cursor-pointer">
+                        <CheckBox v-model="requireSourceUrl" class="mt-0.5" />
+                        <span>
+                            <span class="font-medium">Require a Source URL</span>
+                            <span class="block text-xs" :class="[$styles.muted]">
+                                Skip documents whose Source URL is empty or cannot be resolved, such as Razor pages without an @page route.
+                            </span>
+                        </span>
+                    </label>
+
                     <!-- Only offered where re-running actually means something -->
                     <label v-if="active.recurring" class="flex items-start gap-2.5 text-sm cursor-pointer">
                         <CheckBox v-model="saveSource" class="mt-0.5" />
@@ -374,6 +384,7 @@ export const ImportPanel = {
         const tab = ref(saved)
         const config = ref({})
         const metadata = ref({ defaults: {}, rules: [] })
+        const requireSourceUrl = ref(false)
         const saveSource = ref(false)
         const name = ref('')
         const files = ref([])
@@ -496,6 +507,7 @@ export const ImportPanel = {
         function select(id) {
             tab.value = id
             config.value = {}
+            requireSourceUrl.value = false
             ext.setPrefs({ importTab: id })
             emit('navigate', { import:id, crawl:id === 'crawl' ? selectedImport.value?.name || null : null })
         }
@@ -683,6 +695,7 @@ export const ImportPanel = {
                 if (v === '' || v == null) continue
                 form.append(k, Array.isArray(v) ? v.join(',') : v)
             }
+            form.append('requireSourceUrl', requireSourceUrl.value ? 'true' : 'false')
             for (const f of files.value) form.append('file', f)
             // Use the extension scope so uploads respect the host's configured route prefix
             // (e.g. /chat/ext/gemini instead of assuming /ext/gemini is mounted at the root).
@@ -715,6 +728,7 @@ export const ImportPanel = {
                     exclude: cfg.exclude ? [cfg.exclude] : null,
                     metadataSpecified: !!(Object.keys(metadata.value.defaults || {}).length
                         || (metadata.value.rules || []).length),
+                    requireSourceUrl: requireSourceUrl.value,
                 },
                 category: {
                     root: cfg.root || null,
@@ -740,7 +754,7 @@ export const ImportPanel = {
         }
 
         return {
-            tabs, tab, active, config, metadata, saveSource, name, files, dragover, dialogOpen,
+            tabs, tab, active, config, metadata, requireSourceUrl, saveSource, name, files, dragover, dialogOpen,
             busy, fileInput, hasArchive, formCells, summary, canSubmit,
             crawlForm, crawlNameEdited, crawlRuleSchema, crawlRules, crawlError, crawlImports, selectedImport,
             transformSchema, transforms, transformError, transformMessage,

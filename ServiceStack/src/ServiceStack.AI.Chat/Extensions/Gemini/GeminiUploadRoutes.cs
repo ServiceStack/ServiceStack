@@ -10,7 +10,7 @@ namespace ServiceStack.AI;
 public partial class GeminiExtension
 {
     sealed record UploadPart(string Key, string DisplayName, byte[] Content, string MimeType, string? Category,
-        JsonObject? Metadata = null);
+        JsonObject? Metadata = null, string? Route = null);
 
     async Task<object?> QueueManualUploadsAsync(ChatRequestContext req, long filestoreId, string? user, string? queryCategory)
     {
@@ -18,6 +18,7 @@ public partial class GeminiExtension
         string? Field(string name) => form[name] ?? req.QueryString(name);
         var category = Field("category") ?? queryCategory;
         var sourceUrl = Field("sourceUrl");
+        var requireSourceUrl = Field("requireSourceUrl").ConvertTo<bool>();
         ValidateSourceUrlTemplate(sourceUrl);
         var metadata = new JsonObject
         {
@@ -45,7 +46,8 @@ public partial class GeminiExtension
                     if (extracted.Skip != null) continue;
                     var markdownName = Path.ChangeExtension(filename, ".md");
                     parts.Add(new UploadPart(markdownName, extracted.Frontmatter.GetString("title") ?? markdownName,
-                        Encoding.UTF8.GetBytes(extracted.Text!), MimeTypes.MarkdownText, category));
+                        Encoding.UTF8.GetBytes(extracted.Text!), MimeTypes.MarkdownText, category,
+                        Route: extracted.Frontmatter.GetString("route")));
                 }
                 else parts.Add(new UploadPart(filename, filename, bytes, MimeTypes.GetMimeType(filename), category));
             }
@@ -58,12 +60,17 @@ public partial class GeminiExtension
             if (sourceUrl != null)
             {
                 var expandedUrl = GeminiIngest.ExpandTemplate(sourceUrl,
-                    GeminiIngest.TemplateValues(part.Key, part.Category, part.DisplayName),
+                    GeminiIngest.TemplateValues(part.Key, part.Category, part.DisplayName, route: part.Route),
                     warning => Log.LogWarning("{SourceKey}: {Warning}", part.Key, warning));
                 if (expandedUrl == null)
                     partMetadata.Remove("sourceUrl");
                 else
                     partMetadata["sourceUrl"] = expandedUrl;
+            }
+            if (requireSourceUrl && string.IsNullOrWhiteSpace(partMetadata.GetString("sourceUrl")))
+            {
+                Log.LogInformation("Skipping {SourceKey}: Source URL is required", part.Key);
+                continue;
             }
             ids.Add(await QueueManualDocumentAsync(filestoreId, user, part, partMetadata).ConfigAwait());
         }
@@ -118,7 +125,7 @@ public partial class GeminiExtension
             var derived = GeminiIngest.DeriveMetadata(key, inherited, extracted.Frontmatter, null, overrideMetadata).Metadata ?? new JsonObject();
             var category = string.Join('/', new[] { baseCategory?.Trim('/'), directory }.Where(x => !string.IsNullOrEmpty(x)));
             ret.Add(new UploadPart(key, extracted.Frontmatter.GetString("title") ?? displayName, bytes,
-                MimeTypes.GetMimeType(displayName), category, derived));
+                MimeTypes.GetMimeType(displayName), category, derived, extracted.Frontmatter.GetString("route")));
         }
         return ret;
     }

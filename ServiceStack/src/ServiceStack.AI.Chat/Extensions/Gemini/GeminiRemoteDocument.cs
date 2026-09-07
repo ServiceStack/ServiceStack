@@ -62,6 +62,7 @@ public class GeminiRemoteDocument
     public List<string> Diff(ChatDocument local)
     {
         var unmatched = new List<string>();
+        if (State == "STATE_ACTIVE" && local.UploadedAt == null) unmatched.Add(nameof(local.UploadedAt));
         if (local.Name != Name) unmatched.Add(nameof(Name));
         if (local.DisplayName != DisplayName) unmatched.Add(nameof(DisplayName));
         if (local.SizeBytes != SizeBytes) unmatched.Add(nameof(SizeBytes));
@@ -83,6 +84,13 @@ public class GeminiRemoteDocument
         local.UpdateTime = UpdateTime;
         local.State = State;
         local.CustomMetadata = CustomMetadata;
+        // An upload can complete remotely immediately before the process stops. Syncing that
+        // active document is authoritative evidence that the local queue item also completed.
+        if (State == "STATE_ACTIVE" && local.UploadedAt == null)
+        {
+            local.UploadedAt = DateTime.Now;
+            local.StartedAt = null;
+        }
     }
 
     /// <summary>"category/document.pdf" label used in the sync report</summary>
