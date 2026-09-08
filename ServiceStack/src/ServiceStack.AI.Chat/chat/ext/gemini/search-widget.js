@@ -8,18 +8,19 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
     const shadow = host.attachShadow({ mode: 'open' })
     const appearance = CONFIG.appearance || {}
     const mountSelector = String(('mount' in overrides ? overrides.mount : appearance.mount) || '').trim()
-    const resolveMount = () => {
+    let validMountSelector = !!mountSelector && !/^(?:none|off|false)$/i.test(mountSelector)
+    const resolveMount = (warn = true) => {
         if (!mountSelector || /^(?:none|off|false)$/i.test(mountSelector)) return null
         let element
         try { element = document.querySelector(mountSelector) }
-        catch { console.warn(`Gemini Search: ignoring invalid mount selector ${JSON.stringify(mountSelector)}.`); return null }
-        if (!element) console.warn(`Gemini Search: mount element ${JSON.stringify(mountSelector)} was not found; using the floating launcher.`)
+        catch { validMountSelector = false; if (warn) console.warn(`Gemini Search: ignoring invalid mount selector ${JSON.stringify(mountSelector)}.`); return null }
+        if (!element && warn) console.warn(`Gemini Search: mount element ${JSON.stringify(mountSelector)} was not found; using the floating launcher until it is available.`)
         return element
     }
-    const mountElement = resolveMount()
+    let mountElement = resolveMount()
     // The dialogs always overlay from document.body so an inline launcher cannot trap them inside a
     // transformed ancestor, and so opening Search never reflows the host page.
-    const launcherHost = mountElement ? document.createElement('div') : null
+    const launcherHost = validMountSelector ? document.createElement('div') : null
     if (launcherHost) {
         launcherHost.style.cssText = 'all:initial;display:inline-flex;vertical-align:middle'
         launcherHost.dataset.geminiSearchLauncher = CONFIG.searchId
@@ -157,7 +158,7 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
     }
     const floatingAssistant = () => document.querySelector('[data-gemini-assistant]:not([data-anchored])')
     const syncLauncherPosition = () => host.style.setProperty('--assistant-offset',
-        !launcherHost && position === 'bottom-right' && floatingAssistant() ? '62px' : '0px')
+        (!launcherHost || !launcherHost.isConnected) && position === 'bottom-right' && floatingAssistant() ? '62px' : '0px')
     syncLauncherPosition()
     new MutationObserver(syncLauncherPosition).observe(document.body, { childList: true })
     const syncAutoTheme = event => {
@@ -550,7 +551,22 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
     if (launcherHost) {
         const launcherShadow = launcherHost.attachShadow({ mode: 'open' })
         launcherShadow.innerHTML = `<style>${styles}</style>`
-        launcherShadow.append(launcherWrap)
-        mountElement.append(launcherHost)
+        const syncMount = () => {
+            const nextMount = launcherHost.isConnected && mountElement?.isConnected
+                ? mountElement : resolveMount(false)
+            if (nextMount) {
+                mountElement = nextMount
+                if (launcherWrap.parentNode !== launcherShadow) launcherShadow.append(launcherWrap)
+                if (launcherHost.parentNode !== nextMount) nextMount.append(launcherHost)
+            } else {
+                mountElement = null
+                // Client-side frameworks can replace the configured mount after this async script
+                // has run. Keep Search usable as a floating launcher until the mount reappears.
+                if (launcherWrap.parentNode !== shadow) shadow.append(launcherWrap)
+            }
+            syncLauncherPosition()
+        }
+        syncMount()
+        new MutationObserver(syncMount).observe(document.documentElement, { childList: true, subtree: true })
     }
 }
