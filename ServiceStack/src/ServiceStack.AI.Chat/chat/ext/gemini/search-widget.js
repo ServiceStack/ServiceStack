@@ -45,8 +45,15 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
         try { const value = localStorage.getItem('color-scheme'); return value === 'dark' || value === 'light' ? value : null }
         catch (_) { return null }
     }
+    const documentColorScheme = () => {
+        const root = document.documentElement
+        if (root.classList.contains('dark')) return 'dark'
+        const colorSchemes = [root, document.body].filter(Boolean).map(element => getComputedStyle(element).colorScheme)
+        if (colorSchemes.some(value => /^dark(?:\s|$)/.test(value))) return 'dark'
+        return root.classList.contains('bg-white') || document.body?.classList.contains('bg-white') ? 'light' : null
+    }
     const resolveTheme = () => appearance.theme === 'auto'
-        ? savedColorScheme() || (colorSchemeMedia.matches ? 'dark' : 'light')
+        ? documentColorScheme() || savedColorScheme() || (colorSchemeMedia.matches ? 'dark' : 'light')
         : appearance.theme
     const cleanFont = String(appearance.fontFamily || '').replace(/[\x00-\x1f{};]/g, '').trim()
     const fontFamily = cleanFont || "Inter, 'Inter Fallback', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'"
@@ -169,6 +176,7 @@ if (!document.querySelector(`[data-gemini-search="${CONFIG.searchId}"]`)) {
     colorSchemeMedia.addEventListener?.('change', syncAutoTheme)
     document.addEventListener('visibilitychange', syncAutoTheme)
     new MutationObserver(syncAutoTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'style'] })
+    new MutationObserver(syncAutoTheme).observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] })
     launcher.setAttribute('aria-label', CONFIG.placeholder || 'Search docs')
     const commandKEnabled = behavior.commandKShortcut !== false
     const slashOnly = !commandKEnabled && behavior.slashShortcut !== false
