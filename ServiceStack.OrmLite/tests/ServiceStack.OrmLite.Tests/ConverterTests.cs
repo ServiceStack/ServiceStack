@@ -23,6 +23,46 @@ public class ConverterTests(DialectContext context) : OrmLiteProvidersTestBase(c
         Assert.That(convertedValue, Is.Null);
     }
 
+    // A provider may legitimately hand back a BigInteger: Firebird 4+ returns SUM() over an INTEGER as
+    // INT128, and the stock FirebirdClient surfaces INT128 as System.Numerics.BigInteger. BigInteger does
+    // NOT implement IConvertible, so Convert.ToInt64 and friends throw InvalidCastException on it instead of
+    // converting - which surfaced as "Unable to cast object of type System.Numerics.BigInteger to type
+    // System.IConvertible" from any query that summed a column.
+    [Test]
+    public void ConvertNumber_converts_BigInteger_to_CLR_numeric_types()
+    {
+        var dialectProvider = DialectProvider;
+        var value = new System.Numerics.BigInteger(42);
+
+        Assert.That(dialectProvider.ConvertNumber(typeof(byte), value), Is.EqualTo((byte)42));
+        Assert.That(dialectProvider.ConvertNumber(typeof(short), value), Is.EqualTo((short)42));
+        Assert.That(dialectProvider.ConvertNumber(typeof(int), value), Is.EqualTo(42));
+        Assert.That(dialectProvider.ConvertNumber(typeof(long), value), Is.EqualTo(42L));
+        Assert.That(dialectProvider.ConvertNumber(typeof(ulong), value), Is.EqualTo(42UL));
+        Assert.That(dialectProvider.ConvertNumber(typeof(float), value), Is.EqualTo(42f));
+        Assert.That(dialectProvider.ConvertNumber(typeof(double), value), Is.EqualTo(42d));
+        Assert.That(dialectProvider.ConvertNumber(typeof(decimal), value), Is.EqualTo(42m));
+    }
+
+    [Test]
+    public void ConvertNumber_converts_negative_and_zero_BigInteger()
+    {
+        var dialectProvider = DialectProvider;
+
+        Assert.That(dialectProvider.ConvertNumber(typeof(long), System.Numerics.BigInteger.Zero), Is.EqualTo(0L));
+        Assert.That(dialectProvider.ConvertNumber(typeof(long), new System.Numerics.BigInteger(-5)), Is.EqualTo(-5L));
+    }
+
+    // Out of range must overflow rather than silently truncate - a wrong number is worse than an exception.
+    [Test]
+    public void ConvertNumber_overflows_when_BigInteger_exceeds_target_type()
+    {
+        var dialectProvider = DialectProvider;
+        var tooBig = System.Numerics.BigInteger.Pow(2, 100);
+
+        Assert.Throws<OverflowException>(() => dialectProvider.ConvertNumber(typeof(long), tooBig));
+    }
+
     [Test]
     public void ToDbValue_does_not_throw_Exception()
     {
