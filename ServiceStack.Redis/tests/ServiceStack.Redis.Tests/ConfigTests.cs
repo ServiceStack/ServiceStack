@@ -94,7 +94,7 @@ namespace ServiceStack.Redis.Tests
             };
 
             var connString = config.ToString();
-            Assert.That(connString, Is.EqualTo("host:1?Password=p%4055W0rd%3d"));
+            Assert.That(connString, Is.EqualTo("host:1?Password=p%4055wOrd%3d"));
 
             var fromConfig = connString.ToRedisEndpoint();
             Assert.That(fromConfig.Host, Is.EqualTo(config.Host));
