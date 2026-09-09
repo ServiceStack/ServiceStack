@@ -226,7 +226,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         var typesConfig = metadata.GetConfig(request);
 
         if (request.AddServiceStackTypes == true)
-            typesConfig.IgnoreTypesInNamespaces = [];
+            IncludeServiceStackTypes(typesConfig);
             
         var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
         var csharp = new CSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
@@ -241,7 +241,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         var typesConfig = metadata.GetConfig(request);
 
         if (request.AddServiceStackTypes == true)
-            typesConfig.IgnoreTypesInNamespaces = [];
+            IncludeServiceStackTypes(typesConfig);
             
         var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
         var fsharp = new FSharpGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
@@ -256,7 +256,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         var typesConfig = metadata.GetConfig(request);
 
         if (request.AddServiceStackTypes == true)
-            typesConfig.IgnoreTypesInNamespaces = [];
+            IncludeServiceStackTypes(typesConfig);
             
         var metadataTypes = metadata.GetMetadataTypes(Request, typesConfig);
         var vbnet = new VbNetGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
@@ -642,9 +642,10 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
         
     public static MetadataTypes ResolveMetadataTypes(MetadataTypesConfig typesConfig, INativeTypesMetadata nativeTypesMetadata, IRequest req)
     {
-        //Include SS types by removing ServiceStack namespaces
+        // Include built-in ServiceStack types without discarding namespace exclusions
+        // explicitly added by plugins or the application.
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = [];
+            IncludeServiceStackTypes(typesConfig);
 
         typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
         typesConfig.ExportTypes.Add(typeof(Tuple<>));
@@ -697,7 +698,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
 
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = [];
+            IncludeServiceStackTypes(typesConfig);
 
         ExportMissingSystemTypes(typesConfig);
             
@@ -723,7 +724,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
 
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = [];
+            IncludeServiceStackTypes(typesConfig);
 
         ExportMissingSystemTypes(typesConfig);
 
@@ -744,7 +745,7 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
 
         //Include SS types by removing ServiceStack namespaces
         if (typesConfig.AddServiceStackTypes)
-            typesConfig.IgnoreTypesInNamespaces = [];
+            IncludeServiceStackTypes(typesConfig);
 
         ExportMissingSystemTypes(typesConfig);
 
@@ -754,6 +755,12 @@ public class NativeTypesService(INativeTypesMetadata metadata) : Service
 
         var java = new KotlinGenerator(typesConfig).GetCode(metadataTypes, base.Request, metadata);
         return java;
+    }
+
+    private static void IncludeServiceStackTypes(MetadataTypesConfig typesConfig)
+    {
+        var defaultIgnoreNamespaces = NativeTypesFeature.CreateMetadataTypesConfig().IgnoreTypesInNamespaces;
+        typesConfig.IgnoreTypesInNamespaces?.RemoveAll(defaultIgnoreNamespaces.Contains);
     }
 
     private static void ExportMissingSystemTypes(MetadataTypesConfig typesConfig)

@@ -47,8 +47,10 @@ public class AiChatFeatureTests
 
         var serviceMetadata = new ServiceMetadata();
         serviceMetadata.Add(typeof(ChatServices), typeof(ChatCompletion), typeof(ChatResponse));
-        return new NativeTypesMetadata(serviceMetadata, nativeTypes.MetadataTypesConfig)
-            .GetMetadataTypes(new BasicRequest());
+        var request = new BasicRequest();
+        var nativeTypesMetadata = new NativeTypesMetadata(serviceMetadata, nativeTypes.MetadataTypesConfig);
+        var config = nativeTypesMetadata.GetConfig(new TypesTypeScript());
+        return NativeTypesService.ResolveMetadataTypes(config, nativeTypesMetadata, request);
     }
 
     [Test]
