@@ -41,6 +41,7 @@ appears in the gallery.
 services.AddPlugin(new ChatFeature {
     RoutePrefix = "/chat",            // "" mounts the UI at the site root
     RequireAuth = true,               // false runs everything as the "default" user
+    IncludeInGeneratedDtos = false,  // opt-in to generating ServiceStack.AI client DTOs
     AuthType = ChatAuthType.OAuth,    // OAuth = Identity Auth cookies, ApiKey = ApiKeysFeature
     SignInUrl = "/Account/Login",     // where the UI sends users to sign in
     AppDataPath = null,               // defaults to {ContentRoot}/App_Data/chat

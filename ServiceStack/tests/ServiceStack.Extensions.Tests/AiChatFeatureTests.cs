@@ -6,11 +6,50 @@ using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using ServiceStack.AI;
+using ServiceStack.Host;
+using ServiceStack.NativeTypes;
+using ServiceStack.Testing;
 
 namespace ServiceStack.Extensions.Tests;
 
 public class AiChatFeatureTests
 {
+    [Test]
+    public void Excludes_AI_Chat_types_from_generated_DTOs_by_default()
+    {
+        var metadata = GenerateMetadata(new ChatFeature());
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(metadata.Operations.Any(x => x.Request.Namespace == typeof(ChatFeature).Namespace), Is.False);
+            Assert.That(metadata.Types.Any(x => x.Namespace == typeof(ChatFeature).Namespace), Is.False);
+        });
+    }
+
+    [Test]
+    public void Can_opt_in_to_AI_Chat_types_in_generated_DTOs()
+    {
+        var metadata = GenerateMetadata(new ChatFeature { IncludeInGeneratedDtos = true });
+
+        Assert.That(metadata.Operations.Any(x => x.Request.Name == nameof(ChatCompletion)), Is.True);
+    }
+
+    private static MetadataTypes GenerateMetadata(ChatFeature feature)
+    {
+        var nativeTypes = new NativeTypesFeature();
+        using var appHost = new BasicAppHost
+        {
+            Config = new HostConfig(),
+            Plugins = { nativeTypes },
+        };
+        feature.BeforePluginsLoaded(appHost);
+
+        var serviceMetadata = new ServiceMetadata();
+        serviceMetadata.Add(typeof(ChatServices), typeof(ChatCompletion), typeof(ChatResponse));
+        return new NativeTypesMetadata(serviceMetadata, nativeTypes.MetadataTypesConfig)
+            .GetMetadataTypes(new BasicRequest());
+    }
+
     [Test]
     public void Config_files_auto_update_by_default()
     {

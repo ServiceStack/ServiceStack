@@ -57,6 +57,12 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     /// <summary>When false everything runs as the "default" user without authentication</summary>
     public bool RequireAuth { get; set; } = true;
+
+    /// <summary>
+    /// Include all ServiceStack.AI APIs and supporting types in generated ServiceStack client DTOs.
+    /// Defaults to false as AI.Chat clients typically use its OpenAI-compatible API directly.
+    /// </summary>
+    public bool IncludeInGeneratedDtos { get; set; }
     
     /// <summary>When set, only users with this role can access the Chat UI + APIs</summary>
     public string? RequiredRole { get; set; }
@@ -298,6 +304,13 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public void BeforePluginsLoaded(IAppHost appHost)
     {
         appHost.Config.EmbeddedResourceBaseTypes.AddIfNotExists(GetType());
+
+        if (!IncludeInGeneratedDtos)
+        {
+            appHost.GetPlugin<NativeTypesFeature>()?
+                .MetadataTypesConfig.IgnoreTypesInNamespaces
+                .AddIfNotExists(typeof(ChatFeature).Namespace!);
+        }
     }
 
     public void Register(IAppHost appHost)
