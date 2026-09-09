@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks Condition="'$(OS)' == 'Windows_NT'">net10.0;net472</TargetFrameworks>
     <TargetFramework  Condition="'$(OS)' != 'Windows_NT'">net10.0</TargetFramework>
@@ -44,11 +44,11 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
-    <PackageReference Include="MongoDB.Bson" Version="3.10.0" />
-    <PackageReference Include="MongoDB.Driver" Version="3.10.0" />
+    <PackageReference Include="MongoDB.Bson" Version="3.11.1" />
+    <PackageReference Include="MongoDB.Driver" Version="3.11.1" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
-    <PackageReference Include="AWSSDK.Core" Version="4.0.101" />
-    <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.6.8" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.102.3" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="4.0.100.12" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">

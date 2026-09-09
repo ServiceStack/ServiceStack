@@ -16,9 +16,9 @@
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
 
-        <PackageReference Include="Grpc.Net.Client" Version="2.80.0" />
-        <PackageReference Include="protobuf-net.Grpc" Version="1.2.2" />
-        <PackageReference Include="protobuf-net" Version="3.2.56" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
+        <PackageReference Include="protobuf-net.Grpc" Version="1.3.14" />
+        <PackageReference Include="protobuf-net" Version="3.4.21" />
     </ItemGroup>
 
 </Project>

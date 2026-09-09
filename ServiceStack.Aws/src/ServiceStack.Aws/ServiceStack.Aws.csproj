@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <PackageId>ServiceStack.Aws</PackageId>
@@ -36,18 +36,18 @@
   </ItemGroup>
 
   <ItemGroup>
-      <PackageReference Include="AWSSDK.Core" Version="4.0.101" />
-      <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.103.1" />
-      <PackageReference Include="AWSSDK.S3" Version="4.0.102.1" />
-      <PackageReference Include="AWSSDK.SQS" Version="4.0.100.8" />
-      <PackageReference Include="AWSSDK.TranscribeService" Version="4.0.100.8" />
+      <PackageReference Include="AWSSDK.Core" Version="4.0.102.3" />
+      <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.103.6" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.103" />
+      <PackageReference Include="AWSSDK.SQS" Version="4.0.100.12" />
+      <PackageReference Include="AWSSDK.TranscribeService" Version="4.0.101.1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="System.Net" />
     <PackageReference Include="System.Linq.Async" Version="5.1.0" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.11" />
-    <PackageReference Include="System.Text.Json" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.12" />
+    <PackageReference Include="System.Text.Json" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' ">
