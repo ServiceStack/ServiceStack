@@ -32,7 +32,7 @@ export const META_LIST_FIELDS = [
     { key: 'tags', label: 'Tags', placeholder: 'security, report' },
 ]
 
-export const SOURCE_URL_VARIABLES = ['category', 'fullPath', 'path', 'pathNoExt', 'dir', 'name', 'filename', 'ext', 'title', 'route']
+export const SOURCE_URL_VARIABLES = ['category', 'fullPath', 'path', 'pathNoExt', 'dir', 'name', 'filename', 'ext', 'route']
 const SOURCE_URL_VARIABLE_KEYS = new Set(SOURCE_URL_VARIABLES.map(x => x.toLowerCase()))
 
 export function sourceUrlTemplateError(value) {
@@ -64,7 +64,7 @@ export const IMPORT_FIELDS = META_FIELDS.map(f => f.key === 'sourceUrl' ? {
     ...f,
     variables: SOURCE_URL_VARIABLES,
     placeholder: 'https://docs.acme.com/{category}/{name}',
-    hint: 'Build the URL per document. Use {route} for a Razor @page route; regex {name:/pattern/} uses its first capture group.',
+    hint: 'Build the URL per document. Use {route} for a Razor @page route; regex {name:/pattern/} uses first capture group.',
 } : f)
 
 /**
@@ -405,7 +405,7 @@ export const MetadataListInput = {
 /** Category tree with own/total counts — a parent whose docs are all in subfolders isn't empty. */
 export const FacetRail = {
     name: 'FacetRail',
-    components: { },
+    components: {},
     template: `
         <div data-tag="FacetRail" class="space-y-4">
             <div>
@@ -602,9 +602,9 @@ export const MetadataFields = {
         function opsFor(f) {
             return f.list
                 ? [{ value: 'add', label: 'Add to list' }, { value: 'remove', label: 'Remove from list' },
-                   { value: 'set', label: 'Replace list' }, { value: 'clear', label: 'Clear' }]
+                { value: 'set', label: 'Replace list' }, { value: 'clear', label: 'Clear' }]
                 : [{ value: 'fill', label: 'Set where empty' }, { value: 'set', label: 'Overwrite' },
-                   { value: 'clear', label: 'Clear' }]
+                { value: 'clear', label: 'Clear' }]
         }
         // The safe default in both shapes: neither one destroys what's already there.
         const defaultOp = f => (f.list ? 'add' : 'fill')
