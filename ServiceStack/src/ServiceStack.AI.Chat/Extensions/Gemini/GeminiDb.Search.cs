@@ -91,6 +91,14 @@ class ChatSearchTrafficPage
     public long Visitors { get; set; }
 }
 
+class ChatSearchTrafficPageValue
+{
+    public string? Path { get; set; }
+    public string? Value { get; set; }
+    public long UsageCount { get; set; }
+    public DateTime LastSeen { get; set; }
+}
+
 class ChatSearchTrafficSessionSummary
 {
     public long Sessions { get; set; }
@@ -422,10 +430,31 @@ public partial class GeminiDb
         var titleCol = Col(nameof(ChatSearchPageView.PageTitle));
         var urlCol = Col(nameof(ChatSearchPageView.PageUrl));
         var pages = conn.SqlList<ChatSearchTrafficPage>(
-            $"SELECT {pathCol} AS Path,MAX({titleCol}) AS Title,MAX({urlCol}) AS Url,COUNT(*) AS Views," +
+            $"SELECT {pathCol} AS Path,COUNT(*) AS Views," +
             $"COUNT(DISTINCT {clientCol}) AS Visitors FROM {table} WHERE {widgetCol}=@id AND " +
             $"{createdCol}>=@since AND {pathCol} IS NOT NULL AND {pathCol}<>'' GROUP BY {pathCol} " +
             "ORDER BY Views DESC", args).Take(50).ToList();
+        Dictionary<string, string?> MostUsedPageValue(string column) => conn.SqlList<ChatSearchTrafficPageValue>(
+                $"SELECT {pathCol} AS Path,{column} AS Value,COUNT(*) AS UsageCount," +
+                $"MAX({createdCol}) AS LastSeen FROM {table} WHERE {widgetCol}=@id AND " +
+                $"{createdCol}>=@since AND {pathCol} IS NOT NULL AND {pathCol}<>'' AND " +
+                $"{column} IS NOT NULL AND {column}<>'' GROUP BY {pathCol},{column}", args)
+            .Where(x => x.Path != null)
+            .GroupBy(x => x.Path!, StringComparer.Ordinal)
+            .ToDictionary(x => x.Key, x => x.OrderByDescending(y => y.UsageCount)
+                .ThenByDescending(y => y.LastSeen)
+                .ThenBy(y => y.Value, StringComparer.Ordinal)
+                .First().Value, StringComparer.Ordinal);
+        var pageTitles = MostUsedPageValue(titleCol);
+        var pageUrls = MostUsedPageValue(urlCol);
+        foreach (var page in pages)
+        {
+            if (page.Path == null) continue;
+            pageTitles.TryGetValue(page.Path, out var title);
+            pageUrls.TryGetValue(page.Path, out var url);
+            page.Title = title;
+            page.Url = url;
+        }
         var recentPageViews = conn.Select(conn.From<ChatSearchPageView>()
             .Where(x => x.SearchWidgetId == searchWidgetId && x.CreatedAt >= start)
             .OrderByDescending(x => x.CreatedAt)
