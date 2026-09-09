@@ -123,6 +123,51 @@ public static class OrmLiteConverterExtensions
             return value;
 
         var typeCode = toIntegerType.GetUnderlyingTypeCode();
+
+        // BigInteger does NOT implement IConvertible, so every Convert.ToX below throws
+        // InvalidCastException ("Unable to cast object of type 'System.Numerics.BigInteger' to type
+        // 'System.IConvertible'") instead of converting it.
+        //
+        // Providers do hand it back. Firebird 4+ has INT128 and widens SUM() of a BIGINT to it, which the
+        // stock FirebirdClient correctly surfaces as BigInteger. Measured on Firebird 5.0.4:
+        //     SUM(INTEGER)            -> Int64        SUM(BIGINT)             -> BigInteger
+        //     SUM(NUMERIC(18,0))      -> Decimal      SUM(OCTET_LENGTH(blob)) -> BigInteger
+        //     COUNT(*)                -> Int64
+        // So counting works and summing a BIGINT throws, at runtime, in whichever query hits it first -
+        // which is what makes it easy to miss. (OCTET_LENGTH of a BLOB is BIGINT, so summing blob sizes
+        // reproduces it without anything in the schema being declared INT128.)
+        //
+        // The casts below are checked, so a value genuinely too large for the target type still throws
+        // OverflowException - which is the correct answer, and not the same as silently truncating it.
+        if (value is System.Numerics.BigInteger bigInteger)
+        {
+            switch (typeCode)
+            {
+                case TypeCode.Byte:
+                    return (byte)bigInteger;
+                case TypeCode.SByte:
+                    return (sbyte)bigInteger;
+                case TypeCode.Int16:
+                    return (short)bigInteger;
+                case TypeCode.UInt16:
+                    return (ushort)bigInteger;
+                case TypeCode.Int32:
+                    return (int)bigInteger;
+                case TypeCode.UInt32:
+                    return (uint)bigInteger;
+                case TypeCode.Int64:
+                    return (long)bigInteger;
+                case TypeCode.UInt64:
+                    return (ulong)bigInteger;
+                case TypeCode.Single:
+                    return (float)bigInteger;
+                case TypeCode.Double:
+                    return (double)bigInteger;
+                case TypeCode.Decimal:
+                    return (decimal)bigInteger;
+            }
+        }
+
         switch (typeCode)
         {
             case TypeCode.Byte:
