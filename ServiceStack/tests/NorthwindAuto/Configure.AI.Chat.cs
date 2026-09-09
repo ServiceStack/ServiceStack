@@ -26,6 +26,7 @@ public class ConfigureAiChat : IHostingStartup
 #if PGSQL || MSSQL || MYSQL
                 NamedConnection = "northwind",
 #endif
+                IncludeInGeneratedDtos = true, // include ChatCompletion, ChatResponse, etc in generated DTOs 
                 // RequireAuth = false, // open access, runs as the "default" user
                 Extensions = {
                     new BookingToolsExtension(),
