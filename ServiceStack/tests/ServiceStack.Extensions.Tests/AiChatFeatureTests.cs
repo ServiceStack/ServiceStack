@@ -40,7 +40,7 @@ public class AiChatFeatureTests
         var nativeTypes = new NativeTypesFeature();
         using var appHost = new BasicAppHost
         {
-            Config = new HostConfig(),
+            Config = HostConfig.NewInstance(),
             Plugins = { nativeTypes },
         };
         feature.BeforePluginsLoaded(appHost);

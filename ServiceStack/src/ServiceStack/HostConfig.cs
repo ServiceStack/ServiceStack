@@ -36,7 +36,6 @@ public class HostConfig
             WsdlServiceNamespace = DefaultWsdlNamespace,
             ApiVersion = "1.0",
             EmbeddedResourceSources = [],
-            EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
             EmbeddedResourceTreatAsFiles = [],
             EnableAccessRestrictions = true,
             EnableAutoHtmlResponses = true,
@@ -195,6 +194,9 @@ public class HostConfig
 #endif
         };
 
+        config.EmbeddedResourceBaseTypes = ServiceStackHost.Instance != null
+            ? [ServiceStackHost.Instance.GetType(), typeof(Service)]
+            : [typeof(Service)];
         Platform.Instance.InitHostConfig(config);
 
         return config;
