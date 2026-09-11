@@ -226,6 +226,90 @@ public class ExpressionVisitorTests(DialectContext context) : OrmLiteProvidersTe
         CollectionAssert.AreEquivalent(new[] { 1, 3 }, target.Select(t => t.Id).ToArray());
     }
 
+    // With C# 14 (default for net10.0) `array.Contains(x.Col)` binds to
+    // MemoryExtensions.Contains<T>(ReadOnlySpan<T>, T) instead of Enumerable.Contains.
+    // These tests ensure string arrays are still translated to SQL IN and not to LIKE.
+
+    [Test]
+    public void Can_Select_using_string_array_Contains()
+    {
+        var p = Db.GetDialectProvider().ParamString;
+        var textCols = new[] { "asdf", "qwer" };
+        var q = Db.From<TestType>().Where(x => textCols.Contains(x.TextCol));
+        Assert.That(q.WhereExpression, Does.Contain($"IN ({p}0,{p}1)"));
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(textCols));
+        var target = Db.Select(q);
+        CollectionAssert.AreEquivalent(new[] { 1, 3 }, target.Select(t => t.Id).ToArray());
+    }
+
+    [Test]
+    public void Can_Select_using_string_array_constructed_inside_Contains()
+    {
+        var p = Db.GetDialectProvider().ParamString;
+        var q = Db.From<TestType>().Where(x => new[] { "asdf123", "qwer123" }.Contains(x.TextCol));
+        Assert.That(q.WhereExpression, Does.Contain($"IN ({p}0,{p}1)"));
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(new[] { "asdf123", "qwer123" }));
+        var target = Db.Select(q);
+        CollectionAssert.AreEquivalent(new[] { 2, 4 }, target.Select(t => t.Id).ToArray());
+    }
+
+    [Test]
+    public void Does_not_reuse_string_array_Contains_values_between_queries()
+    {
+        var first = new[] { "asdf" };
+        var q = Db.From<TestType>().Where(x => first.Contains(x.TextCol));
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(first));
+        CollectionAssert.AreEquivalent(new[] { 1 }, Db.Select(q).Select(t => t.Id).ToArray());
+
+        var second = new[] { "qwer", "qwer123" };
+        q = Db.From<TestType>().Where(x => second.Contains(x.TextCol));
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(second));
+        CollectionAssert.AreEquivalent(new[] { 3, 4 }, Db.Select(q).Select(t => t.Id).ToArray());
+    }
+
+    private class ArrayContainsFilter(string[] textCols, int[] ids)
+    {
+        public string[] TextCols = textCols;
+        public int[] Ids = ids;
+        public SqlExpression<TestType> ByTextCol(IDbConnection db) => db.From<TestType>().Where(x => TextCols.Contains(x.TextCol));
+        public SqlExpression<TestType> ById(IDbConnection db) => db.From<TestType>().Where(x => Ids.Contains(x.Id));
+    }
+
+    [Test]
+    public void Does_not_reuse_array_Contains_values_captured_from_different_instances()
+    {
+        var p = Db.GetDialectProvider().ParamString;
+        var filter1 = new ArrayContainsFilter(["asdf"], [1]);
+        var filter2 = new ArrayContainsFilter(["qwer"], [3]);
+
+        var q = filter1.ByTextCol(Db);
+        Assert.That(q.WhereExpression, Does.Contain($"IN ({p}0)"));
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(new[] { "asdf" }));
+        CollectionAssert.AreEquivalent(new[] { 1 }, Db.Select(q).Select(t => t.Id).ToArray());
+
+        q = filter2.ByTextCol(Db);
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(new[] { "qwer" }));
+        CollectionAssert.AreEquivalent(new[] { 3 }, Db.Select(q).Select(t => t.Id).ToArray());
+
+        q = filter1.ById(Db);
+        Assert.That(q.WhereExpression, Does.Contain($"IN ({p}0)"));
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(new object[] { 1 }));
+        CollectionAssert.AreEquivalent(new[] { 1 }, Db.Select(q).Select(t => t.Id).ToArray());
+
+        q = filter2.ById(Db);
+        Assert.That(q.Params.Select(x => x.Value), Is.EqualTo(new object[] { 3 }));
+        CollectionAssert.AreEquivalent(new[] { 3 }, Db.Select(q).Select(t => t.Id).ToArray());
+    }
+
+    [Test]
+    public void Can_Select_using_string_Contains_as_LIKE()
+    {
+        var q = Db.From<TestType>().Where(x => x.TextCol.Contains("sdf"));
+        Assert.That(q.WhereExpression.ToLower(), Does.Contain("like"));
+        var target = Db.Select(q);
+        CollectionAssert.AreEquivalent(new[] { 1, 2 }, target.Select(t => t.Id).ToArray());
+    }
+
     [Test]
     public void Can_Select_using_int_list_constructed_inside_Contains()
     {

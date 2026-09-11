@@ -2912,20 +2912,35 @@ namespace ServiceStack.OrmLite
             if (!isMemoryExtensions)
                 return false;
 
-            // Check the second argument type to determine if this is string/char Contains or collection Contains
-            var secondArgType = m.Arguments[1].Type;
-
-            // If the second argument is a string or ReadOnlySpan<char>, this is string Contains (should use LIKE)
-            if (secondArgType == typeof(string) || secondArgType == typeof(char))
+            // The element type of the span (first argument) decides what kind of Contains this is:
+            // - ReadOnlySpan<char>/Span<char> overloads are substring searches (should use LIKE)
+            // - any other element type is a collection lookup (should use IN)
+            // The searched value (second argument) must not be used for this decision, otherwise a
+            // string[] collection searched with a string column would be misclassified as a LIKE.
+            var spanType = m.Arguments[0].Type;
+            if (spanType.IsGenericType &&
+                spanType.GenericTypeArguments.Length == 1 &&
+                spanType.GenericTypeArguments[0] == typeof(char))
                 return false;
 
-            if (secondArgType.Name == "ReadOnlySpan`1" && secondArgType.GenericTypeArguments.Length > 0 &&
-                secondArgType.GenericTypeArguments[0] == typeof(char))
-                return false;
-
-            // Otherwise, this is a collection Contains (should use IN)
-            // The second argument is the value being searched for (e.g., x.Id)
             return true;
+        }
+
+        private static Expression UnwrapSpanConversion(Expression e)
+        {
+            // C# 14 inserts an implicit array -> ReadOnlySpan<T>/Span<T> conversion, either as a
+            // Convert node or as a call to op_Implicit. Evaluate the underlying array instead of the
+            // ref struct, which can't be boxed and defeats the cached expression compiler fast paths.
+            while (true)
+            {
+                if (e is UnaryExpression { NodeType: ExpressionType.Convert } u && u.Type.IsRefStruct())
+                    e = u.Operand;
+                else if (e is MethodCallExpression { Method.Name: "op_Implicit", Object: null } c &&
+                         c.Arguments.Count == 1 && c.Type.IsRefStruct())
+                    e = c.Arguments[0];
+                else
+                    return e;
+            }
         }
 
         protected virtual object VisitEnumerableMethodCall(MethodCallExpression m)
@@ -2951,10 +2966,10 @@ namespace ServiceStack.OrmLite
             switch (m.Method.Name)
             {
                 case "Contains":
-                    List<object> args = this.VisitExpressionList(m.Arguments);
-                    // args[0] is the collection, args[1] is the column/value to check
-                    object quotedColName = args[1];
-                    Expression collectionExpr = m.Arguments[0];
+                    // Only visit the searched value (the column). The span argument is a compiler
+                    // generated conversion of the source array and must not be evaluated as a span.
+                    object quotedColName = Visit(m.Arguments[1]);
+                    Expression collectionExpr = UnwrapSpanConversion(m.Arguments[0]);
                     return ToInPartialString(collectionExpr, quotedColName);
 
                 default:
