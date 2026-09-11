@@ -79,9 +79,8 @@ namespace ServiceStack.ExpressionUtil
 
         public static bool CanCache(Expression expr)
         {
-            // Slow-compiled delegates retain their closure instance. Even when a captured
-            // value has an immutable type, another invocation can supply a different
-            // closure instance and value for the same canonical expression key.
+            // A canonical key cannot safely represent the identity or mutable state of
+            // reference objects bound into an expression tree.
             if (ClosureSafety.HasClosure(expr))
                 return false;
 
@@ -283,6 +282,17 @@ namespace ServiceStack.ExpressionUtil
                 return v.Cacheable;
             }
 
+            protected override Expression VisitConstant(ConstantExpression node)
+            {
+                // Canonical text cannot uniquely represent every bound value. Examples
+                // include objects or structs with identical ToString() results, and value
+                // types whose observable state is not present in that text.
+                if (node.Value != null)
+                    Cacheable = false;
+
+                return node;
+            }
+
             protected override Expression VisitInvocation(InvocationExpression node)
             {
                 // Cannot reliably cache invocation expressions
@@ -333,7 +343,11 @@ namespace ServiceStack.ExpressionUtil
 
                 protected override Expression VisitConstant(ConstantExpression node)
                 {
-                    if (node.Type.Name.Contains("DisplayClass"))
+                    // A compiled delegate is bound to every reference object embedded in
+                    // its tree, whether it is a C# display class, an async state machine,
+                    // a captured `this`, or an object from another language/compiler.
+                    // Compiler-generated type names are therefore not a safe boundary.
+                    if (node.Value != null && !node.Type.IsValueType)
                     {
                         Result = true;
                         return node;
@@ -486,15 +500,16 @@ namespace ServiceStack.ExpressionUtil
             private static readonly ConcurrentDictionary<ExpressionFingerprintChain, Hoisted<TIn, TOut>>
                 _fingerprintedCache = new();
 
-            private static readonly ConcurrentDictionary<string, Func<TIn, TOut>> _slowCompileCache = new();
-
             public static Func<TIn, TOut> Compile(Expression<Func<TIn, TOut>> expr)
             {
+                // The fingerprint cache hoists constants and is safe to reuse. If an
+                // expression cannot be fingerprinted, compile that exact tree: a fallback
+                // structural key cannot account for every binding and bound object.
                 return CompileFromIdentityFunc(expr)
                        ?? CompileFromConstLookup(expr)
                        ?? CompileFromMemberAccess(expr)
                        ?? CompileFromFingerprint(expr)
-                       ?? CachedCompileSlow(expr);
+                       ?? CompileSlow(expr);
             }
 
             private static Func<TIn, TOut> CompileFromConstLookup(Expression<Func<TIn, TOut>> expr)
@@ -586,15 +601,6 @@ namespace ServiceStack.ExpressionUtil
                 }
 
                 return null;
-            }
-
-            private static Func<TIn, TOut> CachedCompileSlow(Expression<Func<TIn, TOut>> expr)
-            {
-                if (ExpressionCacheKey.TryGetKey(expr, out var key))
-                {
-                    return _slowCompileCache.GetOrAdd(key, _ => CompileSlow(expr));
-                }
-                return CompileSlow(expr);
             }
 
             private static Func<TIn, TOut> CompileSlow(Expression<Func<TIn, TOut>> expr)
