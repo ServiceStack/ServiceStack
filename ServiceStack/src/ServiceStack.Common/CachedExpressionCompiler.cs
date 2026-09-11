@@ -79,7 +79,10 @@ namespace ServiceStack.ExpressionUtil
 
         public static bool CanCache(Expression expr)
         {
-            if (ClosureSafety.HasMutableClosure(expr))
+            // Slow-compiled delegates retain their closure instance. Even when a captured
+            // value has an immutable type, another invocation can supply a different
+            // closure instance and value for the same canonical expression key.
+            if (ClosureSafety.HasClosure(expr))
                 return false;
 
             return CacheableExpressionVisitor.IsCacheable(expr);
@@ -302,11 +305,42 @@ namespace ServiceStack.ExpressionUtil
         
         public static class ClosureSafety
         {
+            public static bool HasClosure(Expression expr)
+            {
+                var detector = new ClosureDetector();
+                detector.Visit(expr);
+                return detector.Result;
+            }
+
             public static bool HasMutableClosure(Expression expr)
             {
                 var detector = new MutableClosureDetector();
                 detector.Visit(expr);
                 return detector.Result;
+            }
+
+            private sealed class ClosureDetector : ExpressionVisitor
+            {
+                public bool Result { get; private set; }
+
+                public override Expression Visit(Expression node)
+                {
+                    if (Result || node is null)
+                        return node;
+
+                    return base.Visit(node);
+                }
+
+                protected override Expression VisitConstant(ConstantExpression node)
+                {
+                    if (node.Type.Name.Contains("DisplayClass"))
+                    {
+                        Result = true;
+                        return node;
+                    }
+
+                    return base.VisitConstant(node);
+                }
             }
 
             private sealed class MutableClosureDetector : ExpressionVisitor

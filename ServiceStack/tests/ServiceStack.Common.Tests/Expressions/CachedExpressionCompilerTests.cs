@@ -12,6 +12,11 @@ public class CachedExpressionCompilerTests
     {
     }
 
+    private class Entity
+    {
+        public int Count { get; set; }
+    }
+
     [Test]
     public void Expression_cache_keys_include_expression_types()
     {
@@ -34,6 +39,38 @@ public class CachedExpressionCompilerTests
 
         Assert.That(intResult, Is.TypeOf<TypedBox<int>>());
         Assert.That(stringResult, Is.TypeOf<TypedBox<string>>());
+    }
+
+    [Test]
+    public void Evaluate_member_init_does_not_reuse_captured_primitive_value()
+    {
+        var first = EvaluateMemberInit(7);
+        var second = EvaluateMemberInit(99);
+
+        Assert.That(first.Count, Is.EqualTo(7));
+        Assert.That(second.Count, Is.EqualTo(99));
+    }
+
+    [Test]
+    public void Evaluate_new_array_does_not_reuse_captured_primitive_value()
+    {
+        var first = EvaluateNewArray(1);
+        var second = EvaluateNewArray(2);
+
+        Assert.That(first, Is.EqualTo(new[] { 1, 0 }));
+        Assert.That(second, Is.EqualTo(new[] { 2, 0 }));
+    }
+
+    private static Entity EvaluateMemberInit(int count)
+    {
+        Expression<Func<Entity>> expr = () => new Entity { Count = count };
+        return (Entity)CachedExpressionCompiler.Evaluate(expr.Body);
+    }
+
+    private static int[] EvaluateNewArray(int value)
+    {
+        Expression<Func<int[]>> expr = () => new[] { value, 0 };
+        return (int[])CachedExpressionCompiler.Evaluate(expr.Body);
     }
 }
 

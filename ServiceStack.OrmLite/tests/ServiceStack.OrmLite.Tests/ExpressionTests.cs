@@ -40,6 +40,19 @@ public class ExpressionTests
     }
 
     [Test]
+    public void Sql_In_does_not_reuse_captured_primitive_value()
+    {
+        var first = CreateSqlInExpression(1);
+        var second = CreateSqlInExpression(2);
+
+        Assert.That(first.Params[0].Value, Is.EqualTo(1));
+        Assert.That(second.Params[0].Value, Is.EqualTo(2));
+    }
+
+    private SqlExpression<Person> CreateSqlInExpression(int id) =>
+        expr().Where(q => Sql.In(q.Id, id, 0));
+
+    [Test]
     public void Does_support_Sql_In_on_string_collections()
     {
         var ids = new[] { "A", "B", "C" };
