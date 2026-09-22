@@ -514,6 +514,14 @@ public static class OrmLiteWriteApiAsync
     {
         return dbConn.Exec(dbCmd => dbCmd.GetRowVersionAsync(modelType.GetModelDefinition(), id, token));
     }
+    
+    /// <summary>
+    /// Uses the most optimal approach to bulk insert multiple rows for each RDBMS provider 
+    /// </summary>
+    public static Task BulkInsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
+    {
+        return dbConn.Dialect().BulkInsertAsync(dbConn, objs, config, token);
+    }
 
     // Procedures
     public static Task ExecuteProcedureAsync<T>(this IDbConnection dbConn, T obj, CancellationToken token = default)

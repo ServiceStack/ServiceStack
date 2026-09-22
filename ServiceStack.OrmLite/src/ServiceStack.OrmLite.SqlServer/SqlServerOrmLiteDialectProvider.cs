@@ -369,15 +369,34 @@ namespace ServiceStack.OrmLite.SqlServer
                 base.BulkInsert(db, objs, config);
                 return;
             }
-            
+
+            using var bulkCopy = CreateBulkCopy(db, objs, config, out var table);
+            bulkCopy.WriteToServer(table);
+        }
+
+        public override async Task BulkInsertAsync<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
+        {
+            config ??= new();
+            if (config.Mode == BulkInsertMode.Sql)
+            {
+                await base.BulkInsertAsync(db, objs, config, token).ConfigAwait();
+                return;
+            }
+
+            using var bulkCopy = CreateBulkCopy(db, objs, config, out var table);
+            await bulkCopy.WriteToServerAsync(table, token).ConfigAwait();
+        }
+
+        private SqlBulkCopy CreateBulkCopy<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config, out DataTable table)
+        {
             var sqlConn = (SqlConnection)db.ToDbConnection();
-            using var bulkCopy = new SqlBulkCopy(sqlConn);
+            var bulkCopy = new SqlBulkCopy(sqlConn);
             var modelDef = ModelDefinition<T>.Definition;
 
             bulkCopy.BatchSize = config.BatchSize;
             bulkCopy.DestinationTableName = modelDef.ModelName;
             
-            var table = new DataTable();
+            table = new DataTable();
             var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields);
             foreach (var fieldDef in fieldDefs)
             {
@@ -419,8 +438,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 }
                 table.Rows.Add(row);
             }
-            
-            bulkCopy.WriteToServer(table);
+            return bulkCopy;
         }
         
         public override string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null)

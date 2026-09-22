@@ -305,74 +305,95 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         }
 	        
         var pgConn = (NpgsqlConnection)db.ToDbConnection();
-	        
-        var modelDef = ModelDefinition<T>.Definition;
-
-        var sb = StringBuilderCache.Allocate()
-            .Append($"COPY {GetQuotedTableName(modelDef)} (");
-            
-        var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields);
-        var i = 0;
-        foreach (var fieldDef in fieldDefs)
-        {
-            if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
-                continue;
-
-            if (i++ > 0)
-                sb.Append(",");
-
-            sb.Append(GetQuotedColumnName(fieldDef));
-        }
-        sb.Append(") FROM STDIN (FORMAT BINARY)");
-
-        var copyCmd = StringBuilderCache.ReturnAndFree(sb);
-        using var writer = pgConn.BeginBinaryImport(copyCmd);
+        var fieldDefs = GetBinaryImportFieldDefinitions<T>(config);
+        using var writer = pgConn.BeginBinaryImport(ToBinaryImportCommand<T>(fieldDefs));
 
         foreach (var obj in objs)
         {
             writer.StartRow();
             foreach (var fieldDef in fieldDefs)
             {
-                if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
-                    continue;
-
-                var value = fieldDef.AutoId
-                    ? GetInsertDefaultValue(fieldDef)
-                    : fieldDef.GetValue(obj);
-
-                var converter = GetConverterBestMatch(fieldDef);
-                if (converter == null)
+                var dbValue = ToBinaryImportValue(fieldDef, obj, out var dbType);
+                try
                 {
-                    throw new NotSupportedException($"No converter found for {fieldDef.FieldType.Name}");
-                }
-                var dbValue = converter.ToDbValue(fieldDef.FieldType, value);
-                if (dbValue is float f)
-                    dbValue = (double)f;
-
-                if (dbValue is null or DBNull)
-                {
-                    writer.WriteNull();
-                }
-                else
-                {
-                    try
-                    {
-                        var dbType = GetNpgsqlDbType(fieldDef);
-                        if (dbType == NpgsqlDbType.Text && dbValue is not string && dbValue is not char)
-                        {
-                            dbValue = StringSerializer.SerializeToString(dbValue);
-                        } 
+                    if (dbValue == null)
+                        writer.WriteNull();
+                    else
                         writer.Write(dbValue, dbType);
-                    }
-                    catch (Exception e)
-                    {
-                        LogManager.GetLogger(GetType()).Error(e.Message, e);
-                        throw;
-                    }
+                }
+                catch (Exception e)
+                {
+                    LogManager.GetLogger(GetType()).Error(e.Message, e);
+                    throw;
                 }
             }
         }
         writer.Complete();
+    }
+
+    public override async Task BulkInsertAsync<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
+    {
+        config ??= new();
+        if (config.Mode == BulkInsertMode.Sql)
+        {
+            await base.BulkInsertAsync(db, objs, config, token).ConfigAwait();
+            return;
+        }
+
+        var pgConn = (NpgsqlConnection)db.ToDbConnection();
+        var fieldDefs = GetBinaryImportFieldDefinitions<T>(config);
+        await using var writer = await pgConn.BeginBinaryImportAsync(ToBinaryImportCommand<T>(fieldDefs), token).ConfigAwait();
+
+        foreach (var obj in objs)
+        {
+            await writer.StartRowAsync(token).ConfigAwait();
+            foreach (var fieldDef in fieldDefs)
+            {
+                var dbValue = ToBinaryImportValue(fieldDef, obj, out var dbType);
+                try
+                {
+                    if (dbValue == null)
+                        await writer.WriteNullAsync(token).ConfigAwait();
+                    else
+                        await writer.WriteAsync(dbValue, dbType, token).ConfigAwait();
+                }
+                catch (Exception e)
+                {
+                    LogManager.GetLogger(GetType()).Error(e.Message, e);
+                    throw;
+                }
+            }
+        }
+        await writer.CompleteAsync(token).ConfigureAwait(false);
+    }
+
+    private List<FieldDefinition> GetBinaryImportFieldDefinitions<T>(BulkInsertConfig config) =>
+        GetInsertFieldDefinitions(ModelDefinition<T>.Definition, insertFields:config.InsertFields)
+            .Where(x => !ShouldSkipInsert(x) || x.AutoId)
+            .ToList();
+
+    private string ToBinaryImportCommand<T>(List<FieldDefinition> fieldDefs) =>
+        $"COPY {GetQuotedTableName(ModelDefinition<T>.Definition)} ({string.Join(",", fieldDefs.Select(x => GetQuotedColumnName(x)))}) FROM STDIN (FORMAT BINARY)";
+
+    private object ToBinaryImportValue(FieldDefinition fieldDef, object obj, out NpgsqlDbType dbType)
+    {
+        dbType = default;
+        var value = fieldDef.AutoId
+            ? GetInsertDefaultValue(fieldDef)
+            : fieldDef.GetValue(obj);
+
+        var converter = GetConverterBestMatch(fieldDef)
+            ?? throw new NotSupportedException($"No converter found for {fieldDef.FieldType.Name}");
+        var dbValue = converter.ToDbValue(fieldDef.FieldType, value);
+        if (dbValue is null or DBNull)
+            return null;
+        if (dbValue is float f)
+            dbValue = (double)f;
+
+        dbType = GetNpgsqlDbType(fieldDef);
+        if (dbType == NpgsqlDbType.Text && dbValue is not string && dbValue is not char)
+            dbValue = StringSerializer.SerializeToString(dbValue);
+        return dbValue;
     }
 
     public NpgsqlDbType GetNpgsqlDbType(FieldDefinition fieldDef)
