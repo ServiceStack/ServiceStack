@@ -394,7 +394,7 @@ namespace ServiceStack.OrmLite.SqlServer
             var modelDef = ModelDefinition<T>.Definition;
 
             bulkCopy.BatchSize = config.BatchSize;
-            bulkCopy.DestinationTableName = modelDef.ModelName;
+            bulkCopy.DestinationTableName = GetQuotedTableName(modelDef);
             
             table = new DataTable();
             var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields);

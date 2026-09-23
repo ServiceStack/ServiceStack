@@ -79,6 +79,33 @@ public class BulkSqlInsertTests(DialectContext context) : OrmLiteProvidersTestBa
     }
 
     [Test]
+    public async Task Can_BulkInsert_Csv_Async_with_Schema()
+    {
+        var rows = 3.Times(i => new Issues.ModelWithSchema { Name = $"Name{i}", Value = i });
+
+        using var db = await OpenDbConnectionAsync();
+        if (DialectFeatures.SchemaSupport)
+            db.CreateSchema<Issues.ModelWithSchema>();
+        db.DropAndCreateTable<Issues.ModelWithSchema>();
+
+        try
+        {
+            await db.BulkInsertAsync(rows, new BulkInsertConfig
+            {
+                Mode = BulkInsertMode.Csv,
+            });
+
+            var rowsCount = db.Count<Issues.ModelWithSchema>();
+            Assert.That(rowsCount, Is.EqualTo(rows.Count));
+        }
+        catch (Exception e)
+        {
+            if (!IgnoreException(e))
+                throw;
+        }
+    }
+
+    [Test]
     public void Can_BulkInsert_Sql()
     {
         using var db = OpenDbConnection();
