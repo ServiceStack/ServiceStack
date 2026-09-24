@@ -8,6 +8,10 @@
     "ui:build": "tailwindcss -i index.css -o wwwroot/css/ui.css --minify",
     "migrate": "dotnet run --AppTasks=migrate",
     "revert:last": "dotnet run --AppTasks=migrate.revert:last",
-    "revert:all": "dotnet run --AppTasks=migrate.revert:all"
+    "revert:all": "dotnet run --AppTasks=migrate.revert:all",
+    "screenshots:jobs": "node scripts/jobs-screenshots.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0"
   }
 }

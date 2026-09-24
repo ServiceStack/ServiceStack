@@ -60,6 +60,7 @@ public class ServerModernizationTests
         public JobResult? GetJobByRefId(string refId) => throw new NotImplementedException();
         public void DispatchToWorker(BackgroundJob job) => throw new NotImplementedException();
         public Task StartAsync(CancellationToken stoppingToken) => Task.CompletedTask;
+        public Task StopAsync(CancellationToken token = default) => Task.CompletedTask;
         public Task TickAsync() => Task.CompletedTask;
         public int? GetCommandEstimatedDurationMs(string commandType, string? worker = null) => null;
         public int? GetApiEstimatedDurationMs(string requestType, string? worker = null) => null;

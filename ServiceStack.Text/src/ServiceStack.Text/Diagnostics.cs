@@ -67,6 +67,10 @@ public class Diagnostics
             public const string WriteMqRequestAfter = Prefix + nameof(WriteMqRequestAfter);
             public const string WriteMqRequestError = Prefix + nameof(WriteMqRequestError);
             public const string WriteMqRequestPublish = Prefix + nameof(WriteMqRequestPublish);
+
+            public const string WriteJobBefore = Prefix + nameof(WriteJobBefore);
+            public const string WriteJobAfter = Prefix + nameof(WriteJobAfter);
+            public const string WriteJobError = Prefix + nameof(WriteJobError);
         }
         
         public static class Client
@@ -186,7 +190,8 @@ public enum ProfileSource
     Client = 1 << 1,
     Redis = 1 << 2,
     OrmLite = 1 << 3,
-    All = ServiceStack | Client | OrmLite | Redis,
+    Jobs = 1 << 4,
+    All = ServiceStack | Client | OrmLite | Redis | Jobs,
 }
 
 public abstract class DiagnosticEvent

@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.Concurrent;
 using System.Data;
+using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.Host;
@@ -12,7 +14,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Jobs;
 
-public partial class BackgroundJobs : IBackgroundJobs
+public partial class BackgroundJobs : BackgroundJobsProviderBase, IBackgroundJobs, IBackgroundJobsScheduler
 {
     readonly ILogger<BackgroundJobs> log;
     readonly BackgroundsJobFeature feature;
@@ -21,7 +23,7 @@ public partial class BackgroundJobs : IBackgroundJobs
     private ConcurrentDictionary<string, int> lastCommandDurations = new();
     private ConcurrentDictionary<string, int> lastApiDurations = new();
     ConcurrentDictionary<string, BackgroundJobsWorker> workers = new();
-    static ConcurrentQueue<BackgroundJobStatusUpdate> updates = new();
+    private readonly ConcurrentQueue<BackgroundJobStatusUpdate> updates = new();
     string Table;
     Columns columns;
     private long ticks = 0;
@@ -29,6 +31,7 @@ public partial class BackgroundJobs : IBackgroundJobs
     
     public BackgroundJobs(ILogger<BackgroundJobs> log, 
         BackgroundsJobFeature feature, IDbConnectionFactory dbFactory, IServiceProvider services, IServiceScopeFactory scopeFactory)
+        : base(log)
     {
         // Need to store local references to these dependencies otherwise won't exist on BG Thread callbacks
         this.log = log;
@@ -40,8 +43,10 @@ public partial class BackgroundJobs : IBackgroundJobs
         this.Table = dialect.GetQuotedTableName(typeof(BackgroundJob));
         this.columns = new(
             Logs:dialect.GetQuotedColumnName(nameof(BackgroundJob.Logs)),
+            LogsTruncated:dialect.GetQuotedColumnName(nameof(BackgroundJob.LogsTruncated)),
             Status:dialect.GetQuotedColumnName(nameof(BackgroundJob.Status)),
             Progress:dialect.GetQuotedColumnName(nameof(BackgroundJob.Progress)),
+            LastActivityDate:dialect.GetQuotedColumnName(nameof(BackgroundJob.LastActivityDate)),
             Id:dialect.GetQuotedColumnName(nameof(BackgroundJob.Id)),
             Request:dialect.GetQuotedColumnName(nameof(BackgroundJob.Request)),
             Command:dialect.GetQuotedColumnName(nameof(BackgroundJob.Command)),
@@ -69,7 +74,7 @@ public partial class BackgroundJobs : IBackgroundJobs
  
     readonly ConcurrentDictionary<Type, bool> uniqueCommandTypes = new();
 
-    public BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null)
+    public override BackgroundJobRef EnqueueCommand(string commandName, object arg, BackgroundJobOptions? options = null)
     {
         var commandInfo = AssertCommand(commandName);
         uniqueCommandTypes.TryAdd(commandInfo.Type, true);
@@ -90,17 +95,33 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     private BackgroundJobRef RecordAndDispatchJob(BackgroundJob job)
     {
+        // Reject oversized payloads rather than truncating: a truncated Request can't be
+        // deserialized, so the Job would be unrunnable and fail on every attempt.
+        if (job.RequestBody != null && job.RequestBody.Length > feature.MaxRequestBodyChars)
+            throw new ArgumentException(
+                $"Job Request is {job.RequestBody.Length} chars, which exceeds the " +
+                $"{nameof(feature.MaxRequestBodyChars)} limit of {feature.MaxRequestBodyChars}. " +
+                $"Pass a reference to the payload instead of the payload itself.", nameof(job.RequestBody));
+        AssertValidReplyTo(job);
+
+        var existingRef = GetActiveSingletonRef(job) ?? this.GetExistingJobRef(job);
+        if (existingRef != null)
+            return existingRef;
+        if (job.BatchId != null)
+            EnsureJobBatch(job.BatchId, job.CreatedBy);
         var requestId = Guid.NewGuid().ToString("N");
         using var db = feature.OpenDb();
         var now = DateTime.UtcNow;
-        if (job.RunAfter == null || now > job.RunAfter)
+        // A Job that has to wait on a Batch is left for DispatchPendingJobs() to dispatch
+        if ((job.RunAfter == null || now > job.RunAfter) && !IsQueuePaused(job.Queue)
+            && job.DependsOnBatch == null && !IsDraining)
         {
             if (job.DependsOn != null)
             {
-                var dependsOnSummary = GetJob(job.DependsOn.Value);
-                if (dependsOnSummary?.Completed != null)
+                var parentJob = GetFinishedParent(job, GetJob(job.DependsOn.Value));
+                if (parentJob != null)
                 {
-                    job.ParentJob = dependsOnSummary.Completed;
+                    job.ParentJob = parentJob;
                     job.RequestId = requestId;
                 }
             }
@@ -109,22 +130,71 @@ public partial class BackgroundJobs : IBackgroundJobs
                 job.RequestId = requestId;
             }
         }
-
-        lock (db.GetWriteLock())
+        // A rate limited queue's Jobs mustn't bypass its limit by being dispatched on enqueue
+        if (job.RequestId != null && !TryTakeRateLimitSlot(job.Queue, now))
         {
-            using var trans = db.OpenTransaction();
-            job.Id = db.Insert(job, selectIdentity: true);
-            var summary = job.ToJobSummary();
-            db.Insert(summary);
-            trans.Commit();
+            job.RequestId = null;
+            job.ParentJob = null;
         }
 
-        if (job.RequestId != null)
+        Exception? insertEx = null;
+        try
+        {
+            lock (db.GetWriteLock())
+            {
+                using var trans = db.OpenTransaction();
+                job.Id = db.Insert(job, selectIdentity: true);
+                var summary = job.ToJobSummary();
+                db.Insert(summary);
+                if (job.BatchId != null)
+                    AddJobToBatch(db, job.BatchId);
+                trans.Commit();
+            }
+        }
+        catch (Exception e)
+        {
+            insertEx = e;
+        }
+
+        if (insertEx != null)
+        {
+            // Recovery runs only after the failed transaction has been rolled back and disposed.
+            // Querying from inside a `catch when` filter would run while it's still open, which
+            // deadlocks SQLite and leaves PostgreSQL refusing commands on an aborted transaction.
+            if (job.SingletonKey != null || job.DuplicateRefIdBehavior == DuplicateRefIdBehavior.ReturnExisting)
+            {
+                // Another submitter inserted a Job with the same SingletonKey or RefId after our
+                // first read. The unique index is what enforces it, this just reports the winner.
+                var concurrentRef = GetActiveSingletonRef(job) ?? this.GetExistingJobRef(job);
+                if (concurrentRef != null)
+                    return concurrentRef;
+            }
+            ExceptionDispatchInfo.Capture(insertEx).Throw();
+        }
+
+        JobsDiagnostics.RecordQueued(job);
+
+        if (job.RequestId != null && TryClaimConcurrencySlot(job))
         {
             DispatchToWorker(job);
         }
         
         return new(job.Id, job.RefId!);
+    }
+
+    /// <summary>
+    /// Returns the active Job already holding this Job's SingletonKey, if any. Only 1 Job per
+    /// SingletonKey can exist in the active Jobs table, which a unique index enforces.
+    /// </summary>
+    private BackgroundJobRef? GetActiveSingletonRef(BackgroundJob job)
+    {
+        if (job.SingletonKey == null)
+            return null;
+        using var db = feature.OpenDb();
+        var existing = db.Single<BackgroundJob>(x => x.SingletonKey == job.SingletonKey);
+        return existing?.RefId == null
+            ? null
+            : new BackgroundJobRef(existing.Id, existing.RefId);
     }
 
     public BackgroundJob RunCommand(string commandName, object arg, BackgroundJobOptions? options = null)
@@ -167,7 +237,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         return tcs.Task;
     }
 
-    public object CreateRequest(BackgroundJobBase job)
+    public override object CreateRequest(BackgroundJobBase job)
     {
         if (job is BackgroundJob { TransientRequest: not null } b)
             return b.TransientRequest;
@@ -211,7 +281,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         return request;
     }
     
-    public object? CreateResponse(BackgroundJobBase job)
+    public override object? CreateResponse(BackgroundJobBase job)
     {
         if (job.Response == null)
             return null;
@@ -315,14 +385,17 @@ public partial class BackgroundJobs : IBackgroundJobs
     // Executed on BackgroundJobsWorker Thread
     public async Task ExecuteJobAsync(BackgroundJob job)
     {
-        if (cancelJobIds.TryRemove(job.Id, out _))
+        if (cancelJobIds.ContainsKey(job.Id))
         {
             FailJob(job, new TaskCanceledException("Job was cancelled"));
+            cancelJobIds.TryRemove(job.Id, out _);
+            return;
         }
         
+        var executionToken = executionCts.Token;
         using var linkedCts = job.Token != null
-            ? CancellationTokenSource.CreateLinkedTokenSource(ct, job.Token.Value)
-            : CancellationTokenSource.CreateLinkedTokenSource(ct);
+            ? CancellationTokenSource.CreateLinkedTokenSource(executionToken, job.Token.Value)
+            : CancellationTokenSource.CreateLinkedTokenSource(executionToken);
         linkedCts.CancelAfter(TimeSpan.FromSeconds(job.TimeoutSecs ?? feature.DefaultTimeoutSecs));
         cancellationSources[job.Id] = linkedCts;
         try
@@ -344,13 +417,28 @@ public partial class BackgroundJobs : IBackgroundJobs
             if (!job.Transient)
             {
                 using var db = feature.OpenDb();
-                db.UpdateOnly(() => new BackgroundJob
+                var claimed = db.UpdateOnly(() => new BackgroundJob
                 {
                     StartedDate = job.StartedDate,
                     State = job.State,
                     LastActivityDate = job.LastActivityDate,
+                }, where: x => x.Id == job.Id && x.State == BackgroundJobState.Queued && x.CancelRequestedDate == null);
+                if (claimed == 0)
+                {
+                    log.LogWarning("JOBS Skipping Job {Id}: it was cancelled before it started", job.Id);
+                    return;
+                }
+                var serverId = feature.ServerId;
+                db.UpdateOnly(() => new JobSummary {
+                    StartedDate = job.StartedDate,
+                    State = job.State,
+                    LeaseOwner = serverId,
                 }, where: x => x.Id == job.Id);
             }
+
+            JobsDiagnostics.RecordStarted(job);
+            using var activity = JobsDiagnostics.StartActivity(job);
+            var diagnosticId = JobsDiagnostics.WriteJobBefore(job);
 
             // Execute Command
             if (job.RequestType == null || job.Request == null)
@@ -370,6 +458,8 @@ public partial class BackgroundJobs : IBackgroundJobs
                     await feature.CommandsFeature.ExecuteCommandAsync(command, reqCtx.Dto, linkedCts.Token);
                 if (commandResult.Exception != null)
                 {
+                    activity?.SetStatus(ActivityStatusCode.Error, commandResult.Exception.Message);
+                    JobsDiagnostics.WriteJobError(diagnosticId, job, commandResult.Exception);
                     FailJob(job, commandResult.Exception);
                     return;
                 }
@@ -383,6 +473,8 @@ public partial class BackgroundJobs : IBackgroundJobs
                     linkedCts.Token);
                 if (response is Exception e)
                 {
+                    activity?.SetStatus(ActivityStatusCode.Error, e.Message);
+                    JobsDiagnostics.WriteJobError(diagnosticId, job, e);
                     FailJob(job, e);
                     return;
                 }
@@ -391,6 +483,8 @@ public partial class BackgroundJobs : IBackgroundJobs
                 {
                     var errorStatus = httpError.Response.GetResponseStatus()
                        ?? ResponseStatusUtils.CreateResponseStatus(httpError.ErrorCode,httpError.Message,null);
+                    activity?.SetStatus(ActivityStatusCode.Error, errorStatus.Message);
+                    JobsDiagnostics.WriteJobError(diagnosticId, job, null);
                     FailJob(job, errorStatus, shouldRetry: false);
                     return;
                 }
@@ -402,6 +496,7 @@ public partial class BackgroundJobs : IBackgroundJobs
 
             PerformDbUpdates();
             CompleteJob(job, response);
+            JobsDiagnostics.WriteJobAfter(diagnosticId, job);
         }
         catch (TaskCanceledException tex)
         {
@@ -418,9 +513,10 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
-    public bool CancelJob(long jobId)
+    public override bool CancelJob(long jobId)
     {
         var wasCancelled = false;
+        var cancelledDependents = new List<BackgroundJobBase>();
         using var db = OpenDb();
         var error = new TaskCanceledException("Job was cancelled").ToResponseStatus();
         lock (db.GetWriteLock())
@@ -431,21 +527,27 @@ public partial class BackgroundJobs : IBackgroundJobs
                 Error = error,
                 ErrorCode = error.ErrorCode,
                 LastActivityDate = now,
-            }, where: x => x.Id == jobId);
-            if (updatedQueuedJob > 0)
+                CancelRequestedDate = now,
+            }, where: x => x.Id == jobId && x.State == BackgroundJobState.Queued);
+            var updatedRunningJob = updatedQueuedJob == 0
+                ? db.UpdateOnly(() => new BackgroundJob { CancelRequestedDate = now },
+                    where: x => x.Id == jobId && x.State == BackgroundJobState.Started && x.CancelRequestedDate == null)
+                : 0;
+            if (updatedQueuedJob > 0 || updatedRunningJob > 0)
             {
-                cancelJobIds[jobId] = DateTime.UtcNow;
+                cancelJobIds[jobId] = now;
                 db.UpdateOnly(() => new JobSummary {
-                    State = BackgroundJobState.Cancelled,
-                    ErrorCode = error.ErrorCode,
-                    ErrorMessage = error.Message,
+                    State = updatedQueuedJob > 0 ? BackgroundJobState.Cancelled : BackgroundJobState.Started,
+                    CancelRequestedDate = now,
+                    ErrorCode = updatedQueuedJob > 0 ? error.ErrorCode : null,
+                    ErrorMessage = updatedQueuedJob > 0 ? error.Message : null,
                 }, where: x => x.Id == jobId);
                 wasCancelled = true;
+                CancelDependentJobs(db, jobId, now, cancelledDependents);
             }
-            using var dbMonth = OpenMonthDb(now);
-            CancelDependentJobs(db, dbMonth, jobId, now);
         }
-        if (cancellationSources.TryGetValue(jobId, out var cts))
+        OnDependentJobsCancelled(cancelledDependents);
+        if ((wasCancelled || jobId == 0) && cancellationSources.TryGetValue(jobId, out var cts))
         {
             cts.Cancel();
             return true;
@@ -495,27 +597,54 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (failedJob == null)
             throw HttpError.NotFound("Job not found");
 
+        var previousState = failedJob.State;
         var requeueJob = failedJob.PopulateJob(new BackgroundJob());
         requeueJob.State = BackgroundJobState.Queued;
         requeueJob.RequestId = null;
+        requeueJob.RunAfter = null;
         requeueJob.Response = null;
         requeueJob.ResponseBody = null;
         requeueJob.Logs = null;
+        requeueJob.LogsTruncated = null;
         requeueJob.Error = null;
         requeueJob.ErrorCode = null;
         requeueJob.Attempts = 0;
         requeueJob.DurationMs = 0;
-        requeueJob.StartedDate = requeueJob.LastActivityDate = DateTime.UtcNow;
+        requeueJob.StartedDate = null;
+        requeueJob.CompletedDate = null;
+        requeueJob.CancelRequestedDate = null;
+        requeueJob.LastActivityDate = DateTime.UtcNow;
 
         lock (db.GetWriteLock())
         {
             db.Insert(requeueJob, enableIdentityInsert:true);
             monthDb.DeleteById<FailedJob>(failedJob.Id);
+            db.UpdateOnly(() => new JobSummary {
+                State = BackgroundJobState.Queued,
+                StartedDate = null,
+                CompletedDate = null,
+                CancelRequestedDate = null,
+                Attempts = 0,
+                DurationMs = 0,
+                ErrorCode = null,
+                ErrorMessage = null,
+                RunAfter = requeueJob.RunAfter,
+                LogsTruncated = null,
+            }, where: x => x.Id == jobId);
         }
+        if (requeueJob.BatchId != null)
+            RequeueJobInBatch(requeueJob.BatchId, previousState);
     }
 
     public void FailJob(BackgroundJob job, Exception ex)
     {
+        if (ex is OperationCanceledException && IsShutdownCancellation(job))
+        {
+            // Interrupted by the App shutting down rather than cancelled or timed out. It's left
+            // incomplete so it's requeued when the App restarts instead of recorded as Cancelled.
+            log.LogWarning("JOBS Job {Id} was interrupted by shutdown, it will run again on restart", job.Id);
+            return;
+        }
         FailJob(job, ex, ShouldRetry(job, ex));
         // Callbacks are only available from the BackgroundJobOptions executed immediately
         var onFailed = job.OnFailed;
@@ -525,14 +654,22 @@ public partial class BackgroundJobs : IBackgroundJobs
     private bool ShouldRetry(BackgroundJob job, Exception ex)
     {
         var retryLimit = job.RetryLimit ?? feature.DefaultRetryLimit;
-        return job.Attempts <= retryLimit && feature.ShouldRetry(job, ex);
+        // A Job that was asked to be cancelled is never retried, whatever exception it surfaced
+        return job.Attempts <= retryLimit && !cancelJobIds.ContainsKey(job.Id) && feature.ShouldRetry(job, ex);
     }
+
+    private bool IsShutdownCancellation(BackgroundJob job) =>
+        !job.Transient && executionCts.IsCancellationRequested && !cancelJobIds.ContainsKey(job.Id)
+        && job.Token?.IsCancellationRequested != true;
+
+    private static bool IsCancelledErrorCode(string? errorCode) =>
+        errorCode is nameof(TaskCanceledException) or nameof(OperationCanceledException);
 
     public void FailJob(BackgroundJob job, Exception ex, bool shouldRetry) => 
         FailJob(job, ex.ToResponseStatus(), shouldRetry);
 
     // Call within lock
-    public void InsertFailedJob(IDbConnection dbMonth, BackgroundJob job)
+    public void InsertFailedJob(IDbConnection dbMonth, BackgroundJobBase job)
     {
         var failedJob = job.PopulateJob(new FailedJob());
         try
@@ -550,6 +687,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             else
             {
                 log.LogError(e, "Failed to Insert FailedJob {Id}: {Message}", failedJob.Id, e.Message);
+                throw;
             }
         }
     }
@@ -559,36 +697,52 @@ public partial class BackgroundJobs : IBackgroundJobs
         job.Error = error;
         job.ErrorCode = error.ErrorCode;
         job.LastActivityDate = DateTime.UtcNow;
+        JobsDiagnostics.RecordFailed(job, willRetry:shouldRetry);
         
         if (!job.Transient)
         {
+            var recordScheduledRun = false;
+            DateTime? retriedStartedDate = null;
+            var cancelledDependents = new List<BackgroundJobBase>();
             lock (Locks.JobsDb)
             {
                 if (!shouldRetry)
                 {
-                    job.State = error.ErrorCode == nameof(TaskCanceledException)
+                    job.State = IsCancelledErrorCode(error.ErrorCode)
                         ? BackgroundJobState.Cancelled
                         : BackgroundJobState.Failed;
+                    job.CompletedDate = job.LastActivityDate;
                     if (job.StartedDate != null)
                         job.DurationMs = (int)(job.LastActivityDate.Value - job.StartedDate.Value).TotalMilliseconds;
 
-                    using var dbMonth = feature.OpenMonthDb(job.CreatedDate);
-                    InsertFailedJob(dbMonth, job);
-
                     using var db = feature.OpenDb();
                     using var trans = db.OpenTransaction();
-                    db.UpdateOnly(() => new BackgroundJob {
+                    var updated = db.UpdateOnly(() => new BackgroundJob {
                         State = job.State,
                         Error = job.Error,
                         ErrorCode = job.ErrorCode,
                         StartedDate = job.StartedDate,
+                        CompletedDate = job.CompletedDate,
                         LastActivityDate = job.LastActivityDate,
                         Attempts = job.Attempts,
                         DurationMs = job.DurationMs,
                     }, where: x => x.Id == job.Id);
+                    // Already archived, e.g. by ClearCancelledJobs(). Recording it again would
+                    // count it against its batch twice.
+                    if (updated == 0)
+                    {
+                        log.LogWarning("JOBS Discarded failure of Job {Id}: it's no longer active", job.Id);
+                        return;
+                    }
+
+                    using (var dbMonth = feature.OpenMonthDb(job.CreatedDate))
+                    {
+                        InsertFailedJob(dbMonth, job);
+                    }
 
                     db.UpdateOnly(() => new JobSummary {
                         State = job.State,
+                        CompletedDate = job.CompletedDate,
                         ErrorMessage = job.Error.Message,
                         ErrorCode = job.ErrorCode,
                         Attempts = job.Attempts,
@@ -597,16 +751,21 @@ public partial class BackgroundJobs : IBackgroundJobs
 
                     db.DeleteById<BackgroundJob>(job.Id);
 
-                    CancelDependentJobs(db, dbMonth, job.Id, job.LastActivityDate.Value);
+                    CancelDependentJobs(db, job.Id, job.LastActivityDate.Value, cancelledDependents);
 
                     trans.Commit();
+                    recordScheduledRun = true;
                 }
                 else
                 {
+                    var retryDelay = JobUtils.GetRetryDelay(job, feature.DefaultRetryBackoff,
+                        feature.DefaultRetryDelayMs, feature.DefaultMaxRetryDelayMs, Random.Shared.NextDouble());
+                    retriedStartedDate = job.StartedDate;
                     job.RequestId = null;
                     job.Attempts += 1;
                     job.State = BackgroundJobState.Queued;
-                    job.StartedDate = DateTime.UtcNow;
+                    job.StartedDate = null;
+                    job.RunAfter = DateTime.UtcNow.Add(retryDelay);
                     using var db = feature.OpenDb();
                     db.UpdateOnly(() => new BackgroundJob {
                         RequestId = job.RequestId,
@@ -615,18 +774,37 @@ public partial class BackgroundJobs : IBackgroundJobs
                         ErrorCode = job.ErrorCode,
                         Attempts = job.Attempts,
                         StartedDate = job.StartedDate,
+                        RunAfter = job.RunAfter,
                         LastActivityDate = job.LastActivityDate,
+                    }, where: x => x.Id == job.Id);
+                    db.UpdateOnly(() => new JobSummary {
+                        State = job.State,
+                        Attempts = job.Attempts,
+                        RunAfter = job.RunAfter,
                     }, where: x => x.Id == job.Id);
                 }
             }
+            // Outside the Jobs DB lock to avoid taking 2 DB locks at once
+            if (recordScheduledRun)
+            {
+                RecordJobAttempt(job, job.Attempts, job.StartedDate, job.State, job.Error);
+                UpdateScheduledTaskRun(job);
+                UpdateJobBatch(job);
+                ReleaseConcurrencySlot(job);
+            }
+            OnDependentJobsCancelled(cancelledDependents);
+            if (shouldRetry)
+                RecordJobAttempt(job, job.Attempts - 1, retriedStartedDate, job.State, job.Error);
         }
     }
 
-    // Call within lock
-    private static void CancelDependentJobs(IDbConnection db, IDbConnection dbMonth, long jobId, DateTime lastActivityDate)
+    // Call within the main DB write lock.
+    private void CancelDependentJobs(IDbConnection db, long jobId, DateTime lastActivityDate,
+        List<BackgroundJobBase> cancelled)
     {
         // Cancel any Dependent Jobs as well
-        var dependentJobs = db.Select<BackgroundJob>(x => x.DependsOn == jobId);
+        // A dependent that runs once its parent finishes in any state is left to be dispatched
+        var dependentJobs = db.Select<BackgroundJob>(x => x.DependsOn == jobId).Where(CancelsWithParent).ToList();
         if (dependentJobs.Count > 0)
         {
             foreach (var dependentJob in dependentJobs)
@@ -635,18 +813,37 @@ public partial class BackgroundJobs : IBackgroundJobs
                 depFailedJob.State = BackgroundJobState.Cancelled;
                 depFailedJob.ErrorCode = nameof(TaskCanceledException);
                 depFailedJob.LastActivityDate = lastActivityDate;
+                depFailedJob.CompletedDate = lastActivityDate;
                 depFailedJob.Error = new() {
                     ErrorCode = depFailedJob.ErrorCode,
                     Message = "Parent Job failed"
                 };
-                dbMonth.Insert(depFailedJob);
+                using var dependentMonthDb = OpenMonthDb(dependentJob.CreatedDate);
+                InsertFailedJob(dependentMonthDb, depFailedJob);
                 db.UpdateOnly(() => new JobSummary {
                     State = depFailedJob.State,
+                    CompletedDate = lastActivityDate,
                     ErrorMessage = depFailedJob.Error.Message,
                     ErrorCode = depFailedJob.ErrorCode,
                 }, where: x => x.Id == depFailedJob.Id);
                 db.DeleteById<BackgroundJob>(depFailedJob.Id);
+                cancelled.Add(depFailedJob);
+                CancelDependentJobs(db, depFailedJob.Id, lastActivityDate, cancelled);
             }
+        }
+    }
+
+    /// <summary>
+    /// A cancelled dependent still counts towards its batch, otherwise a batch with a Total would
+    /// never complete. Called outside the Jobs DB lock, which these updates take themselves.
+    /// </summary>
+    private void OnDependentJobsCancelled(List<BackgroundJobBase> cancelled)
+    {
+        foreach (var job in cancelled)
+        {
+            UpdateScheduledTaskRun(job);
+            UpdateJobBatch(job);
+            ReleaseConcurrencySlot(job);
         }
     }
 
@@ -710,6 +907,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                     State = job.State,
                     DurationMs = job.DurationMs,
                 }, where:x => x.Id == job.Id);
+                UpdateJobBatch(job);
             }
             catch (Exception ex)
             {
@@ -719,6 +917,7 @@ public partial class BackgroundJobs : IBackgroundJobs
             }
         }
         PerformDbUpdates();
+        await NotifyReplyToAsync(job, response).ConfigAwait();
         ArchiveJob(job);
     }
 
@@ -737,33 +936,77 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (response != null)
         {
             job.Response = response.GetType().Name;
-            job.ResponseBody = ClientConfig.ToJson(response);
+            var responseBody = ClientConfig.ToJson(response);
+            if (responseBody != null && responseBody.Length > feature.MaxResponseBodyChars)
+            {
+                // Dropped rather than truncated, since a partial body can't be deserialized.
+                // Recorded in Meta so it's visible why the result isn't there.
+                log.LogWarning("JOBS Job {Id} Response of {Length} chars exceeds MaxResponseBodyChars, not persisted",
+                    job.Id, responseBody.Length);
+                job.Meta ??= new();
+                job.Meta[JobMetaKeys.ResponseBodyOmitted] = responseBody.Length.ToString();
+                job.ResponseBody = null;
+            }
+            else
+            {
+                job.ResponseBody = responseBody;
+            }
         }
 
         if (!job.Transient)
         {
+            var cancelledBeforeCompletion = false;
+            var completionRejected = false;
             lock (db.GetWriteLock())
             {
                 using var trans = db.OpenTransaction();
-                db.UpdateOnly(() => new BackgroundJob {
+                var updated = db.UpdateOnly(() => new BackgroundJob {
                     Progress = job.Progress,
                     CompletedDate = job.CompletedDate,
                     DurationMs = job.DurationMs,
                     State = job.State,
                     Response = job.Response,
                     ResponseBody = job.ResponseBody,
+                    Meta = job.Meta,
                     LastActivityDate = job.LastActivityDate,
-                }, where: x => x.Id == job.Id);
+                }, where: x => x.Id == job.Id && x.CancelRequestedDate == null && x.State != BackgroundJobState.Cancelled);
 
-                db.UpdateOnly(() => new JobSummary {
-                    CompletedDate = job.CompletedDate,
-                    DurationMs = job.DurationMs,
-                    State = job.State,                
-                    Response = job.Response,
-                    Attempts = job.Attempts,
-                }, where: x => x.Id == job.Id);
-                trans.Commit();
+                if (updated > 0)
+                {
+                    db.UpdateOnly(() => new JobSummary {
+                        CompletedDate = job.CompletedDate,
+                        DurationMs = job.DurationMs,
+                        State = job.State,
+                        Response = job.Response,
+                        Attempts = job.Attempts,
+                    }, where: x => x.Id == job.Id);
+                    trans.Commit();
+                }
+                else
+                {
+                    completionRejected = true;
+                    var current = db.SingleById<BackgroundJob>(job.Id);
+                    cancelledBeforeCompletion = current?.CancelRequestedDate != null || current?.State == BackgroundJobState.Cancelled;
+                }
             }
+            if (cancelledBeforeCompletion)
+            {
+                log.LogWarning("JOBS Job {Id} was cancelled before it completed, discarding its result", job.Id);
+                FailJob(job, new TaskCanceledException("Job was cancelled"), shouldRetry:false);
+                return;
+            }
+            if (completionRejected)
+            {
+                log.LogWarning("JOBS Discarded completion of Job {Id}: it is no longer queued", job.Id);
+                return;
+            }
+            UpdateScheduledTaskRun(job);
+            // A Job with a Callback isn't finished until its Callback runs, which records its
+            // outcome in the batch, otherwise a failed Callback would be counted twice
+            if (job.Callback == null)
+                UpdateJobBatch(job);
+            ReleaseConcurrencySlot(job);
+            JobsDiagnostics.RecordCompleted(job);
         }
 
         if (job is { RequestType: CommandResult.Command, Command: not null, DurationMs: > 0 })
@@ -777,6 +1020,12 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
         else
         {
+            if (job.ReplyTo != null)
+            {
+                var replyToJob = job;
+                var replyToResponse = response;
+                _ = Task.Factory.StartNew(() => NotifyReplyToAsync(replyToJob, replyToResponse), ct);
+            }
             ArchiveJob(job);
         }
     }
@@ -805,13 +1054,15 @@ public partial class BackgroundJobs : IBackgroundJobs
             else
             {
                 log.LogError(e, "Failed to Insert CompletedJob {Id}: {Message}", completedJob.Id, e.Message);
+                throw;
             }
         }
         db.DeleteById<BackgroundJob>(job.Id);
         
         var dispatchJobs = new List<BackgroundJob>();
         var dependentJobIds = db.Column<long>(db.From<BackgroundJob>()
-            .Where(x => x.CompletedDate == null && x.RequestId == null && x.DependsOn == job.Id)
+            .Where(x => x.CompletedDate == null && x.RequestId == null && x.DependsOn == job.Id &&
+                (x.RunAfter == null || x.RunAfter <= now))
             .Select(x => x.Id));
 
         if (dependentJobIds.Count > 0)
@@ -830,7 +1081,8 @@ public partial class BackgroundJobs : IBackgroundJobs
         if (dispatchJobs.Count > 0)
         {
             log.LogInformation("JOBS Queued {Count} Jobs dependent on {JobId}", dispatchJobs.Count, job.Id);
-            var orderedJobs = dispatchJobs.OrderBy(x => x.RunAfter ?? x.CreatedDate).ThenBy(x => x.Id);
+            var orderedJobs = dispatchJobs.OrderByDescending(x => x.Priority)
+                .ThenBy(x => x.RunAfter ?? x.CreatedDate).ThenBy(x => x.Id);
             foreach (var dependentJob in orderedJobs)
             {
                 dependentJob.ParentJob = completedJob;
@@ -841,6 +1093,11 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     // Worker Manager
     private CancellationToken ct = new();
+    /// <summary>
+    /// Cancels running Jobs. Kept separate from the host's stopping token so running Jobs get
+    /// ShutdownTimeoutSecs to finish whichever order the hosted services are stopped in.
+    /// </summary>
+    private CancellationTokenSource executionCts = new();
     public BackgroundJob? LastJob { get; set; }
 
     public Dictionary<string, int> GetWorkerQueueCounts()
@@ -848,13 +1105,13 @@ public partial class BackgroundJobs : IBackgroundJobs
         var to = new Dictionary<string, int>();
         foreach (var (name, worker) in workers)
         {
-            to[name] = worker.Queue.Count;
+            to[name] = worker.QueuedCount;
         }
         return to;
     }
 
-    public List<WorkerStats> GetWorkerStats() => workers.Select(x => x.Value.GetStats()).ToList();
-    public IDbConnection OpenDb() => feature.OpenDb();
+    public override List<WorkerStats> GetWorkerStats() => workers.Select(x => x.Value.GetStats()).ToList();
+    public override IDbConnection OpenDb() => feature.OpenDb();
     public IDbConnection OpenMonthDb(DateTime createdDate) => feature.OpenMonthDb(createdDate);
 
     public JobResult? GetJob(long jobId)
@@ -903,37 +1160,70 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     public void DispatchToWorker(BackgroundJob job)
     {
-        // If job.Thread is specified, use a dedicated worker for that thread
-        if (job.Worker != null)
+        // A Job should only ever be queued on a single worker. Transient Jobs are never persisted
+        // so they all share Id 0 and can't be identified this way.
+        foreach (var existingWorker in AssignedWorkers(job))
         {
-            var worker = workers.GetOrAdd(job.Worker, 
-                _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = job.Worker });
-            if (worker.HasJobQueued(job.Id))
-            {
-                var runningTime = worker.RunningTime ?? TimeSpan.Zero;
-                var runningJob = worker.RunningJob;
-                log.LogWarning("JOBS Worker Job {job.Id} has already been queued (currently running job {RunningJobId} for {TotalSeconds})...",
-                    job.Id, runningJob?.Id, Math.Floor(runningTime.TotalSeconds));
+            var runningTime = existingWorker.RunningTime ?? TimeSpan.Zero;
+            var runningJob = existingWorker.RunningJob;
+            log.LogWarning("JOBS Job {JobId} has already been queued on {Worker} (currently running job {RunningJobId} for {TotalSeconds}s)",
+                job.Id, existingWorker.Name, runningJob?.Id, Math.Floor(runningTime.TotalSeconds));
 
-                if (runningTime.TotalSeconds > (runningJob?.TimeoutSecs ?? feature.DefaultTimeoutSecs))
-                {
-                    CancelWorker(job.Worker);
-                    worker = workers.GetOrAdd(job.Worker, 
-                        _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = job.Worker });
-                }
-                else
-                {
-                    log.LogWarning("JOBS Ignoring already queued job {Id}", job.Id);
-                    return;
-                }
+            if (runningTime.TotalSeconds <= (runningJob?.TimeoutSecs ?? feature.DefaultTimeoutSecs))
+            {
+                log.LogWarning("JOBS Ignoring already queued job {Id}", job.Id);
+                return;
             }
-            worker.Enqueue(job);
+
+            // Worker is stuck on a Job that's exceeded its timeout, replace it with a new Worker
+            CancelWorker(existingWorker.Name!);
+            break;
         }
-        else
+
+        var worker = job.Worker != null
+            ? GetWorker(job.Worker)
+            : GetLeastBusyQueueWorker(job.Queue);
+        worker.Enqueue(job);
+    }
+
+    private IEnumerable<BackgroundJobsWorker> AssignedWorkers(BackgroundJob job)
+    {
+        if (job.Id == 0)
+            yield break;
+        foreach (var worker in workers.Values)
         {
-            // Otherwise invoke a new worker immediately
-            new BackgroundJobsWorker(this, ct, transient:true, feature.DefaultTimeoutSecs).Enqueue(job);
+            if (worker.HasJobQueued(job.Id))
+                yield return worker;
         }
+    }
+
+    private BackgroundJobsWorker GetWorker(string name) => workers.GetOrAdd(name,
+        _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = name });
+
+    /// <summary>
+    /// Jobs in a queue are distributed over a bounded number of Workers. Choosing the least busy
+    /// Worker for each dispatch stops a slow Job from blocking every other Job routed to it, which
+    /// a fixed (e.g. hash-based) assignment would do.
+    /// </summary>
+    private BackgroundJobsWorker GetLeastBusyQueueWorker(string queue)
+    {
+        var concurrency = GetQueueConcurrency(queue);
+
+        BackgroundJobsWorker? leastBusyWorker = null;
+        var leastBusyCount = int.MaxValue;
+        for (var i = 0; i < concurrency; i++)
+        {
+            var worker = GetWorker($"queue:{queue}:{i}");
+            var pendingCount = worker.QueuedCount + (worker.RunningJob != null ? 1 : 0);
+            if (pendingCount == 0)
+                return worker;
+            if (pendingCount < leastBusyCount)
+            {
+                leastBusyCount = pendingCount;
+                leastBusyWorker = worker;
+            }
+        }
+        return leastBusyWorker!;
     }
 
     public void CancelWorker(string worker)
@@ -944,9 +1234,8 @@ public partial class BackgroundJobs : IBackgroundJobs
             bgWorker.Cancel();
             
             // Transfer jobs to new Worker before disposing
-            var newWorker = workers.GetOrAdd(worker, 
-                _ => new BackgroundJobsWorker(this, ct, transient:false, feature.DefaultTimeoutSecs) { Name = worker });
-            while (bgWorker.Queue.TryDequeue(out var job))
+            var newWorker = GetWorker(worker);
+            foreach (var job in bgWorker.DrainPending())
             {
                 newWorker.Enqueue(job);
             }
@@ -959,9 +1248,18 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
+    private bool stopping;
+
     public Task StartAsync(CancellationToken stoppingToken)
     {
         ct = stoppingToken;
+        stopping = false;
+        var jobsCts = executionCts = new();
+        var graceSecs = feature.ShutdownTimeoutSecs;
+        stoppingToken.Register(() => {
+            try { jobsCts.CancelAfter(TimeSpan.FromSeconds(graceSecs)); }
+            catch (ObjectDisposedException) {}
+        });
         log.LogInformation("JOBS Starting...");
         LoadJobQueue();
         LoadScheduledTasks();
@@ -989,7 +1287,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 .GroupBy(x => new { x.Command, x.Worker })
                 .Select(x => new {
                     Command = Sql.Custom($"IIF({columns.Worker} is null, {columns.Command}, {columns.Command} || '.' || {columns.Worker})"), 
-                    DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
+                    DurationMs = Sql.Custom($"CAST(AVG({columns.DurationMs}) AS INT)"),
                 }));
         lastCommandDurations = new(commandDurations);
         
@@ -1005,7 +1303,7 @@ public partial class BackgroundJobs : IBackgroundJobs
                 .GroupBy(x => new { x.Request, x.Worker })
                 .Select(x => new {
                     Request = Sql.Custom($"IIF({columns.Worker} is null, {columns.Request}, {columns.Request} || '.' || {columns.Worker})"), 
-                    DurationMs = Sql.Custom($"CASE WHEN SUM({columns.DurationMs}) > {int.MaxValue} THEN {int.MaxValue} ELSE SUM({columns.DurationMs}) END"),
+                    DurationMs = Sql.Custom($"CAST(AVG({columns.DurationMs}) AS INT)"),
                 }));
         lastApiDurations = new(apiDurations);
 
@@ -1029,7 +1327,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         
         db.UpdateOnly(() => new BackgroundJob {
             RequestId = requestId,
-            StartedDate = now,
+            StartedDate = null,
             LastActivityDate = now,
             State = BackgroundJobState.Queued,
         }, where:x => x.DependsOn == null && (x.RunAfter == null || now > x.RunAfter));
@@ -1050,6 +1348,9 @@ public partial class BackgroundJobs : IBackgroundJobs
 
     public void DispatchPendingJobs()
     {
+        // A draining node finishes what it has without taking anything new
+        if (IsDraining)
+            return;
         using var db = feature.OpenDb();
         var expiredJobIds = new List<long>();
         var dependentJobIds = new List<long>();
@@ -1068,21 +1369,41 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var lastActivityDate = job.RunAfter != null && job.RunAfter > job.LastActivityDate
                     ? job.RunAfter.Value
                     : job.LastActivityDate;
-                if (job.CompletedDate == null && lastActivityDate < timeoutDate && job.State is BackgroundJobState.Queued or BackgroundJobState.Started)
+                // Only a Job that was dispatched can time out. One that was never dispatched is
+                // still waiting on its queue, dependency or batch, which requeueing would bypass.
+                var dispatched = job.RequestId != null || job.State == BackgroundJobState.Started;
+                if (dispatched && lastActivityDate < timeoutDate && job.State is BackgroundJobState.Queued or BackgroundJobState.Started)
                 {
                     expiredJobIds.Add(job.Id);
                     continue;
                 }
                 if (job.RequestId != null)
                     continue;
+                // Expired Jobs are cancelled by ExpireJobs(), paused queues wait to be resumed
+                if (job.ExpiresAt != null && job.ExpiresAt < now)
+                    continue;
+                if (IsQueuePaused(job.Queue))
+                    continue;
+                // Fan-in: wait for every Job in the Batch this one depends on
+                if (job.DependsOnBatch != null && !IsBatchFinished(job.DependsOnBatch))
+                    continue;
+                if (!TryTakeRateLimitSlot(job.Queue, now))
+                    continue;
                 if (job.RunAfter == null || now > job.RunAfter)
                 {
                     if (job.DependsOn != null)
                     {
-                        var dependsOnSummary = GetJob(job.DependsOn.Value);
-                        if (dependsOnSummary?.Completed != null)
+                        var parent = GetJob(job.DependsOn.Value);
+                        if (parent?.Failed != null && CancelsWithParent(job))
                         {
-                            completedJobsMap[job.DependsOn.Value] = job.ParentJob = dependsOnSummary.Completed;
+                            // Queued after its parent had already failed, so CancelDependentJobs() missed it
+                            CancelJob(job.Id);
+                            continue;
+                        }
+                        var parentJob = GetFinishedParent(job, parent);
+                        if (parentJob != null)
+                        {
+                            completedJobsMap[job.Id] = job.ParentJob = parentJob;
                             dependentJobIds.Add(job.Id);
                         }
                     }
@@ -1107,6 +1428,8 @@ public partial class BackgroundJobs : IBackgroundJobs
         {
             requeudJobsCount += db.UpdateOnly(() => new BackgroundJob {
                 RequestId = requestId,
+                State = BackgroundJobState.Queued,
+                StartedDate = null,
                 LastActivityDate = now,
             }, where:x => expiredJobIds.Contains(x.Id));
         }
@@ -1127,14 +1450,18 @@ public partial class BackgroundJobs : IBackgroundJobs
             {
                 log.LogInformation("JOBS Queueing {Count} Jobs ({ScheduledCount} Scheduled, {DependentCount} Dependent, {TimedOutCount} Expired)",
                     requeudJobs.Count, scheduledJobIds.Count, dependentJobIds.Count, expiredJobIds.Count);
-                var orderedJobs = requeudJobs.OrderBy(x => x.RunAfter ?? x.CreatedDate).ThenBy(x => x.Id);
+                var orderedJobs = requeudJobs.OrderByDescending(x => x.Priority)
+                    .ThenBy(x => x.RunAfter ?? x.CreatedDate).ThenBy(x => x.Id);
                 foreach (var job in orderedJobs)
                 {
-                    if (job.DependsOn != null && completedJobsMap.TryGetValue(job.DependsOn.Value, out var completedJob))
+                    if (job.DependsOn != null && completedJobsMap.TryGetValue(job.Id, out var completedJob))
                     {
                         job.ParentJob = completedJob;
                     }
-                    
+
+                    if (!TryClaimConcurrencySlot(job))
+                        continue;
+
                     DispatchToWorker(job);
                 }
             }
@@ -1148,9 +1475,57 @@ public partial class BackgroundJobs : IBackgroundJobs
             .Where(x => x.State == BackgroundJobState.Cancelled));
         foreach (var cancelledJob in cancelledJobs)
         {
+            // Claim the row first: the Worker may have archived it already, and archiving it
+            // again would count it against its batch twice
+            int deleted;
+            lock (db.GetWriteLock())
+            {
+                deleted = db.DeleteById<BackgroundJob>(cancelledJob.Id);
+            }
+            if (deleted == 0)
+                continue;
             using var dbMonth = feature.OpenMonthDb(cancelledJob.CreatedDate);
             InsertFailedJob(dbMonth, cancelledJob);
-            db.DeleteById<BackgroundJob>(cancelledJob.Id);
+            UpdateScheduledTaskRun(cancelledJob);
+            UpdateJobBatch(cancelledJob);
+            ReleaseConcurrencySlot(cancelledJob);
+            JobsDiagnostics.RecordCancelled(cancelledJob);
+        }
+    }
+
+
+    private DateTime lastSummaryPurge = DateTime.MinValue;
+
+    /// <summary>
+    /// Deletes JobSummary rows older than JobSummaryRetention. Only completed Jobs are deleted so
+    /// this can never remove the summary of a Job that's still queued or running.
+    /// </summary>
+    private void PurgeExpiredJobSummaries()
+    {
+        if (feature.JobSummaryRetention == null)
+            return;
+        var now = DateTime.UtcNow;
+        if (now - lastSummaryPurge < TimeSpan.FromHours(1))
+            return;
+        lastSummaryPurge = now;
+
+        try
+        {
+            var expiredDate = now - feature.JobSummaryRetention.Value;
+            using var db = feature.OpenDb();
+            int deleted;
+            lock (db.GetWriteLock())
+            {
+                deleted = db.Delete<JobSummary>(x => x.CreatedDate < expiredDate && x.CompletedDate != null &&
+                    x.State != BackgroundJobState.Queued && x.State != BackgroundJobState.Started);
+            }
+            if (deleted > 0)
+                log.LogInformation("JOBS Deleted {Count} JobSummary rows created before {ExpiredDate}",
+                    deleted, expiredDate);
+        }
+        catch (Exception e)
+        {
+            log.LogError(e, "JOBS Error purging expired JobSummary rows");
         }
     }
 
@@ -1159,7 +1534,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         updates.Enqueue(status);
     }
 
-    record class Columns(string Logs, string Status, string Progress, string Id, string Request, string Command, string Worker, string DurationMs);
+    record class Columns(string Logs, string LogsTruncated, string Status, string Progress, string LastActivityDate, string Id, string Request, string Command, string Worker, string DurationMs);
 
     private void PerformDbUpdates()
     {
@@ -1173,15 +1548,28 @@ public partial class BackgroundJobs : IBackgroundJobs
                 var job = update.Job;
                 var dbParams = new Dictionary<string,object?>();
                 var fieldUpdates = new List<string>();
+                var logsTruncated = false;
 
                 if (update.Log != null)
                 {
-                    job.Logs = job.Logs != null
-                        ? job.Logs + "\n" + update.Log
-                        : update.Log;
-                    
-                    fieldUpdates.Add($"{columns.Logs} = CASE WHEN {columns.Logs} IS NOT NULL THEN {columns.Logs} || char(10) || @log ELSE @log END");
-                    dbParams["log"] = update.Log;
+                    var previousLength = job.Logs?.Length ?? 0;
+                    var separatorLength = previousLength > 0 ? 1 : 0;
+                    var available = Math.Max(0, feature.MaxJobLogChars - previousLength - separatorLength);
+                    var logPart = update.Log.Length > available ? update.Log[..available] : update.Log;
+                    if (logPart.Length < update.Log.Length && job.LogsTruncated != true)
+                    {
+                        job.LogsTruncated = true;
+                        logsTruncated = true;
+                        // Parameterised as PostgreSQL 'boolean' and SQL Server 'bit' reject an integer literal
+                        dbParams["logsTruncated"] = true;
+                        fieldUpdates.Add($"{columns.LogsTruncated} = @logsTruncated");
+                    }
+                    if (logPart.Length > 0)
+                    {
+                        job.Logs = previousLength > 0 ? job.Logs + "\n" + logPart : logPart;
+                        fieldUpdates.Add($"{columns.Logs} = CASE WHEN {columns.Logs} IS NOT NULL THEN {columns.Logs} || char(10) || @log ELSE @log END");
+                        dbParams["log"] = logPart;
+                    }
                 }
                 if (update.Status != null)
                 {
@@ -1197,9 +1585,14 @@ public partial class BackgroundJobs : IBackgroundJobs
 
                 if (!job.Transient && fieldUpdates.Count > 0)
                 {
+                    job.LastActivityDate = DateTime.UtcNow;
+                    dbParams["lastActivityDate"] = job.LastActivityDate;
+                    fieldUpdates.Add($"{columns.LastActivityDate} = @lastActivityDate");
                     dbParams["id"] = job.Id;
                     var sql = $"UPDATE {Table} SET {string.Join(", ", fieldUpdates)} WHERE {columns.Id} = @id";
                     db.ExecuteSql(sql, dbParams);
+                    if (logsTruncated)
+                        db.UpdateOnly(() => new JobSummary { LogsTruncated = true }, where: x => x.Id == job.Id);
                 }
             }
             catch (Exception e)
@@ -1209,8 +1602,44 @@ public partial class BackgroundJobs : IBackgroundJobs
         }
     }
 
+
+    /// <summary>
+    /// Stops accepting new work and gives running Jobs a chance to finish so their progress and
+    /// results are persisted rather than lost when the App shuts down.
+    /// </summary>
+    public async Task StopAsync(CancellationToken token = default)
+    {
+        log.LogInformation("JOBS Stopping...");
+        stopping = true;
+
+        // Jobs that were queued to a worker but never started stay queued in the database
+        foreach (var worker in workers.Values)
+        {
+            worker.DrainPending();
+        }
+
+        var deadline = DateTime.UtcNow.AddSeconds(feature.ShutdownTimeoutSecs);
+        while (DateTime.UtcNow < deadline && !token.IsCancellationRequested)
+        {
+            var runningJobs = workers.Values.Select(x => x.RunningJob).Where(x => x != null).ToList();
+            if (runningJobs.Count == 0)
+                break;
+            PerformDbUpdates();
+            await Task.Delay(200, CancellationToken.None).ConfigAwait();
+        }
+        // Jobs still running are interrupted and left incomplete, to be requeued on restart
+        try { executionCts.Cancel(); }
+        catch (Exception e) { log.LogError(e, "JOBS Error cancelling running Jobs on shutdown"); }
+
+        PerformDbUpdates();
+        RecordNodeStopped();
+        log.LogInformation("JOBS Stopped");
+    }
+
     public Task TickAsync()
     {
+        if (stopping)
+            return Task.CompletedTask;
         try
         {
             Interlocked.Increment(ref ticks);
@@ -1219,8 +1648,15 @@ public partial class BackgroundJobs : IBackgroundJobs
 
             DispatchPendingJobs();
             PerformDbUpdates();
+            RecordNodeHeartbeat();
+            ReloadScheduledTasksIfDue();
             ExecuteDueScheduledTasks();
+            ExpireJobs();
             ClearCancelledJobs();
+            ReleaseExpiredConcurrencySlots();
+            PurgeExpiredJobSummaries();
+            PurgeExpiredJobAttempts();
+            PurgeExpiredArchives();
         }
         catch (Exception e)
         {
@@ -1229,7 +1665,7 @@ public partial class BackgroundJobs : IBackgroundJobs
         return Task.CompletedTask;
     }
 
-    private CommandInfo AssertCommand(string? command)
+    protected override CommandInfo AssertCommand(string? command)
     {
         ArgumentNullException.ThrowIfNull(command);
         return feature.CommandsFeature.AssertCommandInfo(command);

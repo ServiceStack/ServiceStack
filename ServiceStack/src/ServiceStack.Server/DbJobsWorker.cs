@@ -1,6 +1,7 @@
 #if NET8_0_OR_GREATER
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,15 @@ namespace ServiceStack;
 public class DbJobsWorker : IDisposable
 {
     public string? Name { get; set; }
-    public ConcurrentQueue<BackgroundJob> Queue { get; } = new();
+    /// <summary>Pending Jobs ordered by highest Priority first, then FIFO within the same Priority</summary>
+    private readonly PriorityQueue<BackgroundJob, (int NegPriority, long Seq)> queue = new();
+    /// <summary>Ids of the queued Jobs, so checking whether a Job is already queued stays O(1)</summary>
+    private readonly HashSet<long> queuedIds = new();
+    private long queuedSeq = 0;
+    public int QueuedCount
+    {
+        get { lock (queueSync) return queue.Count; }
+    }
     public Task? BackgroundTask => bgTask; 
     private Task? bgTask;
     private long running = 0;
@@ -26,6 +35,7 @@ public class DbJobsWorker : IDisposable
     private long failed = 0;
     private long completed = 0;
     private readonly IBackgroundJobs jobs;
+    private readonly object queueSync = new();
     private readonly CancellationToken ct;
     private readonly CancellationTokenSource workerCts;
     private readonly bool transient;
@@ -47,7 +57,7 @@ public class DbJobsWorker : IDisposable
     public WorkerStats GetStats() => new()
     {
         Name = Name ?? "None",
-        Queued = Queue.Count,
+        Queued = QueuedCount,
         Received = received,
         Completed = completed,
         Retries = retries,
@@ -65,20 +75,75 @@ public class DbJobsWorker : IDisposable
     public void Enqueue(BackgroundJob job)
     {
         Interlocked.Increment(ref received);
-        Queue.Enqueue(job);
+        lock (queueSync)
+        {
+            queue.Enqueue(job, (-job.Priority, queuedSeq++));
+            queuedIds.Add(job.Id);
+        }
+        StartProcessing();
+    }
+
+    public List<BackgroundJob> DrainPending()
+    {
+        var pending = new List<BackgroundJob>();
+        lock (queueSync)
+        {
+            while (queue.TryDequeue(out var job, out _))
+                pending.Add(job);
+            queuedIds.Clear();
+        }
+        return pending;
+    }
+
+    private bool TryDequeueHighestPriority(out BackgroundJob? selected)
+    {
+        lock (queueSync)
+        {
+            if (!queue.TryDequeue(out selected, out _))
+                return false;
+            queuedIds.Remove(selected.Id);
+            return true;
+        }
+    }
+
+    public List<BackgroundJob> GetQueuedJobs()
+    {
+        lock (queueSync)
+            return queue.UnorderedItems.Select(x => x.Element).ToList();
+    }
+
+    private void StartProcessing()
+    {
+        if (cancelled || ct.IsCancellationRequested)
+            return;
         if (Interlocked.CompareExchange(ref running, 1, 0) == 0)
         {
             Interlocked.Increment(ref tasksStarted);
-            bgTask = Task.Factory.StartNew(RunAsync, new JobWorkerContext(Queue, jobs, ct), ct).Unwrap();
+            bgTask = Task.Factory.StartNew(RunAsync, new JobWorkerContext(jobs, ct),
+                CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).Unwrap();
         }
     }
 
     public bool HasJobQueued(long jobId)
     {
-        return runningJob?.Id == jobId || Queue.Any(x => x.Id == jobId);
+        if (runningJob?.Id == jobId)
+            return true;
+        lock (queueSync)
+            return queuedIds.Contains(jobId);
     }
 
-    record class JobWorkerContext(ConcurrentQueue<BackgroundJob> Queue, IBackgroundJobs Jobs, CancellationToken Token);
+    /// <summary>Jobs this worker holds a lease for, i.e. that it needs to keep renewing</summary>
+    public List<BackgroundJob> GetLeasedJobs()
+    {
+        var to = GetQueuedJobs();
+        var running = runningJob;
+        if (running != null)
+            to.Add(running);
+        return to;
+    }
+
+
+    record class JobWorkerContext(IBackgroundJobs Jobs, CancellationToken Token);
 
     // Runs on Worker Thread
     private async Task RunAsync(object? state)
@@ -87,8 +152,10 @@ public class DbJobsWorker : IDisposable
         {
             // Runs all jobs in the queue, then exits
             var ctx = (JobWorkerContext)state!;
-            while (ctx.Queue.TryDequeue(out var job))
+            while (TryDequeueHighestPriority(out var job))
             {
+                if (job == null)
+                    continue;
                 if (cancelled)
                     return;
                 if (!ctx.Token.IsCancellationRequested)
@@ -121,7 +188,9 @@ public class DbJobsWorker : IDisposable
         }
         finally
         {
-            Interlocked.Decrement(ref running);
+            Interlocked.Exchange(ref running, 0);
+            if (QueuedCount > 0)
+                StartProcessing();
         }
     }
 

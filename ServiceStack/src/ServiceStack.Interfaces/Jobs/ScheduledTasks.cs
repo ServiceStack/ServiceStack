@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Jobs;
@@ -21,8 +22,36 @@ public class ScheduledTask
     public virtual string? Request { get; set; }
     public virtual string? RequestBody { get; set; }
     public BackgroundJobOptions? Options { get; set; }
+    [Default("{TRUE}")]
+    public bool Enabled { get; set; } = true;
+    /// <summary>Don't run before this date</summary>
+    public DateTime? StartDate { get; set; }
+    /// <summary>Don't run after this date, the task is disabled once it passes</summary>
+    public DateTime? EndDate { get; set; }
+    /// <summary>Disable the task once it has run this many times</summary>
+    public int? MaxRuns { get; set; }
+    /// <summary>How many times the task has run</summary>
+    [Default(0)]
+    public int RunCount { get; set; }
+    public DateTime? NextRun { get; set; }
+    [StringLength(100)]
+    public string? TimeZoneId { get; set; }
+    [Default("'RunOnce'")]
+    public ScheduleMisfirePolicy MisfirePolicy { get; set; }
+    [Default("'Allow'")]
+    public ScheduleOverlapPolicy OverlapPolicy { get; set; }
+    [StringLength(100)]
+    public string? LastErrorCode { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)]
+    public string? LastErrorMessage { get; set; }
     public DateTime? LastRun { get; set; }
     public long? LastJobId { get; set; }
+    /// <summary>State of the last Job this task enqueued, maintained for the Admin UI.</summary>
+    public BackgroundJobState? LastRunState { get; set; }
+    public int? LastRunDurationMs { get; set; }
+    public DateTime? CreatedDate { get; set; }
+    public DateTime? ModifiedDate { get; set; }
+    public Dictionary<string, string>? Meta { get; set; }
 }
 
 /// <summary>
@@ -41,6 +70,15 @@ public class Schedule
     /// Run on a specific interval specified by a cron expression, see: https://en.wikipedia.org/wiki/Cron
     /// </summary>
     public Schedule(string? cronExpression) => _cronExpression = cronExpression;
+    public string? TimeZoneId { get; set; }
+    public ScheduleMisfirePolicy MisfirePolicy { get; set; }
+    public ScheduleOverlapPolicy OverlapPolicy { get; set; }
+    /// <summary>Don't run before this date</summary>
+    public DateTime? StartDate { get; set; }
+    /// <summary>Don't run after this date</summary>
+    public DateTime? EndDate { get; set; }
+    /// <summary>Stop once the task has run this many times</summary>
+    public int? MaxRuns { get; set; }
     
     /// <summary>
     /// Create a schedule with an interval
@@ -73,11 +111,23 @@ public class Schedule
     /// <summary>
     /// Run once a year at midnight of 1 January
     /// </summary>
-    public static Schedule Yearly => new("0 0 1 * *");
+    public static Schedule Yearly => new("0 0 1 1 *");
 
     public void Deconstruct(out TimeSpan? interval, out string? cronExpression)
     {
         interval = _interval;
         cronExpression = _cronExpression;
     }
+}
+
+public enum ScheduleMisfirePolicy
+{
+    RunOnce,
+    Skip,
+}
+
+public enum ScheduleOverlapPolicy
+{
+    Allow,
+    Skip,
 }

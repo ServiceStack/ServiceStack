@@ -63,6 +63,7 @@ public class MockBackgroundJobs : IBackgroundJobs
     public void FailJob(BackgroundJob job, ResponseStatus error, bool shouldRetry) => throw new NotImplementedException();
     public void CompleteJob(BackgroundJob job, object? response = null) => throw new NotImplementedException();
     public Task StartAsync(CancellationToken stoppingToken) => Task.CompletedTask;
+    public Task StopAsync(CancellationToken token = default) => Task.CompletedTask;
     public Task TickAsync() => Task.CompletedTask;
     public int? GetCommandEstimatedDurationMs(string command, string? worker = null) => null;
     public int? GetApiEstimatedDurationMs(string request, string? worker = null) => null;

@@ -17,6 +17,7 @@ using NUnit.Framework;
 using ServiceStack.Admin;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.Host;
 using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.OrmLite;
@@ -137,6 +138,90 @@ public class AlwaysFailCommand : SyncCommand
     }
 }
 
+/// <summary>Fails its first request.Id attempts, then succeeds, like a flaky downstream service</summary>
+public class SqliteFlakyCommand : SyncCommand<MyRequest>
+{
+    public static long Count;
+    protected override void Run(MyRequest request)
+    {
+        Interlocked.Increment(ref Count);
+        var job = Request.GetBackgroundJob();
+        if (job.Attempts <= request.Id)
+            throw new Exception($"Service unavailable, attempt {job.Attempts}");
+    }
+}
+
+public class SqliteSlowRequest
+{
+    public string Key { get; set; } = "";
+    public int Ms { get; set; }
+}
+
+/// <summary>Records how many Jobs ran at once, overall and per key, and whether it was cancelled</summary>
+public class SqliteSlowCommand : AsyncCommand<SqliteSlowRequest>
+{
+    static readonly object sync = new();
+    public static Dictionary<string, int> Running = new();
+    public static Dictionary<string, int> MaxByKey = new();
+    public static int RunningOverall, MaxOverall;
+    public static bool ObservedCancellation;
+
+    public static void Reset()
+    {
+        lock (sync)
+        {
+            Running.Clear();
+            MaxByKey.Clear();
+            RunningOverall = MaxOverall = 0;
+            ObservedCancellation = false;
+        }
+    }
+
+    protected override async Task RunAsync(SqliteSlowRequest request, CancellationToken token)
+    {
+        lock (sync)
+        {
+            Running[request.Key] = Running.GetValueOrDefault(request.Key) + 1;
+            MaxByKey[request.Key] = Math.Max(MaxByKey.GetValueOrDefault(request.Key), Running[request.Key]);
+            MaxOverall = Math.Max(MaxOverall, ++RunningOverall);
+        }
+        try
+        {
+            await Task.Delay(request.Ms, token);
+        }
+        catch (OperationCanceledException)
+        {
+            ObservedCancellation = true;
+            throw;
+        }
+        finally
+        {
+            lock (sync)
+            {
+                Running[request.Key]--;
+                RunningOverall--;
+            }
+        }
+    }
+}
+
+public class SqliteBatchCallbackCommand : SyncCommand<JobBatch>
+{
+    public static long Count;
+    public static JobBatch? LastBatch;
+    protected override void Run(JobBatch request)
+    {
+        LastBatch = request;
+        Interlocked.Increment(ref Count);
+    }
+}
+
+public class SqliteBatchSuccessCommand : SyncCommand<JobBatch>
+{
+    public static long Count;
+    protected override void Run(JobBatch request) => Interlocked.Increment(ref Count);
+}
+
 public class DependentJob
 {
     public long Id { get; set; }
@@ -244,8 +329,15 @@ public class JobsHostedService(ILogger<JobsHostedService> log, IBackgroundJobs j
 }
 public class BackgroundJobsTests
 {
-    public BackgroundJobsTests()
+    /// <summary>
+    /// Built in OneTimeSetUp rather than the constructor: the AppHostBase constructor sets the
+    /// process-global ServiceStackHost.Instance, and NUnit constructs fixture instances before the
+    /// fixture runs, so a field-initialized AppHost collides with another fixture's host.
+    /// </summary>
+    [OneTimeSetUp]
+    public void TestFixtureSetUp()
     {
+        appHost = new AppHost();
         var contentRootPath = "~/../../../".MapServerPath();
         FileSystemVirtualFiles.DeleteDirectory(contentRootPath.CombineWith("App_Data/jobs"));
 
@@ -267,8 +359,13 @@ public class BackgroundJobsTests
 
         // Configure Auth
         var dbPath = contentRootPath.CombineWith("App_Data/app.db");
-        if (File.Exists(dbPath))
-            File.Delete(dbPath);
+        // Delete the WAL/SHM sidecars too: removing only the main database leaves SQLite to open
+        // against an inconsistent write-ahead log, which fails with "disk I/O error".
+        foreach (var suffix in new[] { "", "-journal", "-wal", "-shm" })
+        {
+            if (File.Exists(dbPath + suffix))
+                File.Delete(dbPath + suffix);
+        }
         var connectionString = $"DataSource={dbPath};Cache=Shared";
         var dbFactory = new OrmLiteConnectionFactory(connectionString, SqliteDialect.Provider);
         services.AddSingleton<IDbConnectionFactory>(dbFactory);
@@ -309,7 +406,7 @@ public class BackgroundJobsTests
         app.StartAsync($"http://localhost:20000");        
     }
 
-    private readonly AppHost appHost = new();
+    private AppHost appHost = null!;
     private readonly BackgroundsJobFeature feature = new();
     class AppHost() : AppHostBase(nameof(BackgroundJobsTests), typeof(JobServices).Assembly)
     {
@@ -321,6 +418,23 @@ public class BackgroundJobsTests
 
     [OneTimeTearDown]
     public void TestFixtureTearDown() => AppHostBase.DisposeApp();
+
+    /// <summary>Runs an Admin Jobs API with the role check relaxed, which needs an Admin session</summary>
+    object ExecAdmin(Func<AdminJobServices, object> fn)
+    {
+        var accessRole = feature.AccessRole;
+        feature.AccessRole = ServiceStack.Configuration.RoleNames.AllowAnon;
+        try
+        {
+            using var service = appHost.Container.Resolve<AdminJobServices>();
+            service.Request = new BasicRequest();
+            return fn(service);
+        }
+        finally
+        {
+            feature.AccessRole = accessRole;
+        }
+    }
 
     void ResetState()
     {
@@ -343,6 +457,12 @@ public class BackgroundJobsTests
         DependentJobCommand.LastCommandRequest = null;
         DependentJobCallbackCommand.Results.Clear();
         
+        SqliteFlakyCommand.Count = 0;
+        SqliteSlowCommand.Reset();
+        SqliteBatchCallbackCommand.Count = 0;
+        SqliteBatchCallbackCommand.LastBatch = null;
+        SqliteBatchSuccessCommand.Count = 0;
+
         MyScopedCommand.Count = 0;
         MyScopedCommand.LastRequest = null;
         MyScopedCommand.LastUser = null;
@@ -889,6 +1009,10 @@ public class BackgroundJobsTests
         using var db = feature.Jobs.OpenDb();
         var taskName = "My Command Every Minute";
         var options = new BackgroundJobOptions { Tag = "test" };
+        var schedule = Schedule.EveryMinute;
+        schedule.TimeZoneId = TimeZoneInfo.Utc.Id;
+        schedule.MisfirePolicy = ScheduleMisfirePolicy.Skip;
+        schedule.OverlapPolicy = ScheduleOverlapPolicy.Skip;
         var startedAt = DateTime.UtcNow;
 
         ScheduledTask AssertTask(ScheduledTask task)
@@ -900,17 +1024,22 @@ public class BackgroundJobsTests
             Assert.That(task.RequestBody, Is.EqualTo("{}"));
             Assert.That(task.Interval, Is.Null);
             Assert.That(task.CronExpression, Is.EqualTo("* * * * *"));
+            Assert.That(task.Enabled, Is.True);
+            Assert.That(task.NextRun, Is.Not.Null);
+            Assert.That(task.TimeZoneId, Is.EqualTo(TimeZoneInfo.Utc.Id));
+            Assert.That(task.MisfirePolicy, Is.EqualTo(ScheduleMisfirePolicy.Skip));
+            Assert.That(task.OverlapPolicy, Is.EqualTo(ScheduleOverlapPolicy.Skip));
             return task;
         }
 
-        feature.Jobs.RecurringCommand<MySyncCommand>(taskName, Schedule.EveryMinute, options);
+        feature.Jobs.RecurringCommand<MySyncCommand>(taskName, schedule, options);
 
         var tasks = await db.SelectAsync<ScheduledTask>();
         Assert.That(tasks.Count, Is.EqualTo(1));
         var task = AssertTask(tasks[0]);
         Assert.That(task.Options, Is.Not.Null);
         
-        feature.Jobs.RecurringCommand<MySyncCommand>(taskName, Schedule.EveryMinute);
+        feature.Jobs.RecurringCommand<MySyncCommand>(taskName, schedule);
         tasks = await db.SelectAsync<ScheduledTask>();
         Assert.That(tasks.Count, Is.EqualTo(1));
         task = AssertTask(tasks[0]);
@@ -928,6 +1057,18 @@ public class BackgroundJobsTests
         task = await db.SingleAsync<ScheduledTask>(x => x.Name == taskName);
         Assert.That(task.LastRun, Is.GreaterThan(startedAt));
         Assert.That(task.LastJobId, Is.EqualTo(job.Id));
+        Assert.That(job.RefId, Does.StartWith($"scheduled:{task.Id}:"));
+
+        Assert.That(feature.Jobs.SetRecurringTaskEnabled(taskName, false), Is.True);
+        task = await db.SingleAsync<ScheduledTask>(x => x.Name == taskName);
+        Assert.That(task.Enabled, Is.False);
+        Assert.That(task.NextRun, Is.Null);
+
+        Assert.That(feature.Jobs.SetRecurringTaskEnabled(taskName, true), Is.True);
+        task = await db.SingleAsync<ScheduledTask>(x => x.Name == taskName);
+        Assert.That(task.Enabled, Is.True);
+        Assert.That(task.NextRun, Is.Not.Null);
+        Assert.That(feature.Jobs.SetRecurringTaskEnabled(taskName, false), Is.True);
     }
 
     [Test]
@@ -949,6 +1090,8 @@ public class BackgroundJobsTests
             Assert.That(task.RequestBody, Is.EqualTo(ClientConfig.ToJson(request)));
             Assert.That(task.Interval, Is.EqualTo(TimeSpan.FromSeconds(1)));
             Assert.That(task.CronExpression, Is.Null);
+            Assert.That(task.Enabled, Is.True);
+            Assert.That(task.NextRun, Is.Not.Null);
             return task;
         }
 
@@ -979,6 +1122,7 @@ public class BackgroundJobsTests
         task = await db.SingleAsync<ScheduledTask>(x => x.Name == taskName);
         Assert.That(task.LastRun, Is.GreaterThan(startedAt));
         Assert.That(task.LastJobId, Is.EqualTo(job.Id));
+        Assert.That(job.RefId, Does.StartWith($"scheduled:{task.Id}:"));
     }
 
     [Test]
@@ -1089,5 +1233,585 @@ public class BackgroundJobsTests
 
         await Task.WhenAll(tasks);
         Assert.That(exceptions, Is.Empty);
+    }
+
+    [Test]
+    public void RetryBackoff_Uses_Bounded_Exponential_Jitter()
+    {
+        // Equal jitter: never less than half the calculated delay, so a retry is never immediate
+        var job = new BackgroundJob { Attempts = 3, RetryBackoff = RetryBackoff.ExponentialJitter };
+        Assert.That(JobUtils.GetRetryDelay(job, RetryBackoff.Fixed, 5_000, 30_000, 0).TotalMilliseconds,
+            Is.EqualTo(10_000));
+        Assert.That(JobUtils.GetRetryDelay(job, RetryBackoff.Fixed, 5_000, 30_000, 0.5).TotalMilliseconds,
+            Is.EqualTo(15_000));
+        Assert.That(JobUtils.GetRetryDelay(job, RetryBackoff.Fixed, 5_000, 30_000, 1).TotalMilliseconds,
+            Is.EqualTo(20_000));
+        job.Attempts = 20;
+        Assert.That(JobUtils.GetRetryDelay(job, RetryBackoff.Fixed, 5_000, 30_000, 1).TotalMilliseconds,
+            Is.EqualTo(30_000));
+        Assert.That(JobUtils.GetRetryDelay(job, RetryBackoff.Fixed, 5_000, 30_000, 0).TotalMilliseconds,
+            Is.EqualTo(15_000));
+    }
+
+    [Test]
+    public void SingletonKey_Returns_Active_Job_Instead_Of_Queueing_A_Duplicate()
+    {
+        ResetState();
+        var options = new BackgroundJobOptions { SingletonKey = "nightly-import" };
+
+        var first = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 }, options);
+        var second = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 2 }, options);
+
+        Assert.That(second.Id, Is.EqualTo(first.Id));
+        using var db = feature.Jobs.OpenDb();
+        Assert.That(db.Count<BackgroundJob>(x => x.SingletonKey == options.SingletonKey), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Jobs_Default_To_The_Default_Queue_With_Zero_Priority()
+    {
+        ResetState();
+        var jobRef = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 });
+
+        using var db = feature.Jobs.OpenDb();
+        var summary = db.SingleById<JobSummary>(jobRef.Id);
+        Assert.That(summary.Queue, Is.EqualTo(JobQueues.Default));
+        Assert.That(summary.Priority, Is.EqualTo(0));
+    }
+
+    [Test]
+    public void Scheduled_RefIds_Round_Trip_Their_Task_Id()
+    {
+        var occurrence = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var refId = JobUtils.CreateScheduledRefId(42, occurrence);
+
+        Assert.That(JobUtils.TryGetScheduledTaskId(refId, out var taskId), Is.True);
+        Assert.That(taskId, Is.EqualTo(42));
+        Assert.That(JobUtils.TryGetScheduledTaskId(JobUtils.CreateScheduledSingletonKey(42), out taskId), Is.True);
+        Assert.That(taskId, Is.EqualTo(42));
+        Assert.That(JobUtils.TryGetScheduledTaskId("customer-order-42", out _), Is.False);
+        Assert.That(JobUtils.TryGetScheduledTaskId(null, out _), Is.False);
+    }
+
+    [Test]
+    public void Idempotent_Enqueue_Returns_Existing_Job()
+    {
+        ResetState();
+        var options = new BackgroundJobOptions
+        {
+            RefId = "customer-order-42",
+            DuplicateRefIdBehavior = DuplicateRefIdBehavior.ReturnExisting,
+        };
+
+        var first = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 42 }, options);
+        var second = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 42 }, options);
+
+        Assert.That(second.Id, Is.EqualTo(first.Id));
+        Assert.That(second.RefId, Is.EqualTo(first.RefId));
+        using var db = feature.Jobs.OpenDb();
+        Assert.That(db.Count<JobSummary>(x => x.RefId == options.RefId), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Additive_Jobs_Upgrade_Preserves_History_And_Clears_Incomplete_Queue()
+    {
+        using var db = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider).OpenDbConnection();
+        db.ExecuteSql("CREATE TABLE BackgroundJob (Id INTEGER PRIMARY KEY)");
+        db.ExecuteSql("CREATE TABLE JobSummary (Id INTEGER PRIMARY KEY, State TEXT, CompletedDate TEXT, ErrorCode TEXT, ErrorMessage TEXT)");
+        db.ExecuteSql("CREATE TABLE ScheduledTask (Id INTEGER PRIMARY KEY, Name TEXT)");
+        db.ExecuteSql("INSERT INTO BackgroundJob (Id) VALUES (42)");
+        db.ExecuteSql("INSERT INTO JobSummary (Id, State) VALUES (42, 'Queued'), (43, 'Completed')");
+        db.ExecuteSql("INSERT INTO ScheduledTask (Id, Name) VALUES (1, 'existing')");
+
+        BackgroundJobSchema.UpgradeMainDb(db);
+        BackgroundJobSchema.UpgradeMainDb(db); // startup upgrade is idempotent
+
+        Assert.That(db.SqlScalar<long>("SELECT COUNT(*) FROM BackgroundJob"), Is.Zero);
+        Assert.That(db.SqlScalar<string>("SELECT ErrorCode FROM JobSummary WHERE Id=42"),
+            Is.EqualTo("QueueClearedOnUpgrade"));
+        Assert.That(db.SqlScalar<string>("SELECT State FROM JobSummary WHERE Id=42"),
+            Is.EqualTo(nameof(BackgroundJobState.Cancelled)));
+        Assert.That(db.SqlScalar<string>("SELECT State FROM JobSummary WHERE Id=43"),
+            Is.EqualTo(nameof(BackgroundJobState.Completed)));
+        Assert.That(db.ColumnExists<BackgroundJob>(x => x.Queue), Is.True);
+        Assert.That(db.ColumnExists<JobSummary>(x => x.Priority), Is.True);
+        Assert.That(db.ColumnExists<ScheduledTask>(x => x.NextRun), Is.True);
+        Assert.That(db.SqlScalar<bool>("SELECT Enabled FROM ScheduledTask WHERE Id=1"), Is.True);
+        Assert.That(db.SqlScalar<string>("SELECT MisfirePolicy FROM ScheduledTask WHERE Id=1"),
+            Is.EqualTo(nameof(ScheduleMisfirePolicy.RunOnce)));
+        Assert.That(db.SqlScalar<string>("SELECT OverlapPolicy FROM ScheduledTask WHERE Id=1"),
+            Is.EqualTo(nameof(ScheduleOverlapPolicy.Allow)));
+        Assert.That(db.SqlScalar<string>("SELECT Queue FROM JobSummary WHERE Id=43"),
+            Is.EqualTo(JobQueues.Default));
+        Assert.That(db.SqlScalar<long>("SELECT Priority FROM JobSummary WHERE Id=43"), Is.Zero);
+    }
+
+    [Test]
+    public void Dashboard_Reports_Queue_Stats_And_Wait_Times()
+    {
+        ResetState();
+        feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 });
+        feature.Jobs.TickAsync().Wait();
+
+        var response = (AdminJobDashboardResponse)ExecAdmin(x => x.Any(new AdminJobDashboard()));
+
+        // Exercises the wait-time SQL, which has no portable form across dialects
+        Assert.That(response.WaitTimes, Is.Not.Null);
+        Assert.That(response.WaitTimes.Count, Is.GreaterThanOrEqualTo(0));
+        Assert.That(response.WaitTimes.AvgMs, Is.GreaterThanOrEqualTo(0));
+        Assert.That(response.Queues, Is.Not.Null);
+    }
+
+    [Test]
+    public void Job_Queues_Report_Their_Backlog()
+    {
+        ResetState();
+        var response = (AdminGetJobQueuesResponse)ExecAdmin(x => x.Any(new AdminGetJobQueues()));
+
+        Assert.That(response.Results, Is.Not.Empty);
+        var defaultQueue = response.Results.FirstOrDefault(x => x.Name == JobQueues.Default);
+        Assert.That(defaultQueue, Is.Not.Null);
+        Assert.That(defaultQueue!.Concurrency, Is.GreaterThan(0));
+    }
+
+    [Test]
+    public void Job_Batches_Track_Progress_And_Complete()
+    {
+        ResetState();
+        var batchId = "import-" + Guid.NewGuid().ToString("N");
+        feature.Jobs.CreateJobBatch(batchId, total:3, callback:nameof(MyJobCommand), description:"Import");
+
+        var batch = feature.Jobs.GetJobBatch(batchId);
+        Assert.That(batch, Is.Not.Null);
+        Assert.That(batch!.Total, Is.EqualTo(3));
+        Assert.That(batch.Description, Is.EqualTo("Import"));
+        Assert.That(batch.Progress, Is.EqualTo(0));
+
+        for (var i = 0; i < 3; i++)
+        {
+            feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = i }, new() { BatchId = batchId });
+        }
+
+        batch = feature.Jobs.GetJobBatch(batchId)!;
+        Assert.That(batch.Queued, Is.EqualTo(3));
+        Assert.That(batch.Finished, Is.EqualTo(0));
+        Assert.That(batch.CompletedDate, Is.Null);
+
+        using var db = feature.Jobs.OpenDb();
+        Assert.That(db.Count<JobSummary>(x => x.BatchId == batchId), Is.EqualTo(3));
+    }
+
+    [Test]
+    public void Job_Batch_Is_Complete_Once_Every_Job_Has_Finished()
+    {
+        ResetState();
+        var batchId = "batch-" + Guid.NewGuid().ToString("N");
+        var jobs = (IBackgroundJobsQueues)feature.Jobs;
+        jobs.CreateJobBatch(new JobBatch { Id = batchId, Total = 2, CreatedDate = DateTime.UtcNow });
+
+        // Simulate both Jobs finishing
+        using var db = feature.Jobs.OpenDb();
+        db.UpdateOnly(() => new JobBatch { Queued = 0, Completed = 2 }, where: x => x.Id == batchId);
+
+        var batch = jobs.GetJobBatch(batchId)!;
+        Assert.That(batch.Finished, Is.EqualTo(2));
+        Assert.That(batch.Progress, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void ValidateReplyTo_rejects_a_Job_with_a_ReplyTo_that_is_not_allowed()
+    {
+        ResetState();
+        var validate = feature.ValidateReplyTo;
+        feature.ValidateReplyTo = JobReplyTo.AllowUrlPrefixes(["https://hooks.example.org/"]);
+        try
+        {
+            Assert.Throws<ArgumentException>(() => feature.Jobs.EnqueueCommand<MyJobCommand>(
+                new MyRequest { Id = 1 }, new() { ReplyTo = "http://169.254.169.254/latest" }));
+        }
+        finally
+        {
+            feature.ValidateReplyTo = validate;
+        }
+    }
+
+    /// <summary>Ticks the Jobs pipeline like the hosted service until the predicate holds</summary>
+    bool TickUntil(Func<bool> untilTrue, int timeoutMs = 10_000)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        while (DateTime.UtcNow < deadline)
+        {
+            if (untilTrue())
+                return true;
+            feature.Jobs.TickAsync().Wait();
+            Thread.Sleep(100);
+        }
+        return untilTrue();
+    }
+
+    [Test]
+    public void OnFinished_dependents_run_after_a_failed_parent_and_failed_attempts_are_recorded()
+    {
+        ResetState();
+        feature.Jobs.StartAsync(default);
+        var parent = feature.Jobs.EnqueueCommand<AlwaysFailCommand>(new() { RetryLimit = 1, RetryDelayMs = 1 });
+        var dependent = feature.Jobs.EnqueueCommand<DependentJobCommand>(new DependentJob { Id = 1 },
+            new() { DependsOn = parent.Id, DependsOnPolicy = JobDependencyPolicy.OnFinished });
+
+        Assert.That(TickUntil(() => feature.Jobs.GetJob(dependent.Id)?.Summary.State == BackgroundJobState.Completed),
+            Is.True, "A dependent with the OnFinished policy runs after its parent failed");
+        Assert.That(feature.Jobs.GetJob(parent.Id)!.Summary.State, Is.EqualTo(BackgroundJobState.Failed));
+        Assert.That(DependentJobCommand.LastCommandRequest?.Id, Is.EqualTo(1));
+
+        var attempts = feature.Jobs.GetJobAttempts(parent.Id);
+        Assert.That(attempts.Select(x => x.Attempt), Is.EqualTo(new[] { 1, 2 }));
+        Assert.That(attempts.Last().State, Is.EqualTo(BackgroundJobState.Failed));
+    }
+
+    JobSummary? GetSummary(long jobId) => feature.Jobs.GetJob(jobId)?.Summary;
+    bool IsFinished(long jobId) => GetSummary(jobId)?.State.IsFinished() == true;
+
+    [Test]
+    public void A_transiently_failing_Job_is_retried_until_it_succeeds()
+    {
+        ResetState();
+        var jobRef = feature.Jobs.EnqueueCommand<SqliteFlakyCommand>(new MyRequest { Id = 2 }, new() {
+            RetryLimit = 3,
+            RetryBackoff = RetryBackoff.ExponentialJitter,
+            RetryDelayMs = 1,
+        });
+
+        Assert.That(TickUntil(() => IsFinished(jobRef.Id), 15_000), Is.True);
+        Assert.That(GetSummary(jobRef.Id)!.State, Is.EqualTo(BackgroundJobState.Completed));
+        Assert.That(GetSummary(jobRef.Id)!.Attempts, Is.EqualTo(3));
+        Assert.That(Interlocked.Read(ref SqliteFlakyCommand.Count), Is.EqualTo(3));
+        Assert.That(feature.Jobs.GetJobAttempts(jobRef.Id).Select(x => x.Attempt), Is.EqualTo(new[] { 1, 2 }));
+    }
+
+    [Test]
+    public void A_running_Job_can_be_cancelled()
+    {
+        ResetState();
+        var jobRef = feature.Jobs.EnqueueCommand<SqliteSlowCommand>(new SqliteSlowRequest { Key = "cancel", Ms = 30_000 });
+        Assert.That(TickUntil(() => GetSummary(jobRef.Id)?.State == BackgroundJobState.Started), Is.True);
+
+        Assert.That(feature.Jobs.CancelJob(jobRef.Id), Is.True);
+
+        Assert.That(TickUntil(() => IsFinished(jobRef.Id)), Is.True);
+        Assert.That(GetSummary(jobRef.Id)!.State, Is.EqualTo(BackgroundJobState.Cancelled));
+        Assert.That(SqliteSlowCommand.ObservedCancellation, Is.True, "The running Job's token should be cancelled");
+    }
+
+    [Test]
+    public void A_failed_workflow_step_cancels_the_rest_of_the_workflow_but_OnFinished_steps_still_run()
+    {
+        ResetState();
+        var jobs = feature.Jobs;
+        // charge -> reserve (fails) -> ship -> notify (runs however ship finished)
+        var charge = jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 });
+        var reserve = jobs.EnqueueCommand<AlwaysFailCommand>(new() { DependsOn = charge.Id, RetryLimit = 0 });
+        var ship = jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 3 }, new() { DependsOn = reserve.Id });
+        var notify = jobs.EnqueueCommand<DependentJobCommand>(new DependentJob { Id = 4 },
+            new() { DependsOn = ship.Id, DependsOnPolicy = JobDependencyPolicy.OnFinished });
+
+        Assert.That(TickUntil(() => IsFinished(notify.Id), 15_000), Is.True);
+        Assert.That(GetSummary(charge.Id)!.State, Is.EqualTo(BackgroundJobState.Completed));
+        Assert.That(GetSummary(reserve.Id)!.State, Is.EqualTo(BackgroundJobState.Failed));
+        Assert.That(GetSummary(ship.Id)!.State, Is.EqualTo(BackgroundJobState.Cancelled));
+        Assert.That(GetSummary(notify.Id)!.State, Is.EqualTo(BackgroundJobState.Completed));
+        var parentJob = DependentJobCommand.LastRequest?.GetBackgroundJob().ParentJob;
+        Assert.That(parentJob?.Id, Is.EqualTo(ship.Id));
+        Assert.That(parentJob?.State, Is.EqualTo(BackgroundJobState.Cancelled));
+    }
+
+    [Test]
+    public void A_Batch_fans_out_then_runs_its_callbacks_and_fan_in_Job_once()
+    {
+        ResetState();
+        var jobs = feature.Jobs;
+        var batchId = "gallery-" + Guid.NewGuid().ToString("N")[..8];
+        jobs.CreateJobBatch(batchId, total: 3,
+            callback: nameof(SqliteBatchCallbackCommand), onSuccess: nameof(SqliteBatchSuccessCommand));
+        var images = Enumerable.Range(1, 3)
+            .Select(i => jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = i }, new() { BatchId = batchId }))
+            .ToList();
+        var zip = jobs.EnqueueCommand<DependentJobCommand>(new DependentJob { Id = 99 },
+            new() { DependsOnBatch = batchId });
+
+        Assert.That(TickUntil(() => IsFinished(zip.Id)
+            && Interlocked.Read(ref SqliteBatchCallbackCommand.Count) > 0
+            && Interlocked.Read(ref SqliteBatchSuccessCommand.Count) > 0, 20_000), Is.True);
+
+        Assert.That(GetSummary(zip.Id)!.State, Is.EqualTo(BackgroundJobState.Completed));
+        var lastImageCompleted = images.Max(x => GetSummary(x.Id)!.CompletedDate);
+        Assert.That(GetSummary(zip.Id)!.StartedDate, Is.GreaterThanOrEqualTo(lastImageCompleted),
+            "The fan-in Job only starts once every Job in the batch has finished");
+        Assert.That(SqliteBatchCallbackCommand.LastBatch?.Completed, Is.EqualTo(3));
+
+        // The callbacks run exactly once
+        TickUntil(() => false, 1000);
+        Assert.That(Interlocked.Read(ref SqliteBatchCallbackCommand.Count), Is.EqualTo(1));
+        Assert.That(Interlocked.Read(ref SqliteBatchSuccessCommand.Count), Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Jobs_sharing_a_ConcurrencyKey_run_one_at_a_time()
+    {
+        ResetState();
+        var jobRefs = new List<BackgroundJobRef>();
+        foreach (var tenant in new[] { "acme", "globex" })
+        {
+            for (var i = 0; i < 3; i++)
+            {
+                jobRefs.Add(feature.Jobs.EnqueueCommand<SqliteSlowCommand>(
+                    new SqliteSlowRequest { Key = tenant, Ms = 400 },
+                    new() { ConcurrencyKey = $"tenant:{tenant}", TenantId = tenant }));
+            }
+        }
+
+        Assert.That(TickUntil(() => jobRefs.All(x => IsFinished(x.Id)), 30_000), Is.True);
+        Assert.That(jobRefs.All(x => GetSummary(x.Id)!.State == BackgroundJobState.Completed), Is.True);
+        Assert.That(SqliteSlowCommand.MaxByKey["acme"], Is.EqualTo(1));
+        Assert.That(SqliteSlowCommand.MaxByKey["globex"], Is.EqualTo(1));
+        if (feature.MaxConcurrentJobs > 1)
+            Assert.That(SqliteSlowCommand.MaxOverall, Is.GreaterThan(1), "Different keys should still run in parallel");
+        Assert.That(GetSummary(jobRefs[0].Id)!.TenantId, Is.EqualTo("acme"));
+    }
+
+    [Test]
+    public void A_rate_limited_queue_only_starts_RateLimit_Jobs_per_window()
+    {
+        ResetState();
+        var jobs = feature.Jobs;
+        var queue = "limited-" + Guid.NewGuid().ToString("N")[..8];
+        jobs.SetJobQueueRateLimit(queue, 2, TimeSpan.FromHours(1));
+        var jobRefs = Enumerable.Range(1, 4)
+            .Select(i => jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = i }, new() { Queue = queue }))
+            .ToList();
+        try
+        {
+            TickUntil(() => jobRefs.Count(x => IsFinished(x.Id)) >= 2);
+            TickUntil(() => false, 1500);
+            Assert.That(jobRefs.Count(x => GetSummary(x.Id)!.State == BackgroundJobState.Completed), Is.EqualTo(2));
+        }
+        finally
+        {
+            jobs.SetJobQueueRateLimit(queue, 0);
+            jobRefs.ForEach(x => jobs.CancelJob(x.Id));
+        }
+    }
+
+    [Test]
+    public void A_Recurring_Task_is_disabled_once_it_reaches_MaxRuns()
+    {
+        ResetState();
+        var taskName = "max-runs-" + Guid.NewGuid().ToString("N")[..8];
+        var schedule = Schedule.Interval(TimeSpan.FromSeconds(1));
+        schedule.MaxRuns = 2;
+        feature.Jobs.RecurringCommand<MyJobCommand>(taskName, schedule, new MyRequest { Id = 1 });
+        try
+        {
+            Assert.That(TickUntil(() => feature.Jobs.GetScheduledTask(taskName)?.Enabled == false, 15_000), Is.True);
+            using var db = feature.OpenDb();
+            var task = db.Single<ScheduledTask>(x => x.Name == taskName);
+            Assert.That(task.RunCount, Is.EqualTo(2));
+            Assert.That(task.NextRun, Is.Null);
+        }
+        finally
+        {
+            feature.Jobs.DeleteRecurringTask(taskName);
+        }
+    }
+
+    [Test]
+    public void Paused_Queues_Do_Not_Dispatch_Jobs()
+    {
+        ResetState();
+        var queue = "paused-" + Guid.NewGuid().ToString("N")[..8];
+
+        var jobQueue = feature.Jobs.PauseJobQueue(queue);
+        Assert.That(jobQueue.Paused, Is.True);
+        Assert.That(feature.Jobs.IsQueuePaused(queue), Is.True);
+
+        var jobRef = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 },
+            new() { Queue = queue });
+
+        using var db = feature.Jobs.OpenDb();
+        var job = db.SingleById<BackgroundJob>(jobRef.Id);
+        // A paused queue leaves the Job unclaimed so it isn't dispatched to a Worker
+        Assert.That(job.RequestId, Is.Null);
+        Assert.That(job.State, Is.EqualTo(BackgroundJobState.Queued));
+
+        feature.Jobs.ResumeJobQueue(queue);
+        Assert.That(feature.Jobs.IsQueuePaused(queue), Is.False);
+    }
+
+    [Test]
+    public void Queue_Concurrency_Can_Be_Overridden_At_Runtime()
+    {
+        ResetState();
+        var queue = "throttled-" + Guid.NewGuid().ToString("N")[..8];
+        var configured = feature.Jobs.GetQueueConcurrency(queue);
+        Assert.That(configured, Is.EqualTo(feature.MaxConcurrentJobs));
+
+        feature.Jobs.SetJobQueueConcurrency(queue, 1);
+        Assert.That(feature.Jobs.GetQueueConcurrency(queue), Is.EqualTo(1));
+
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            feature.Jobs.SetJobQueueConcurrency(queue, 0));
+    }
+
+    [Test]
+    public void Expired_Jobs_Are_Cancelled_Instead_Of_Run_Late()
+    {
+        ResetState();
+        // Queued in the past with a deadline that's already passed
+        var jobRef = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 }, new() {
+            RunAfter = DateTime.UtcNow.AddHours(1),
+            ExpiresIn = TimeSpan.FromMilliseconds(1),
+        });
+
+        using var db = feature.Jobs.OpenDb();
+        var job = db.SingleById<BackgroundJob>(jobRef.Id);
+        Assert.That(job.ExpiresAt, Is.Not.Null);
+
+        Thread.Sleep(20);
+        feature.Jobs.TickAsync().Wait();
+
+        var summary = db.SingleById<JobSummary>(jobRef.Id);
+        Assert.That(summary.State, Is.EqualTo(BackgroundJobState.Cancelled));
+        Assert.That(summary.ErrorCode, Is.EqualTo(JobErrorCodes.JobExpired));
+    }
+
+    [Test]
+    public void ExpiresIn_Is_Resolved_To_An_Absolute_ExpiresAt()
+    {
+        var options = new BackgroundJobOptions { ExpiresIn = TimeSpan.FromMinutes(5) };
+        var job = options.ToBackgroundJob(CommandResult.Command, new MyRequest());
+        Assert.That(job.ExpiresAt, Is.Not.Null);
+        Assert.That(job.ExpiresAt!.Value, Is.GreaterThan(DateTime.UtcNow.AddMinutes(4)));
+        Assert.That(job.ExpiresAt!.Value, Is.LessThan(DateTime.UtcNow.AddMinutes(6)));
+
+        // An explicit ExpiresAt wins over ExpiresIn
+        var at = new DateTime(2030, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var job2 = new BackgroundJobOptions { ExpiresAt = at, ExpiresIn = TimeSpan.FromMinutes(5) }
+            .ToBackgroundJob(CommandResult.Command, new MyRequest());
+        Assert.That(job2.ExpiresAt, Is.EqualTo(at));
+    }
+
+    [Test]
+    public async Task WaitForJob_Returns_The_Completed_Job_Result()
+    {
+        ResetState();
+        var jobRef = feature.Jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 99 });
+
+        var result = await feature.Jobs.WaitForJobAsync(jobRef, TimeSpan.FromSeconds(30));
+
+        Assert.That(result.Summary.State.IsFinished());
+        Assert.That(result.Summary.State, Is.EqualTo(BackgroundJobState.Completed));
+        var response = (MyResponse)feature.Jobs.CreateResponse(result.Job!)!;
+        Assert.That(response.Result, Is.EqualTo("Hello 99"));
+    }
+
+    [Test]
+    public void WaitForJob_Throws_For_An_Unknown_Job()
+    {
+        Assert.That(async () => await feature.Jobs.WaitForJobAsync(int.MaxValue, TimeSpan.FromSeconds(1)),
+            Throws.ArgumentException);
+    }
+
+    [Test]
+    public void Job_States_Know_When_They_Are_Finished()
+    {
+        Assert.That(BackgroundJobState.Completed.IsFinished(), Is.True);
+        Assert.That(BackgroundJobState.Failed.IsFinished(), Is.True);
+        Assert.That(BackgroundJobState.Cancelled.IsFinished(), Is.True);
+        Assert.That(BackgroundJobState.Queued.IsFinished(), Is.False);
+        Assert.That(BackgroundJobState.Started.IsFinished(), Is.False);
+        // Executed still has its Callback to run
+        Assert.That(BackgroundJobState.Executed.IsFinished(), Is.False);
+    }
+
+    [Test]
+    public void ReplyTo_Posts_To_A_Url_And_Publishes_Everything_Else_To_MQ()
+    {
+        var job = new BackgroundJob {
+            Id = 1,
+            RefId = "abc",
+            State = BackgroundJobState.Completed,
+            RequestType = CommandResult.Command,
+            Request = nameof(MyRequest),
+        };
+        var ctx = new JobReplyToContext(feature.Jobs, job, "https://example.org/hook", null);
+        var headers = JobReplyTo.GetHeaders(ctx);
+        Assert.That(headers["X-Job-Id"], Is.EqualTo("1"));
+        Assert.That(headers["X-Job-RefId"], Is.EqualTo("abc"));
+        Assert.That(headers["X-Job-State"], Is.EqualTo(nameof(BackgroundJobState.Completed)));
+    }
+
+    [Test]
+    public void Upgrade_Adds_Indexes_Missing_From_An_Existing_Database()
+    {
+        using var db = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider).OpenDbConnection();
+        // Columns as they existed before this release, i.e. without any of the new columns
+        db.ExecuteSql("CREATE TABLE BackgroundJob (Id INTEGER PRIMARY KEY, State TEXT, RunAfter TEXT, CreatedDate TEXT)");
+        db.ExecuteSql("CREATE TABLE JobSummary (Id INTEGER PRIMARY KEY, State TEXT, CreatedDate TEXT, CompletedDate TEXT, ErrorCode TEXT, ErrorMessage TEXT)");
+        db.ExecuteSql("CREATE TABLE ScheduledTask (Id INTEGER PRIMARY KEY, Name TEXT)");
+
+        BackgroundJobSchema.UpgradeMainDb(db);
+        BackgroundJobSchema.UpgradeMainDb(db); // creating indexes is idempotent
+
+        var indexes = db.Column<string>("SELECT name FROM sqlite_master WHERE type='index'");
+        Assert.That(indexes, Does.Contain("idx_backgroundjob_claim"));
+        Assert.That(indexes, Does.Contain("idx_backgroundjob_lease"));
+        Assert.That(indexes, Does.Contain("idx_backgroundjob_owner"));
+        Assert.That(indexes, Does.Contain("uidx_backgroundjob_singleton"));
+        Assert.That(indexes, Does.Contain("idx_jobsummary_state"));
+        Assert.That(indexes, Does.Contain("idx_jobsummary_queue"));
+        Assert.That(indexes, Does.Contain("idx_scheduledtask_due"));
+    }
+
+    [Test]
+    public void SingletonKey_Index_Allows_Multiple_Nulls_On_Every_Dialect()
+    {
+        var model = typeof(BackgroundJob).GetModelMetadata();
+        List<string> Sql(IOrmLiteDialectProvider dialect) =>
+            [BackgroundJobSchema.GetCreateIndexSql(dialect, "uidx_backgroundjob_singleton", model,
+                [dialect.GetQuotedColumnName(nameof(BackgroundJob.SingletonKey))], unique:true, ignoreNulls:true)];
+
+        // SQL Server treats NULLs as equal in a UNIQUE index, so it needs a filtered index,
+        // otherwise only a single Job without a SingletonKey could ever be queued
+        Assert.That(Sql(SqlServerDialect.Provider)[0], Does.Contain("IS NOT NULL"));
+
+        // Every other RDBMS allows duplicate NULLs. SQLite shares PostgreSQL's IF NOT EXISTS branch.
+        Assert.That(Sql(SqliteDialect.Provider)[0], Does.Not.Contain("IS NOT NULL"));
+        Assert.That(Sql(SqliteDialect.Provider)[0], Does.Contain("CREATE UNIQUE INDEX IF NOT EXISTS"));
+        // MySQL has no IF NOT EXISTS for CREATE INDEX, it's guarded by an information_schema check
+        Assert.That(Sql(MySqlDialect.Provider)[0], Does.Not.Contain("IF NOT EXISTS"));
+        Assert.That(Sql(MySqlDialect.Provider)[0], Does.Not.Contain("IS NOT NULL"));
+    }
+
+    [Test]
+    public void SingletonKey_Uniqueness_Is_Enforced_By_The_Database()
+    {
+        using var db = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider).OpenDbConnection();
+        BackgroundJobSchema.UpgradeMainDb(db);
+
+        BackgroundJob NewJob(string? singletonKey) => new() {
+            RefId = Guid.NewGuid().ToString("N"),
+            SingletonKey = singletonKey,
+            RequestType = CommandResult.Command,
+            Request = nameof(MyRequest),
+            RequestBody = "{}",
+            CreatedDate = DateTime.UtcNow,
+        };
+
+        db.Insert(NewJob("nightly-import"));
+        Assert.That(() => db.Insert(NewJob("nightly-import")), Throws.Exception);
+
+        // Jobs without a SingletonKey are never treated as duplicates of each other
+        db.Insert(NewJob(null));
+        db.Insert(NewJob(null));
+        Assert.That(db.Count<BackgroundJob>(x => x.SingletonKey == null), Is.EqualTo(2));
     }
 }

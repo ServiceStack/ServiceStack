@@ -1,6 +1,6 @@
 /* Options:
-Date: 2026-09-05 12:09:12
-Version: 10.15
+Date: 2026-09-24 21:56:53
+Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
 
@@ -2298,6 +2298,27 @@ export class ResponseStatus
     public constructor(init?: Partial<ResponseStatus>) { (Object as any).assign(this, init); }
 }
 
+export class QueuedJob
+{
+    public id: number;
+    public refId: string;
+    public name: string;
+
+    public constructor(init?: Partial<QueuedJob>) { (Object as any).assign(this, init); }
+}
+
+export class ReceivedWebhook
+{
+    public jobId?: string;
+    public refId?: string;
+    public state?: string;
+    public reportName?: string;
+    public rows: number;
+    public receivedDate: string;
+
+    public constructor(init?: Partial<ReceivedWebhook>) { (Object as any).assign(this, init); }
+}
+
 export class BackgroundJobRef
 {
     public id: number;
@@ -2872,6 +2893,34 @@ export class QueueCheckUrlResponse
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<QueueCheckUrlResponse>) { (Object as any).assign(this, init); }
+}
+
+export class QueueJobsResponse
+{
+    public jobs: QueuedJob[] = [];
+    public batchId?: string;
+    public message?: string;
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<QueueJobsResponse>) { (Object as any).assign(this, init); }
+}
+
+export class RunReportAndWaitResponse
+{
+    public jobId?: number;
+    public reportName?: string;
+    public rows: number;
+    public url?: string;
+    public responseStatus?: ResponseStatus;
+
+    public constructor(init?: Partial<RunReportAndWaitResponse>) { (Object as any).assign(this, init); }
+}
+
+export class GetReceivedWebhooksResponse
+{
+    public results: ReceivedWebhook[] = [];
+
+    public constructor(init?: Partial<GetReceivedWebhooksResponse>) { (Object as any).assign(this, init); }
 }
 
 export class QueueCheckUrlsResponse
@@ -3567,6 +3616,200 @@ export class QueueCheckUrl implements IReturn<QueueCheckUrlResponse>, IPost
     public getTypeName() { return 'QueueCheckUrl'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new QueueCheckUrlResponse(); }
+}
+
+/** @description Fire-and-forget: send a welcome email, retrying with exponential backoff if the email provider fails */
+export class QueueWelcomeEmail implements IReturn<QueueJobsResponse>, IPost
+{
+    // @Validate(Validator="NotEmpty")
+    public email: string;
+
+    /** @description Simulate the email provider failing this many times before it succeeds */
+    // @ApiMember(Description="Simulate the email provider failing this many times before it succeeds")
+    public failAttempts: number;
+
+    /** @description How many times to retry before the Job is recorded as Failed */
+    // @ApiMember(Description="How many times to retry before the Job is recorded as Failed")
+    public retryLimit: number;
+
+    public constructor(init?: Partial<QueueWelcomeEmail>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueWelcomeEmail'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Long-running Job that reports progress, status and logs. Cancel it from the Admin UI while it runs */
+export class QueueImportProducts implements IReturn<QueueJobsResponse>, IPost
+{
+    public products: number;
+    /** @description Simulated time to import each product */
+    // @ApiMember(Description="Simulated time to import each product")
+    public msPerProduct: number;
+
+    /** @description Cancel the import if it runs longer than this */
+    // @ApiMember(Description="Cancel the import if it runs longer than this")
+    public timeoutSecs: number;
+
+    public constructor(init?: Partial<QueueImportProducts>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueImportProducts'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Delayed Job: generate a report later. It's cancelled with JobExpired if it can't start before ExpiresInSecs */
+export class QueueScheduledReport implements IReturn<QueueJobsResponse>, IPost
+{
+    public reportName: string;
+    /** @description Run the Job this many seconds from now */
+    // @ApiMember(Description="Run the Job this many seconds from now")
+    public delaySecs: number;
+
+    /** @description Don't run the Job if it hasn't started this many seconds after it was queued. Set lower than DelaySecs to see it expire */
+    // @ApiMember(Description="Don't run the Job if it hasn't started this many seconds after it was queued. Set lower than DelaySecs to see it expire")
+    public expiresInSecs?: number;
+
+    /** @description POST the report result to the JobResultWebhook API when it completes */
+    // @ApiMember(Description="POST the report result to the JobResultWebhook API when it completes")
+    public useWebhook: boolean;
+
+    public constructor(init?: Partial<QueueScheduledReport>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueScheduledReport'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Workflow: charge payment, then reserve inventory, then ship, each only after the previous step succeeded */
+export class QueueOrderFulfillment implements IReturn<QueueJobsResponse>, IPost
+{
+    public orderId: number;
+    public amount: number;
+    /** @description Simulate a step failing: charge, reserve or ship. The steps after it are cancelled, while the customer is still notified */
+    // @ApiMember(Description="Simulate a step failing: charge, reserve or ship. The steps after it are cancelled, while the customer is still notified")
+    public failStep?: string;
+
+    public constructor(init?: Partial<QueueOrderFulfillment>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueOrderFulfillment'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Fan-out and fan-in: resize many images in parallel as a Batch, then zip them once every image is done */
+export class QueueResizeImages implements IReturn<QueueJobsResponse>, IPost
+{
+    public images: number;
+    /** @description Simulate this many of the images failing, which skips the Batch's OnSuccess callback */
+    // @ApiMember(Description="Simulate this many of the images failing, which skips the Batch's OnSuccess callback")
+    public failImages: number;
+
+    public constructor(init?: Partial<QueueResizeImages>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueResizeImages'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Per-tenant ordering: each tenant's sync Jobs run one at a time, while different tenants run in parallel */
+export class QueueTenantSync implements IReturn<QueueJobsResponse>, IPost
+{
+    public tenants: string[] = [];
+    public jobsPerTenant: number;
+
+    public constructor(init?: Partial<QueueTenantSync>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueTenantSync'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description De-duplicated Jobs: queue a cache refresh only if one isn't already queued or running, and charge an order at most once */
+export class QueueDeduplicatedJobs implements IReturn<QueueJobsResponse>, IPost
+{
+    public cacheName: string;
+    public orderId: number;
+
+    public constructor(init?: Partial<QueueDeduplicatedJobs>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueDeduplicatedJobs'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Rate limited third-party API: only RateLimit calls start per WindowSecs across every server, high priority calls first */
+export class QueueExternalApiCalls implements IReturn<QueueJobsResponse>, IPost
+{
+    public calls: number;
+    public rateLimit: number;
+    public windowSecs: number;
+
+    public constructor(init?: Partial<QueueExternalApiCalls>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueueExternalApiCalls'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Request/Response over a queue: queue a Job then wait for its result in the same request */
+export class RunReportAndWait implements IReturn<RunReportAndWaitResponse>, IPost
+{
+    public reportName: string;
+    /** @description Run it as a durable Job, or as a transient in-memory Command that isn't persisted */
+    // @ApiMember(Description="Run it as a durable Job, or as a transient in-memory Command that isn't persisted")
+    public durable: boolean;
+
+    public timeoutSecs: number;
+
+    public constructor(init?: Partial<RunReportAndWait>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'RunReportAndWait'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new RunReportAndWaitResponse(); }
+}
+
+/** @description Recurring task: clean up temp files on a schedule until it has run MaxRuns times. See the Admin UI's Scheduled Tasks */
+export class ScheduleRecurringCleanup implements IReturn<QueueJobsResponse>, IPost
+{
+    public intervalSecs: number;
+    public maxRuns?: number;
+    /** @description Remove the recurring task instead of scheduling it */
+    // @ApiMember(Description="Remove the recurring task instead of scheduling it")
+    public delete: boolean;
+
+    public constructor(init?: Partial<ScheduleRecurringCleanup>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'ScheduleRecurringCleanup'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+/** @description Transactional outbox: queue an order's Jobs in the same database transaction as the order, so they're only queued if it commits */
+export class QueuePlaceOrder implements IReturn<QueueJobsResponse>, IPost
+{
+    public customer: string;
+    public amount: number;
+    /** @description Simulate the order failing to save, rolling back its Jobs with it */
+    // @ApiMember(Description="Simulate the order failing to save, rolling back its Jobs with it")
+    public rollbackTransaction: boolean;
+
+    public constructor(init?: Partial<QueuePlaceOrder>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'QueuePlaceOrder'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new QueueJobsResponse(); }
+}
+
+export class JobResultWebhook implements IReturnVoid, IPost
+{
+    public reportName?: string;
+    public rows: number;
+    public url?: string;
+
+    public constructor(init?: Partial<JobResultWebhook>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'JobResultWebhook'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() {}
+}
+
+/** @description Results received by the JobResultWebhook API */
+export class GetReceivedWebhooks implements IReturn<GetReceivedWebhooksResponse>, IGet
+{
+
+    public constructor(init?: Partial<GetReceivedWebhooks>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'GetReceivedWebhooks'; }
+    public getMethod() { return 'GET'; }
+    public createResponse() { return new GetReceivedWebhooksResponse(); }
 }
 
 export class QueueCheckUrls implements IReturn<QueueCheckUrlsResponse>

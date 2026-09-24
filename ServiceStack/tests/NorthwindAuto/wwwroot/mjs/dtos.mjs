@@ -1,6 +1,6 @@
 /* Options:
-Date: 2026-09-05 12:09:12
-Version: 10.15
+Date: 2026-09-24 21:56:53
+Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
 
@@ -2383,6 +2383,32 @@ export class ResponseStatus {
     /** @type {?{ [index:string]: string; }} */
     meta;
 }
+export class QueuedJob {
+    /** @param {{id?:number,refId?:string,name?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {string} */
+    refId;
+    /** @type {string} */
+    name;
+}
+export class ReceivedWebhook {
+    /** @param {{jobId?:string,refId?:string,state?:string,reportName?:string,rows?:number,receivedDate?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    jobId;
+    /** @type {?string} */
+    refId;
+    /** @type {?string} */
+    state;
+    /** @type {?string} */
+    reportName;
+    /** @type {number} */
+    rows;
+    /** @type {string} */
+    receivedDate;
+}
 export class BackgroundJobRef {
     /** @param {{id?:number,refId?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -2928,6 +2954,38 @@ export class QueueCheckUrlResponse {
     refId;
     /** @type {?ResponseStatus} */
     responseStatus;
+}
+export class QueueJobsResponse {
+    /** @param {{jobs?:QueuedJob[],batchId?:string,message?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {QueuedJob[]} */
+    jobs = [];
+    /** @type {?string} */
+    batchId;
+    /** @type {?string} */
+    message;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class RunReportAndWaitResponse {
+    /** @param {{jobId?:number,reportName?:string,rows?:number,url?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?number} */
+    jobId;
+    /** @type {?string} */
+    reportName;
+    /** @type {number} */
+    rows;
+    /** @type {?string} */
+    url;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class GetReceivedWebhooksResponse {
+    /** @param {{results?:ReceivedWebhook[]}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {ReceivedWebhook[]} */
+    results = [];
 }
 export class QueueCheckUrlsResponse {
     /** @param {{jobRef?:BackgroundJobRef}} [init] */
@@ -3661,6 +3719,188 @@ export class QueueCheckUrl {
     getTypeName() { return 'QueueCheckUrl' }
     getMethod() { return 'POST' }
     createResponse() { return new QueueCheckUrlResponse() }
+}
+export class QueueWelcomeEmail {
+    /** @param {{email?:string,failAttempts?:number,retryLimit?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    email;
+    /**
+     * @type {number}
+     * @description Simulate the email provider failing this many times before it succeeds */
+    failAttempts;
+    /**
+     * @type {number}
+     * @description How many times to retry before the Job is recorded as Failed */
+    retryLimit;
+    getTypeName() { return 'QueueWelcomeEmail' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueueImportProducts {
+    /** @param {{products?:number,msPerProduct?:number,timeoutSecs?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    products;
+    /**
+     * @type {number}
+     * @description Simulated time to import each product */
+    msPerProduct;
+    /**
+     * @type {number}
+     * @description Cancel the import if it runs longer than this */
+    timeoutSecs;
+    getTypeName() { return 'QueueImportProducts' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueueScheduledReport {
+    /** @param {{reportName?:string,delaySecs?:number,expiresInSecs?:number,useWebhook?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    reportName;
+    /**
+     * @type {number}
+     * @description Run the Job this many seconds from now */
+    delaySecs;
+    /**
+     * @type {?number}
+     * @description Don't run the Job if it hasn't started this many seconds after it was queued. Set lower than DelaySecs to see it expire */
+    expiresInSecs;
+    /**
+     * @type {boolean}
+     * @description POST the report result to the JobResultWebhook API when it completes */
+    useWebhook;
+    getTypeName() { return 'QueueScheduledReport' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueueOrderFulfillment {
+    /** @param {{orderId?:number,amount?:number,failStep?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    orderId;
+    /** @type {number} */
+    amount;
+    /**
+     * @type {?string}
+     * @description Simulate a step failing: charge, reserve or ship. The steps after it are cancelled, while the customer is still notified */
+    failStep;
+    getTypeName() { return 'QueueOrderFulfillment' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueueResizeImages {
+    /** @param {{images?:number,failImages?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    images;
+    /**
+     * @type {number}
+     * @description Simulate this many of the images failing, which skips the Batch's OnSuccess callback */
+    failImages;
+    getTypeName() { return 'QueueResizeImages' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueueTenantSync {
+    /** @param {{tenants?:string[],jobsPerTenant?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string[]} */
+    tenants = [];
+    /** @type {number} */
+    jobsPerTenant;
+    getTypeName() { return 'QueueTenantSync' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueueDeduplicatedJobs {
+    /** @param {{cacheName?:string,orderId?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    cacheName;
+    /** @type {number} */
+    orderId;
+    getTypeName() { return 'QueueDeduplicatedJobs' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueueExternalApiCalls {
+    /** @param {{calls?:number,rateLimit?:number,windowSecs?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    calls;
+    /** @type {number} */
+    rateLimit;
+    /** @type {number} */
+    windowSecs;
+    getTypeName() { return 'QueueExternalApiCalls' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class RunReportAndWait {
+    /** @param {{reportName?:string,durable?:boolean,timeoutSecs?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    reportName;
+    /**
+     * @type {boolean}
+     * @description Run it as a durable Job, or as a transient in-memory Command that isn't persisted */
+    durable;
+    /** @type {number} */
+    timeoutSecs;
+    getTypeName() { return 'RunReportAndWait' }
+    getMethod() { return 'POST' }
+    createResponse() { return new RunReportAndWaitResponse() }
+}
+export class ScheduleRecurringCleanup {
+    /** @param {{intervalSecs?:number,maxRuns?:number,delete?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    intervalSecs;
+    /** @type {?number} */
+    maxRuns;
+    /**
+     * @type {boolean}
+     * @description Remove the recurring task instead of scheduling it */
+    delete;
+    getTypeName() { return 'ScheduleRecurringCleanup' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class QueuePlaceOrder {
+    /** @param {{customer?:string,amount?:number,rollbackTransaction?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    customer;
+    /** @type {number} */
+    amount;
+    /**
+     * @type {boolean}
+     * @description Simulate the order failing to save, rolling back its Jobs with it */
+    rollbackTransaction;
+    getTypeName() { return 'QueuePlaceOrder' }
+    getMethod() { return 'POST' }
+    createResponse() { return new QueueJobsResponse() }
+}
+export class JobResultWebhook {
+    /** @param {{reportName?:string,rows?:number,url?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    reportName;
+    /** @type {number} */
+    rows;
+    /** @type {?string} */
+    url;
+    getTypeName() { return 'JobResultWebhook' }
+    getMethod() { return 'POST' }
+    createResponse() { }
+}
+export class GetReceivedWebhooks {
+    constructor(init) { Object.assign(this, init) }
+    getTypeName() { return 'GetReceivedWebhooks' }
+    getMethod() { return 'GET' }
+    createResponse() { return new GetReceivedWebhooksResponse() }
 }
 export class QueueCheckUrls {
     /** @param {{urls?:string}} [init] */

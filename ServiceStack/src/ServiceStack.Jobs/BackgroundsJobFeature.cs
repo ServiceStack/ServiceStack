@@ -7,7 +7,7 @@ using ServiceStack.OrmLite.Sqlite;
 
 namespace ServiceStack.Jobs;
 
-public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServices, IRequiresSchema, IPreInitPlugin
+public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServices, IRequiresSchema, IPreInitPlugin, IBackgroundJobsOptions
 {
     public string Id => Plugins.BackgroundJobs;
     /// <summary>
@@ -35,13 +35,66 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     
     public IAutoQueryDb? AutoQuery { get; set; }
     public int DefaultRetryLimit { get; set; } = 2;
+    public RetryBackoff DefaultRetryBackoff { get; set; } = RetryBackoff.ExponentialJitter;
+    public int DefaultRetryDelayMs { get; set; } = 5_000;
+    public int DefaultMaxRetryDelayMs { get; set; } = 300_000;
+    public int MaxJobLogChars { get; set; } = 100_000;
+    /// <summary>
+    /// Max number of Jobs a queue executes concurrently. Used for any queue without an explicit
+    /// entry in QueueConcurrency, including the default queue.
+    /// </summary>
+    public int MaxConcurrentJobs { get; set; } = Math.Max(1, Environment.ProcessorCount);
+    /// <summary>Max concurrent Jobs per named queue, e.g. `{ ["emails"] = 2 }`</summary>
+    public Dictionary<string, int> QueueConcurrency { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>How often Scheduled Tasks are reloaded from the database</summary>
+    public int ReloadScheduledTasksSecs { get; set; } = 60;
+    /// <summary>How often Job Queue pause/concurrency controls are reloaded from the database</summary>
+    public int ReloadJobQueuesSecs { get; set; } = 10;
+    /// <summary>How long to wait for running Jobs to finish when the App shuts down</summary>
+    public int ShutdownTimeoutSecs { get; set; } = 30;
+    /// <summary>How often this node records that it's alive in the JobNode table</summary>
+    public int NodeHeartbeatSecs { get; set; } = 15;
+    /// <summary>A node with no heartbeat within this window is reported as unreachable</summary>
+    public int NodeTimeoutSecs { get; set; } = 60;
+    /// <summary>
+    /// Max size of a Job's serialized Request. Queueing a larger payload is rejected: the database
+    /// is a work queue, not a blob store, so pass a reference instead.
+    /// </summary>
+    public int MaxRequestBodyChars { get; set; } = 1_000_000;
+    /// <summary>
+    /// Max size of a Job's serialized Response to persist. A larger result is dropped rather than
+    /// stored, recorded in the Job's Meta, so one big result can't bloat the archive.
+    /// </summary>
+    public int MaxResponseBodyChars { get; set; } = 1_000_000;
+    /// <summary>
+    /// How long monthly CompletedJob/FailedJob archives are kept, null to keep them indefinitely
+    /// </summary>
+    public TimeSpan? ArchiveRetention { get; set; }
+    /// <summary>
+    /// Delivers a completed Job's result to its ReplyTo address. The default posts to an
+    /// http:// or https:// URL, otherwise publishes to ReplyTo as an MQ Queue Name.
+    /// </summary>
+    public Func<JobReplyToContext, Task> OnJobReplyTo { get; set; } = JobReplyTo.SendAsync;
+    /// <summary>
+    /// Whether a Job's ReplyTo may be used, checked when it's queued and again before its result is
+    /// sent. Null allows any ReplyTo. Restrict it when a ReplyTo can come from an end user, e.g.
+    /// `ValidateReplyTo = JobReplyTo.AllowUrlPrefixes(["https://hooks.example.org/"])`
+    /// </summary>
+    public Func<BackgroundJobBase, bool>? ValidateReplyTo { get; set; }
+    /// <summary>
+    /// How long JobSummary rows are retained for, null to keep them indefinitely. Note a Job's
+    /// RefId can be reused once its JobSummary has been deleted.
+    /// </summary>
+    public TimeSpan? JobSummaryRetention { get; set; }
+    /// <summary>Identifies this App Server in the JobNode registry</summary>
+    public string ServerId { get; set; } = $"{Environment.MachineName}:{Environment.ProcessId}";
     public int DefaultTimeoutSecs { get; set; } = 10 * 60; // 10 mins
     public TimeSpan DefaultTimeout
     {
         get => TimeSpan.FromSeconds(DefaultTimeoutSecs);
         set => DefaultTimeoutSecs = (int)value.TotalSeconds;
     }
-    public Func<BackgroundJob,Exception,bool> ShouldRetry { get; set; } = (_,ex) => ex is not TaskCanceledException;
+    public Func<BackgroundJob,Exception,bool> ShouldRetry { get; set; } = (_,ex) => ex is not OperationCanceledException;
 
     public BackgroundsJobFeature()
     {
@@ -54,6 +107,7 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
     {
         services.AddSingleton(this);
         services.AddSingleton<IBackgroundJobs,BackgroundJobs>();
+        services.AddHostedService<JobsShutdownHostedService>();
 
         if (EnableAdmin)
         {
@@ -153,15 +207,12 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
 
     public void InitSchema(IDbConnection db)
     {
-        db.CreateTableIfNotExists<BackgroundJob>();
-        db.CreateTableIfNotExists<JobSummary>();
-        db.CreateTableIfNotExists<ScheduledTask>();
+        BackgroundJobSchema.UpgradeMainDb(db);
     }
     
     public void InitMonthDbSchema(IDbConnection db)
     {
-        db.CreateTableIfNotExists<CompletedJob>();
-        db.CreateTableIfNotExists<FailedJob>();
+        BackgroundJobSchema.UpgradeArchiveDb(db);
     }
 
     public IServiceProvider Services => AppHost!.App.ApplicationServices;
@@ -171,6 +222,25 @@ public class BackgroundsJobFeature : IPlugin, Model.IHasStringId, IConfigureServ
         return Path.IsPathRooted(DbDir) 
             ? DbDir.CombineWith(monthDb)
             : AppHost.HostingEnvironment.ContentRootPath.CombineWith(DbDir, monthDb);
+    }
+
+    /// <summary>
+    /// Deletes a monthly Jobs database. Each month is its own SQLite file, so dropping an expired
+    /// archive is deleting that file.
+    /// </summary>
+    public void DeleteMonthDb(DateTime createdDate)
+    {
+        var monthDb = DbMonthFile(createdDate);
+        var dbPath = GetDbDir(monthDb);
+        lock (this)
+        {
+            OrmLiteConnectionFactory.NamedConnections.Remove(monthDb);
+        }
+        foreach (var suffix in new[] { "", "-journal", "-wal", "-shm" })
+        {
+            if (File.Exists(dbPath + suffix))
+                File.Delete(dbPath + suffix);
+        }
     }
 
     public List<DateTime> GetTableMonths(IDbConnection db)

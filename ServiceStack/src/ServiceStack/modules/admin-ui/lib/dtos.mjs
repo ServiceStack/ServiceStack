@@ -343,6 +343,32 @@ export var BackgroundJobState;
     BackgroundJobState["Failed"] = "Failed"
     BackgroundJobState["Cancelled"] = "Cancelled"
 })(BackgroundJobState || (BackgroundJobState = {}));
+/** @typedef {'Fixed'|'Linear'|'Exponential'|'ExponentialJitter'} */
+export var RetryBackoff;
+(function (RetryBackoff) {
+    RetryBackoff["Fixed"] = "Fixed"
+    RetryBackoff["Linear"] = "Linear"
+    RetryBackoff["Exponential"] = "Exponential"
+    RetryBackoff["ExponentialJitter"] = "ExponentialJitter"
+})(RetryBackoff || (RetryBackoff = {}));
+/** @typedef {'Throw'|'ReturnExisting'} */
+export var DuplicateRefIdBehavior;
+(function (DuplicateRefIdBehavior) {
+    DuplicateRefIdBehavior["Throw"] = "Throw"
+    DuplicateRefIdBehavior["ReturnExisting"] = "ReturnExisting"
+})(DuplicateRefIdBehavior || (DuplicateRefIdBehavior = {}));
+/** @typedef {'RunOnce'|'Skip'} */
+export var ScheduleMisfirePolicy;
+(function (ScheduleMisfirePolicy) {
+    ScheduleMisfirePolicy["RunOnce"] = "RunOnce"
+    ScheduleMisfirePolicy["Skip"] = "Skip"
+})(ScheduleMisfirePolicy || (ScheduleMisfirePolicy = {}));
+/** @typedef {'Allow'|'Skip'} */
+export var ScheduleOverlapPolicy;
+(function (ScheduleOverlapPolicy) {
+    ScheduleOverlapPolicy["Allow"] = "Allow"
+    ScheduleOverlapPolicy["Skip"] = "Skip"
+})(ScheduleOverlapPolicy || (ScheduleOverlapPolicy = {}));
 export class BackgroundJobBase {
     /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
     constructor(init) { Object.assign(this, init) }
@@ -354,6 +380,10 @@ export class BackgroundJobBase {
     refId;
     /** @type {string} */
     worker;
+    /** @type {string} */
+    queue;
+    /** @type {number} */
+    priority;
     /** @type {string} */
     tag;
     /** @type {string} */
@@ -394,6 +424,12 @@ export class BackgroundJobBase {
     notifiedDate;
     /** @type {?number} */
     retryLimit;
+    /** @type {?RetryBackoff} */
+    retryBackoff;
+    /** @type {?number} */
+    retryDelayMs;
+    /** @type {?number} */
+    maxRetryDelayMs;
     /** @type {number} */
     attempts;
     /** @type {number} */
@@ -406,8 +442,16 @@ export class BackgroundJobBase {
     status;
     /** @type {string} */
     logs;
+    /** @type {?boolean} */
+    logsTruncated;
     /** @type {?string} */
     lastActivityDate;
+    /** @type {?string} */
+    cancelRequestedDate;
+    /** @type {?string} */
+    expiresAt;
+    /** @type {string} */
+    leaseOwner;
     /** @type {string} */
     replyTo;
     /** @type {string} */
@@ -424,6 +468,12 @@ export class BackgroundJob extends BackgroundJobBase {
     constructor(init) { super(init); Object.assign(this, init) }
     /** @type {number} */
     id;
+    /** @type {string} */
+    singletonKey;
+    /** @type {string} */
+    leaseToken;
+    /** @type {?string} */
+    leaseExpiresAt;
 }
 export class JobSummary {
     /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,createdDate?:string,createdBy?:string,requestType?:string,command?:string,request?:string,response?:string,userId?:string,callback?:string,startedDate?:string,completedDate?:string,state?:BackgroundJobState,durationMs?:number,attempts?:number,errorCode?:string,errorMessage?:string}} [init] */
@@ -436,6 +486,10 @@ export class JobSummary {
     refId;
     /** @type {string} */
     worker;
+    /** @type {string} */
+    queue;
+    /** @type {number} */
+    priority;
     /** @type {string} */
     tag;
     /** @type {string} */
@@ -466,22 +520,42 @@ export class JobSummary {
     durationMs;
     /** @type {number} */
     attempts;
+    /** @type {?string} */
+    runAfter;
+    /** @type {?string} */
+    cancelRequestedDate;
+    /** @type {?string} */
+    expiresAt;
+    /** @type {?boolean} */
+    logsTruncated;
     /** @type {string} */
     errorCode;
     /** @type {string} */
     errorMessage;
 }
 export class BackgroundJobOptions {
-    /** @param {{refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,timeout?:string,args?:{ [index:string]: string; },runCommand?:boolean}} [init] */
+    /** @param {{refId?:string,duplicateRefIdBehavior?:DuplicateRefIdBehavior,singletonKey?:string,parentId?:number,worker?:string,queue?:string,priority?:number,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,retryBackoff?:RetryBackoff,retryDelayMs?:number,maxRetryDelayMs?:number,retryDelay?:string,maxRetryDelay?:string,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number,timeout?:string,args?:{ [index:string]: string; },runCommand?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     refId;
+    /** @type {DuplicateRefIdBehavior} */
+    duplicateRefIdBehavior;
+    /** @type {string} */
+    singletonKey;
     /** @type {?number} */
     parentId;
     /** @type {string} */
     worker;
+    /** @type {string} */
+    queue;
+    /** @type {?number} */
+    priority;
     /** @type {?string} */
     runAfter;
+    /** @type {?string} */
+    expiresAt;
+    /** @type {?string} */
+    expiresIn;
     /** @type {string} */
     callback;
     /** @type {?number} */
@@ -490,6 +564,16 @@ export class BackgroundJobOptions {
     userId;
     /** @type {?number} */
     retryLimit;
+    /** @type {?RetryBackoff} */
+    retryBackoff;
+    /** @type {?number} */
+    retryDelayMs;
+    /** @type {?number} */
+    maxRetryDelayMs;
+    /** @type {?string} */
+    retryDelay;
+    /** @type {?string} */
+    maxRetryDelay;
     /** @type {string} */
     replyTo;
     /** @type {string} */
@@ -508,7 +592,7 @@ export class BackgroundJobOptions {
     runCommand;
 }
 export class ScheduledTask {
-    /** @param {{id?:number,name?:string,interval?:string,cronExpression?:string,requestType?:string,command?:string,request?:string,requestBody?:string,options?:BackgroundJobOptions,lastRun?:string,lastJobId?:number}} [init] */
+    /** @param {{id?:number,name?:string,interval?:string,cronExpression?:string,requestType?:string,command?:string,request?:string,requestBody?:string,options?:BackgroundJobOptions,enabled?:boolean,nextRun?:string,timeZoneId?:string,misfirePolicy?:ScheduleMisfirePolicy,overlapPolicy?:ScheduleOverlapPolicy,lastErrorCode?:string,lastErrorMessage?:string,lastRun?:string,lastJobId?:number,lastRunState?:BackgroundJobState,lastRunDurationMs?:number,createdDate?:string,modifiedDate?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -528,10 +612,44 @@ export class ScheduledTask {
     requestBody;
     /** @type {BackgroundJobOptions} */
     options;
+    /** @type {boolean} */
+    enabled;
+    /** @type {?string} */
+    nextRun;
+    /** @type {string} */
+    timeZoneId;
+    /** @type {ScheduleMisfirePolicy} */
+    misfirePolicy;
+    /** @type {ScheduleOverlapPolicy} */
+    overlapPolicy;
+    /** @type {string} */
+    lastErrorCode;
+    /** @type {string} */
+    lastErrorMessage;
     /** @type {?string} */
     lastRun;
     /** @type {?number} */
     lastJobId;
+    /** @type {?BackgroundJobState} */
+    lastRunState;
+    /** @type {?number} */
+    lastRunDurationMs;
+    /** @type {?string} */
+    createdDate;
+    /** @type {?string} */
+    modifiedDate;
+}
+export class JobWaitTimes {
+    /** @param {{count?:number,avgMs?:number,maxMs?:number,waitingMs?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    count;
+    /** @type {number} */
+    avgMs;
+    /** @type {number} */
+    maxMs;
+    /** @type {?number} */
+    waitingMs;
 }
 export class CompletedJob extends BackgroundJobBase {
     /** @param {{id?:number,parentId?:number,refId?:string,worker?:string,tag?:string,batchId?:string,callback?:string,dependsOn?:number,runAfter?:string,createdDate?:string,createdBy?:string,requestId?:string,requestType?:string,command?:string,request?:string,requestBody?:string,userId?:string,response?:string,responseBody?:string,state?:BackgroundJobState,startedDate?:string,completedDate?:string,notifiedDate?:string,retryLimit?:number,attempts?:number,durationMs?:number,timeoutSecs?:number,progress?:number,status?:string,logs?:string,lastActivityDate?:string,replyTo?:string,errorCode?:string,error?:ResponseStatus,args?:{ [index:string]: string; },meta?:{ [index:string]: string; }}} [init] */
@@ -2514,7 +2632,7 @@ export class ExecuteCommandResponse {
     responseStatus;
 }
 export class AdminJobDashboardResponse {
-    /** @param {{commands?:JobStatSummary[],apis?:JobStatSummary[],workers?:JobStatSummary[],today?:HourSummary[],responseStatus?:ResponseStatus}} [init] */
+    /** @param {{commands?:JobStatSummary[],apis?:JobStatSummary[],workers?:JobStatSummary[],queues?:JobStatSummary[],today?:HourSummary[],waitTimes?:JobWaitTimes,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {JobStatSummary[]} */
     commands = [];
@@ -2522,14 +2640,22 @@ export class AdminJobDashboardResponse {
     apis = [];
     /** @type {JobStatSummary[]} */
     workers = [];
+    /** @type {JobStatSummary[]} */
+    queues = [];
     /** @type {HourSummary[]} */
     today = [];
+    /** @type {JobWaitTimes} */
+    waitTimes;
     /** @type {ResponseStatus} */
     responseStatus;
 }
 export class AdminJobInfoResponse {
-    /** @param {{monthDbs?:string[],tableCounts?:{ [index:string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index:string]: number; },workerCounts?:{ [index:string]: number; },stateCounts?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
+    /** @param {{provider?:string,capabilities?:string[],monthDbs?:string[],tableCounts?:{ [index:string]: number; },workerStats?:WorkerStats[],queueCounts?:{ [index:string]: number; },workerCounts?:{ [index:string]: number; },stateCounts?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    provider;
+    /** @type {string[]} */
+    capabilities = [];
     /** @type {string[]} */
     monthDbs;
     /** @type {{ [index:string]: number; }} */
@@ -2560,7 +2686,7 @@ export class AdminGetJobResponse {
     responseStatus;
 }
 export class AdminGetJobProgressResponse {
-    /** @param {{state?:BackgroundJobState,progress?:number,status?:string,logs?:string,durationMs?:number,error?:ResponseStatus,responseStatus?:ResponseStatus}} [init] */
+    /** @param {{state?:BackgroundJobState,progress?:number,status?:string,logs?:string,logsTruncated?:boolean,durationMs?:number,error?:ResponseStatus,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {BackgroundJobState} */
     state;
@@ -2570,6 +2696,8 @@ export class AdminGetJobProgressResponse {
     status;
     /** @type {string} */
     logs;
+    /** @type {?boolean} */
+    logsTruncated;
     /** @type {?number} */
     durationMs;
     /** @type {ResponseStatus} */
@@ -3264,16 +3392,22 @@ export class AdminQueryFailedJobs extends QueryDb {
     createResponse() { return new QueryResponse() }
 }
 export class AdminRequeueFailedJobs {
-    /** @param {{ids?:number[]}} [init] */
+    /** @param {{ids?:number[],tag?:string,batchId?:string,from?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number[]} */
     ids;
+    /** @type {string} */
+    tag;
+    /** @type {string} */
+    batchId;
+    /** @type {?string} */
+    from;
     getTypeName() { return 'AdminRequeueFailedJobs' }
     getMethod() { return 'POST' }
     createResponse() { return new AdminRequeueFailedJobsJobsResponse() }
 }
 export class AdminCancelJobs {
-    /** @param {{ids?:number[],worker?:string,state?:BackgroundJobState,cancelWorker?:string}} [init] */
+    /** @param {{ids?:number[],worker?:string,state?:BackgroundJobState,queue?:string,tag?:string,batchId?:string,cancelWorker?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number[]} */
     ids;
@@ -3282,10 +3416,304 @@ export class AdminCancelJobs {
     /** @type {?BackgroundJobState} */
     state;
     /** @type {string} */
+    queue;
+    /** @type {string} */
+    tag;
+    /** @type {string} */
+    batchId;
+    /** @type {string} */
     cancelWorker;
     getTypeName() { return 'AdminCancelJobs' }
     getMethod() { return 'GET' }
     createResponse() { return new AdminCancelJobsResponse() }
+}
+export class JobBatch {
+    /** @param {{id?:string,description?:string,total?:number,queued?:number,completed?:number,failed?:number,cancelled?:number,callback?:string,onSuccess?:string,parentBatchId?:string,notifiedDate?:string,createdDate?:string,createdBy?:string,completedDate?:string,cancelledDate?:string,meta?:{ [index:string]: string; },finished?:number,progress?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    id;
+    /** @type {?string} */
+    description;
+    /** @type {?number} */
+    total;
+    /** @type {number} */
+    queued;
+    /** @type {number} */
+    completed;
+    /** @type {number} */
+    failed;
+    /** @type {number} */
+    cancelled;
+    /** @type {?string} */
+    callback;
+    /** @type {?string} */
+    onSuccess;
+    /** @type {?string} */
+    parentBatchId;
+    /** @type {?string} */
+    notifiedDate;
+    /** @type {string} */
+    createdDate;
+    /** @type {?string} */
+    createdBy;
+    /** @type {?string} */
+    completedDate;
+    /** @type {?string} */
+    cancelledDate;
+    /** @type {?{ [index:string]: string; }} */
+    meta;
+    /** @type {number} */
+    finished;
+    /** @type {?number} */
+    progress;
+}
+export class JobQueue {
+    /** @param {{name?:string,paused?:boolean,concurrency?:number,rateLimit?:number,rateLimitSecs?:number,notes?:string,modifiedDate?:string,modifiedBy?:string,meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {boolean} */
+    paused;
+    /** @type {?number} */
+    concurrency;
+    /** @type {?number} */
+    rateLimit;
+    /** @type {?number} */
+    rateLimitSecs;
+    /** @type {?string} */
+    notes;
+    /** @type {?string} */
+    modifiedDate;
+    /** @type {?string} */
+    modifiedBy;
+    /** @type {?{ [index:string]: string; }} */
+    meta;
+}
+export class JobQueueStatus {
+    /** @param {{name?:string,paused?:boolean,concurrency?:number,concurrencyOverridden?:boolean,queued?:number,running?:number,rateLimit?:number,rateLimitSecs?:number,oldestQueued?:string,modifiedDate?:string,modifiedBy?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {boolean} */
+    paused;
+    /** @type {number} */
+    concurrency;
+    /** @type {boolean} */
+    concurrencyOverridden;
+    /** @type {number} */
+    queued;
+    /** @type {number} */
+    running;
+    /** @type {?number} */
+    rateLimit;
+    /** @type {?number} */
+    rateLimitSecs;
+    /** @type {?string} */
+    oldestQueued;
+    /** @type {?string} */
+    modifiedDate;
+    /** @type {?string} */
+    modifiedBy;
+}
+export class JobNode {
+    /** @param {{serverId?:string,machineName?:string,processId?:number,version?:string,startedDate?:string,lastHeartbeat?:string,runningJobs?:number,concurrency?:number,stoppedDate?:string,draining?:boolean,queues?:string[],meta?:{ [index:string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    serverId;
+    /** @type {?string} */
+    machineName;
+    /** @type {number} */
+    processId;
+    /** @type {?string} */
+    version;
+    /** @type {string} */
+    startedDate;
+    /** @type {string} */
+    lastHeartbeat;
+    /** @type {number} */
+    runningJobs;
+    /** @type {number} */
+    concurrency;
+    /** @type {?string} */
+    stoppedDate;
+    /** @type {boolean} */
+    draining;
+    /** @type {?string[]} */
+    queues;
+    /** @type {?{ [index:string]: string; }} */
+    meta;
+}
+export class JobAttempt {
+    /** @param {{id?:number,jobId?:number,attempt?:number,state?:BackgroundJobState,serverId?:string,startedDate?:string,durationMs?:number,errorCode?:string,error?:ResponseStatus,createdDate?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {number} */
+    jobId;
+    /** @type {number} */
+    attempt;
+    /** @type {BackgroundJobState} */
+    state;
+    /** @type {?string} */
+    serverId;
+    /** @type {?string} */
+    startedDate;
+    /** @type {number} */
+    durationMs;
+    /** @type {?string} */
+    errorCode;
+    /** @type {?ResponseStatus} */
+    error;
+    /** @type {string} */
+    createdDate;
+}
+export class AdminGetJobBatchResponse {
+    /** @param {{result?:JobBatch,stateCounts?:{ [index:string]: number; },responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?JobBatch} */
+    result;
+    /** @type {{ [index:string]: number; }} */
+    stateCounts = {};
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobQueuesResponse {
+    /** @param {{results?:JobQueueStatus[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobQueueStatus[]} */
+    results = [];
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminUpdateJobQueueResponse {
+    /** @param {{result?:JobQueue,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobQueue} */
+    result;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobNodesResponse {
+    /** @param {{results?:JobNode[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobNode[]} */
+    results = [];
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminUpdateJobNodeResponse {
+    /** @param {{result?:JobNode,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?JobNode} */
+    result;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobAttemptsResponse {
+    /** @param {{results?:JobAttempt[],responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {JobAttempt[]} */
+    results = [];
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminReplayJobResponse {
+    /** @param {{jobId?:number,refId?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    jobId;
+    /** @type {string} */
+    refId;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminUpdateScheduledTaskResponse {
+    /** @param {{result?:ScheduledTask,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {ScheduledTask} */
+    result;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminGetJobBatch {
+    /** @param {{batchId?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    batchId;
+    getTypeName() { return 'AdminGetJobBatch' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobBatchResponse() }
+}
+export class AdminGetJobQueues {
+    constructor(init) { Object.assign(this, init) }
+    getTypeName() { return 'AdminGetJobQueues' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobQueuesResponse() }
+}
+export class AdminUpdateJobQueue {
+    /** @param {{name?:string,paused?:boolean,concurrency?:number,rateLimit?:number,rateLimitSecs?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    name;
+    /** @type {?boolean} */
+    paused;
+    /** @type {?number} */
+    concurrency;
+    /** @type {?number} */
+    rateLimit;
+    /** @type {?number} */
+    rateLimitSecs;
+    getTypeName() { return 'AdminUpdateJobQueue' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminUpdateJobQueueResponse() }
+}
+export class AdminGetJobNodes {
+    constructor(init) { Object.assign(this, init) }
+    getTypeName() { return 'AdminGetJobNodes' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobNodesResponse() }
+}
+export class AdminUpdateJobNode {
+    /** @param {{serverId?:string,draining?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    serverId;
+    /** @type {?boolean} */
+    draining;
+    getTypeName() { return 'AdminUpdateJobNode' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminUpdateJobNodeResponse() }
+}
+export class AdminGetJobAttempts {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'AdminGetJobAttempts' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminGetJobAttemptsResponse() }
+}
+export class AdminReplayJob {
+    /** @param {{id?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    getTypeName() { return 'AdminReplayJob' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminReplayJobResponse() }
+}
+export class AdminUpdateScheduledTask {
+    /** @param {{id?:number,enabled?:boolean,runNow?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?boolean} */
+    enabled;
+    /** @type {?boolean} */
+    runNow;
+    getTypeName() { return 'AdminUpdateScheduledTask' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminUpdateScheduledTaskResponse() }
 }
 export class RequestLogs {
     /** @param {{beforeSecs?:number,afterSecs?:number,operationName?:string,ipAddress?:string,forwardedFor?:string,userAuthId?:string,sessionId?:string,referer?:string,pathInfo?:string,bearerToken?:string,ids?:number[],beforeId?:number,afterId?:number,hasResponse?:boolean,withErrors?:boolean,enableSessionTracking?:boolean,enableResponseTracking?:boolean,enableErrorTracking?:boolean,durationLongerThan?:string,durationLessThan?:string,skip?:number,take?:number,orderBy?:string,month?:string}} [init] */

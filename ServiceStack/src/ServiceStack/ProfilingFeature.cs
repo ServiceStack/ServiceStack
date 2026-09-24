@@ -12,6 +12,7 @@ using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Admin;
 using ServiceStack.Configuration;
+using ServiceStack.Jobs;
 using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.NativeTypes;
@@ -242,7 +243,8 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
     void IObserver<DiagnosticListener>.OnNext(DiagnosticListener diagnosticListener)
     {
         // Console.WriteLine(diagnosticListener.Name);
-        if ((feature.Profile.HasFlag(ProfileSource.ServiceStack) && diagnosticListener.Name is Diagnostics.Listeners.ServiceStack)
+        if (((feature.Profile.HasFlag(ProfileSource.ServiceStack) || feature.Profile.HasFlag(ProfileSource.Jobs))
+                && diagnosticListener.Name is Diagnostics.Listeners.ServiceStack)
             || (feature.Profile.HasFlag(ProfileSource.Client) &&
                 diagnosticListener.Name is Diagnostics.Listeners.HttpClient or Diagnostics.Listeners.Client)
             || (feature.Profile.HasFlag(ProfileSource.OrmLite) && diagnosticListener.Name is Diagnostics.Listeners.OrmLite)
@@ -459,6 +461,66 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
         return true;
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddServiceStack(JobDiagnosticEvent before)
+    {
+        if (!ShouldTrack(before))
+            return;
+
+        refs[before.OperationId] = before;
+        before.DiagnosticEntry = AddEntry(ToDiagnosticEntry(before));
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    void AddServiceStack(JobDiagnosticEvent before, JobDiagnosticEvent after)
+    {
+        if (!ShouldTrack(before) || !ShouldTrack(after))
+        {
+            // Mark entry already in queue for deletion
+            if (before.DiagnosticEntry is DiagnosticEntry entry)
+                entry.Deleted = true;
+            return;
+        }
+
+        after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
+    }
+
+    public DiagnosticEntry ToDiagnosticEntry(JobDiagnosticEvent e, JobDiagnosticEvent? orig = null)
+    {
+        var to = CreateDiagnosticEntry(e, orig);
+        var job = e.Job;
+
+        to.Command = job.Command ?? job.Request;
+        to.Message = job.Queue != JobQueues.Default
+            ? $"job:{job.Id} queue:{job.Queue}"
+            : $"job:{job.Id}";
+        to.Tag ??= job.Tag;
+        to.UserAuthId ??= job.UserId;
+
+        if (IncludeRequestDto(job.GetType()))
+        {
+            to.NamedArgs = new() {
+                ["Id"] = job.Id,
+                ["RefId"] = job.RefId,
+                ["Queue"] = job.Queue,
+                ["Attempt"] = job.Attempts,
+                ["State"] = job.State.ToString(),
+            };
+            if (job.BatchId != null)
+                to.NamedArgs["BatchId"] = job.BatchId;
+            if (job.Worker != null)
+                to.NamedArgs["Worker"] = job.Worker;
+        }
+
+        return Filter(to, e);
+    }
+
+    bool ShouldTrack(JobDiagnosticEvent e)
+    {
+        var requestType = e.Job?.GetType();
+        return requestType == null || !feature.ExcludeRequestDtoTypes.Any(x => x.IsAssignableFrom(requestType));
+    }
+
     bool ShouldTrack(MqRequestDiagnosticEvent e)
     {
         var dto = e.Message?.Body ?? e.Body; 
@@ -757,6 +819,22 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
         {
             if (refs.TryRemove(reqError.OperationId, out var orig) && orig is RequestDiagnosticEvent reqOrig)
                 AddServiceStack(reqOrig, reqError);
+        }
+
+        /** Background Jobs */
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteJobBefore && kvp.Value is JobDiagnosticEvent jobBefore)
+        {
+            AddServiceStack(jobBefore);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteJobAfter && kvp.Value is JobDiagnosticEvent jobAfter)
+        {
+            if (refs.TryRemove(jobAfter.OperationId, out var orig) && orig is JobDiagnosticEvent jobOrig)
+                AddServiceStack(jobOrig, jobAfter);
+        }
+        if (kvp.Key == Diagnostics.Events.ServiceStack.WriteJobError && kvp.Value is JobDiagnosticEvent jobError)
+        {
+            if (refs.TryRemove(jobError.OperationId, out var orig) && orig is JobDiagnosticEvent jobOrig)
+                AddServiceStack(jobOrig, jobError);
         }
 
         /** Gateway */

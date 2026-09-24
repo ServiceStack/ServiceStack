@@ -32,9 +32,7 @@ public class DbJobsProvider
 
     public virtual void InitSchema(IDbConnection db)
     {
-        db.CreateTableIfNotExists<BackgroundJob>();
-        db.CreateTableIfNotExists<JobSummary>();
-        db.CreateTableIfNotExists<ScheduledTask>();
+        BackgroundJobSchema.UpgradeMainDb(db);
 
         using var monthDb = OpenMonthDb(DateTime.UtcNow);
         InitMonthDbSchema(monthDb);
@@ -42,8 +40,7 @@ public class DbJobsProvider
     
     public virtual void InitMonthDbSchema(IDbConnection db)
     {
-        db.CreateTableIfNotExists<CompletedJob>();
-        db.CreateTableIfNotExists<FailedJob>();
+        BackgroundJobSchema.UpgradeArchiveDb(db);
     }
 
     public virtual IDbConnection OpenDb()
@@ -107,6 +104,17 @@ public class DbJobsProvider
 
     public virtual string SqlChar(int charCode) => $"CHAR({charCode})";
 
+    /// <summary>
+    /// Whether this RDBMS can skip rows another transaction has locked, which lets competing nodes
+    /// select disjoint Jobs in one query instead of contending on the same rows.
+    /// </summary>
+    public virtual bool SupportsSkipLocked => false;
+
+    /// <summary>
+    /// Appends the row-locking clause used to claim Jobs. Only called when SupportsSkipLocked.
+    /// </summary>
+    public virtual string SqlSkipLocked() => "";
+
     public virtual void DropTables(DateTime? createdDate=null)
     {
         using var db = OpenDb();
@@ -123,6 +131,10 @@ public class DbJobsProvider
 
 public class MySqlDbJobsProvider : DbJobsProvider
 {
+    // MySql 8.0+
+    public override bool SupportsSkipLocked => true;
+    public override string SqlSkipLocked() => " FOR UPDATE SKIP LOCKED";
+
     public override string SqlDateFormat(string quotedColumn, string format) => MySqlUtils.SqlDateFormat(quotedColumn, format);
 }
 
@@ -133,19 +145,22 @@ public class SqlServerDbJobsProvider : DbJobsProvider
 
 public class PostgresDbJobsProvider : DbJobsProvider
 {
+    public override bool SupportsSkipLocked => true;
+    public override string SqlSkipLocked() => " FOR UPDATE SKIP LOCKED";
+
     ConcurrentDictionary<string, bool> monthDbs = new();
 
     public override void InitSchema(IDbConnection db)
     {
-        db.CreateTableIfNotExists<BackgroundJob>();
-        db.CreateTableIfNotExists<JobSummary>();
-        db.CreateTableIfNotExists<ScheduledTask>();
+        BackgroundJobSchema.UpgradeMainDb(db);
 
         var completedSql = PostgresUtils.CreatePartitionTableSql(Dialect, typeof(CompletedJob), nameof(CompletedJob.CreatedDate));
         db.Execute(completedSql);
 
         var failedSql = PostgresUtils.CreatePartitionTableSql(Dialect, typeof(FailedJob), nameof(FailedJob.CreatedDate));
         db.Execute(failedSql);
+
+        BackgroundJobSchema.UpgradeArchiveDb(db);
 
         using var monthDb = OpenMonthDb(DateTime.UtcNow);
     }

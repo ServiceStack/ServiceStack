@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Microsoft.Extensions.Logging;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using System.Data;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack.Jobs;
@@ -65,6 +66,20 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             })
         ).ToSummaries();
 
+        to.Queues = db.SqlList<JobStat>(db.From<JobSummary>()
+            .Where(x => finishedStates.Contains(x.State))
+            .And(dateFilter)
+            .GroupBy(x => new { x.Queue, x.State, Retries = "Retries" })
+            .Select(x => new {
+                Name = x.Queue,
+                x.State,
+                Retries = Sql.Custom("IIF(Attempts>1,1,0)"),
+                Count = Sql.Count("*")
+            })
+        ).ToSummaries();
+
+        to.WaitTimes = GetWaitTimes(db, dateFilter);
+
         var yesterday = DateTime.UtcNow.AddDays(-1); //Sql.Custom<DateTime>("datetime('now','-24 hours')")
         var hourCounts = db.SqlList<HourStat>(db.From<JobSummary>()
             .Where(x => x.CreatedDate >= yesterday)
@@ -120,6 +135,10 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
 
         var to = new AdminJobInfoResponse
         {
+            Provider = "sqlite",
+            Capabilities = ["queues", "queue-controls", "priority", "retry-backoff", "idempotent-enqueue",
+                "singleton-jobs", "job-expiry", "job-batches", "reply-to", "bounded-logs",
+                "durable-schedules", "schedule-controls", "telemetry", "graceful-shutdown"],
             MonthDbs = feature.GetTableMonths(db)
         };
 
@@ -202,6 +221,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             return new AdminGetJobProgressResponse
             {
                 State = summary.State,
+                LogsTruncated = summary.LogsTruncated,
                 Error = summary.ErrorCode != null
                     ? new() { ErrorCode = summary.ErrorCode, Message = summary.ErrorMessage }
                     : null
@@ -230,6 +250,7 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
             Progress = progress,
             Status = job.Status,
             Logs = logs,
+            LogsTruncated = job.LogsTruncated,
             Error = job.Error,
             DurationMs = durationMs,
         };
@@ -276,6 +297,201 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
         return autoQuery.Execute(request, q, base.Request, db);        
     }
 
+    public object Post(AdminUpdateScheduledTask request)
+    {
+        AssertRequiredRole();
+        using var db = jobs.OpenDb();
+        if (db.SingleById<ScheduledTask>(request.Id) == null)
+            throw HttpError.NotFound($"Scheduled Task '{request.Id}' does not exist");
+
+        if (request.Enabled != null && !jobs.SetRecurringTaskEnabled(request.Id, request.Enabled.Value))
+            throw HttpError.Conflict($"Could not update Scheduled Task '{request.Id}'");
+        if (request.RunNow == true && !jobs.RunRecurringTaskNow(request.Id))
+            throw HttpError.Conflict($"Scheduled Task '{request.Id}' is disabled");
+
+        var result = db.SingleById<ScheduledTask>(request.Id)
+            ?? throw HttpError.NotFound($"Scheduled Task '{request.Id}' does not exist");
+        return new AdminUpdateScheduledTaskResponse { Result = result };
+    }
+
+
+
+    /// <summary>
+    /// How long Jobs waited between being queued and starting. This is what shows a backlog
+    /// building up before Jobs start failing or timing out.
+    /// </summary>
+    private JobWaitTimes GetWaitTimes(IDbConnection db, Expression<Func<JobSummary,bool>> dateFilter)
+    {
+        var to = new JobWaitTimes();
+        try
+        {
+            var waitMs = GetWaitMsSql(db);
+            var q = db.From<JobSummary>()
+                .Where(x => x.StartedDate != null)
+                .And(dateFilter);
+            to.Count = db.Scalar<int>(q.Clone().Select("COUNT(*)"));
+            if (to.Count > 0)
+            {
+                to.AvgMs = (int)db.Scalar<double>(q.Clone().Select($"COALESCE(AVG({waitMs}),0)"));
+                to.MaxMs = (int)db.Scalar<double>(q.Clone().Select($"COALESCE(MAX({waitMs}),0)"));
+            }
+
+            // The longest a Job is still waiting right now, which no completed Job can show
+            var now = DateTime.UtcNow;
+            var oldestWaiting = db.Scalar<DateTime?>(db.From<BackgroundJob>()
+                .Where(x => x.State == BackgroundJobState.Queued && x.CompletedDate == null)
+                .Select(x => Sql.Min(x.CreatedDate)));
+            if (oldestWaiting != null && oldestWaiting < now)
+                to.WaitingMs = (int)(now - oldestWaiting.Value).TotalMilliseconds;
+        }
+        catch (Exception e)
+        {
+            log.LogError(e, "Could not calculate Job wait times");
+        }
+        return to;
+    }
+
+    /// <summary>SQL for the milliseconds a Job waited between being created and started</summary>
+    public static string GetWaitMsSql(IDbConnection db)
+    {
+        var dialect = db.GetDialectProvider();
+        var started = dialect.GetQuotedColumnName(nameof(JobSummary.StartedDate));
+        var created = dialect.GetQuotedColumnName(nameof(JobSummary.CreatedDate));
+        return $"(julianday({started}) - julianday({created})) * 86400000";
+    }
+
+    public object Any(AdminGetJobBatch request)
+    {
+        AssertRequiredRole();
+        using var db = jobs.OpenDb();
+        var to = new AdminGetJobBatchResponse {
+            Result = db.SingleById<JobBatch>(request.BatchId),
+        };
+        // Counted from the Jobs themselves so the Admin UI shows the real state of the batch even
+        // if a counter update was lost
+        var stateCounts = db.SqlList<JobStat>(db.From<JobSummary>()
+            .Where(x => x.BatchId == request.BatchId)
+            .GroupBy(x => x.State)
+            .Select(x => new {
+                Name = Sql.Custom("''"),
+                x.State,
+                Retries = Sql.Custom("0"),
+                Count = Sql.Count("*"),
+            }));
+        foreach (var stat in stateCounts)
+        {
+            to.StateCounts[stat.State.ToString()] = stat.Count;
+        }
+        return to;
+    }
+
+    public object Any(AdminGetJobQueues request)
+    {
+        AssertRequiredRole();
+        var now = DateTime.UtcNow;
+        var queues = jobs.GetJobQueues();
+        var workerQueueCounts = jobs.GetWorkerQueueCounts();
+        var runningJobs = jobs.GetWorkerStats().Count(x => x.RunningJob != null);
+
+        using var db = jobs.OpenDb();
+        var to = new AdminGetJobQueuesResponse();
+        foreach (var queue in queues)
+        {
+            var name = queue.Name;
+            var pending = db.Select(db.From<BackgroundJob>()
+                .Where(x => x.Queue == name && x.CompletedDate == null)
+                .Select(x => new { x.State, x.CreatedDate, x.RunAfter }));
+            var waiting = pending.Where(x => x.State == BackgroundJobState.Queued).ToList();
+            var oldest = waiting.Count > 0
+                ? waiting.Min(x => x.RunAfter ?? x.CreatedDate)
+                : (DateTime?)null;
+
+            to.Results.Add(new JobQueueStatus {
+                Name = name,
+                Paused = queue.Paused,
+                Concurrency = jobs.GetQueueConcurrency(name),
+                ConcurrencyOverridden = queue.Concurrency is > 0,
+                RateLimit = queue.RateLimit,
+                RateLimitSecs = queue.RateLimitSecs,
+                Queued = waiting.Count,
+                Running = pending.Count(x => x.State == BackgroundJobState.Started),
+                OldestQueued = oldest != null && oldest < now ? now - oldest : null,
+                ModifiedDate = queue.ModifiedDate,
+                ModifiedBy = queue.ModifiedBy,
+            });
+        }
+        return to;
+    }
+
+    public object Post(AdminUpdateJobQueue request)
+    {
+        AssertRequiredRole();
+        var result = jobs.AssertQueues().SetJobQueue(request.Name, request.Paused, request.Concurrency,
+            modifiedBy: Request.GetSession()?.UserName ?? Request.GetSession()?.UserAuthId,
+            rateLimit: request.RateLimit, rateLimitSecs: request.RateLimitSecs);
+        return new AdminUpdateJobQueueResponse { Result = result };
+    }
+
+    public object Any(AdminGetJobNodes request)
+    {
+        AssertRequiredRole();
+        return new AdminGetJobNodesResponse { Results = jobs.AssertQueues().GetJobNodes() };
+    }
+
+    public object Post(AdminUpdateJobNode request)
+    {
+        AssertRequiredRole();
+        var queues = jobs.AssertQueues();
+        if (request.Draining != null && !queues.SetJobNodeDraining(request.ServerId, request.Draining.Value))
+            throw HttpError.NotFound($"Job Node '{request.ServerId}' does not exist");
+        return new AdminUpdateJobNodeResponse {
+            Result = queues.GetJobNodes().FirstOrDefault(x => x.ServerId == request.ServerId)
+                ?? throw HttpError.NotFound($"Job Node '{request.ServerId}' does not exist"),
+        };
+    }
+
+    public object Any(AdminGetJobAttempts request)
+    {
+        AssertRequiredRole();
+        return new AdminGetJobAttemptsResponse { Results = jobs.AssertQueues().GetJobAttempts(request.Id) };
+    }
+
+    public object Post(AdminReplayJob request)
+    {
+        AssertRequiredRole();
+        var jobResult = jobs.GetJob(request.Id)
+            ?? throw HttpError.NotFound($"Job {request.Id} does not exist");
+        var job = jobResult.Job
+            ?? throw HttpError.NotFound($"Job {request.Id} has no recorded request to replay");
+
+        var options = new BackgroundJobOptions {
+            Worker = job.Worker,
+            Queue = job.Queue,
+            Priority = job.Priority,
+            ConcurrencyKey = job.ConcurrencyKey,
+            TenantId = job.TenantId,
+            Tag = job.Tag,
+            BatchId = job.BatchId,
+            Callback = job.Callback,
+            ReplyTo = job.ReplyTo,
+            UserId = job.UserId,
+            RetryLimit = job.RetryLimit,
+            RetryBackoff = job.RetryBackoff,
+            RetryDelayMs = job.RetryDelayMs,
+            MaxRetryDelayMs = job.MaxRetryDelayMs,
+            TimeoutSecs = job.TimeoutSecs,
+            Args = job.Args,
+            CreatedBy = Request.GetSession()?.UserName ?? job.CreatedBy,
+        };
+
+        var replayRequest = jobs.CreateRequest(job);
+        var jobRef = job.RequestType == CommandResult.Command
+            ? jobs.EnqueueCommand(job.Command!, replayRequest, options)
+            : jobs.EnqueueApi(replayRequest, options);
+
+        return new AdminReplayJobResponse { JobId = jobRef.Id, RefId = jobRef.RefId };
+    }
+
     public object Any(AdminQueryCompletedJobs request)
     {
         var feature = AssertRequiredRole();
@@ -297,11 +513,29 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
     public object Any(AdminRequeueFailedJobs request)
     {
         var feature = AssertRequiredRole();
-        if (request.Ids == null || request.Ids.Count == 0)
-            throw new ArgumentNullException(nameof(request.Ids));
+        var jobIds = new List<long>(request.Ids.Safe());
+        if (request.Tag != null || request.BatchId != null)
+        {
+            // Matched against JobSummary rather than the monthly archives: every Job has a summary,
+            // whereas the months reported by GetTableMonths() are derived from completed Jobs, so a
+            // month containing only failures wouldn't be searched at all.
+            using var db = jobs.OpenDb();
+            var q = db.From<JobSummary>()
+                .Where(x => x.State == BackgroundJobState.Failed);
+            if (request.Tag != null)
+                q.And(x => x.Tag == request.Tag);
+            if (request.BatchId != null)
+                q.And(x => x.BatchId == request.BatchId);
+            if (request.From != null)
+                q.And(x => x.CreatedDate >= request.From);
+            jobIds.AddRange(db.Column<long>(q.Select(x => x.Id)));
+        }
+        if (jobIds.Count == 0)
+            throw new ArgumentNullException(nameof(request.Ids),
+                "Specify the Ids, Tag or BatchId of the failed Jobs to requeue");
 
         var to = new AdminRequeueFailedJobsJobsResponse();
-        foreach (var jobId in request.Ids)
+        foreach (var jobId in jobIds.Distinct())
         {
             try
             {
@@ -337,6 +571,33 @@ public class AdminJobServices(ILogger<AdminJobServices> log, IBackgroundJobs job
         if (request.Worker != null || request.State != null)
         {
             to.Results.AddRange(jobs.CancelJobs(request.State, request.Worker));
+        }
+        if (request.BatchId != null && request.Queue == null && request.Tag == null)
+        {
+            // Cancelling a whole batch also stops more Jobs being added to it
+            foreach (var jobId in jobs.CancelJobBatch(request.BatchId))
+            {
+                if (!to.Results.Contains(jobId))
+                    to.Results.Add(jobId);
+            }
+        }
+        else if (request.Queue != null || request.Tag != null || request.BatchId != null)
+        {
+            using var db = jobs.OpenDb();
+            var q = db.From<BackgroundJob>().Where(x => x.CompletedDate == null);
+            if (request.Queue != null)
+                q.And(x => x.Queue == request.Queue);
+            if (request.Tag != null)
+                q.And(x => x.Tag == request.Tag);
+            if (request.BatchId != null)
+                q.And(x => x.BatchId == request.BatchId);
+            foreach (var jobId in db.Column<long>(q.Select(x => x.Id)))
+            {
+                if (to.Results.Contains(jobId))
+                    continue;
+                if (jobs.CancelJob(jobId))
+                    to.Results.Add(jobId);
+            }
         }
         if (request.CancelWorker != null)
         {

@@ -1,13 +1,15 @@
 import { ref, computed, watch, onMounted, onUnmounted, provide, inject, nextTick } from "vue"
 import { humanize,  toDate, timeFmt12, leftPart, rightPart, pick, omit, EventBus } from "@servicestack/client"
 import { useClient, useUtils, useFormatters } from "@servicestack/vue"
-import { AdminJobInfo, AdminGetJob, AdminGetJobProgress, AdminCancelJobs, AdminRequeueFailedJobs, AdminJobDashboard } from "dtos"
+import { AdminJobInfo, AdminGetJob, AdminGetJobProgress, AdminCancelJobs, AdminRequeueFailedJobs, AdminJobDashboard,
+    AdminUpdateScheduledTask, AdminGetJobQueues, AdminUpdateJobQueue, AdminReplayJob, AdminGetJobBatch,
+    AdminGetJobNodes, AdminUpdateJobNode, AdminGetJobAttempts } from "dtos"
 import { Chart, registerables } from 'chart.js'
 Chart.register(...registerables)
 
 const bus = new EventBus()
 
-const { formatDate, time, prettyJson, humanifyNumber, humanifyMs } = useFormatters()
+const { formatDate, time, prettyJson, humanifyNumber, humanifyMs, relativeTime } = useFormatters()
 const { swrApi, swrCacheKey, fromCache } = useUtils()
 
 function getPrefs() {
@@ -34,12 +36,10 @@ async function updateStats() {
         const prefs = getPrefs()
         const request = new AdminJobInfo({ month:prefs.monthDb }) //var needed by safari
         swrApi(window.client, request, r => {
-            if (lastStats?.pageStats == null ||
-                lastStats.pageStats.find(x => x.label === 'JobSummary').total !==
-                r.response.pageStats.find(x => x.label === 'JobSummary').total) {
+            if (!lastStats || JSON.stringify(lastStats) !== JSON.stringify(r.response)) {
+                lastStats = r.response
                 bus.publish('stats:changed', r.response)
             }
-            lastStats = r.response
         })
     }
     updateStatsTimeout = setTimeout(updateStats,3000)
@@ -53,6 +53,42 @@ function hasItems(obj) {
     return !obj ? false : typeof obj === 'object'
         ? Object.keys(obj).length > 0
         : obj.length
+}
+
+// TimeSpans arrive as an XSD duration (PT1M30S) or as [d.]hh:mm:ss[.fff]
+function timeSpanMs(ts) {
+    if (!ts) return null
+    const xsd = /^-?P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?)?$/.exec(ts)
+    if (xsd) {
+        const [, d, h, m, s] = xsd
+        return ((+(d||0) * 24 + +(h||0)) * 60 + +(m||0)) * 60000 + Math.round(parseFloat(s||0) * 1000)
+    }
+    const hms = /^(?:(\d+)\.)?(\d+):(\d+):([\d.]+)$/.exec(ts)
+    if (hms) {
+        const [, d, h, m, s] = hms
+        return ((+(d||0) * 24 + +h) * 60 + +m) * 60000 + Math.round(parseFloat(s) * 1000)
+    }
+    return null
+}
+function formatTimeSpan(ts) {
+    const ms = timeSpanMs(ts)
+    return ms == null ? (ts ?? '') : humanifyMs(ms)
+}
+
+const stateStyles = {
+    Queued:    'bg-gray-100 text-gray-700 ring-gray-500/20 dark:bg-gray-800 dark:text-gray-300',
+    Started:   'bg-sky-50 text-sky-700 ring-sky-600/20 dark:bg-sky-900/40 dark:text-sky-300',
+    Executed:  'bg-indigo-50 text-indigo-700 ring-indigo-600/20 dark:bg-indigo-900/40 dark:text-indigo-300',
+    Completed: 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/40 dark:text-green-300',
+    Failed:    'bg-red-50 text-red-700 ring-red-600/20 dark:bg-red-900/40 dark:text-red-300',
+    Cancelled: 'bg-amber-50 text-amber-800 ring-amber-600/20 dark:bg-amber-900/40 dark:text-amber-300',
+}
+
+// Friendlier explanations of the error codes the Jobs runtime assigns itself
+const jobErrorHelp = {
+    JobExpired: 'The Job was not started before its ExpiresAt deadline, so it was cancelled instead of running late',
+    LeaseExpired: 'The Job was abandoned mid-execution (its server stopped or it ignored its timeout) more times than its RetryLimit allows',
+    QueueClearedOnUpgrade: 'The Job was still queued when the database was upgraded to the new Background Jobs schema',
 }
 
 const Markup = {
@@ -185,6 +221,50 @@ const EditLink = {
     props: { id:Number }
 }
 
+const StateBadge = {
+    template:`<span v-if="state" :class="[cls, 'inline-flex items-center gap-x-1 rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset whitespace-nowrap']" :title="title">
+        {{label ?? state}}
+    </span>`,
+    props: { state:String, label:String, title:String },
+    setup(props) {
+        const cls = computed(() => stateStyles[props.state] ?? stateStyles.Queued)
+        return { cls }
+    }
+}
+
+// Segmented bar of how a group of Jobs finished, e.g. a Batch
+const BatchProgress = {
+    template:`
+        <div>
+            <div class="flex h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700" :title="summary">
+                <div v-for="s in segments" :key="s.key" :class="s.cls" :style="{ width: s.pct + '%' }"></div>
+            </div>
+            <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
+                <span v-for="s in legend" :key="s.key" class="inline-flex items-center gap-x-1.5">
+                    <span :class="[s.cls, 'h-2 w-2 rounded-full']"></span>{{s.count}} {{s.key}}
+                </span>
+            </div>
+        </div>`,
+    props: { counts:Object, total:Number },
+    setup(props) {
+        const colors = {
+            completed: 'bg-green-500',
+            failed:    'bg-red-500',
+            cancelled: 'bg-amber-400',
+            running:   'bg-sky-400',
+            queued:    'bg-gray-400',
+        }
+        const all = computed(() => Object.keys(colors).map(key => ({ key, cls:colors[key], count: props.counts?.[key] ?? 0 })))
+        const sum = computed(() => Math.max(props.total ?? 0, all.value.reduce((acc, s) => acc + s.count, 0)))
+        const segments = computed(() => sum.value
+            ? all.value.filter(s => s.count).map(s => ({ ...s, pct: s.count / sum.value * 100 }))
+            : [])
+        const legend = computed(() => all.value.filter(s => s.count))
+        const summary = computed(() => legend.value.map(s => `${s.count} ${s.key}`).join(', '))
+        return { segments, legend, summary }
+    }
+}
+
 const JobProgress = {
     template:`
         <div v-if="!isNaN(job.durationMs) && job.progress" class="w-56 flex items-center">
@@ -203,6 +283,8 @@ const JobProgress = {
 const JobDialog = {
     components: {
         JobState,
+        StateBadge,
+        BatchProgress,
     },
     template: `
         <SlideOver v-if="job" @done="$emit('done')"
@@ -227,6 +309,9 @@ const JobDialog = {
                     </div>
                     <div v-if="state=='Cancelled' || state=='Failed'">
                         <SecondaryButton @click="requeueJob" :disabled="loading">Requeue</SecondaryButton>
+                    </div>
+                    <div v-if="state=='Completed'">
+                        <SecondaryButton @click="replayJob" :disabled="loading" title="Queue this Job again with the same arguments">Replay</SecondaryButton>
                     </div>
                     <div v-if="state=='Queued' || state=='Started'">
                         <PrimaryButton color="red" @click="cancelJob" :disabled="loading">Cancel</PrimaryButton>
@@ -263,12 +348,12 @@ const JobDialog = {
                 <CopyIcon class="absolute top-1 right-1" :text="job.responseBody" />
                 <HtmlFormat :value="JSON.parse(job.responseBody)" class="not-prose" />
             </div>
-            <div v-if="error" class="bg-red-700 text-white px-3 py-3">
+            <div v-if="showError" class="bg-red-700 text-white px-3 py-3">
               <div class="flex items-start justify-between space-x-3">
                 <h2 class="font-medium text-white">Error</h2>
               </div>
             </div>
-            <div v-if="error" class="relative flex overflow-auto">
+            <div v-if="showError" class="relative flex overflow-auto">
               <CopyIcon class="absolute top-1 right-1" :text="prettyJson(error)" />
               <table class="border-separate border-spacing-2 text-sm">
               <tbody>
@@ -279,6 +364,10 @@ const JobDialog = {
                 <tr>
                   <th class="text-left font-medium align-top pr-2">Message</th>
                   <td>{{ error.message }}</td>
+                </tr>
+                <tr v-if="errorHelp">
+                  <th></th>
+                  <td class="text-gray-500 dark:text-gray-400">{{ errorHelp }}</td>
                 </tr>
                 <tr v-if="error.stackTrace">
                   <th class="text-left font-medium align-top pr-2">StackTrace</th>
@@ -295,9 +384,66 @@ const JobDialog = {
               </tbody>
               </table>
             </div>
-            <div v-if="job.logs" class="bg-gray-100 text-gray-900 px-3 py-3">
+            <div v-if="attempts.length" class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-3">
+              <div class="flex items-start justify-between space-x-3">
+                <h2 class="font-medium">Failed Attempts</h2>
+                <span class="text-xs text-gray-600 dark:text-gray-400">{{attempts.length}}</span>
+              </div>
+            </div>
+            <div v-if="attempts.length" class="px-3 py-2">
+              <ol class="relative border-s border-gray-200 dark:border-gray-700 ml-2">
+                <li v-for="a in attempts" :key="a.id" class="mb-3 ms-4">
+                  <div class="absolute w-2.5 h-2.5 bg-red-500 rounded-full -start-[5.5px] mt-1.5 ring-4 ring-white dark:ring-gray-900"></div>
+                  <div class="flex flex-wrap items-center gap-x-2 text-sm">
+                    <span class="font-medium">Attempt {{a.attempt}}</span>
+                    <span v-if="a.errorCode" class="text-red-700 dark:text-red-400" :title="jobErrorHelp[a.errorCode]">{{a.errorCode}}</span>
+                    <span class="text-xs text-gray-500">{{humanifyMs(a.durationMs)}}</span>
+                    <span v-if="a.serverId" class="text-xs text-gray-500" :title="a.serverId">on {{a.serverId.split(':').slice(0,2).join(':')}}</span>
+                    <span class="text-xs text-gray-400" :title="a.startedDate">{{relativeTime(a.startedDate || a.createdDate)}}</span>
+                  </div>
+                  <div v-if="a.error?.message" class="mt-0.5 text-sm text-gray-600 dark:text-gray-400 break-words">{{a.error.message}}</div>
+                </li>
+              </ol>
+            </div>
+            <div v-if="batch" class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-3">
+              <div class="flex items-start justify-between space-x-3">
+                <div>
+                  <h2 class="font-medium">Batch <span class="font-mono text-sm">{{batch.id}}</span></h2>
+                  <p v-if="batch.description" class="text-sm text-gray-600 dark:text-gray-400">{{batch.description}}</p>
+                </div>
+                <span class="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                  {{batchFinished}}<span v-if="batch.total"> / {{batch.total}}</span> finished
+                </span>
+              </div>
+            </div>
+            <div v-if="batch" class="px-3 py-3 space-y-3">
+              <BatchProgress :counts="batchCounts" :total="batch.total" />
+              <div class="text-sm text-gray-600 dark:text-gray-400 space-y-0.5">
+                <div v-if="batch.callback" title="Runs when every Job in the batch has finished">Callback: {{batch.callback}}</div>
+                <div v-if="batch.onSuccess" title="Runs only if every Job in the batch completed">On Success: {{batch.onSuccess}}</div>
+                <div v-if="batch.parentBatchId">Parent Batch: {{batch.parentBatchId}}</div>
+                <div v-if="batch.cancelledDate" title="No more Jobs can be added to this batch">Cancelled {{relativeTime(batch.cancelledDate)}}</div>
+                <div v-else-if="batch.completedDate">Finished {{relativeTime(batch.completedDate)}}</div>
+              </div>
+              <div v-if="batchActive || batchCounts.failed" class="flex gap-2">
+                <SecondaryButton v-if="batchCounts.failed" @click="requeueBatch" :disabled="loading" title="Requeue every failed Job in this batch">
+                  Requeue {{batchCounts.failed}} failed
+                </SecondaryButton>
+                <SecondaryButton v-if="batchActive" @click="cancelBatch" :disabled="loading" class="!text-red-700" title="Cancel every active Job in this batch and stop more being added">
+                  Cancel batch
+                </SecondaryButton>
+              </div>
+            </div>
+            <div v-if="hasItems(job.meta)" class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-3">
+              <h2 class="font-medium">Meta</h2>
+            </div>
+            <div v-if="hasItems(job.meta)" class="px-1">
+              <HtmlFormat :value="job.meta" class="not-prose" />
+            </div>
+            <div v-if="logs || logsTruncated" class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 px-3 py-3">
               <div class="flex items-start justify-between space-x-3">
                 <h2 class="font-medium">Logs</h2>
+                <span v-if="logsTruncated" class="text-xs text-amber-700" title="The configured per-job log limit was reached">Truncated</span>
               </div>
             </div>
             <div v-if="logs" class="flex overflow-auto">
@@ -325,30 +471,108 @@ const JobDialog = {
         const loading = ref(false)
         const isRunning = state => state === 'Started' || state === 'Executed'
         const logs = ref(props.job.logs || '')
+        const logsTruncated = ref(props.job.logsTruncated === true)
+        const batch = ref()
+        const batchStateCounts = ref({})
+        const attempts = ref([])
         const state = ref(props.job.state)
+        const errorHelp = computed(() => jobErrorHelp[error.value?.errorCode])
+        // A Job that completed after retrying keeps its last error, which its attempt history already shows
+        const showError = computed(() => !!error.value && !(state.value === 'Completed' && attempts.value.length))
+
         function formatArgs(args) {
             Object.keys(args).forEach(key => {
                 const val = args[key]
-                if (key.endsWith('Date') || key === 'runAfter') {
+                if (val == null) {
+                    delete args[key]
+                } else if (key.endsWith('Date') || key === 'runAfter' || key.endsWith('At')) {
                     args[key] = formatDate(val) + ' ' + timeFmt12(toDate(val))
                 } else if (key === 'durationMs') {
                     args['duration'] = duration.value
+                } else if (key === 'retryDelayMs' || key === 'maxRetryDelayMs') {
+                    args[key.replace('Ms','')] = humanifyMs(val)
+                    delete args[key]
+                } else if (key === 'timeoutSecs') {
+                    args['timeout'] = humanifyMs(val * 1000)
+                    delete args[key]
                 }
             })
+            if (args.dependsOnPolicy && !args.dependsOn && !args.dependsOnBatch) delete args.dependsOnPolicy
             return omit(args, ['state', 'durationMs'])
         }
         const basic = computed(() => formatArgs(pick(props.job || {},
-            'id,refId,tag,runAfter,createdDate,worker,state,durationMs,completedDate,attempts,callback,replyTo')))
+            'id,refId,tag,queue,priority,tenantId,concurrencyKey,singletonKey,batchId,dependsOn,dependsOnBatch,dependsOnPolicy,runAfter,expiresAt,createdDate,createdBy,userId,startedDate,' +
+            'worker,state,durationMs,completedDate,cancelRequestedDate,attempts,retryLimit,retryBackoff,retryDelayMs,maxRetryDelayMs,' +
+            'timeoutSecs,leaseOwner,leaseExpiresAt,traceId,callback,replyTo')))
 
+        const batchCounts = computed(() => {
+            const counts = batchStateCounts.value
+            if (hasItems(counts)) {
+                return {
+                    completed: counts.Completed ?? 0,
+                    failed:    counts.Failed ?? 0,
+                    cancelled: counts.Cancelled ?? 0,
+                    running:  (counts.Started ?? 0) + (counts.Executed ?? 0),
+                    queued:    counts.Queued ?? 0,
+                }
+            }
+            const b = batch.value
+            return b ? { completed:b.completed, failed:b.failed, cancelled:b.cancelled, queued:Math.max(0, b.queued - b.completed - b.failed - b.cancelled) } : {}
+        })
+        const batchFinished = computed(() => (batchCounts.value.completed ?? 0) + (batchCounts.value.failed ?? 0) + (batchCounts.value.cancelled ?? 0))
+        const batchActive = computed(() => !batch.value?.cancelledDate && ((batchCounts.value.queued ?? 0) + (batchCounts.value.running ?? 0)) > 0)
         function updated(job) {
             loading.value = false
             logs.value = job.logs || ''
+            logsTruncated.value = job.logsTruncated === true
             state.value = job.state
             duration.value = humanifyMs(job.durationMs)
             console.debug('updated', job, state.value)
             emit('updated', job)
         }
         
+        async function replayJob() {
+            errorStatus.value = null
+            loading.value = true
+            const api = await client.api(new AdminReplayJob({ id:props.job.id }))
+            loading.value = false
+            if (api.succeeded) {
+                routes.to({ edit: api.response.jobId })
+            } else {
+                errorStatus.value = api.error
+            }
+        }
+        async function loadBatch() {
+            if (!props.job.batchId) return
+            const api = await client.api(new AdminGetJobBatch({ batchId:props.job.batchId }))
+            if (api.succeeded) {
+                batch.value = api.response.result
+                batchStateCounts.value = api.response.stateCounts ?? {}
+            }
+        }
+        async function loadAttempts() {
+            // Only Jobs that have been retried or failed have attempt history
+            if (!(props.job.attempts > 1 || props.job.state === 'Failed')) return
+            const api = await client.api(new AdminGetJobAttempts({ id:props.job.id }))
+            if (api.succeeded) attempts.value = api.response.results ?? []
+        }
+        async function cancelBatch() {
+            if (!confirm(`Cancel every active Job in batch '${props.job.batchId}'? No more Jobs can be added to it afterwards.`)) return
+            errorStatus.value = null
+            loading.value = true
+            const api = await client.api(new AdminCancelJobs({ batchId:props.job.batchId }))
+            loading.value = false
+            if (api.succeeded) await loadBatch()
+            else errorStatus.value = api.error
+        }
+        async function requeueBatch() {
+            errorStatus.value = null
+            loading.value = true
+            const api = await client.api(new AdminRequeueFailedJobs({ batchId:props.job.batchId }))
+            loading.value = false
+            if (api.succeeded) await loadBatch()
+            else errorStatus.value = api.error
+        }
         async function requeueJob() {
             errorStatus.value = null
             const api = await client.api(new AdminRequeueFailedJobs({ ids:[props.job.id] }))
@@ -416,6 +640,7 @@ const JobDialog = {
                     const newDuration = humanifyMs(api.response.durationMs ?? 0)
 
                     logs.value = newLogs
+                    logsTruncated.value = api.response.logsTruncated === true
                     state.value = api.response.state
                     duration.value = newDuration
 
@@ -436,13 +661,18 @@ const JobDialog = {
             }
             updateTimer = setTimeout(refresh, 500)
         }
-
-        onMounted(refresh)
+        onMounted(() => {
+            refresh()
+            loadBatch()
+            loadAttempts()
+        })
         onUnmounted(() => clearTimeout(updateTimer))
-        
+
         return {
-            routes, bottom, error, basic, logs, state, duration, errorStatus, loading,
-            hasItems, prettyJson, isRunning, requeueJob, cancelJob, 
+            routes, bottom, error, errorHelp, showError, basic, logs, logsTruncated, batch, batchCounts, batchFinished, batchActive,
+            attempts, state, duration, errorStatus, loading, jobErrorHelp,
+            hasItems, prettyJson, isRunning, requeueJob, replayJob, cancelJob, cancelBatch, requeueBatch,
+            humanifyMs, relativeTime,
         }
     }
 }
@@ -474,8 +704,26 @@ const CancelJobs = {
                       <CheckboxInput v-for="(count, worker) in info.workerCounts" :id="worker" :label="worker + ' (' + count + ')'" v-model="workers[worker]" />
                     </div>
                   </div>
+
+                  <div v-if="queues.length" class="col-span-6">
+                    <div class="mb-2">
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Queues</label>
+                    </div>
+                    <div class="grid grid-cols-3 xl:grid-cols-4 gap-4">
+                      <CheckboxInput v-for="q in queues" :id="'queue-' + q.name" :label="q.name + ' (' + (q.queued + q.running) + ')'" v-model="queueNames[q.name]" />
+                    </div>
+                  </div>
+
+                  <div class="col-span-6 sm:col-span-3">
+                    <TextInput id="cancelTag" label="Tag" v-model="tag" placeholder="Every Job with this tag" />
+                  </div>
+                  <div class="col-span-6 sm:col-span-3">
+                    <TextInput id="cancelBatchId" label="Batch Id" v-model="batchId" placeholder="Every Job in this batch"
+                        help="Cancelling a batch also stops more Jobs being added to it" />
+                  </div>
                 </div>
               </fieldset>
+              <p v-if="result" class="mt-4 text-sm text-gray-600 dark:text-gray-400">{{result}}</p>
 
             </div>
           </div>
@@ -496,30 +744,108 @@ const CancelJobs = {
         
         const states = ref({})
         const workers = ref({})
-        
+        const queueNames = ref({})
+        const queues = ref([])
+        const tag = ref('')
+        const batchId = ref('')
+        const result = ref('')
+
         function done() {
             emit('done')
         }
-        
+
+        onMounted(async () => {
+            const api = await client.api(new AdminGetJobQueues())
+            if (api.succeeded) queues.value = (api.response.results ?? []).filter(q => q.queued + q.running > 0)
+        })
+
         async function cancelJobs() {
-            const tasks = []
-            const stateKeys = Object.keys(states.value).filter(k => states.value[k])
-            stateKeys.forEach(state => {
-                tasks.push(client.api(new AdminCancelJobs({ state: state })))
-            })
-            const workerKeys = Object.keys(workers.value).filter(k => workers.value[k])
-            workerKeys.forEach(worker => {
-                tasks.push(client.api(new AdminCancelJobs({ worker: worker })))
-            })
-            await Promise.all(tasks)
-            
-            if (stateKeys.length || workerKeys.length) {
-                console.log('cancelJobs', stateKeys, workerKeys)
+            const selected = map => Object.keys(map).filter(k => map[k])
+            const requests = [
+                ...selected(states.value).map(state => new AdminCancelJobs({ state })),
+                ...selected(workers.value).map(worker => new AdminCancelJobs({ worker })),
+                ...selected(queueNames.value).map(queue => new AdminCancelJobs({ queue })),
+            ]
+            if (tag.value.trim()) requests.push(new AdminCancelJobs({ tag:tag.value.trim() }))
+            if (batchId.value.trim()) requests.push(new AdminCancelJobs({ batchId:batchId.value.trim() }))
+            if (!requests.length) return done()
+
+            const apis = await Promise.all(requests.map(request => client.api(request)))
+            const cancelled = new Set(apis.flatMap(api => api.response?.results ?? []))
+            const failed = apis.find(api => !api.succeeded)
+            if (failed || !cancelled.size) {
+                result.value = failed?.error?.message ?? 'No matching Jobs were cancelled'
+                return
             }
             done()
         }
-        
-        return { info, done, cancelJobs, states, workers }
+
+        return { info, done, cancelJobs, states, workers, queues, queueNames, tag, batchId, result }
+    }
+}
+
+const RequeueJobs = {
+    template:`
+      <ModalDialog id="requeueJobs" size-class="w-full sm:max-w-prose" @done="done">
+        <div class="bg-white dark:bg-black px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div class="mt-3 text-center sm:mt-0 sm:mx-4 sm:text-left">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100">Requeue Failed Jobs</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Requeue every failed Job matching a Tag or Batch, with its previous run state cleared.
+            </p>
+            <ErrorSummary class="mt-2" :status="error" />
+            <fieldset class="mt-4 grid grid-cols-6 gap-6">
+              <div class="col-span-6 sm:col-span-3">
+                <TextInput id="requeueTag" label="Tag" v-model="tag" />
+              </div>
+              <div class="col-span-6 sm:col-span-3">
+                <TextInput id="requeueBatchId" label="Batch Id" v-model="batchId" />
+              </div>
+              <div class="col-span-6 sm:col-span-3">
+                <TextInput id="requeueFrom" type="date" label="Created on or after" v-model="from" />
+              </div>
+            </fieldset>
+            <p v-if="result" class="mt-4 text-sm text-gray-600 dark:text-gray-400">{{result}}</p>
+          </div>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          <PrimaryButton class="ml-2" @click="requeue" :disabled="!tag.trim() && !batchId.trim() || loading">Requeue</PrimaryButton>
+          <SecondaryButton @click="done">Close</SecondaryButton>
+        </div>
+      </ModalDialog>
+    `,
+    emits:['done'],
+    setup(props, { emit }) {
+        const client = useClient()
+        const tag = ref('')
+        const batchId = ref('')
+        const from = ref('')
+        const error = ref()
+        const result = ref('')
+        const loading = ref(false)
+
+        const done = () => emit('done')
+
+        async function requeue() {
+            error.value = null
+            loading.value = true
+            const api = await client.api(new AdminRequeueFailedJobs({
+                tag: tag.value.trim() || undefined,
+                batchId: batchId.value.trim() || undefined,
+                from: from.value || undefined,
+            }))
+            loading.value = false
+            if (!api.succeeded) {
+                error.value = api.error
+                return
+            }
+            const errors = Object.keys(api.response.errors ?? {}).length
+            result.value = errors
+                ? `${errors} Job${errors === 1 ? '' : 's'} could not be requeued`
+                : 'Matching failed Jobs have been requeued'
+        }
+
+        return { tag, batchId, from, error, result, loading, done, requeue }
     }
 }
 
@@ -535,14 +861,17 @@ const components = {
     JobProgress,
     JobDialog,
     CancelJobs,
+    RequeueJobs,
+    StateBadge,
+    BatchProgress,
 }
 
 const Queue = {
     components,
     template: `
         <AutoQueryGrid ref="grid" type="BackgroundJob" hide="downloadCsv,copyApiUrl,forms"
-            selectedColumns="progress,durationMs,worker,id,parentId,refId,tag,requestType,request,requestBody,command,runAfter,userId,dependsOn,batchId,callback,replyTo,createdDate,state,status,lastActivityDate,attempts"
-            :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
+            :selectedColumns="selectedColumns"
+            :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout',concurrencyKey:'Concurrency Key',tenantId:'Tenant',dependsOnBatch:'Depends On Batch',logsTruncated:'Logs Truncated'}"
             :visibleFrom="{durationMs:'never',requestBody:'never'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
             <template #progress="job"><JobProgress :job="job" /></template>
@@ -553,10 +882,13 @@ const Queue = {
             <template #request="job"><Request :job="job" /></template>
             <template #command="job"><Command :job="job" /></template>
             <template #runAfter="{runAfter}"><DateTime :value="runAfter"/></template>
+            <template #expiresAt="{expiresAt}"><DateTime :value="expiresAt"/></template>
+            <template #leaseExpiresAt="{leaseExpiresAt}"><DateTime :value="leaseExpiresAt"/></template>
+            <template #cancelRequestedDate="{cancelRequestedDate}"><DateTime :value="cancelRequestedDate"/></template>
             <template #response="job"><Response :job="job" /></template>
             <template #createdDate="{createdDate}"><DateTime :value="createdDate"/></template>
             <template #worker="{worker}">{{worker}}</template>
-            <template #state="{state}">{{state}}</template>
+            <template #state="{state,cancelRequestedDate}"><StateBadge :state="state" :label="cancelRequestedDate && state !== 'Cancelled' ? 'Cancelling' : null" /></template>
             <template #completedDate="{completedDate}"><DateTime :value="completedDate"/></template>
             <template #attempts="{attempts}">{{attempts}}</template>
             <template #errorCode="{errorCode,errorMessage}"><Markup :title="errorMessage">{{errorCode}}</Markup></template>
@@ -573,10 +905,17 @@ const Queue = {
     `,
     setup(props) {
         const routes = inject('routes')
+        const info = inject('info')
+        const client = useClient()
         const grid = ref()
         const edit = ref()
         const show = ref('')
-
+        const selectedColumns = computed(() => {
+            const common = 'progress,durationMs,state,queue,priority,worker,id,parentId,refId,singletonKey,concurrencyKey,tenantId,tag,requestType,request,requestBody,command,runAfter,expiresAt,userId,dependsOn,dependsOnBatch,batchId,callback,replyTo,createdDate,status,lastActivityDate,cancelRequestedDate,attempts,logsTruncated'
+            return info.value?.capabilities?.includes('leases')
+                ? common + ',leaseOwner,leaseExpiresAt'
+                : common
+        })
         async function update() {
             if (routes.edit) {
                 const api = await client.api(new AdminGetJob({ id: routes.edit }))
@@ -609,8 +948,7 @@ const Queue = {
             updateGrid()
         })
         onUnmounted(() => clearTimeout(updateTimer))
-
-        return { routes, grid, edit, show }
+        return { routes, info, grid, edit, show, selectedColumns }
     }
 }
 
@@ -618,9 +956,9 @@ const Summary = {
     components,
     template: `
         <AutoQueryGrid ref="grid" type="JobSummary" hide="copyApiUrl,forms" 
-            selectedColumns="id,parentId,refId,tag,requestType,request,command,response,callback,createdDate,worker,state,durationMs,completedDate,attempts,errorCode,errorMessage"
+            selectedColumns="id,state,parentId,refId,tag,batchId,requestType,request,command,response,callback,createdDate,worker,queue,priority,tenantId,runAfter,expiresAt,durationMs,completedDate,attempts,errorCode,errorMessage,logsTruncated"
             :visibleFrom="{requestType:'never',callback:'never',errorMessage:'never'}"
-            :headerTitles="{parentId:'Parent',createdDate:'Created',completedDate:'Completed',durationMs:'Duration',errorCode:'Error'}"
+            :headerTitles="{parentId:'Parent',batchId:'Batch',createdDate:'Created',completedDate:'Completed',durationMs:'Duration',errorCode:'Error',tenantId:'Tenant',concurrencyKey:'Concurrency Key',logsTruncated:'Logs Truncated'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id">
             <template #id="{id}">{{id}}</template>
             <template #parentId="{parentId}"><EditLink :id="parentId" @selected="routes.edit=$event" /></template>
@@ -631,11 +969,13 @@ const Summary = {
             <template #response="job"><Response :job="job" /></template>
             <template #createdDate="{createdDate}"><DateTime :value="createdDate"/></template>
             <template #worker="{worker}">{{worker}}</template>
-            <template #state="{state}">{{state}}</template>
+            <template #state="{state}"><StateBadge :state="state" /></template>
             <template #durationMs="{durationMs}"><Duration :value="durationMs" /></template>
             <template #completedDate="{completedDate}"><DateTime :value="completedDate"/></template>
+            <template #runAfter="{runAfter}"><DateTime :value="runAfter"/></template>
+            <template #expiresAt="{expiresAt}"><DateTime :value="expiresAt"/></template>
             <template #attempts="{attempts}">{{attempts}}</template>
-            <template #errorCode="{errorCode,errorMessage}"><Markup :title="errorMessage">{{errorCode}}</Markup></template>
+            <template #errorCode="{errorCode,errorMessage}"><Markup :title="jobErrorHelp[errorCode] ?? errorMessage" class="text-red-700 dark:text-red-400">{{errorCode}}</Markup></template>
         </AutoQueryGrid>
         <JobDialog v-if="edit" :job="edit" @done="routes.edit=null" @updated="job => edit=job" />
     `,
@@ -660,10 +1000,10 @@ const Summary = {
         }
         
         watch(() => routes.edit, update)
-        
+
         onMounted(update)
-        
-        return { routes, grid, formatDate, time, toDate, humanifyMs, edit }
+
+        return { routes, grid, formatDate, time, toDate, humanifyMs, edit, jobErrorHelp }
     }
 }
 const Completed = {
@@ -671,7 +1011,7 @@ const Completed = {
     props:['month'],
     template: `
         <AutoQueryGrid ref="grid" type="CompletedJob" hide="copyApiUrl,forms"
-            selectedColumns="id,parentId,refId,tag,requestType,request,command,userId,dependsOn,batchId,response,callback,replyTo,createdDate,worker,startedDate,state,status,durationMs,completedDate,notifiedDate,attempts,lastActivityDate"
+            selectedColumns="id,state,parentId,refId,tag,queue,requestType,request,command,userId,dependsOn,batchId,response,callback,replyTo,createdDate,worker,startedDate,status,durationMs,completedDate,notifiedDate,attempts,lastActivityDate"
             :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id"
             :filters="{month}">
@@ -684,7 +1024,7 @@ const Completed = {
             <template #createdDate="{createdDate}"><DateTime :value="createdDate"/></template>
             <template #startedDate="{startedDate}"><DateTime :value="startedDate"/></template>
             <template #worker="{worker}">{{worker}}</template>
-            <template #state="{state}">{{state}}</template>
+            <template #state="{state}"><StateBadge :state="state" /></template>
             <template #durationMs="{durationMs}"><Duration :value="durationMs" /></template>
             <template #completedDate="{completedDate}"><DateTime :value="completedDate"/></template>
             <template #notifiedDate="{notifiedDate}"><DateTime :value="notifiedDate"/></template>
@@ -694,6 +1034,7 @@ const Completed = {
     `,
     setup(props) {
         const routes = inject('routes')
+        const client = useClient()
         const grid = ref()
         const edit = ref()
 
@@ -723,19 +1064,35 @@ const Failed = {
     props:['month'],
     template: `
         <AutoQueryGrid ref="grid" type="FailedJob" hide="copyApiUrl,forms"
-            selectedColumns="id,parentId,refId,tag,dependsOn,batchId,requestType,request,command,userId,response,callback,replyTo,createdDate,worker,startedDate,state,status,durationMs,completedDate,notifiedDate,lastActivityDate,attempts,retryLimit,timeoutSecs,errorCode,error"
+            selectedColumns="id,state,parentId,refId,tag,queue,dependsOn,batchId,requestType,request,command,userId,response,callback,replyTo,createdDate,worker,startedDate,status,durationMs,completedDate,notifiedDate,lastActivityDate,attempts,retryLimit,timeoutSecs,errorCode,error"
             :visibleFrom="{error:'never'}"
-            :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout'}"
+            :headerTitles="{parentId:'Parent',batchId:'Batch',requestType:'Type',createdDate:'Created',startedDate:'Started',completedDate:'Completed',notifiedDate:'Notified',lastActivityDate:'Last Activity',timeoutSecs:'Timeout',errorCode:'Error'}"
             @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id" :isSelected="(row) => routes.edit == row.id"
             :filters="{month}">
             <template #parentId="{parentId}"><EditLink :id="parentId" @selected="routes.edit = $event" /></template>
+            <template #state="{state}"><StateBadge :state="state" /></template>
+            <template #durationMs="{durationMs}"><Duration :value="durationMs" /></template>
+            <template #createdDate="{createdDate}"><DateTime :value="createdDate"/></template>
+            <template #startedDate="{startedDate}"><DateTime :value="startedDate"/></template>
+            <template #completedDate="{completedDate}"><DateTime :value="completedDate"/></template>
+            <template #errorCode="{errorCode,error}"><Markup :title="jobErrorHelp[errorCode] ?? error?.message" class="text-red-700 dark:text-red-400">{{errorCode}}</Markup></template>
+            <template #toolbarbuttons="{toolbarButtonClass}">
+              <div class="pl-2 mt-1">
+                <button type="button" @click="show='requeue'" title="Requeue Failed Jobs by Tag or Batch" :class="toolbarButtonClass">
+                  <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1 0 9-9a9.75 9.75 0 0 0-6.74 2.74L3 8m0-5v5h5"/></svg>
+                </button>
+              </div>
+            </template>
         </AutoQueryGrid>
         <JobDialog v-if="edit" :job="edit" @done="routes.edit=null" @updated="job => edit=job" />
+        <RequeueJobs v-if="show=='requeue'" @done="show=''; grid?.update()" />
     `,
     setup(props) {
         const routes = inject('routes')
+        const client = useClient()
         const grid = ref()
         const edit = ref()
+        const show = ref('')
 
         async function update() {
             if (routes.edit) {
@@ -755,7 +1112,7 @@ const Failed = {
         })
         onMounted(update)
 
-        return { routes, grid, edit }
+        return { routes, grid, edit, show, jobErrorHelp }
     }
 }
 const History = {
@@ -797,9 +1154,10 @@ const History = {
         ]
         const routes = inject('routes')
         const info = inject('info')
-        const monthDb = ref(getPrefs().monthDb ?? info.value.monthDbs[0])
+        // info is null until the first AdminJobInfo response when linked to directly
+        const monthDb = ref(getPrefs().monthDb ?? info.value?.monthDbs?.[0])
         const monthDbEntries = computed(() => {
-            return info.value.monthDbs?.map(x => ({ 
+            return info.value?.monthDbs?.map(x => ({
                 key:x, 
                 value: toDate(x).toLocaleString('default', { month: 'long' }) + ' ' + toDate(x).getFullYear() 
             })) ?? []
@@ -814,18 +1172,76 @@ const ScheduledTasks = {
     components,
     template: `
         <AutoQueryGrid ref="grid" type="ScheduledTask" hide="copyApiUrl,forms"
-            selectedColumns="id,name,lastJobId,lastRun,interval,cronExpression,requestType,command,request,requestBody,options"
-            :headerTitles="{lastJobId:'Last Job'}"
-            @rowSelected="routes.edit = routes.edit === $event.id ? null : $event.id" :isSelected="(row) => routes.edit === row.id">
+            selectedColumns="id,name,enabled,interval,nextRun,lastJobId,lastRun,lastRunState,lastRunDurationMs,runCount,startDate,timeZoneId,misfirePolicy,overlapPolicy,requestType,command,request,lastErrorCode,cronExpression,maxRuns,endDate,lastErrorMessage"
+            :visibleFrom="{cronExpression:'never',maxRuns:'never',endDate:'never',lastErrorMessage:'never'}"
+            :headerTitles="{enabled:'Status',interval:'Schedule',lastJobId:'Last Job',nextRun:'Next Run',lastRun:'Last Run',lastRunState:'Result',lastRunDurationMs:'Duration',runCount:'Runs',startDate:'Active',timeZoneId:'Time Zone',misfirePolicy:'Misfire',overlapPolicy:'Overlap',lastErrorCode:'Last Error'}">
+            <template #enabled="task">
+                <div class="flex items-center gap-x-2">
+                    <button type="button" @click.stop="setEnabled(task)" :disabled="updating === task.id"
+                        :class="[task.enabled ? 'text-green-700 bg-green-50 ring-green-600/20 hover:bg-green-100' : 'text-gray-600 bg-gray-100 ring-gray-500/20 hover:bg-gray-200', 'rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset disabled:opacity-50 whitespace-nowrap']"
+                        :title="task.enabled ? 'Pause this schedule' : (stoppedReason(task) ? stoppedReason(task) + ', click to resume' : 'Resume this schedule')">
+                        {{ task.enabled ? 'Enabled' : stoppedReason(task) ? 'Finished' : 'Paused' }}
+                    </button>
+                    <button type="button" v-if="task.enabled" @click.stop="runNow(task)" :disabled="updating === task.id"
+                        class="inline-flex items-center gap-x-1 rounded-md px-2 py-0.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 dark:text-indigo-300 disabled:opacity-50 whitespace-nowrap"
+                        title="Run this task now, without changing its schedule">
+                        Run Now
+                    </button>
+                </div>
+            </template>
+            <template #interval="{interval,cronExpression}">
+                <span v-if="cronExpression" class="font-mono text-xs" :title="'Cron: ' + cronExpression">{{cronExpression}}</span>
+                <span v-else-if="interval" :title="interval">every {{formatTimeSpan(interval)}}</span>
+            </template>
             <template #lastJobId="{lastJobId}"><EditLink :id="lastJobId" @selected="routes.edit = $event" /></template>
             <template #lastRun="{lastRun}"><DateTime :value="lastRun"/></template>
+            <template #lastRunState="{lastRunState}"><StateBadge :state="lastRunState" /></template>
+            <template #lastRunDurationMs="{lastRunDurationMs}">{{ lastRunDurationMs == null ? '' : humanifyMs(lastRunDurationMs) }}</template>
+            <template #nextRun="{nextRun,enabled}"><span v-if="enabled && nextRun" :title="nextRun">{{relativeTime(nextRun)}}</span></template>
+            <template #runCount="{runCount,maxRuns}">{{runCount}}<span v-if="maxRuns" class="text-gray-400"> / {{maxRuns}}</span></template>
+            <template #startDate="{startDate,endDate}">
+                <span v-if="startDate || endDate" class="text-xs whitespace-nowrap">
+                    <DateTime v-if="startDate" :value="startDate" class="inline" /><span v-else>&hellip;</span>
+                    &rarr;
+                    <DateTime v-if="endDate" :value="endDate" class="inline" /><span v-else>&hellip;</span>
+                </span>
+            </template>
+            <template #lastErrorCode="{lastErrorCode,lastErrorMessage}"><Markup :title="lastErrorMessage" class="text-red-700 dark:text-red-400">{{lastErrorCode}}</Markup></template>
         </AutoQueryGrid>
         <JobDialog v-if="edit" :job="edit" @done="routes.edit=null" @updated="job => edit = job" />
     `,
     setup() {
         const routes = inject('routes')
+        const client = useClient()
         const grid = ref()
         const edit = ref()
+        const updating = ref()
+
+        // A disabled task that reached its bounds was stopped by its schedule, not paused by an operator
+        function stoppedReason(task) {
+            if (task.enabled) return null
+            if (task.maxRuns && task.runCount >= task.maxRuns) return `Ran ${task.runCount} of MaxRuns ${task.maxRuns}`
+            if (task.endDate && toDate(task.endDate) <= new Date()) return `Passed its EndDate`
+            return null
+        }
+
+        async function setEnabled(task) {
+            await updateTask(task, new AdminUpdateScheduledTask({ id:task.id, enabled:!task.enabled }))
+        }
+
+        async function runNow(task) {
+            await updateTask(task, new AdminUpdateScheduledTask({ id:task.id, runNow:true }))
+        }
+
+        async function updateTask(task, request) {
+            updating.value = task.id
+            const api = await client.api(request)
+            updating.value = null
+            if (api.succeeded) {
+                Object.assign(task, api.response.result)
+                grid.value?.editDone()
+            }
+        }
         
         async function update() {
             if (routes.edit) {
@@ -843,10 +1259,264 @@ const ScheduledTasks = {
         watch(() => routes.edit, update)
         onMounted(update)
         
-        return { routes, grid, edit }
+        return { routes, grid, edit, updating, setEnabled, runNow, stoppedReason, humanifyMs, relativeTime, formatTimeSpan }
     }
 }
+const Queues = {
+    components,
+    template: `
+        <div class="py-4">
+          <div v-if="error" class="mb-4"><ErrorSummary :status="error" /></div>
+          <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
+            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-3xl">
+              Pause a queue to stop dispatching its Jobs without losing them, change how many Jobs it runs at once,
+              or cap how many it may start per interval. Changes take effect on every node.
+            </p>
+          </div>
+          <div class="overflow-x-auto rounded-lg ring-1 ring-gray-200 dark:ring-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Queue</th>
+                <th class="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+                <th class="px-2 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">Queued</th>
+                <th class="px-2 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide">Running</th>
+                <th class="px-2 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide" title="How long the oldest Job has been waiting">Oldest</th>
+                <th class="px-2 py-2.5 text-right text-xs font-medium text-gray-500 uppercase tracking-wide" title="Max Jobs this queue runs at once">Concurrency</th>
+                <th class="px-2 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide" title="Max Jobs this queue may start per interval, across every node">Rate Limit</th>
+                <th class="px-2 py-2.5"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-black">
+              <tr v-for="q in results" :key="q.name" :class="q.paused ? 'bg-amber-50/40 dark:bg-amber-900/10' : ''">
+                <td class="px-2 py-2.5 text-sm font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                  {{q.name}}
+                  <div v-if="q.modifiedDate" class="max-w-40 truncate text-xs font-normal text-gray-400" :title="changedBy(q)">{{changedBy(q)}}</div>
+                </td>
+                <td class="px-2 py-2.5 text-sm">
+                  <StateBadge :state="q.paused ? 'Cancelled' : q.running ? 'Started' : q.queued ? 'Queued' : 'Completed'"
+                    :label="q.paused ? 'Paused' : q.running ? 'Processing' : q.queued ? 'Waiting' : 'Idle'" />
+                </td>
+                <td class="px-2 py-2.5 text-sm text-right tabular-nums">{{humanifyNumber(q.queued)}}</td>
+                <td class="px-2 py-2.5 text-sm text-right tabular-nums">{{q.running}}</td>
+                <td class="px-2 py-2.5 text-sm text-right tabular-nums whitespace-nowrap" :class="q.queued > 0 && isBacklogged(q) ? 'text-amber-700 font-medium' : 'text-gray-600 dark:text-gray-400'"
+                    :title="q.oldestQueued">
+                  {{ q.queued > 0 ? formatTimeSpan(q.oldestQueued) : '' }}
+                </td>
+                <td class="px-2 py-2.5 text-sm text-right whitespace-nowrap">
+                  <input type="number" min="1" :value="q.concurrency" @change="setConcurrency(q, $event.target.value)"
+                         :disabled="updating === q.name" class="w-14 py-1 text-right rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-sm" />
+                  <span class="inline-block w-3 ml-1 text-xs text-indigo-500" :title="q.concurrencyOverridden ? 'Overridden at runtime' : ''">{{ q.concurrencyOverridden ? '*' : '' }}</span>
+                </td>
+                <td class="px-2 py-2.5 text-sm whitespace-nowrap">
+                  <div class="flex items-center gap-x-1 text-gray-500">
+                    <input type="number" min="0" :value="q.rateLimit ?? ''" placeholder="&infin;" @change="setRateLimit(q, $event.target.value, q.rateLimitSecs)"
+                         :disabled="updating === q.name" class="w-14 py-1 text-right rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-sm"
+                         title="Jobs per interval, empty or 0 for no limit" />
+                    <span class="text-xs">/</span>
+                    <select :value="q.rateLimitSecs ?? 60" @change="setRateLimit(q, q.rateLimit, $event.target.value)" :disabled="updating === q.name || !q.rateLimit"
+                        class="py-1 pl-2 pr-7 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-900 text-sm disabled:opacity-50">
+                      <option v-for="w in windowOptions(q.rateLimitSecs)" :value="w.secs">{{w.label}}</option>
+                    </select>
+                  </div>
+                </td>
+                <td class="px-2 py-2.5 text-sm text-right whitespace-nowrap">
+                  <button type="button" @click="togglePaused(q)" :disabled="updating === q.name"
+                          :class="[q.paused ? 'text-green-700 bg-green-50 hover:bg-green-100' : 'text-amber-800 bg-amber-50 hover:bg-amber-100', 'rounded-md px-2 py-1 text-xs font-medium disabled:opacity-50']">
+                    {{ q.paused ? 'Resume' : 'Pause' }}
+                  </button>
+                  <button type="button" v-if="q.queued || q.running" @click="cancelQueued(q)" :disabled="updating === q.name"
+                          class="ml-2 rounded-md px-2 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
+                          title="Cancel every Job on this queue">
+                    Cancel all
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="!results.length">
+                <td colspan="8" class="px-3 py-8 text-center text-sm text-gray-500">No queues</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+    `,
+    setup() {
+        const client = useClient()
+        const results = ref([])
+        const error = ref()
+        const updating = ref()
 
+        const windows = [{ secs:1, label:'sec' }, { secs:60, label:'min' }, { secs:3600, label:'hour' }, { secs:86400, label:'day' }]
+        const windowOptions = secs => secs && !windows.some(w => w.secs === secs)
+            ? [...windows, { secs, label: `${secs}s` }]
+            : windows
+
+        // Waiting longer than a minute is worth drawing attention to
+        const isBacklogged = q => (timeSpanMs(q.oldestQueued) ?? 0) > 60_000
+
+        async function refresh() {
+            const api = await client.api(new AdminGetJobQueues())
+            error.value = api.error
+            if (api.succeeded) results.value = api.response.results
+        }
+
+        async function update(q, request) {
+            updating.value = q.name
+            const api = await client.api(request)
+            updating.value = null
+            error.value = api.error
+            if (api.succeeded) await refresh()
+        }
+
+        const togglePaused = q => update(q, new AdminUpdateJobQueue({ name:q.name, paused:!q.paused }))
+        const setConcurrency = (q, value) => {
+            const concurrency = parseInt(value)
+            if (!(concurrency > 0) || concurrency === q.concurrency) return
+            return update(q, new AdminUpdateJobQueue({ name:q.name, concurrency }))
+        }
+        const setRateLimit = (q, limit, secs) => {
+            const rateLimit = parseInt(limit) || 0
+            const rateLimitSecs = parseInt(secs) || 60
+            if (rateLimit === (q.rateLimit ?? 0) && rateLimitSecs === (q.rateLimitSecs ?? 60)) return
+            return update(q, new AdminUpdateJobQueue({ name:q.name, rateLimit, rateLimitSecs }))
+        }
+        const changedBy = q => 'changed ' + relativeTime(q.modifiedDate) + (q.modifiedBy ? ' by ' + q.modifiedBy : '')
+        async function cancelQueued(q) {
+            if (!confirm(`Cancel all ${q.queued + q.running} Jobs on the '${q.name}' queue?`)) return
+            await update(q, new AdminCancelJobs({ queue:q.name }))
+        }
+
+        let timer = null
+        onMounted(async () => {
+            await refresh()
+            timer = setInterval(refresh, 5000)
+        })
+        onUnmounted(() => clearInterval(timer))
+
+        return { results, error, updating, togglePaused, setConcurrency, setRateLimit, cancelQueued,
+            windowOptions, isBacklogged, changedBy, formatTimeSpan, relativeTime, humanifyNumber }
+    }
+}
+const Nodes = {
+    components,
+    template: `
+        <div class="py-4 sm:px-4">
+          <div v-if="error" class="mb-4"><ErrorSummary :status="error" /></div>
+          <div class="mb-4 flex flex-wrap items-end justify-between gap-4">
+            <p class="text-sm text-gray-500 dark:text-gray-400 max-w-3xl">
+              App Servers processing Jobs and when they last reported in. Drain a server before taking it out of
+              service to have it finish the Jobs it has without taking any more.
+            </p>
+            <CheckboxInput v-if="stoppedCount" id="showStopped" :label="'Show ' + stoppedCount + ' stopped'" v-model="showStopped" />
+          </div>
+          <div class="overflow-x-auto rounded-lg ring-1 ring-gray-200 dark:ring-gray-700">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-800">
+              <tr>
+                <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Server</th>
+                <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Status</th>
+                <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Running</th>
+                <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Queues</th>
+                <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Last Heartbeat</th>
+                <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Started</th>
+                <th class="px-3 py-2.5 text-left text-xs font-medium text-gray-500 uppercase tracking-wide">Version</th>
+                <th class="px-3 py-2.5"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 bg-white dark:bg-black">
+              <tr v-for="node in visible" :key="node.serverId" :class="node.status === 'stopped' ? 'opacity-60' : ''">
+                <td class="px-3 py-2.5 text-sm">
+                  <div class="font-medium text-gray-900 dark:text-gray-100">{{node.machineName ?? node.serverId}}</div>
+                  <div class="text-xs text-gray-500 font-mono" :title="node.serverId">pid {{node.processId}} &middot; {{shortId(node.serverId)}}</div>
+                </td>
+                <td class="px-3 py-2.5 text-sm">
+                  <span :class="[statusStyle[node.status].cls, 'rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset whitespace-nowrap']" :title="statusStyle[node.status].title">
+                    {{statusStyle[node.status].label}}
+                  </span>
+                </td>
+                <td class="px-3 py-2.5 text-sm tabular-nums whitespace-nowrap">{{node.runningJobs}}<span class="text-gray-400"> / {{node.concurrency}}</span></td>
+                <td class="px-3 py-2.5 text-sm">
+                  <span v-if="node.queues?.length">{{node.queues.join(', ')}}</span>
+                  <span v-else class="text-xs text-gray-400">All</span>
+                </td>
+                <td class="px-3 py-2.5 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap" :title="node.lastHeartbeat">{{relativeTime(node.lastHeartbeat)}}</td>
+                <td class="px-3 py-2.5 text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap" :title="node.startedDate">
+                  {{relativeTime(node.startedDate)}}
+                  <div v-if="node.stoppedDate" class="text-xs text-gray-400" :title="node.stoppedDate">stopped {{relativeTime(node.stoppedDate)}}</div>
+                </td>
+                <td class="px-3 py-2.5 text-sm text-gray-600 dark:text-gray-400">{{node.version}}</td>
+                <td class="px-3 py-2.5 text-sm text-right whitespace-nowrap">
+                  <button v-if="node.status !== 'stopped'" type="button" @click="toggleDraining(node)" :disabled="updating === node.serverId"
+                    :class="[node.draining ? 'text-green-700 bg-green-50 hover:bg-green-100' : 'text-amber-800 bg-amber-50 hover:bg-amber-100', 'rounded-md px-2 py-1 text-xs font-medium disabled:opacity-50']"
+                    :title="node.draining ? 'Resume taking new Jobs' : 'Finish running Jobs without taking any more'">
+                    {{ node.draining ? 'Undrain' : 'Drain' }}
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="!visible.length">
+                <td colspan="8" class="px-3 py-8 text-center text-sm text-gray-500">No App Servers have reported in</td>
+              </tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+    `,
+    setup() {
+        const client = useClient()
+        const results = ref([])
+        const error = ref()
+        const updating = ref()
+        const showStopped = ref(false)
+        // Matches the default NodeTimeoutSecs used by the server's health check
+        const nodeTimeoutMs = 60_000
+
+        const statusStyle = {
+            alive:    { label:'Alive',         cls:'bg-green-50 text-green-700 ring-green-600/20', title:'Reported in within the last minute' },
+            draining: { label:'Draining',      cls:'bg-amber-50 text-amber-800 ring-amber-600/20', title:'Finishing its Jobs without taking any more' },
+            stale:    { label:'Not Reporting', cls:'bg-red-50 text-red-700 ring-red-600/20',       title:'Has not reported in for over a minute without shutting down cleanly' },
+            stopped:  { label:'Stopped',       cls:'bg-gray-100 text-gray-600 ring-gray-500/20',   title:'Shut down cleanly' },
+        }
+
+        function statusOf(node) {
+            if (node.stoppedDate) return 'stopped'
+            if (Date.now() - toDate(node.lastHeartbeat).getTime() > nodeTimeoutMs) return 'stale'
+            return node.draining ? 'draining' : 'alive'
+        }
+
+        const order = { alive:0, draining:1, stale:2, stopped:3 }
+        const nodes = computed(() => results.value
+            .map(node => ({ ...node, status:statusOf(node) }))
+            .sort((a,b) => order[a.status] - order[b.status] || (b.lastHeartbeat > a.lastHeartbeat ? 1 : -1)))
+        const visible = computed(() => showStopped.value ? nodes.value : nodes.value.filter(x => x.status !== 'stopped'))
+        const stoppedCount = computed(() => nodes.value.filter(x => x.status === 'stopped').length)
+
+        const shortId = serverId => (serverId ?? '').split(':').pop().substring(0, 8)
+
+        async function refresh() {
+            const api = await client.api(new AdminGetJobNodes())
+            error.value = api.error
+            if (api.succeeded) results.value = api.response.results ?? []
+        }
+
+        async function toggleDraining(node) {
+            if (!node.draining && !confirm(`Drain ${node.machineName ?? node.serverId}? It will finish its running Jobs without taking any more.`)) return
+            updating.value = node.serverId
+            const api = await client.api(new AdminUpdateJobNode({ serverId:node.serverId, draining:!node.draining }))
+            updating.value = null
+            error.value = api.error
+            if (api.succeeded) await refresh()
+        }
+
+        let timer = null
+        onMounted(async () => {
+            await refresh()
+            timer = setInterval(refresh, 5000)
+        })
+        onUnmounted(() => clearInterval(timer))
+
+        return { visible, stoppedCount, error, updating, showStopped, statusStyle, shortId, toggleDraining, relativeTime }
+    }
+}
 const Dashboard = {
     components,
     template:`
@@ -868,6 +1538,33 @@ const Dashboard = {
             <h2 class="lg:block pt-4 mb-2 text-3xl font-bold leading-tight tracking-tight text-gray-900">{{periodLabel}}</h2>
         </div>
         
+        <div v-if="results.waitTimes?.count" class="mb-8">
+            <h4 class="mt-4 font-semibold text-gray-500" title="Time between a Job being queued and starting">Wait Times</h4>
+            <dl class="mt-2 grid grid-cols-2 gap-4 sm:grid-cols-4 max-w-2xl">
+                <div class="rounded-lg bg-gray-50 px-4 py-3">
+                    <dt class="text-xs font-medium text-gray-500">Jobs</dt>
+                    <dd class="mt-1 text-xl font-semibold">{{humanifyNumber(results.waitTimes.count)}}</dd>
+                </div>
+                <div class="rounded-lg bg-gray-50 px-4 py-3">
+                    <dt class="text-xs font-medium text-gray-500">Average</dt>
+                    <dd class="mt-1 text-xl font-semibold">{{humanifyMs(results.waitTimes.avgMs)}}</dd>
+                </div>
+                <div class="rounded-lg bg-gray-50 px-4 py-3">
+                    <dt class="text-xs font-medium text-gray-500">Longest</dt>
+                    <dd class="mt-1 text-xl font-semibold">{{humanifyMs(results.waitTimes.maxMs)}}</dd>
+                </div>
+                <div class="rounded-lg px-4 py-3" :class="results.waitTimes.waitingMs ? 'bg-amber-50' : 'bg-gray-50'">
+                    <dt class="text-xs font-medium text-gray-500" title="Longest a Job is still waiting right now">Waiting Now</dt>
+                    <dd class="mt-1 text-xl font-semibold">{{results.waitTimes.waitingMs ? humanifyMs(results.waitTimes.waitingMs) : '-'}}</dd>
+                </div>
+            </dl>
+        </div>
+        <div v-if="results.queues.length">
+            <h4 class="mt-4 font-semibold text-gray-500">Queue Stats</h4>
+            <DataGrid :items="results.queues" selectedColumns="name,total,completed,retries,failed,cancelled">
+                <template #name="{ name }"><Truncate class="w-40 sm:w-80" :value="name" /></template>
+            </DataGrid>
+        </div>
         <div v-if="isToday && results.today.length" class="mb-8">
             <h4 class="mt-4 font-semibold text-gray-500">24 hour activity</h4>
             <div style="max-width:1024px;max-height:512px">
@@ -895,7 +1592,7 @@ const Dashboard = {
     `,
     setup() {
         const client = useClient()
-        const results = ref({ commands:[], apis:[], workers:[], today:[] })
+        const results = ref({ commands:[], apis:[], workers:[], queues:[], today:[], waitTimes:null })
         const routes = inject('routes')
 
         const dayMs = 24 * 60 * 60 * 1000
@@ -1031,7 +1728,8 @@ const Dashboard = {
         })
         
         return { 
-            routes, periodLabels, periodLabel, periods, results, elChart, isToday
+            routes, periodLabels, periodLabel, periods, results, elChart, isToday,
+            humanifyMs, humanifyNumber
         }
     }
 }
@@ -1039,6 +1737,8 @@ const Dashboard = {
 export const BackgroundJobs = {
     components: {
         Queue,
+        Queues,
+        Nodes,
         History,
         ScheduledTasks,
     },
@@ -1050,7 +1750,7 @@ export const BackgroundJobs = {
               <div>
                 <p>
                     The <b>DatabaseJobFeature</b> plugin needs to be configured with your App
-                    <a href="https://docs.servicestack.net/rdbms-background-jobs" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                    <a href="https://docs.servicestack.net/background-jobs-rdbms" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
                        Learn more <span aria-hidden="true">&rarr;</span>
                     </a>
                 </p>
@@ -1072,13 +1772,15 @@ export const BackgroundJobs = {
         const tabs = {
             Dashboard,
             Queue,
+            Queues,
+            Nodes,
             History,
             ScheduledTasks,
         }
 
         const info = ref(getStats())
         provide('info', info)
-        
+
         function tabLabel(tab) {
             const count = tab === 'Queue'
                 ? info.value?.tableCounts['BackgroundJob']

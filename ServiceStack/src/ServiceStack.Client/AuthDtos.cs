@@ -1013,6 +1013,8 @@ public class AdminJobInfo : IGet, IReturn<AdminJobInfoResponse>
 }
 public class AdminJobInfoResponse
 {
+    public string Provider { get; set; } = "";
+    public List<string> Capabilities { get; set; } = [];
     public List<DateTime> MonthDbs { get; set; } = [];
     public Dictionary<string, int> TableCounts { get; set; } = [];
     public List<WorkerStats> WorkerStats { get; set; } = [];
@@ -1051,6 +1053,7 @@ public class AdminGetJobProgressResponse
     public double? Progress { get; set; }
     public string? Status { get; set; }
     public string? Logs { get; set; }
+    public bool? LogsTruncated { get; set; }
     public int? DurationMs { get; set; }
     public ResponseStatus? Error { get; set; }
     public ResponseStatus? ResponseStatus { get; set; }
