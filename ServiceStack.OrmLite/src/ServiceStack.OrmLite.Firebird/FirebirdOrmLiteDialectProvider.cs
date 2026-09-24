@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Reflection;
 using System.Text;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using FirebirdSql.Data.FirebirdClient;
 using FirebirdSql.Data.Isql;
-using ServiceStack.DataAnnotations;
-using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Firebird.Converters;
 using ServiceStack.Text;
 
@@ -151,6 +150,18 @@ namespace ServiceStack.OrmLite.Firebird
 
         public override void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null)
         {
+            foreach (var fbe in ToBatchExecutions(db, objs, config))
+                fbe.Execute();
+        }
+
+        public override async Task BulkInsertAsync<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
+        {
+            foreach (var fbe in ToBatchExecutions(db, objs, config))
+                await fbe.ExecuteAsync(cancellationToken: token).ConfigAwait();
+        }
+
+        private IEnumerable<FbBatchExecution> ToBatchExecutions<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config)
+        {
             var firebirdDb = (FbConnection)db.ToDbConnection();
 
             config ??= new();
@@ -162,7 +173,7 @@ namespace ServiceStack.OrmLite.Firebird
                 fbScript.Parse();
                 var fbe = new FbBatchExecution(firebirdDb);
                 fbe.AppendSqlStatements(fbScript);
-                fbe.Execute();
+                yield return fbe;
             }
         }
 

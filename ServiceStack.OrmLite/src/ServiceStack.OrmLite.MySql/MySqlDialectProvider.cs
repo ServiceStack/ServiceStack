@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using ServiceStack.OrmLite.MySql.Converters;
 using ServiceStack.Text;
@@ -39,22 +41,39 @@ public class MySqlDialectProvider : MySqlDialectProviderBase<MySqlDialectProvide
             base.BulkInsert(db, objs, config);
             return;
         }
-	        
+
+        using var fs = CreateTempFileStream();
+        CreateBulkLoader(db, objs, fs).Load(fs);
+    }
+    
+    public override async Task BulkInsertAsync<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
+    {
+        config ??= new();
+        if (config.Mode == BulkInsertMode.Sql)
+        {
+            await base.BulkInsertAsync(db, objs, config, token).ConfigAwait();
+            return;
+        }
+
+        using var fs = CreateTempFileStream();
+        await CreateBulkLoader(db, objs, fs).LoadAsync(fs, token).ConfigAwait();
+    }
+
+    private static FileStream CreateTempFileStream() => new(Path.GetTempFileName(), 
+        FileMode.Create, FileAccess.ReadWrite, FileShare.None, 4096, FileOptions.DeleteOnClose);
+
+    private static MySqlBulkLoader CreateBulkLoader<T>(IDbConnection db, IEnumerable<T> objs, Stream stream)
+    {
         var mysqlConn = (MySqlConnection)db.ToDbConnection();
 
-        var tmpPath  = Path.GetTempFileName();
-        using (var fs = File.OpenWrite(tmpPath))
-        {
-            CsvSerializer.SerializeToStream(objs, fs);
-            fs.Close();
-        }
+        CsvSerializer.SerializeToStream(objs, stream);
+        stream.Position = 0;
 	        
         var dialect = db.Dialect();
         var modelDef = ModelDefinition<T>.Definition;
 
         var bulkLoader = new MySqlBulkLoader(mysqlConn)
         {
-            FileName = tmpPath,
             Local = true,
             TableName = dialect.GetQuotedTableName(modelDef),
             CharacterSet = "UTF8",
@@ -69,9 +88,7 @@ public class MySqlDialectProvider : MySqlDialectProviderBase<MySqlDialectProvide
         var columns = CsvSerializer.PropertiesFor<T>()
             .Select(x => dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(x.PropertyName)));
         bulkLoader.Columns.AddRange(columns);
-        
-        bulkLoader.Load();
-        File.Delete(tmpPath);
+        return bulkLoader;
     }
 }
     

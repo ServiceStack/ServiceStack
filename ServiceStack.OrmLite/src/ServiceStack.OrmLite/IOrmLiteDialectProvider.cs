@@ -168,6 +168,8 @@ public interface IOrmLiteDialectProvider
     string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string> insertFields = null);
 
     void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null);
+    
+    Task BulkInsertAsync<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default);
         
     string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null);
 
