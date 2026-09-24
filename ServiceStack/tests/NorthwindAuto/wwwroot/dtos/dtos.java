@@ -1,6 +1,6 @@
 /* Options:
-Date: 2025-11-06 11:47:32
-Version: 8.91
+Date: 2026-09-24 19:33:21
+Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:20000
 
@@ -324,290 +324,6 @@ public class dtos
         public Integer getId() { return id; }
         public AdminDeleteApiKey setId(Integer value) { this.id = value; return this; }
         private static Object responseType = EmptyResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    /**
-    * Chat Completions API (OpenAI-Compatible)
-    */
-    @Route(Path="/v1/chat/completions", Verbs="POST")
-    @DataContract
-    public static class ChatCompletion implements IReturn<ChatResponse>, IPost
-    {
-        /**
-        * The messages to generate chat completions for.
-        */
-        @DataMember(Name="messages")
-        @SerializedName("messages")
-        public ArrayList<AiMessage> messages = new ArrayList<AiMessage>();
-
-        /**
-        * ID of the model to use. See the model endpoint compatibility table for details on which models work with the Chat API
-        */
-        @DataMember(Name="model")
-        @SerializedName("model")
-        public String model = null;
-
-        /**
-        * Parameters for audio output. Required when audio output is requested with modalities: [audio]
-        */
-        @DataMember(Name="audio")
-        @SerializedName("audio")
-        public AiChatAudio audio = null;
-
-        /**
-        * Modify the likelihood of specified tokens appearing in the completion.
-        */
-        @DataMember(Name="logit_bias")
-        @SerializedName("logit_bias")
-        public HashMap<Integer,Integer> logitBias = null;
-
-        /**
-        * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
-        */
-        @DataMember(Name="metadata")
-        @SerializedName("metadata")
-        public HashMap<String,String> metadata = null;
-
-        /**
-        * Constrains effort on reasoning for reasoning models. Currently supported values are minimal, low, medium, and high (none, default). Reducing reasoning effort can result in faster responses and fewer tokens used on reasoning in a response.
-        */
-        @DataMember(Name="reasoning_effort")
-        @SerializedName("reasoning_effort")
-        public String reasoningEffort = null;
-
-        /**
-        * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than `gpt-3.5-turbo-1106`. Setting Type to ResponseFormat.JsonObject enables JSON mode, which guarantees the message the model generates is valid JSON.
-        */
-        @DataMember(Name="response_format")
-        @SerializedName("response_format")
-        public AiResponseFormat responseFormat = null;
-
-        /**
-        * Specifies the processing type used for serving the request.
-        */
-        @DataMember(Name="service_tier")
-        @SerializedName("service_tier")
-        public String serviceTier = null;
-
-        /**
-        * A stable identifier used to help detect users of your application that may be violating OpenAI's usage policies. The IDs should be a string that uniquely identifies each user.
-        */
-        @DataMember(Name="safety_identifier")
-        @SerializedName("safety_identifier")
-        public String safetyIdentifier = null;
-
-        /**
-        * Up to 4 sequences where the API will stop generating further tokens.
-        */
-        @DataMember(Name="stop")
-        @SerializedName("stop")
-        public ArrayList<String> stop = null;
-
-        /**
-        * Output types that you would like the model to generate. Most models are capable of generating text, which is the default:
-        */
-        @DataMember(Name="modalities")
-        @SerializedName("modalities")
-        public ArrayList<String> modalities = null;
-
-        /**
-        * Used by OpenAI to cache responses for similar requests to optimize your cache hit rates.
-        */
-        @DataMember(Name="prompt_cache_key")
-        @SerializedName("prompt_cache_key")
-        public String promptCacheKey = null;
-
-        /**
-        * A list of tools the model may call. Currently, only functions are supported as a tool. Use this to provide a list of functions the model may generate JSON inputs for. A max of 128 functions are supported.
-        */
-        @DataMember(Name="tools")
-        @SerializedName("tools")
-        public ArrayList<Tool> tools = null;
-
-        /**
-        * Constrains the verbosity of the model's response. Lower values will result in more concise responses, while higher values will result in more verbose responses. Currently supported values are low, medium, and high.
-        */
-        @DataMember(Name="verbosity")
-        @SerializedName("verbosity")
-        public String verbosity = null;
-
-        /**
-        * What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
-        */
-        @DataMember(Name="temperature")
-        @SerializedName("temperature")
-        public Double temperature = null;
-
-        /**
-        * An upper bound for the number of tokens that can be generated for a completion, including visible output tokens and reasoning tokens.
-        */
-        @DataMember(Name="max_completion_tokens")
-        @SerializedName("max_completion_tokens")
-        public Integer maxCompletionTokens = null;
-
-        /**
-        * An integer between 0 and 20 specifying the number of most likely tokens to return at each token position, each with an associated log probability. logprobs must be set to true if this parameter is used.
-        */
-        @DataMember(Name="top_logprobs")
-        @SerializedName("top_logprobs")
-        public Integer topLogprobs = null;
-
-        /**
-        * An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
-        */
-        @DataMember(Name="top_p")
-        @SerializedName("top_p")
-        public Double topP = null;
-
-        /**
-        * Number between `-2.0` and `2.0`. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-        */
-        @DataMember(Name="frequency_penalty")
-        @SerializedName("frequency_penalty")
-        public Double frequencyPenalty = null;
-
-        /**
-        * Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
-        */
-        @DataMember(Name="presence_penalty")
-        @SerializedName("presence_penalty")
-        public Double presencePenalty = null;
-
-        /**
-        * This feature is in Beta. If specified, our system will make a best effort to sample deterministically, such that repeated requests with the same seed and parameters should return the same result. Determinism is not guaranteed, and you should refer to the system_fingerprint response parameter to monitor changes in the backend.
-        */
-        @DataMember(Name="seed")
-        @SerializedName("seed")
-        public Integer seed = null;
-
-        /**
-        * How many chat completion choices to generate for each input message. Note that you will be charged based on the number of generated tokens across all of the choices. Keep `n` as `1` to minimize costs.
-        */
-        @DataMember(Name="n")
-        @SerializedName("n")
-        public Integer n = null;
-
-        /**
-        * Whether or not to store the output of this chat completion request for use in our model distillation or evals products.
-        */
-        @DataMember(Name="store")
-        @SerializedName("store")
-        public Boolean store = null;
-
-        /**
-        * Whether to return log probabilities of the output tokens or not. If true, returns the log probabilities of each output token returned in the content of message.
-        */
-        @DataMember(Name="logprobs")
-        @SerializedName("logprobs")
-        public Boolean logprobs = null;
-
-        /**
-        * Whether to enable parallel function calling during tool use.
-        */
-        @DataMember(Name="parallel_tool_calls")
-        @SerializedName("parallel_tool_calls")
-        public Boolean parallelToolCalls = null;
-
-        /**
-        * Whether to enable thinking mode for some Qwen models and providers.
-        */
-        @DataMember(Name="enable_thinking")
-        @SerializedName("enable_thinking")
-        public Boolean enableThinking = null;
-
-        /**
-        * If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only server-sent events as they become available, with the stream terminated by a `data: [DONE]` message.
-        */
-        @DataMember(Name="stream")
-        @SerializedName("stream")
-        public Boolean stream = null;
-        
-        public ArrayList<AiMessage> getMessages() { return messages; }
-        public ChatCompletion setMessages(ArrayList<AiMessage> value) { this.messages = value; return this; }
-        public String getModel() { return model; }
-        public ChatCompletion setModel(String value) { this.model = value; return this; }
-        public AiChatAudio getAudio() { return audio; }
-        public ChatCompletion setAudio(AiChatAudio value) { this.audio = value; return this; }
-        public HashMap<Integer,Integer> getLogitBias() { return logitBias; }
-        public ChatCompletion setLogitBias(HashMap<Integer,Integer> value) { this.logitBias = value; return this; }
-        public HashMap<String,String> getMetadata() { return metadata; }
-        public ChatCompletion setMetadata(HashMap<String,String> value) { this.metadata = value; return this; }
-        public String getReasoningEffort() { return reasoningEffort; }
-        public ChatCompletion setReasoningEffort(String value) { this.reasoningEffort = value; return this; }
-        public AiResponseFormat getResponseFormat() { return responseFormat; }
-        public ChatCompletion setResponseFormat(AiResponseFormat value) { this.responseFormat = value; return this; }
-        public String getServiceTier() { return serviceTier; }
-        public ChatCompletion setServiceTier(String value) { this.serviceTier = value; return this; }
-        public String getSafetyIdentifier() { return safetyIdentifier; }
-        public ChatCompletion setSafetyIdentifier(String value) { this.safetyIdentifier = value; return this; }
-        public ArrayList<String> getStop() { return stop; }
-        public ChatCompletion setStop(ArrayList<String> value) { this.stop = value; return this; }
-        public ArrayList<String> getModalities() { return modalities; }
-        public ChatCompletion setModalities(ArrayList<String> value) { this.modalities = value; return this; }
-        public String getPromptCacheKey() { return promptCacheKey; }
-        public ChatCompletion setPromptCacheKey(String value) { this.promptCacheKey = value; return this; }
-        public ArrayList<Tool> getTools() { return tools; }
-        public ChatCompletion setTools(ArrayList<Tool> value) { this.tools = value; return this; }
-        public String getVerbosity() { return verbosity; }
-        public ChatCompletion setVerbosity(String value) { this.verbosity = value; return this; }
-        public Double getTemperature() { return temperature; }
-        public ChatCompletion setTemperature(Double value) { this.temperature = value; return this; }
-        public Integer getMaxCompletionTokens() { return maxCompletionTokens; }
-        public ChatCompletion setMaxCompletionTokens(Integer value) { this.maxCompletionTokens = value; return this; }
-        public Integer getTopLogprobs() { return topLogprobs; }
-        public ChatCompletion setTopLogprobs(Integer value) { this.topLogprobs = value; return this; }
-        public Double getTopP() { return topP; }
-        public ChatCompletion setTopP(Double value) { this.topP = value; return this; }
-        public Double getFrequencyPenalty() { return frequencyPenalty; }
-        public ChatCompletion setFrequencyPenalty(Double value) { this.frequencyPenalty = value; return this; }
-        public Double getPresencePenalty() { return presencePenalty; }
-        public ChatCompletion setPresencePenalty(Double value) { this.presencePenalty = value; return this; }
-        public Integer getSeed() { return seed; }
-        public ChatCompletion setSeed(Integer value) { this.seed = value; return this; }
-        public Integer getN() { return n; }
-        public ChatCompletion setN(Integer value) { this.n = value; return this; }
-        public Boolean isStore() { return store; }
-        public ChatCompletion setStore(Boolean value) { this.store = value; return this; }
-        public Boolean isLogprobs() { return logprobs; }
-        public ChatCompletion setLogprobs(Boolean value) { this.logprobs = value; return this; }
-        public Boolean isParallelToolCalls() { return parallelToolCalls; }
-        public ChatCompletion setParallelToolCalls(Boolean value) { this.parallelToolCalls = value; return this; }
-        public Boolean isEnableThinking() { return enableThinking; }
-        public ChatCompletion setEnableThinking(Boolean value) { this.enableThinking = value; return this; }
-        public Boolean isStream() { return stream; }
-        public ChatCompletion setStream(Boolean value) { this.stream = value; return this; }
-        private static Object responseType = ChatResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    public static class AdminQueryChatCompletionLogs extends QueryDb<ChatCompletionLog> implements IReturn<QueryResponse<ChatCompletionLog>>
-    {
-        public Date month = null;
-        
-        public Date getMonth() { return month; }
-        public AdminQueryChatCompletionLogs setMonth(Date value) { this.month = value; return this; }
-        private static Object responseType = new TypeToken<QueryResponse<ChatCompletionLog>>(){}.getType();
-        public Object getResponseType() { return responseType; }
-    }
-
-    public static class AdminMonthlyChatCompletionAnalytics implements IReturn<AdminMonthlyChatCompletionAnalyticsResponse>, IGet
-    {
-        public Date month = null;
-        
-        public Date getMonth() { return month; }
-        public AdminMonthlyChatCompletionAnalytics setMonth(Date value) { this.month = value; return this; }
-        private static Object responseType = AdminMonthlyChatCompletionAnalyticsResponse.class;
-        public Object getResponseType() { return responseType; }
-    }
-
-    public static class AdminDailyChatCompletionAnalytics implements IReturn<AdminDailyChatCompletionAnalyticsResponse>, IGet
-    {
-        public Date day = null;
-        
-        public Date getDay() { return day; }
-        public AdminDailyChatCompletionAnalytics setDay(Date value) { this.day = value; return this; }
-        private static Object responseType = AdminDailyChatCompletionAnalyticsResponse.class;
         public Object getResponseType() { return responseType; }
     }
 
@@ -1098,9 +814,18 @@ public class dtos
     public static class AdminRequeueFailedJobs implements IReturn<AdminRequeueFailedJobsJobsResponse>
     {
         public ArrayList<Long> ids = null;
+        public String tag = null;
+        public String batchId = null;
+        public Date from = null;
         
         public ArrayList<Long> getIds() { return ids; }
         public AdminRequeueFailedJobs setIds(ArrayList<Long> value) { this.ids = value; return this; }
+        public String getTag() { return tag; }
+        public AdminRequeueFailedJobs setTag(String value) { this.tag = value; return this; }
+        public String getBatchId() { return batchId; }
+        public AdminRequeueFailedJobs setBatchId(String value) { this.batchId = value; return this; }
+        public Date getFrom() { return from; }
+        public AdminRequeueFailedJobs setFrom(Date value) { this.from = value; return this; }
         private static Object responseType = AdminRequeueFailedJobsJobsResponse.class;
         public Object getResponseType() { return responseType; }
     }
@@ -1110,6 +835,9 @@ public class dtos
         public ArrayList<Long> ids = null;
         public String worker = null;
         public BackgroundJobState state = null;
+        public String queue = null;
+        public String tag = null;
+        public String batchId = null;
         public String cancelWorker = null;
         
         public ArrayList<Long> getIds() { return ids; }
@@ -1118,6 +846,12 @@ public class dtos
         public AdminCancelJobs setWorker(String value) { this.worker = value; return this; }
         public BackgroundJobState getState() { return state; }
         public AdminCancelJobs setState(BackgroundJobState value) { this.state = value; return this; }
+        public String getQueue() { return queue; }
+        public AdminCancelJobs setQueue(String value) { this.queue = value; return this; }
+        public String getTag() { return tag; }
+        public AdminCancelJobs setTag(String value) { this.tag = value; return this; }
+        public String getBatchId() { return batchId; }
+        public AdminCancelJobs setBatchId(String value) { this.batchId = value; return this; }
         public String getCancelWorker() { return cancelWorker; }
         public AdminCancelJobs setCancelWorker(String value) { this.cancelWorker = value; return this; }
         private static Object responseType = AdminCancelJobsResponse.class;
@@ -1507,168 +1241,6 @@ public class dtos
     }
 
     @DataContract
-    public static class ChatResponse
-    {
-        /**
-        * A unique identifier for the chat completion.
-        */
-        @DataMember(Name="id")
-        @SerializedName("id")
-        public String id = null;
-
-        /**
-        * A list of chat completion choices. Can be more than one if n is greater than 1.
-        */
-        @DataMember(Name="choices")
-        @SerializedName("choices")
-        public ArrayList<Choice> choices = new ArrayList<Choice>();
-
-        /**
-        * The Unix timestamp (in seconds) of when the chat completion was created.
-        */
-        @DataMember(Name="created")
-        @SerializedName("created")
-        public Long created = null;
-
-        /**
-        * The model used for the chat completion.
-        */
-        @DataMember(Name="model")
-        @SerializedName("model")
-        public String model = null;
-
-        /**
-        * This fingerprint represents the backend configuration that the model runs with.
-        */
-        @DataMember(Name="system_fingerprint")
-        @SerializedName("system_fingerprint")
-        public String systemFingerprint = null;
-
-        /**
-        * The object type, which is always chat.completion.
-        */
-        @DataMember(Name="object")
-        @SerializedName("object")
-        public String object = null;
-
-        /**
-        * Specifies the processing type used for serving the request.
-        */
-        @DataMember(Name="service_tier")
-        @SerializedName("service_tier")
-        public String serviceTier = null;
-
-        /**
-        * Usage statistics for the completion request.
-        */
-        @DataMember(Name="usage")
-        @SerializedName("usage")
-        public AiUsage usage = null;
-
-        /**
-        * The provider used for the chat completion.
-        */
-        @DataMember(Name="provider")
-        @SerializedName("provider")
-        public String provider = null;
-
-        /**
-        * Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format.
-        */
-        @DataMember(Name="metadata")
-        @SerializedName("metadata")
-        public HashMap<String,String> metadata = null;
-
-        @DataMember(Name="responseStatus")
-        @SerializedName("responseStatus")
-        public ResponseStatus responseStatus = null;
-        
-        public String getId() { return id; }
-        public ChatResponse setId(String value) { this.id = value; return this; }
-        public ArrayList<Choice> getChoices() { return choices; }
-        public ChatResponse setChoices(ArrayList<Choice> value) { this.choices = value; return this; }
-        public Long getCreated() { return created; }
-        public ChatResponse setCreated(Long value) { this.created = value; return this; }
-        public String getModel() { return model; }
-        public ChatResponse setModel(String value) { this.model = value; return this; }
-        public String getSystemFingerprint() { return systemFingerprint; }
-        public ChatResponse setSystemFingerprint(String value) { this.systemFingerprint = value; return this; }
-        public String getObject() { return object; }
-        public ChatResponse setObject(String value) { this.object = value; return this; }
-        public String getServiceTier() { return serviceTier; }
-        public ChatResponse setServiceTier(String value) { this.serviceTier = value; return this; }
-        public AiUsage getUsage() { return usage; }
-        public ChatResponse setUsage(AiUsage value) { this.usage = value; return this; }
-        public String getProvider() { return provider; }
-        public ChatResponse setProvider(String value) { this.provider = value; return this; }
-        public HashMap<String,String> getMetadata() { return metadata; }
-        public ChatResponse setMetadata(HashMap<String,String> value) { this.metadata = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public ChatResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    @DataContract
-    public static class QueryResponse<T>
-    {
-        @DataMember(Order=1)
-        public Integer offset = null;
-
-        @DataMember(Order=2)
-        public Integer total = null;
-
-        @DataMember(Order=3)
-        public ArrayList<ChatCompletionLog> results = new ArrayList<ChatCompletionLog>();
-
-        @DataMember(Order=4)
-        public HashMap<String,String> meta = null;
-
-        @DataMember(Order=5)
-        public ResponseStatus responseStatus = null;
-        
-        public Integer getOffset() { return offset; }
-        public QueryResponse<T> setOffset(Integer value) { this.offset = value; return this; }
-        public Integer getTotal() { return total; }
-        public QueryResponse<T> setTotal(Integer value) { this.total = value; return this; }
-        public ArrayList<ChatCompletionLog> getResults() { return results; }
-        public QueryResponse<T> setResults(ArrayList<ChatCompletionLog> value) { this.results = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public QueryResponse<T> setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-        public ResponseStatus getResponseStatus() { return responseStatus; }
-        public QueryResponse<T> setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
-    }
-
-    public static class AdminMonthlyChatCompletionAnalyticsResponse
-    {
-        public String month = null;
-        public ArrayList<String> availableMonths = new ArrayList<String>();
-        public ArrayList<ChatCompletionStat> modelStats = new ArrayList<ChatCompletionStat>();
-        public ArrayList<ChatCompletionStat> providerStats = new ArrayList<ChatCompletionStat>();
-        public ArrayList<ChatCompletionStat> dailyStats = new ArrayList<ChatCompletionStat>();
-        
-        public String getMonth() { return month; }
-        public AdminMonthlyChatCompletionAnalyticsResponse setMonth(String value) { this.month = value; return this; }
-        public ArrayList<String> getAvailableMonths() { return availableMonths; }
-        public AdminMonthlyChatCompletionAnalyticsResponse setAvailableMonths(ArrayList<String> value) { this.availableMonths = value; return this; }
-        public ArrayList<ChatCompletionStat> getModelStats() { return modelStats; }
-        public AdminMonthlyChatCompletionAnalyticsResponse setModelStats(ArrayList<ChatCompletionStat> value) { this.modelStats = value; return this; }
-        public ArrayList<ChatCompletionStat> getProviderStats() { return providerStats; }
-        public AdminMonthlyChatCompletionAnalyticsResponse setProviderStats(ArrayList<ChatCompletionStat> value) { this.providerStats = value; return this; }
-        public ArrayList<ChatCompletionStat> getDailyStats() { return dailyStats; }
-        public AdminMonthlyChatCompletionAnalyticsResponse setDailyStats(ArrayList<ChatCompletionStat> value) { this.dailyStats = value; return this; }
-    }
-
-    public static class AdminDailyChatCompletionAnalyticsResponse
-    {
-        public ArrayList<ChatCompletionStat> modelStats = new ArrayList<ChatCompletionStat>();
-        public ArrayList<ChatCompletionStat> providerStats = new ArrayList<ChatCompletionStat>();
-        
-        public ArrayList<ChatCompletionStat> getModelStats() { return modelStats; }
-        public AdminDailyChatCompletionAnalyticsResponse setModelStats(ArrayList<ChatCompletionStat> value) { this.modelStats = value; return this; }
-        public ArrayList<ChatCompletionStat> getProviderStats() { return providerStats; }
-        public AdminDailyChatCompletionAnalyticsResponse setProviderStats(ArrayList<ChatCompletionStat> value) { this.providerStats = value; return this; }
-    }
-
-    @DataContract
     public static class AuthenticateResponse implements IHasSessionId, IHasBearerToken
     {
         @DataMember(Order=1)
@@ -1853,6 +1425,36 @@ public class dtos
         public AdminDeleteUserResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
+    @DataContract
+    public static class QueryResponse<T>
+    {
+        @DataMember(Order=1)
+        public Integer offset = null;
+
+        @DataMember(Order=2)
+        public Integer total = null;
+
+        @DataMember(Order=3)
+        public ArrayList<RequestLog> results = new ArrayList<RequestLog>();
+
+        @DataMember(Order=4)
+        public HashMap<String,String> meta = null;
+
+        @DataMember(Order=5)
+        public ResponseStatus responseStatus = null;
+        
+        public Integer getOffset() { return offset; }
+        public QueryResponse<T> setOffset(Integer value) { this.offset = value; return this; }
+        public Integer getTotal() { return total; }
+        public QueryResponse<T> setTotal(Integer value) { this.total = value; return this; }
+        public ArrayList<RequestLog> getResults() { return results; }
+        public QueryResponse<T> setResults(ArrayList<RequestLog> value) { this.results = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public QueryResponse<T> setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+        public ResponseStatus getResponseStatus() { return responseStatus; }
+        public QueryResponse<T> setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
+    }
+
     public static class AdminProfilingResponse
     {
         public ArrayList<DiagnosticEntry> results = new ArrayList<DiagnosticEntry>();
@@ -1943,7 +1545,9 @@ public class dtos
         public ArrayList<JobStatSummary> commands = new ArrayList<JobStatSummary>();
         public ArrayList<JobStatSummary> apis = new ArrayList<JobStatSummary>();
         public ArrayList<JobStatSummary> workers = new ArrayList<JobStatSummary>();
+        public ArrayList<JobStatSummary> queues = new ArrayList<JobStatSummary>();
         public ArrayList<HourSummary> today = new ArrayList<HourSummary>();
+        public JobWaitTimes waitTimes = null;
         public ResponseStatus responseStatus = null;
         
         public ArrayList<JobStatSummary> getCommands() { return commands; }
@@ -1952,14 +1556,20 @@ public class dtos
         public AdminJobDashboardResponse setApis(ArrayList<JobStatSummary> value) { this.apis = value; return this; }
         public ArrayList<JobStatSummary> getWorkers() { return workers; }
         public AdminJobDashboardResponse setWorkers(ArrayList<JobStatSummary> value) { this.workers = value; return this; }
+        public ArrayList<JobStatSummary> getQueues() { return queues; }
+        public AdminJobDashboardResponse setQueues(ArrayList<JobStatSummary> value) { this.queues = value; return this; }
         public ArrayList<HourSummary> getToday() { return today; }
         public AdminJobDashboardResponse setToday(ArrayList<HourSummary> value) { this.today = value; return this; }
+        public JobWaitTimes getWaitTimes() { return waitTimes; }
+        public AdminJobDashboardResponse setWaitTimes(JobWaitTimes value) { this.waitTimes = value; return this; }
         public ResponseStatus getResponseStatus() { return responseStatus; }
         public AdminJobDashboardResponse setResponseStatus(ResponseStatus value) { this.responseStatus = value; return this; }
     }
 
     public static class AdminJobInfoResponse
     {
+        public String provider = null;
+        public ArrayList<String> capabilities = null;
         public ArrayList<Date> monthDbs = null;
         public HashMap<String,Integer> tableCounts = null;
         public ArrayList<WorkerStats> workerStats = null;
@@ -1968,6 +1578,10 @@ public class dtos
         public HashMap<BackgroundJobState,Integer> stateCounts = null;
         public ResponseStatus responseStatus = null;
         
+        public String getProvider() { return provider; }
+        public AdminJobInfoResponse setProvider(String value) { this.provider = value; return this; }
+        public ArrayList<String> getCapabilities() { return capabilities; }
+        public AdminJobInfoResponse setCapabilities(ArrayList<String> value) { this.capabilities = value; return this; }
         public ArrayList<Date> getMonthDbs() { return monthDbs; }
         public AdminJobInfoResponse setMonthDbs(ArrayList<Date> value) { this.monthDbs = value; return this; }
         public HashMap<String,Integer> getTableCounts() { return tableCounts; }
@@ -2010,6 +1624,7 @@ public class dtos
         public Double progress = null;
         public String status = null;
         public String logs = null;
+        public Boolean logsTruncated = null;
         public Integer durationMs = null;
         public ResponseStatus error = null;
         public ResponseStatus responseStatus = null;
@@ -2022,6 +1637,8 @@ public class dtos
         public AdminGetJobProgressResponse setStatus(String value) { this.status = value; return this; }
         public String getLogs() { return logs; }
         public AdminGetJobProgressResponse setLogs(String value) { this.logs = value; return this; }
+        public Boolean isLogsTruncated() { return logsTruncated; }
+        public AdminGetJobProgressResponse setLogsTruncated(Boolean value) { this.logsTruncated = value; return this; }
         public Integer getDurationMs() { return durationMs; }
         public AdminGetJobProgressResponse setDurationMs(Integer value) { this.durationMs = value; return this; }
         public ResponseStatus getError() { return error; }
@@ -2148,202 +1765,6 @@ public class dtos
         public Property setValue(String value) { this.value = value; return this; }
     }
 
-    /**
-    * A list of messages comprising the conversation so far.
-    */
-    @DataContract
-    public static class AiMessage
-    {
-        /**
-        * The contents of the message.
-        */
-        @DataMember(Name="content")
-        @SerializedName("content")
-        public ArrayList<AiContent> content = null;
-
-        /**
-        * The role of the author of this message. Valid values are `system`, `user`, `assistant` and `tool`.
-        */
-        @DataMember(Name="role")
-        @SerializedName("role")
-        public String role = null;
-
-        /**
-        * An optional name for the participant. Provides the model information to differentiate between participants of the same role.
-        */
-        @DataMember(Name="name")
-        @SerializedName("name")
-        public String name = null;
-
-        /**
-        * The tool calls generated by the model, such as function calls.
-        */
-        @DataMember(Name="tool_calls")
-        @SerializedName("tool_calls")
-        public ArrayList<ToolCall> toolCalls = null;
-
-        /**
-        * Tool call that this message is responding to.
-        */
-        @DataMember(Name="tool_call_id")
-        @SerializedName("tool_call_id")
-        public String toolCallId = null;
-        
-        public ArrayList<AiContent> getContent() { return content; }
-        public AiMessage setContent(ArrayList<AiContent> value) { this.content = value; return this; }
-        public String getRole() { return role; }
-        public AiMessage setRole(String value) { this.role = value; return this; }
-        public String getName() { return name; }
-        public AiMessage setName(String value) { this.name = value; return this; }
-        public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
-        public AiMessage setToolCalls(ArrayList<ToolCall> value) { this.toolCalls = value; return this; }
-        public String getToolCallId() { return toolCallId; }
-        public AiMessage setToolCallId(String value) { this.toolCallId = value; return this; }
-    }
-
-    /**
-    * Parameters for audio output. Required when audio output is requested with modalities: [audio]
-    */
-    @DataContract
-    public static class AiChatAudio
-    {
-        /**
-        * Specifies the output audio format. Must be one of wav, mp3, flac, opus, or pcm16.
-        */
-        @DataMember(Name="format")
-        @SerializedName("format")
-        public String format = null;
-
-        /**
-        * The voice the model uses to respond. Supported voices are alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, and shimmer.
-        */
-        @DataMember(Name="voice")
-        @SerializedName("voice")
-        public String voice = null;
-        
-        public String getFormat() { return format; }
-        public AiChatAudio setFormat(String value) { this.format = value; return this; }
-        public String getVoice() { return voice; }
-        public AiChatAudio setVoice(String value) { this.voice = value; return this; }
-    }
-
-    @DataContract
-    public static class AiResponseFormat
-    {
-        /**
-        * An object specifying the format that the model must output. Compatible with GPT-4 Turbo and all GPT-3.5 Turbo models newer than gpt-3.5-turbo-1106.
-        */
-        @DataMember(Name="response_format")
-        @SerializedName("response_format")
-        public ResponseFormat type = null;
-        
-        public ResponseFormat getType() { return type; }
-        public AiResponseFormat setType(ResponseFormat value) { this.type = value; return this; }
-    }
-
-    @DataContract
-    public static class Tool
-    {
-        /**
-        * The type of the tool. Currently, only function is supported.
-        */
-        @DataMember(Name="type")
-        @SerializedName("type")
-        public ToolType type = null;
-        
-        public ToolType getType() { return type; }
-        public Tool setType(ToolType value) { this.type = value; return this; }
-    }
-
-    public static class QueryDb<T> extends QueryBase
-    {
-        
-    }
-
-    public static class ChatCompletionLog
-    {
-        public Long id = null;
-        public String refId = null;
-        public String userId = null;
-        public String apiKey = null;
-        public String model = null;
-        public String provider = null;
-        public String userPrompt = null;
-        public String answer = null;
-        @StringLength(MaximumLength=2147483647)
-        public String requestBody = null;
-
-        @StringLength(MaximumLength=2147483647)
-        public String responseBody = null;
-
-        public String errorCode = null;
-        public ResponseStatus error = null;
-        public Date createdDate = null;
-        public String tag = null;
-        public Integer durationMs = null;
-        public Integer promptTokens = null;
-        public Integer completionTokens = null;
-        public BigDecimal cost = null;
-        public String providerRef = null;
-        public String providerModel = null;
-        public String finishReason = null;
-        public ModelUsage usage = null;
-        public String threadId = null;
-        public String title = null;
-        public HashMap<String,String> meta = null;
-        
-        public Long getId() { return id; }
-        public ChatCompletionLog setId(Long value) { this.id = value; return this; }
-        public String getRefId() { return refId; }
-        public ChatCompletionLog setRefId(String value) { this.refId = value; return this; }
-        public String getUserId() { return userId; }
-        public ChatCompletionLog setUserId(String value) { this.userId = value; return this; }
-        public String getApiKey() { return apiKey; }
-        public ChatCompletionLog setApiKey(String value) { this.apiKey = value; return this; }
-        public String getModel() { return model; }
-        public ChatCompletionLog setModel(String value) { this.model = value; return this; }
-        public String getProvider() { return provider; }
-        public ChatCompletionLog setProvider(String value) { this.provider = value; return this; }
-        public String getUserPrompt() { return userPrompt; }
-        public ChatCompletionLog setUserPrompt(String value) { this.userPrompt = value; return this; }
-        public String getAnswer() { return answer; }
-        public ChatCompletionLog setAnswer(String value) { this.answer = value; return this; }
-        public String getRequestBody() { return requestBody; }
-        public ChatCompletionLog setRequestBody(String value) { this.requestBody = value; return this; }
-        public String getResponseBody() { return responseBody; }
-        public ChatCompletionLog setResponseBody(String value) { this.responseBody = value; return this; }
-        public String getErrorCode() { return errorCode; }
-        public ChatCompletionLog setErrorCode(String value) { this.errorCode = value; return this; }
-        public ResponseStatus getError() { return error; }
-        public ChatCompletionLog setError(ResponseStatus value) { this.error = value; return this; }
-        public Date getCreatedDate() { return createdDate; }
-        public ChatCompletionLog setCreatedDate(Date value) { this.createdDate = value; return this; }
-        public String getTag() { return tag; }
-        public ChatCompletionLog setTag(String value) { this.tag = value; return this; }
-        public Integer getDurationMs() { return durationMs; }
-        public ChatCompletionLog setDurationMs(Integer value) { this.durationMs = value; return this; }
-        public Integer getPromptTokens() { return promptTokens; }
-        public ChatCompletionLog setPromptTokens(Integer value) { this.promptTokens = value; return this; }
-        public Integer getCompletionTokens() { return completionTokens; }
-        public ChatCompletionLog setCompletionTokens(Integer value) { this.completionTokens = value; return this; }
-        public BigDecimal getCost() { return cost; }
-        public ChatCompletionLog setCost(BigDecimal value) { this.cost = value; return this; }
-        public String getProviderRef() { return providerRef; }
-        public ChatCompletionLog setProviderRef(String value) { this.providerRef = value; return this; }
-        public String getProviderModel() { return providerModel; }
-        public ChatCompletionLog setProviderModel(String value) { this.providerModel = value; return this; }
-        public String getFinishReason() { return finishReason; }
-        public ChatCompletionLog setFinishReason(String value) { this.finishReason = value; return this; }
-        public ModelUsage getUsage() { return usage; }
-        public ChatCompletionLog setUsage(ModelUsage value) { this.usage = value; return this; }
-        public String getThreadId() { return threadId; }
-        public ChatCompletionLog setThreadId(String value) { this.threadId = value; return this; }
-        public String getTitle() { return title; }
-        public ChatCompletionLog setTitle(String value) { this.title = value; return this; }
-        public HashMap<String,String> getMeta() { return meta; }
-        public ChatCompletionLog setMeta(HashMap<String,String> value) { this.meta = value; return this; }
-    }
-
     @DataContract
     public static class AdminUserBase
     {
@@ -2397,6 +1818,11 @@ public class dtos
         public AdminUserBase setUserAuthProperties(HashMap<String,String> value) { this.userAuthProperties = value; return this; }
         public HashMap<String,String> getMeta() { return meta; }
         public AdminUserBase setMeta(HashMap<String,String> value) { this.meta = value; return this; }
+    }
+
+    public static class QueryDb<T> extends QueryBase
+    {
+        
     }
 
     public static class RequestLog
@@ -2520,9 +1946,22 @@ public class dtos
     public static class BackgroundJob extends BackgroundJobBase
     {
         public Long id = null;
+        @StringLength(MaximumLength=200)
+        public String singletonKey = null;
+
+        @StringLength(MaximumLength=32)
+        public String leaseToken = null;
+
+        public Date leaseExpiresAt = null;
         
         public Long getId() { return id; }
         public BackgroundJob setId(Long value) { this.id = value; return this; }
+        public String getSingletonKey() { return singletonKey; }
+        public BackgroundJob setSingletonKey(String value) { this.singletonKey = value; return this; }
+        public String getLeaseToken() { return leaseToken; }
+        public BackgroundJob setLeaseToken(String value) { this.leaseToken = value; return this; }
+        public Date getLeaseExpiresAt() { return leaseExpiresAt; }
+        public BackgroundJob setLeaseExpiresAt(Date value) { this.leaseExpiresAt = value; return this; }
     }
 
     public static class JobSummary
@@ -2531,6 +1970,10 @@ public class dtos
         public Long parentId = null;
         public String refId = null;
         public String worker = null;
+        @StringLength(MaximumLength=100)
+        public String queue = null;
+
+        public Integer priority = null;
         public String tag = null;
         public String batchId = null;
         public Date createdDate = null;
@@ -2546,8 +1989,28 @@ public class dtos
         public BackgroundJobState state = null;
         public Integer durationMs = null;
         public Integer attempts = null;
+        public Date runAfter = null;
+        public Date cancelRequestedDate = null;
+        public Date expiresAt = null;
+        @StringLength(MaximumLength=200)
+        public String concurrencyKey = null;
+
+        @StringLength(MaximumLength=200)
+        public String singletonKey = null;
+
+        @StringLength(MaximumLength=100)
+        public String tenantId = null;
+
+        @StringLength(MaximumLength=100)
+        public String traceId = null;
+
+        @StringLength(MaximumLength=100)
+        public String leaseOwner = null;
+
+        public Boolean logsTruncated = null;
         public String errorCode = null;
         public String errorMessage = null;
+        public HashMap<String,String> meta = null;
         
         public Long getId() { return id; }
         public JobSummary setId(Long value) { this.id = value; return this; }
@@ -2557,6 +2020,10 @@ public class dtos
         public JobSummary setRefId(String value) { this.refId = value; return this; }
         public String getWorker() { return worker; }
         public JobSummary setWorker(String value) { this.worker = value; return this; }
+        public String getQueue() { return queue; }
+        public JobSummary setQueue(String value) { this.queue = value; return this; }
+        public Integer getPriority() { return priority; }
+        public JobSummary setPriority(Integer value) { this.priority = value; return this; }
         public String getTag() { return tag; }
         public JobSummary setTag(String value) { this.tag = value; return this; }
         public String getBatchId() { return batchId; }
@@ -2587,10 +2054,30 @@ public class dtos
         public JobSummary setDurationMs(Integer value) { this.durationMs = value; return this; }
         public Integer getAttempts() { return attempts; }
         public JobSummary setAttempts(Integer value) { this.attempts = value; return this; }
+        public Date getRunAfter() { return runAfter; }
+        public JobSummary setRunAfter(Date value) { this.runAfter = value; return this; }
+        public Date getCancelRequestedDate() { return cancelRequestedDate; }
+        public JobSummary setCancelRequestedDate(Date value) { this.cancelRequestedDate = value; return this; }
+        public Date getExpiresAt() { return expiresAt; }
+        public JobSummary setExpiresAt(Date value) { this.expiresAt = value; return this; }
+        public String getConcurrencyKey() { return concurrencyKey; }
+        public JobSummary setConcurrencyKey(String value) { this.concurrencyKey = value; return this; }
+        public String getSingletonKey() { return singletonKey; }
+        public JobSummary setSingletonKey(String value) { this.singletonKey = value; return this; }
+        public String getTenantId() { return tenantId; }
+        public JobSummary setTenantId(String value) { this.tenantId = value; return this; }
+        public String getTraceId() { return traceId; }
+        public JobSummary setTraceId(String value) { this.traceId = value; return this; }
+        public String getLeaseOwner() { return leaseOwner; }
+        public JobSummary setLeaseOwner(String value) { this.leaseOwner = value; return this; }
+        public Boolean isLogsTruncated() { return logsTruncated; }
+        public JobSummary setLogsTruncated(Boolean value) { this.logsTruncated = value; return this; }
         public String getErrorCode() { return errorCode; }
         public JobSummary setErrorCode(String value) { this.errorCode = value; return this; }
         public String getErrorMessage() { return errorMessage; }
         public JobSummary setErrorMessage(String value) { this.errorMessage = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public JobSummary setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
     public static class ScheduledTask
@@ -2604,8 +2091,30 @@ public class dtos
         public String request = null;
         public String requestBody = null;
         public BackgroundJobOptions options = null;
+        public Boolean enabled = null;
+        public Date startDate = null;
+        public Date endDate = null;
+        public Integer maxRuns = null;
+        public Integer runCount = null;
+        public Date nextRun = null;
+        @StringLength(MaximumLength=100)
+        public String timeZoneId = null;
+
+        public ScheduleMisfirePolicy misfirePolicy = null;
+        public ScheduleOverlapPolicy overlapPolicy = null;
+        @StringLength(MaximumLength=100)
+        public String lastErrorCode = null;
+
+        @StringLength(MaximumLength=2147483647)
+        public String lastErrorMessage = null;
+
         public Date lastRun = null;
         public Long lastJobId = null;
+        public BackgroundJobState lastRunState = null;
+        public Integer lastRunDurationMs = null;
+        public Date createdDate = null;
+        public Date modifiedDate = null;
+        public HashMap<String,String> meta = null;
         
         public Long getId() { return id; }
         public ScheduledTask setId(Long value) { this.id = value; return this; }
@@ -2625,10 +2134,42 @@ public class dtos
         public ScheduledTask setRequestBody(String value) { this.requestBody = value; return this; }
         public BackgroundJobOptions getOptions() { return options; }
         public ScheduledTask setOptions(BackgroundJobOptions value) { this.options = value; return this; }
+        public Boolean isEnabled() { return enabled; }
+        public ScheduledTask setEnabled(Boolean value) { this.enabled = value; return this; }
+        public Date getStartDate() { return startDate; }
+        public ScheduledTask setStartDate(Date value) { this.startDate = value; return this; }
+        public Date getEndDate() { return endDate; }
+        public ScheduledTask setEndDate(Date value) { this.endDate = value; return this; }
+        public Integer getMaxRuns() { return maxRuns; }
+        public ScheduledTask setMaxRuns(Integer value) { this.maxRuns = value; return this; }
+        public Integer getRunCount() { return runCount; }
+        public ScheduledTask setRunCount(Integer value) { this.runCount = value; return this; }
+        public Date getNextRun() { return nextRun; }
+        public ScheduledTask setNextRun(Date value) { this.nextRun = value; return this; }
+        public String getTimeZoneId() { return timeZoneId; }
+        public ScheduledTask setTimeZoneId(String value) { this.timeZoneId = value; return this; }
+        public ScheduleMisfirePolicy getMisfirePolicy() { return misfirePolicy; }
+        public ScheduledTask setMisfirePolicy(ScheduleMisfirePolicy value) { this.misfirePolicy = value; return this; }
+        public ScheduleOverlapPolicy getOverlapPolicy() { return overlapPolicy; }
+        public ScheduledTask setOverlapPolicy(ScheduleOverlapPolicy value) { this.overlapPolicy = value; return this; }
+        public String getLastErrorCode() { return lastErrorCode; }
+        public ScheduledTask setLastErrorCode(String value) { this.lastErrorCode = value; return this; }
+        public String getLastErrorMessage() { return lastErrorMessage; }
+        public ScheduledTask setLastErrorMessage(String value) { this.lastErrorMessage = value; return this; }
         public Date getLastRun() { return lastRun; }
         public ScheduledTask setLastRun(Date value) { this.lastRun = value; return this; }
         public Long getLastJobId() { return lastJobId; }
         public ScheduledTask setLastJobId(Long value) { this.lastJobId = value; return this; }
+        public BackgroundJobState getLastRunState() { return lastRunState; }
+        public ScheduledTask setLastRunState(BackgroundJobState value) { this.lastRunState = value; return this; }
+        public Integer getLastRunDurationMs() { return lastRunDurationMs; }
+        public ScheduledTask setLastRunDurationMs(Integer value) { this.lastRunDurationMs = value; return this; }
+        public Date getCreatedDate() { return createdDate; }
+        public ScheduledTask setCreatedDate(Date value) { this.createdDate = value; return this; }
+        public Date getModifiedDate() { return modifiedDate; }
+        public ScheduledTask setModifiedDate(Date value) { this.modifiedDate = value; return this; }
+        public HashMap<String,String> getMeta() { return meta; }
+        public ScheduledTask setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
     public static class CompletedJob extends BackgroundJobBase
@@ -3001,111 +2542,6 @@ public class dtos
         public PartialApiKey setActive(Boolean value) { this.active = value; return this; }
     }
 
-    @DataContract
-    public static class Choice
-    {
-        /**
-        * The reason the model stopped generating tokens. This will be stop if the model hit a natural stop point or a provided stop sequence, length if the maximum number of tokens specified in the request was reached, content_filter if content was omitted due to a flag from our content filters, tool_calls if the model called a tool
-        */
-        @DataMember(Name="finish_reason")
-        @SerializedName("finish_reason")
-        public String finishReason = null;
-
-        /**
-        * The index of the choice in the list of choices.
-        */
-        @DataMember(Name="index")
-        @SerializedName("index")
-        public Integer index = null;
-
-        /**
-        * A chat completion message generated by the model.
-        */
-        @DataMember(Name="message")
-        @SerializedName("message")
-        public ChoiceMessage message = null;
-        
-        public String getFinishReason() { return finishReason; }
-        public Choice setFinishReason(String value) { this.finishReason = value; return this; }
-        public Integer getIndex() { return index; }
-        public Choice setIndex(Integer value) { this.index = value; return this; }
-        public ChoiceMessage getMessage() { return message; }
-        public Choice setMessage(ChoiceMessage value) { this.message = value; return this; }
-    }
-
-    /**
-    * Usage statistics for the completion request.
-    */
-    @DataContract
-    public static class AiUsage
-    {
-        /**
-        * Number of tokens in the generated completion.
-        */
-        @DataMember(Name="completion_tokens")
-        @SerializedName("completion_tokens")
-        public Integer completionTokens = null;
-
-        /**
-        * Number of tokens in the prompt.
-        */
-        @DataMember(Name="prompt_tokens")
-        @SerializedName("prompt_tokens")
-        public Integer promptTokens = null;
-
-        /**
-        * Total number of tokens used in the request (prompt + completion).
-        */
-        @DataMember(Name="total_tokens")
-        @SerializedName("total_tokens")
-        public Integer totalTokens = null;
-
-        /**
-        * Breakdown of tokens used in a completion.
-        */
-        @DataMember(Name="completion_tokens_details")
-        @SerializedName("completion_tokens_details")
-        public AiCompletionUsage completionTokensDetails = null;
-
-        /**
-        * Breakdown of tokens used in the prompt.
-        */
-        @DataMember(Name="prompt_tokens_details")
-        @SerializedName("prompt_tokens_details")
-        public AiPromptUsage promptTokensDetails = null;
-        
-        public Integer getCompletionTokens() { return completionTokens; }
-        public AiUsage setCompletionTokens(Integer value) { this.completionTokens = value; return this; }
-        public Integer getPromptTokens() { return promptTokens; }
-        public AiUsage setPromptTokens(Integer value) { this.promptTokens = value; return this; }
-        public Integer getTotalTokens() { return totalTokens; }
-        public AiUsage setTotalTokens(Integer value) { this.totalTokens = value; return this; }
-        public AiCompletionUsage getCompletionTokensDetails() { return completionTokensDetails; }
-        public AiUsage setCompletionTokensDetails(AiCompletionUsage value) { this.completionTokensDetails = value; return this; }
-        public AiPromptUsage getPromptTokensDetails() { return promptTokensDetails; }
-        public AiUsage setPromptTokensDetails(AiPromptUsage value) { this.promptTokensDetails = value; return this; }
-    }
-
-    public static class ChatCompletionStat
-    {
-        public String name = null;
-        public Integer requests = null;
-        public Integer inputTokens = null;
-        public Integer outputTokens = null;
-        public BigDecimal cost = null;
-        
-        public String getName() { return name; }
-        public ChatCompletionStat setName(String value) { this.name = value; return this; }
-        public Integer getRequests() { return requests; }
-        public ChatCompletionStat setRequests(Integer value) { this.requests = value; return this; }
-        public Integer getInputTokens() { return inputTokens; }
-        public ChatCompletionStat setInputTokens(Integer value) { this.inputTokens = value; return this; }
-        public Integer getOutputTokens() { return outputTokens; }
-        public ChatCompletionStat setOutputTokens(Integer value) { this.outputTokens = value; return this; }
-        public BigDecimal getCost() { return cost; }
-        public ChatCompletionStat setCost(BigDecimal value) { this.cost = value; return this; }
-    }
-
     public static class DiagnosticEntry
     {
         public Long id = null;
@@ -3389,6 +2825,23 @@ public class dtos
         public HourSummary setCancelled(Integer value) { this.cancelled = value; return this; }
     }
 
+    public static class JobWaitTimes
+    {
+        public Integer count = null;
+        public Integer avgMs = null;
+        public Integer maxMs = null;
+        public Integer waitingMs = null;
+        
+        public Integer getCount() { return count; }
+        public JobWaitTimes setCount(Integer value) { this.count = value; return this; }
+        public Integer getAvgMs() { return avgMs; }
+        public JobWaitTimes setAvgMs(Integer value) { this.avgMs = value; return this; }
+        public Integer getMaxMs() { return maxMs; }
+        public JobWaitTimes setMaxMs(Integer value) { this.maxMs = value; return this; }
+        public Integer getWaitingMs() { return waitingMs; }
+        public JobWaitTimes setWaitingMs(Integer value) { this.waitingMs = value; return this; }
+    }
+
     public static class WorkerStats
     {
         public String name = null;
@@ -3637,66 +3090,6 @@ public class dtos
     }
 
     @DataContract
-    public static class AiContent
-    {
-        /**
-        * The type of the content part.
-        */
-        @DataMember(Name="type")
-        @SerializedName("type")
-        public String type = null;
-        
-        public String getType() { return type; }
-        public AiContent setType(String value) { this.type = value; return this; }
-    }
-
-    /**
-    * The tool calls generated by the model, such as function calls.
-    */
-    @DataContract
-    public static class ToolCall
-    {
-        /**
-        * The ID of the tool call.
-        */
-        @DataMember(Name="id")
-        @SerializedName("id")
-        public String id = null;
-
-        /**
-        * The type of the tool. Currently, only `function` is supported.
-        */
-        @DataMember(Name="type")
-        @SerializedName("type")
-        public String type = null;
-
-        /**
-        * The function that the model called.
-        */
-        @DataMember(Name="function")
-        @SerializedName("function")
-        public String function = null;
-        
-        public String getId() { return id; }
-        public ToolCall setId(String value) { this.id = value; return this; }
-        public String getType() { return type; }
-        public ToolCall setType(String value) { this.type = value; return this; }
-        public String getFunction() { return function; }
-        public ToolCall setFunction(String value) { this.function = value; return this; }
-    }
-
-    public static enum ResponseFormat
-    {
-        Text,
-        JsonObject;
-    }
-
-    public static enum ToolType
-    {
-        Function;
-    }
-
-    @DataContract
     public static class QueryBase
     {
         @DataMember(Order=1)
@@ -3736,62 +3129,18 @@ public class dtos
         public QueryBase setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
-    @DataContract
-    public static class ModelUsage
+    public static enum JobDependencyPolicy
     {
-        @DataMember
-        public String cost = null;
+        OnSuccess,
+        OnFinished;
+    }
 
-        @DataMember
-        public String input = null;
-
-        @DataMember
-        public String output = null;
-
-        @DataMember
-        public Integer duration = null;
-
-        @DataMember(Name="completion_tokens")
-        @SerializedName("completion_tokens")
-        public Integer completionTokens = null;
-
-        @DataMember
-        public Integer inputCachedTokens = null;
-
-        @DataMember
-        public Integer outputCachedTokens = null;
-
-        @DataMember(Name="audio_tokens")
-        @SerializedName("audio_tokens")
-        public Integer audioTokens = null;
-
-        @DataMember(Name="reasoning_tokens")
-        @SerializedName("reasoning_tokens")
-        public Integer reasoningTokens = null;
-
-        @DataMember
-        public Integer totalTokens = null;
-        
-        public String getCost() { return cost; }
-        public ModelUsage setCost(String value) { this.cost = value; return this; }
-        public String getInput() { return input; }
-        public ModelUsage setInput(String value) { this.input = value; return this; }
-        public String getOutput() { return output; }
-        public ModelUsage setOutput(String value) { this.output = value; return this; }
-        public Integer getDuration() { return duration; }
-        public ModelUsage setDuration(Integer value) { this.duration = value; return this; }
-        public Integer getCompletionTokens() { return completionTokens; }
-        public ModelUsage setCompletionTokens(Integer value) { this.completionTokens = value; return this; }
-        public Integer getInputCachedTokens() { return inputCachedTokens; }
-        public ModelUsage setInputCachedTokens(Integer value) { this.inputCachedTokens = value; return this; }
-        public Integer getOutputCachedTokens() { return outputCachedTokens; }
-        public ModelUsage setOutputCachedTokens(Integer value) { this.outputCachedTokens = value; return this; }
-        public Integer getAudioTokens() { return audioTokens; }
-        public ModelUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
-        public Integer getReasoningTokens() { return reasoningTokens; }
-        public ModelUsage setReasoningTokens(Integer value) { this.reasoningTokens = value; return this; }
-        public Integer getTotalTokens() { return totalTokens; }
-        public ModelUsage setTotalTokens(Integer value) { this.totalTokens = value; return this; }
+    public static enum RetryBackoff
+    {
+        Fixed,
+        Linear,
+        Exponential,
+        ExponentialJitter;
     }
 
     public static class BackgroundJobBase
@@ -3800,10 +3149,27 @@ public class dtos
         public Long parentId = null;
         public String refId = null;
         public String worker = null;
+        @StringLength(MaximumLength=100)
+        public String queue = null;
+
+        public Integer priority = null;
         public String tag = null;
         public String batchId = null;
         public String callback = null;
         public Long dependsOn = null;
+        @StringLength(MaximumLength=100)
+        public String dependsOnBatch = null;
+
+        @StringLength(MaximumLength=200)
+        public String concurrencyKey = null;
+
+        public JobDependencyPolicy dependsOnPolicy = null;
+        @StringLength(MaximumLength=100)
+        public String tenantId = null;
+
+        @StringLength(MaximumLength=100)
+        public String traceId = null;
+
         public Date runAfter = null;
         public Date createdDate = null;
         public String createdBy = null;
@@ -3824,6 +3190,9 @@ public class dtos
         public Date completedDate = null;
         public Date notifiedDate = null;
         public Integer retryLimit = null;
+        public RetryBackoff retryBackoff = null;
+        public Integer retryDelayMs = null;
+        public Integer maxRetryDelayMs = null;
         public Integer attempts = null;
         public Integer durationMs = null;
         public Integer timeoutSecs = null;
@@ -3832,7 +3201,13 @@ public class dtos
         @StringLength(MaximumLength=2147483647)
         public String logs = null;
 
+        public Boolean logsTruncated = null;
         public Date lastActivityDate = null;
+        public Date cancelRequestedDate = null;
+        public Date expiresAt = null;
+        @StringLength(MaximumLength=100)
+        public String leaseOwner = null;
+
         public String replyTo = null;
         public String errorCode = null;
         public ResponseStatus error = null;
@@ -3847,6 +3222,10 @@ public class dtos
         public BackgroundJobBase setRefId(String value) { this.refId = value; return this; }
         public String getWorker() { return worker; }
         public BackgroundJobBase setWorker(String value) { this.worker = value; return this; }
+        public String getQueue() { return queue; }
+        public BackgroundJobBase setQueue(String value) { this.queue = value; return this; }
+        public Integer getPriority() { return priority; }
+        public BackgroundJobBase setPriority(Integer value) { this.priority = value; return this; }
         public String getTag() { return tag; }
         public BackgroundJobBase setTag(String value) { this.tag = value; return this; }
         public String getBatchId() { return batchId; }
@@ -3855,6 +3234,16 @@ public class dtos
         public BackgroundJobBase setCallback(String value) { this.callback = value; return this; }
         public Long getDependsOn() { return dependsOn; }
         public BackgroundJobBase setDependsOn(Long value) { this.dependsOn = value; return this; }
+        public String getDependsOnBatch() { return dependsOnBatch; }
+        public BackgroundJobBase setDependsOnBatch(String value) { this.dependsOnBatch = value; return this; }
+        public String getConcurrencyKey() { return concurrencyKey; }
+        public BackgroundJobBase setConcurrencyKey(String value) { this.concurrencyKey = value; return this; }
+        public JobDependencyPolicy getDependsOnPolicy() { return dependsOnPolicy; }
+        public BackgroundJobBase setDependsOnPolicy(JobDependencyPolicy value) { this.dependsOnPolicy = value; return this; }
+        public String getTenantId() { return tenantId; }
+        public BackgroundJobBase setTenantId(String value) { this.tenantId = value; return this; }
+        public String getTraceId() { return traceId; }
+        public BackgroundJobBase setTraceId(String value) { this.traceId = value; return this; }
         public Date getRunAfter() { return runAfter; }
         public BackgroundJobBase setRunAfter(Date value) { this.runAfter = value; return this; }
         public Date getCreatedDate() { return createdDate; }
@@ -3887,6 +3276,12 @@ public class dtos
         public BackgroundJobBase setNotifiedDate(Date value) { this.notifiedDate = value; return this; }
         public Integer getRetryLimit() { return retryLimit; }
         public BackgroundJobBase setRetryLimit(Integer value) { this.retryLimit = value; return this; }
+        public RetryBackoff getRetryBackoff() { return retryBackoff; }
+        public BackgroundJobBase setRetryBackoff(RetryBackoff value) { this.retryBackoff = value; return this; }
+        public Integer getRetryDelayMs() { return retryDelayMs; }
+        public BackgroundJobBase setRetryDelayMs(Integer value) { this.retryDelayMs = value; return this; }
+        public Integer getMaxRetryDelayMs() { return maxRetryDelayMs; }
+        public BackgroundJobBase setMaxRetryDelayMs(Integer value) { this.maxRetryDelayMs = value; return this; }
         public Integer getAttempts() { return attempts; }
         public BackgroundJobBase setAttempts(Integer value) { this.attempts = value; return this; }
         public Integer getDurationMs() { return durationMs; }
@@ -3899,8 +3294,16 @@ public class dtos
         public BackgroundJobBase setStatus(String value) { this.status = value; return this; }
         public String getLogs() { return logs; }
         public BackgroundJobBase setLogs(String value) { this.logs = value; return this; }
+        public Boolean isLogsTruncated() { return logsTruncated; }
+        public BackgroundJobBase setLogsTruncated(Boolean value) { this.logsTruncated = value; return this; }
         public Date getLastActivityDate() { return lastActivityDate; }
         public BackgroundJobBase setLastActivityDate(Date value) { this.lastActivityDate = value; return this; }
+        public Date getCancelRequestedDate() { return cancelRequestedDate; }
+        public BackgroundJobBase setCancelRequestedDate(Date value) { this.cancelRequestedDate = value; return this; }
+        public Date getExpiresAt() { return expiresAt; }
+        public BackgroundJobBase setExpiresAt(Date value) { this.expiresAt = value; return this; }
+        public String getLeaseOwner() { return leaseOwner; }
+        public BackgroundJobBase setLeaseOwner(String value) { this.leaseOwner = value; return this; }
         public String getReplyTo() { return replyTo; }
         public BackgroundJobBase setReplyTo(String value) { this.replyTo = value; return this; }
         public String getErrorCode() { return errorCode; }
@@ -3916,13 +3319,28 @@ public class dtos
     public static class BackgroundJobOptions
     {
         public String refId = null;
+        public DuplicateRefIdBehavior duplicateRefIdBehavior = null;
+        public String singletonKey = null;
         public Long parentId = null;
         public String worker = null;
+        public String queue = null;
+        public Integer priority = null;
         public Date runAfter = null;
+        public Date expiresAt = null;
+        public TimeSpan expiresIn = null;
         public String callback = null;
         public Long dependsOn = null;
+        public String dependsOnBatch = null;
+        public JobDependencyPolicy dependsOnPolicy = null;
+        public String concurrencyKey = null;
+        public String tenantId = null;
         public String userId = null;
         public Integer retryLimit = null;
+        public RetryBackoff retryBackoff = null;
+        public Integer retryDelayMs = null;
+        public Integer maxRetryDelayMs = null;
+        public TimeSpan retryDelay = null;
+        public TimeSpan maxRetryDelay = null;
         public String replyTo = null;
         public String tag = null;
         public String batchId = null;
@@ -3934,20 +3352,50 @@ public class dtos
         
         public String getRefId() { return refId; }
         public BackgroundJobOptions setRefId(String value) { this.refId = value; return this; }
+        public DuplicateRefIdBehavior getDuplicateRefIdBehavior() { return duplicateRefIdBehavior; }
+        public BackgroundJobOptions setDuplicateRefIdBehavior(DuplicateRefIdBehavior value) { this.duplicateRefIdBehavior = value; return this; }
+        public String getSingletonKey() { return singletonKey; }
+        public BackgroundJobOptions setSingletonKey(String value) { this.singletonKey = value; return this; }
         public Long getParentId() { return parentId; }
         public BackgroundJobOptions setParentId(Long value) { this.parentId = value; return this; }
         public String getWorker() { return worker; }
         public BackgroundJobOptions setWorker(String value) { this.worker = value; return this; }
+        public String getQueue() { return queue; }
+        public BackgroundJobOptions setQueue(String value) { this.queue = value; return this; }
+        public Integer getPriority() { return priority; }
+        public BackgroundJobOptions setPriority(Integer value) { this.priority = value; return this; }
         public Date getRunAfter() { return runAfter; }
         public BackgroundJobOptions setRunAfter(Date value) { this.runAfter = value; return this; }
+        public Date getExpiresAt() { return expiresAt; }
+        public BackgroundJobOptions setExpiresAt(Date value) { this.expiresAt = value; return this; }
+        public TimeSpan getExpiresIn() { return expiresIn; }
+        public BackgroundJobOptions setExpiresIn(TimeSpan value) { this.expiresIn = value; return this; }
         public String getCallback() { return callback; }
         public BackgroundJobOptions setCallback(String value) { this.callback = value; return this; }
         public Long getDependsOn() { return dependsOn; }
         public BackgroundJobOptions setDependsOn(Long value) { this.dependsOn = value; return this; }
+        public String getDependsOnBatch() { return dependsOnBatch; }
+        public BackgroundJobOptions setDependsOnBatch(String value) { this.dependsOnBatch = value; return this; }
+        public JobDependencyPolicy getDependsOnPolicy() { return dependsOnPolicy; }
+        public BackgroundJobOptions setDependsOnPolicy(JobDependencyPolicy value) { this.dependsOnPolicy = value; return this; }
+        public String getConcurrencyKey() { return concurrencyKey; }
+        public BackgroundJobOptions setConcurrencyKey(String value) { this.concurrencyKey = value; return this; }
+        public String getTenantId() { return tenantId; }
+        public BackgroundJobOptions setTenantId(String value) { this.tenantId = value; return this; }
         public String getUserId() { return userId; }
         public BackgroundJobOptions setUserId(String value) { this.userId = value; return this; }
         public Integer getRetryLimit() { return retryLimit; }
         public BackgroundJobOptions setRetryLimit(Integer value) { this.retryLimit = value; return this; }
+        public RetryBackoff getRetryBackoff() { return retryBackoff; }
+        public BackgroundJobOptions setRetryBackoff(RetryBackoff value) { this.retryBackoff = value; return this; }
+        public Integer getRetryDelayMs() { return retryDelayMs; }
+        public BackgroundJobOptions setRetryDelayMs(Integer value) { this.retryDelayMs = value; return this; }
+        public Integer getMaxRetryDelayMs() { return maxRetryDelayMs; }
+        public BackgroundJobOptions setMaxRetryDelayMs(Integer value) { this.maxRetryDelayMs = value; return this; }
+        public TimeSpan getRetryDelay() { return retryDelay; }
+        public BackgroundJobOptions setRetryDelay(TimeSpan value) { this.retryDelay = value; return this; }
+        public TimeSpan getMaxRetryDelay() { return maxRetryDelay; }
+        public BackgroundJobOptions setMaxRetryDelay(TimeSpan value) { this.maxRetryDelay = value; return this; }
         public String getReplyTo() { return replyTo; }
         public BackgroundJobOptions setReplyTo(String value) { this.replyTo = value; return this; }
         public String getTag() { return tag; }
@@ -3964,6 +3412,18 @@ public class dtos
         public BackgroundJobOptions setArgs(HashMap<String,String> value) { this.args = value; return this; }
         public Boolean isRunCommand() { return runCommand; }
         public BackgroundJobOptions setRunCommand(Boolean value) { this.runCommand = value; return this; }
+    }
+
+    public static enum ScheduleMisfirePolicy
+    {
+        RunOnce,
+        Skip;
+    }
+
+    public static enum ScheduleOverlapPolicy
+    {
+        Allow,
+        Skip;
     }
 
     public static class ValidateRule
@@ -4686,153 +4146,6 @@ public class dtos
         public MetadataOperationType setUi(ApiUiInfo value) { this.ui = value; return this; }
     }
 
-    @DataContract
-    public static class ChoiceMessage
-    {
-        /**
-        * The contents of the message.
-        */
-        @DataMember(Name="content")
-        @SerializedName("content")
-        public String content = null;
-
-        /**
-        * The refusal message generated by the model.
-        */
-        @DataMember(Name="refusal")
-        @SerializedName("refusal")
-        public String refusal = null;
-
-        /**
-        * The reasoning process used by the model.
-        */
-        @DataMember(Name="reasoning")
-        @SerializedName("reasoning")
-        public String reasoning = null;
-
-        /**
-        * The role of the author of this message.
-        */
-        @DataMember(Name="role")
-        @SerializedName("role")
-        public String role = null;
-
-        /**
-        * Annotations for the message, when applicable, as when using the web search tool.
-        */
-        @DataMember(Name="annotations")
-        @SerializedName("annotations")
-        public ArrayList<ChoiceAnnotation> annotations = null;
-
-        /**
-        * If the audio output modality is requested, this object contains data about the audio response from the model.
-        */
-        @DataMember(Name="audio")
-        @SerializedName("audio")
-        public ChoiceAudio audio = null;
-
-        /**
-        * The tool calls generated by the model, such as function calls.
-        */
-        @DataMember(Name="tool_calls")
-        @SerializedName("tool_calls")
-        public ArrayList<ToolCall> toolCalls = null;
-        
-        public String getContent() { return content; }
-        public ChoiceMessage setContent(String value) { this.content = value; return this; }
-        public String getRefusal() { return refusal; }
-        public ChoiceMessage setRefusal(String value) { this.refusal = value; return this; }
-        public String getReasoning() { return reasoning; }
-        public ChoiceMessage setReasoning(String value) { this.reasoning = value; return this; }
-        public String getRole() { return role; }
-        public ChoiceMessage setRole(String value) { this.role = value; return this; }
-        public ArrayList<ChoiceAnnotation> getAnnotations() { return annotations; }
-        public ChoiceMessage setAnnotations(ArrayList<ChoiceAnnotation> value) { this.annotations = value; return this; }
-        public ChoiceAudio getAudio() { return audio; }
-        public ChoiceMessage setAudio(ChoiceAudio value) { this.audio = value; return this; }
-        public ArrayList<ToolCall> getToolCalls() { return toolCalls; }
-        public ChoiceMessage setToolCalls(ArrayList<ToolCall> value) { this.toolCalls = value; return this; }
-    }
-
-    /**
-    * Usage statistics for the completion request.
-    */
-    @DataContract
-    public static class AiCompletionUsage
-    {
-        /**
-        * When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
-        */
-        @DataMember(Name="accepted_prediction_tokens")
-        @SerializedName("accepted_prediction_tokens")
-        public Integer acceptedPredictionTokens = null;
-
-        /**
-        * Audio input tokens generated by the model.
-        */
-        @DataMember(Name="audio_tokens")
-        @SerializedName("audio_tokens")
-        public Integer audioTokens = null;
-
-        /**
-        * Tokens generated by the model for reasoning.
-        */
-        @DataMember(Name="reasoning_tokens")
-        @SerializedName("reasoning_tokens")
-        public Integer reasoningTokens = null;
-
-        /**
-        * When using Predicted Outputs, the number of tokens in the prediction that did not appear in the completion.
-        */
-        @DataMember(Name="rejected_prediction_tokens")
-        @SerializedName("rejected_prediction_tokens")
-        public Integer rejectedPredictionTokens = null;
-        
-        public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
-        public AiCompletionUsage setAcceptedPredictionTokens(Integer value) { this.acceptedPredictionTokens = value; return this; }
-        public Integer getAudioTokens() { return audioTokens; }
-        public AiCompletionUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
-        public Integer getReasoningTokens() { return reasoningTokens; }
-        public AiCompletionUsage setReasoningTokens(Integer value) { this.reasoningTokens = value; return this; }
-        public Integer getRejectedPredictionTokens() { return rejectedPredictionTokens; }
-        public AiCompletionUsage setRejectedPredictionTokens(Integer value) { this.rejectedPredictionTokens = value; return this; }
-    }
-
-    /**
-    * Breakdown of tokens used in the prompt.
-    */
-    @DataContract
-    public static class AiPromptUsage
-    {
-        /**
-        * When using Predicted Outputs, the number of tokens in the prediction that appeared in the completion.
-        */
-        @DataMember(Name="accepted_prediction_tokens")
-        @SerializedName("accepted_prediction_tokens")
-        public Integer acceptedPredictionTokens = null;
-
-        /**
-        * Audio input tokens present in the prompt.
-        */
-        @DataMember(Name="audio_tokens")
-        @SerializedName("audio_tokens")
-        public Integer audioTokens = null;
-
-        /**
-        * Cached tokens present in the prompt.
-        */
-        @DataMember(Name="cached_tokens")
-        @SerializedName("cached_tokens")
-        public Integer cachedTokens = null;
-        
-        public Integer getAcceptedPredictionTokens() { return acceptedPredictionTokens; }
-        public AiPromptUsage setAcceptedPredictionTokens(Integer value) { this.acceptedPredictionTokens = value; return this; }
-        public Integer getAudioTokens() { return audioTokens; }
-        public AiPromptUsage setAudioTokens(Integer value) { this.audioTokens = value; return this; }
-        public Integer getCachedTokens() { return cachedTokens; }
-        public AiPromptUsage setCachedTokens(Integer value) { this.cachedTokens = value; return this; }
-    }
-
     public static class MetadataDataMember
     {
         public String name = null;
@@ -5065,72 +4378,10 @@ public class dtos
         public RequestSummary setApiKeys(HashMap<String,Long> value) { this.apiKeys = value; return this; }
     }
 
-    /**
-    * Text content part
-    */
-    @DataContract
-    public static class AiTextContent extends AiContent
+    public static enum DuplicateRefIdBehavior
     {
-        /**
-        * The text content.
-        */
-        @DataMember(Name="text")
-        @SerializedName("text")
-        public String text = null;
-        
-        public String getText() { return text; }
-        public AiTextContent setText(String value) { this.text = value; return this; }
-    }
-
-    /**
-    * Image content part
-    */
-    @DataContract
-    public static class AiImageContent extends AiContent
-    {
-        /**
-        * The image for this content.
-        */
-        @DataMember(Name="image_url")
-        @SerializedName("image_url")
-        public AiImageUrl imageUrl = null;
-        
-        public AiImageUrl getImageUrl() { return imageUrl; }
-        public AiImageContent setImageUrl(AiImageUrl value) { this.imageUrl = value; return this; }
-    }
-
-    /**
-    * Audio content part
-    */
-    @DataContract
-    public static class AiAudioContent extends AiContent
-    {
-        /**
-        * The audio input for this content.
-        */
-        @DataMember(Name="input_audio")
-        @SerializedName("input_audio")
-        public AiInputAudio inputAudio = null;
-        
-        public AiInputAudio getInputAudio() { return inputAudio; }
-        public AiAudioContent setInputAudio(AiInputAudio value) { this.inputAudio = value; return this; }
-    }
-
-    /**
-    * File content part
-    */
-    @DataContract
-    public static class AiFileContent extends AiContent
-    {
-        /**
-        * The file input for this content.
-        */
-        @DataMember(Name="file")
-        @SerializedName("file")
-        public AiFile file = null;
-        
-        public AiFile getFile() { return file; }
-        public AiFileContent setFile(AiFile value) { this.file = value; return this; }
+        Throw,
+        ReturnExisting;
     }
 
     public static class ApiCss
@@ -5407,76 +4658,6 @@ public class dtos
         public ApiUiInfo setMeta(HashMap<String,String> value) { this.meta = value; return this; }
     }
 
-    /**
-    * Annotations for the message, when applicable, as when using the web search tool.
-    */
-    @DataContract
-    public static class ChoiceAnnotation
-    {
-        /**
-        * The type of the URL citation. Always url_citation.
-        */
-        @DataMember(Name="type")
-        @SerializedName("type")
-        public String type = null;
-
-        /**
-        * A URL citation when using web search.
-        */
-        @DataMember(Name="url_citation")
-        @SerializedName("url_citation")
-        public UrlCitation urlCitation = null;
-        
-        public String getType() { return type; }
-        public ChoiceAnnotation setType(String value) { this.type = value; return this; }
-        public UrlCitation getUrlCitation() { return urlCitation; }
-        public ChoiceAnnotation setUrlCitation(UrlCitation value) { this.urlCitation = value; return this; }
-    }
-
-    /**
-    * If the audio output modality is requested, this object contains data about the audio response from the model.
-    */
-    @DataContract
-    public static class ChoiceAudio
-    {
-        /**
-        * Base64 encoded audio bytes generated by the model, in the format specified in the request.
-        */
-        @DataMember(Name="data")
-        @SerializedName("data")
-        public String data = null;
-
-        /**
-        * The Unix timestamp (in seconds) for when this audio response will no longer be accessible on the server for use in multi-turn conversations.
-        */
-        @DataMember(Name="expires_at")
-        @SerializedName("expires_at")
-        public Integer expiresAt = null;
-
-        /**
-        * Unique identifier for this audio response.
-        */
-        @DataMember(Name="id")
-        @SerializedName("id")
-        public String id = null;
-
-        /**
-        * Transcript of the audio generated by the model.
-        */
-        @DataMember(Name="transcript")
-        @SerializedName("transcript")
-        public String transcript = null;
-        
-        public String getData() { return data; }
-        public ChoiceAudio setData(String value) { this.data = value; return this; }
-        public Integer getExpiresAt() { return expiresAt; }
-        public ChoiceAudio setExpiresAt(Integer value) { this.expiresAt = value; return this; }
-        public String getId() { return id; }
-        public ChoiceAudio setId(String value) { this.id = value; return this; }
-        public String getTranscript() { return transcript; }
-        public ChoiceAudio setTranscript(String value) { this.transcript = value; return this; }
-    }
-
     public static class FieldCss
     {
         public String field = null;
@@ -5489,81 +4670,6 @@ public class dtos
         public FieldCss setInput(String value) { this.input = value; return this; }
         public String getLabel() { return label; }
         public FieldCss setLabel(String value) { this.label = value; return this; }
-    }
-
-    @DataContract
-    public static class AiImageUrl
-    {
-        /**
-        * Either a URL of the image or the base64 encoded image data.
-        */
-        @DataMember(Name="url")
-        @SerializedName("url")
-        public String url = null;
-        
-        public String getUrl() { return url; }
-        public AiImageUrl setUrl(String value) { this.url = value; return this; }
-    }
-
-    /**
-    * Audio content part
-    */
-    @DataContract
-    public static class AiInputAudio
-    {
-        /**
-        * URL or Base64 encoded audio data.
-        */
-        @DataMember(Name="data")
-        @SerializedName("data")
-        public String data = null;
-
-        /**
-        * The format of the encoded audio data. Currently supports 'wav' and 'mp3'.
-        */
-        @DataMember(Name="format")
-        @SerializedName("format")
-        public String format = null;
-        
-        public String getData() { return data; }
-        public AiInputAudio setData(String value) { this.data = value; return this; }
-        public String getFormat() { return format; }
-        public AiInputAudio setFormat(String value) { this.format = value; return this; }
-    }
-
-    /**
-    * File content part
-    */
-    @DataContract
-    public static class AiFile
-    {
-        /**
-        * The URL or base64 encoded file data, used when passing the file to the model as a string.
-        */
-        @DataMember(Name="file_data")
-        @SerializedName("file_data")
-        public String fileData = null;
-
-        /**
-        * The name of the file, used when passing the file to the model as a string.
-        */
-        @DataMember(Name="filename")
-        @SerializedName("filename")
-        public String filename = null;
-
-        /**
-        * The ID of an uploaded file to use as input.
-        */
-        @DataMember(Name="file_id")
-        @SerializedName("file_id")
-        public String fileId = null;
-        
-        public String getFileData() { return fileData; }
-        public AiFile setFileData(String value) { this.fileData = value; return this; }
-        public String getFilename() { return filename; }
-        public AiFile setFilename(String value) { this.filename = value; return this; }
-        public String getFileId() { return fileId; }
-        public AiFile setFileId(String value) { this.fileId = value; return this; }
     }
 
     public static class NavItem
@@ -5616,50 +4722,6 @@ public class dtos
         public SchemaInfo setName(String value) { this.name = value; return this; }
         public ArrayList<String> getTables() { return tables; }
         public SchemaInfo setTables(ArrayList<String> value) { this.tables = value; return this; }
-    }
-
-    /**
-    * Annotations for the message, when applicable, as when using the web search tool.
-    */
-    @DataContract
-    public static class UrlCitation
-    {
-        /**
-        * The index of the last character of the URL citation in the message.
-        */
-        @DataMember(Name="end_index")
-        @SerializedName("end_index")
-        public Integer endIndex = null;
-
-        /**
-        * The index of the first character of the URL citation in the message.
-        */
-        @DataMember(Name="start_index")
-        @SerializedName("start_index")
-        public Integer startIndex = null;
-
-        /**
-        * The title of the web resource.
-        */
-        @DataMember(Name="title")
-        @SerializedName("title")
-        public String title = null;
-
-        /**
-        * The URL of the web resource.
-        */
-        @DataMember(Name="url")
-        @SerializedName("url")
-        public String url = null;
-        
-        public Integer getEndIndex() { return endIndex; }
-        public UrlCitation setEndIndex(Integer value) { this.endIndex = value; return this; }
-        public Integer getStartIndex() { return startIndex; }
-        public UrlCitation setStartIndex(Integer value) { this.startIndex = value; return this; }
-        public String getTitle() { return title; }
-        public UrlCitation setTitle(String value) { this.title = value; return this; }
-        public String getUrl() { return url; }
-        public UrlCitation setUrl(String value) { this.url = value; return this; }
     }
 
 }
