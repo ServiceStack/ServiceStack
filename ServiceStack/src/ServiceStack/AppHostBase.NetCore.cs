@@ -286,6 +286,7 @@ public abstract class AppHostBase : ServiceStackHost, IAppHostNetCore, IConfigur
             operation.RequestType.HasAttribute<ExcludeFromDescriptionAttribute>())
             builder.ExcludeFromDescription();
         
+        this.ConfigureRateLimiting(builder, operation);
         return builder;
     }
     
@@ -762,12 +763,24 @@ public static class NetCoreAppHostExtensions
         appHost.GetHostingEnvironment().EnvironmentName == "Production";
 
 #if NET8_0_OR_GREATER
+    public static void ConfigureRateLimiting(this IAppHostNetCore host, RouteHandlerBuilder builder, Operation operation)
+    {
+        var (policy, disabled) = host.Options.ResolveRateLimiting(operation);
+        if (disabled)
+            builder.DisableRateLimiting();
+        else if (policy != null)
+            builder.RequireRateLimiting(policy);
+    }
+
     public static void AddRequestDtoAttributes(RouteHandlerBuilder builder, Operation operation, string verb, string route)
     {
         var attrs = operation.RequestType.GetCustomAttributes(true);
         builder.WithMetadata(new CommandAttribute(operation.RequestType));
         foreach (var attr in attrs)
         {
+            if (attr is Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute ||
+                attr is Microsoft.AspNetCore.RateLimiting.DisableRateLimitingAttribute ||
+                attr is RateLimitingAttribute) continue;
             builder.WithMetadata(attr);
         }
     }
@@ -811,6 +824,7 @@ public static class NetCoreAppHostExtensions
         appHost.Init();
 
 #if NET8_0_OR_GREATER
+        appHost.Options.ValidateRateLimiting(appHost.Metadata.OperationsMap.Values);
         if (ServiceStackHost.InitOptions.RegisterServicesInServiceCollection)
         {
             appHost.Container.CheckAdapterFirst = true;

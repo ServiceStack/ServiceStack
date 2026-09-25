@@ -3,6 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +54,20 @@ public class EndpointRoutingTests
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlite(connectionString /*, b => b.MigrationsAssembly(nameof(MyApp))*/));
 
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = 429;
+            options.AddPolicy("endpoint-orders", _ => RateLimitPartition.GetFixedWindowLimiter(
+                "orders", _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 4, Window = TimeSpan.FromHours(1), QueueLimit = 0,
+                }));
+            options.AddPolicy("endpoint-batch", _ => RateLimitPartition.GetFixedWindowLimiter(
+                "batch", _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 1, Window = TimeSpan.FromHours(1), QueueLimit = 0,
+                }));
+        });
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
@@ -78,13 +95,47 @@ public class EndpointRoutingTests
         app.UseSwaggerUI();
         app.UseHttpsRedirection();
         app.UseStaticFiles();
-        app.UseServiceStack(new AppHost(), options => { options.MapEndpoints(); });
+        app.UseRouting();
+        app.UseRateLimiter();
+        app.UseServiceStack(new AppHost(), options =>
+        {
+            options.MapEndpoints();
+            options.RateLimitTag("endpoint-orders", "endpoint-orders");
+            options.RateLimitTag("endpoint-batch", "endpoint-batch");
+        });
 
         app.StartAsync(TestsConfig.ListeningOn);
     }
  
     [OneTimeTearDown]
     public void TestFixtureTearDown() => AppHostBase.DisposeApp();
+
+    [Test]
+    public async Task Tagged_endpoints_share_a_rate_limit_on_api_and_format_routes()
+    {
+        using var client = new HttpClient();
+        var root = TestsConfig.ListeningOn.TrimEnd('/');
+        Assert.That((int)(await client.GetAsync(root + "/api/RateLimitedOrderA")).StatusCode, Is.EqualTo(200));
+        Assert.That((int)(await client.GetAsync(root + "/api/RateLimitedOrderB.json")).StatusCode, Is.EqualTo(200));
+        Assert.That((int)(await client.GetAsync(root + "/rate-limited-c")).StatusCode, Is.EqualTo(200));
+        Assert.That((int)(await client.GetAsync(root + "/rate-limited-c.json")).StatusCode, Is.EqualTo(200));
+        Assert.That(RateLimitedOrderService.Calls, Is.EqualTo(4));
+        Assert.That((int)(await client.GetAsync(root + "/api/RateLimitedOrderA")).StatusCode, Is.EqualTo(429));
+        Assert.That((int)(await client.GetAsync(root + "/api/RateLimitedOrderC.json")).StatusCode, Is.EqualTo(429));
+        Assert.That((int)(await client.PostAsync(root + "/rate-limited-c", new StringContent("{}", System.Text.Encoding.UTF8, "application/json"))).StatusCode, Is.EqualTo(429));
+        Assert.That((int)(await client.GetAsync(root + "/json/reply/RateLimitedOrderA")).StatusCode, Is.Not.EqualTo(200));
+        Assert.That(RateLimitedOrderService.Calls, Is.EqualTo(4));
+    }
+
+    [Test]
+    public async Task Autobatch_endpoint_uses_the_named_policy()
+    {
+        using var client = new HttpClient();
+        var url = TestsConfig.ListeningOn.TrimEnd('/') + "/api/RateLimitedBatch[]";
+        using var body = new StringContent("[{}]", System.Text.Encoding.UTF8, "application/json");
+        Assert.That((int)(await client.PostAsync(url, body)).StatusCode, Is.EqualTo(200));
+        Assert.That((int)(await client.PostAsync(url, new StringContent("[{}]", System.Text.Encoding.UTF8, "application/json"))).StatusCode, Is.EqualTo(429));
+    }
 
     [Test]
     public async Task Endpoints_does_dispose_of_property_injected_services()
@@ -183,5 +234,90 @@ public class TestValidation
     public string ArticleId { get; set; }
     public DateTime Date { get; set; }
 }
+
+[Tag("endpoint-orders")]
+[RateLimiting("endpoint-orders")]
+public class RateLimitedOrderA : IGet, IReturn<StringResponse> { }
+
+[Tag("endpoint-orders")]
+public class RateLimitedOrderB : IGet, IReturn<StringResponse> { }
+
+[Tag("endpoint-orders")]
+[EnableRateLimiting("endpoint-orders")]
+[Route("/rate-limited-c", "GET,POST")]
+public class RateLimitedOrderC : IGet, IReturn<StringResponse> { }
+
+public class RateLimitedOrderService : Service
+{
+    public static int Calls;
+    public object Get(RateLimitedOrderA request) { System.Threading.Interlocked.Increment(ref Calls); return new StringResponse { Result = "A" }; }
+    public object Get(RateLimitedOrderB request) { System.Threading.Interlocked.Increment(ref Calls); return new StringResponse { Result = "B" }; }
+    public object Get(RateLimitedOrderC request) { System.Threading.Interlocked.Increment(ref Calls); return new StringResponse { Result = "C" }; }
+    public object Post(RateLimitedOrderC request) { System.Threading.Interlocked.Increment(ref Calls); return new StringResponse { Result = "C" }; }
+}
+
+[Tag("endpoint-batch")]
+public class RateLimitedBatch : IPost, IReturn<StringResponse> { }
+public class RateLimitedBatchService : Service
+{
+    public object Post(RateLimitedBatch request) => new StringResponse { Result = "batch" };
+}
+
+[TestFixture]
+public class RateLimitBindingTests
+{
+    static Operation Op<T>(params string[] tags) => new()
+    {
+        RequestType = typeof(T), ServiceType = typeof(RateLimitedOrderService),
+        Method = "GET", Tags = new System.Collections.Generic.List<string>(tags),
+    };
+
+    [Test]
+    public void Conflicting_tags_fail_and_an_operation_binding_overrides_them()
+    {
+        var options = new ServiceStackOptions();
+        options.MapEndpoints();
+        options.RateLimitTag("one", "first");
+        options.RateLimitTag("two", "second");
+        var op = Op<RateLimitMultipleTags>("one", "two");
+        Assert.That(Assert.Throws<InvalidOperationException>(() => options.ValidateRateLimiting([op]))!.Message,
+            Does.Contain(nameof(RateLimitMultipleTags)).And.Contain("one=first").And.Contain("two=second"));
+
+        var overridden = new ServiceStackOptions();
+        overridden.MapEndpoints();
+        overridden.RateLimitTag("one", "first");
+        overridden.RateLimitTag("two", "second");
+        overridden.RateLimitOperation<RateLimitMultipleTags>("chosen");
+        Assert.DoesNotThrow(() => overridden.ValidateRateLimiting([op]));
+    }
+
+    [Test]
+    public void Attribute_conflicts_and_unsafe_routing_fail_at_startup()
+    {
+        var options = new ServiceStackOptions();
+        options.MapEndpoints();
+        Assert.DoesNotThrow(() => options.ValidateRateLimiting([Op<RateLimitEqualAttributes>()]));
+        Assert.That(Assert.Throws<InvalidOperationException>(() =>
+            new ServiceStackOptions().ValidateRateLimiting([Op<RateLimitEqualAttributes>()]))!.Message,
+            Does.Contain("MapEndpoints"));
+        Assert.That(Assert.Throws<InvalidOperationException>(() =>
+            new ServiceStackOptions().ValidateRateLimiting([Op<RateLimitConflictingAttributes>()]))!.Message,
+            Does.Contain("conflicting rate-limiting attributes"));
+        Assert.That(Assert.Throws<InvalidOperationException>(() =>
+            new ServiceStackOptions().ValidateRateLimiting([Op<RateLimitDisabledConflict>()]))!.Message,
+            Does.Contain("disables rate limiting"));
+    }
+}
+
+public class RateLimitMultipleTags { }
+[RateLimiting("same")]
+[EnableRateLimiting("same")]
+public class RateLimitEqualAttributes { }
+[RateLimiting("one")]
+[EnableRateLimiting("two")]
+public class RateLimitConflictingAttributes { }
+[RateLimiting("one")]
+[DisableRateLimiting]
+public class RateLimitDisabledConflict { }
 
 #endif

@@ -263,6 +263,86 @@ public class ServiceStackOptions
         UseSystemJson = useSystemJson;
     }
 
+    private readonly Dictionary<string, string> rateLimitTags = new(StringComparer.Ordinal);
+    private readonly Dictionary<Type, string> rateLimitOperations = new();
+    private readonly Dictionary<Type, string?> resolvedRateLimits = new();
+
+    /// <summary>Attach a named ASP.NET Core rate-limiting policy to every operation with this tag.</summary>
+    public void RateLimitTag(string tag, string policyName)
+    {
+        ValidateRateLimitName(tag, nameof(tag));
+        ValidateRateLimitName(policyName, nameof(policyName));
+        if (rateLimitTags.TryGetValue(tag, out var existing) && existing != policyName)
+            throw new InvalidOperationException($"Rate-limiting tag '{tag}' is already bound to '{existing}'.");
+        rateLimitTags[tag] = policyName;
+    }
+
+    /// <summary>Attach a named ASP.NET Core rate-limiting policy to an operation.</summary>
+    public void RateLimitOperation<TRequest>(string policyName) => RateLimitOperation(typeof(TRequest), policyName);
+
+    public void RateLimitOperation(Type requestType, string policyName)
+    {
+        ArgumentNullException.ThrowIfNull(requestType);
+        ValidateRateLimitName(policyName, nameof(policyName));
+        if (rateLimitOperations.TryGetValue(requestType, out var existing) && existing != policyName)
+            throw new InvalidOperationException($"Operation '{requestType.Name}' is already bound to '{existing}'.");
+        rateLimitOperations[requestType] = policyName;
+    }
+
+    private static void ValidateRateLimitName(string value, string parameterName)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException("Rate-limiting names cannot be empty.", parameterName);
+    }
+
+    internal bool HasRateLimiting { get; private set; }
+
+    public void ValidateRateLimiting(IEnumerable<Operation> operations)
+    {
+        foreach (var operation in operations)
+            ResolveRateLimiting(operation);
+        if (HasRateLimiting && (!MapEndpointRouting || !UseEndpointRouting || !DisableServiceStackRouting))
+            throw new InvalidOperationException("Rate-limited ServiceStack operations require options.MapEndpoints(use: true, force: true) to prevent unmetered legacy routes.");
+    }
+
+    internal (string? Policy, bool Disabled) ResolveRateLimiting(Operation operation)
+    {
+        var requestType = operation.RequestType;
+        var disabled = requestType.IsDefined(typeof(Microsoft.AspNetCore.RateLimiting.DisableRateLimitingAttribute), true);
+        if (resolvedRateLimits.TryGetValue(requestType, out var cached))
+            return (cached, disabled);
+
+        var serviceStack = (RateLimitingAttribute?)Attribute.GetCustomAttribute(requestType, typeof(RateLimitingAttribute), true);
+        var microsoft = (Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute?)Attribute.GetCustomAttribute(
+            requestType, typeof(Microsoft.AspNetCore.RateLimiting.EnableRateLimitingAttribute), true);
+        if (serviceStack != null) ValidateRateLimitName(serviceStack.PolicyName, nameof(RateLimitingAttribute.PolicyName));
+        if (microsoft != null) ValidateRateLimitName(microsoft.PolicyName, nameof(microsoft.PolicyName));
+        if (serviceStack != null && microsoft != null && serviceStack.PolicyName != microsoft.PolicyName)
+            throw new InvalidOperationException($"Operation '{operation.Name}' has conflicting rate-limiting attributes: '{serviceStack.PolicyName}' and '{microsoft.PolicyName}'.");
+
+        rateLimitOperations.TryGetValue(requestType, out var explicitPolicy);
+        var attributePolicy = serviceStack?.PolicyName ?? microsoft?.PolicyName;
+        if (explicitPolicy != null && attributePolicy != null && explicitPolicy != attributePolicy)
+            throw new InvalidOperationException($"Operation '{operation.Name}' has conflicting rate-limiting bindings: '{explicitPolicy}' and '{attributePolicy}'.");
+        if (disabled && (explicitPolicy != null || attributePolicy != null))
+            throw new InvalidOperationException($"Operation '{operation.Name}' disables rate limiting but also selects a policy.");
+
+        var policy = explicitPolicy ?? attributePolicy;
+        if (policy == null && !disabled)
+        {
+            var matches = operation.Tags.Where(rateLimitTags.ContainsKey)
+                .Select(tag => (Tag: tag, Policy: rateLimitTags[tag])).ToList();
+            var distinct = matches.Select(x => x.Policy).Distinct(StringComparer.Ordinal).ToList();
+            if (distinct.Count > 1)
+                throw new InvalidOperationException($"Operation '{operation.Name}' has conflicting rate-limiting tags: " +
+                    string.Join(", ", matches.Select(x => $"{x.Tag}={x.Policy}")));
+            policy = distinct.FirstOrDefault();
+        }
+        HasRateLimiting |= policy != null;
+        resolvedRateLimits[requestType] = policy;
+        return (policy, disabled);
+    }
+
     /// <summary>
     /// Use ASP .NET Route Endpoint implementations
     /// </summary>

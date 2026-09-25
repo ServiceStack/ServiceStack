@@ -179,6 +179,22 @@ public class PredefinedRoutesFeature : IPlugin, IAfterInitAppHost, Model.IHasStr
                     if (serializer == ContentTypes.UnknownContentTypeSerializer)
                         continue;
             
+                    // Literal operation routes take precedence over the generic format route. A
+                    // bound operation must never fall through to an endpoint without its policy.
+                    foreach (var operation in appHost.Metadata.OperationsMap.Values)
+                    {
+                        var (policy, disabled) = host.Options.ResolveRateLimiting(operation);
+                        if (policy == null && !disabled) continue;
+                        var requestName = operation.RequestType.Name;
+                        var formatPath = requestName + "." + entry.Key;
+                        var formatBuilder = apis.MapMethods(formatPath,
+                            new[] { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Patch, HttpMethods.Delete },
+                            (HttpResponse response, HttpContext httpContext) =>
+                                httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:requestName));
+                        host.ConfigureOperationEndpoint(formatBuilder, operation, options);
+                        formatBuilder.WithMetadata<string>(contentType:entry.Value);
+                    }
+
                     apis.MapGet("{name}." + entry.Key, (string name, HttpContext httpContext) => 
                             httpContext.ProcessRequestAsync(ApiHandlers.JsonEndpointHandler(apiPath, httpContext.Request.Path), apiName:name))
                         .WithMetadata<string>(contentType:entry.Value);

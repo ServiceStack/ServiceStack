@@ -119,6 +119,7 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
             operation.RequestType.ExcludesFeature(Feature.ApiExplorer))
             builder.ExcludeFromDescription();
 
+        this.ConfigureRateLimiting(builder, operation);
         return builder;
     }
     
@@ -338,6 +339,13 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
 
         if (handler is IServiceStackHandler serviceStackHandler)
         {
+#if NET8_0_OR_GREATER
+            if (Options.DisableServiceStackRouting)
+            {
+                await next();
+                return;
+            }
+#endif
             if (serviceStackHandler is NotFoundHttpHandler)
             {
                 await next();
@@ -377,6 +385,9 @@ public abstract class AppSelfHostBase : ServiceStackHost, IAppHostNetCore, IConf
     protected void RealInit()
     {
         base.Init();
+#if NET8_0_OR_GREATER
+        Options.ValidateRateLimiting(Metadata.OperationsMap.Values);
+#endif
     }
 
     public virtual string ParsePathBase(string urlBase)
