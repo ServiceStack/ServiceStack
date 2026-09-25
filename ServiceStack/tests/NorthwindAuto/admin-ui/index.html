@@ -136,10 +136,10 @@ DEBUG = true /*debug*/
                     </div>
                     <div v-else class="py-6">
                         <div class="mx-auto px-4 sm:px-6 md:px-8">
-                            <h1 class="text-2xl font-semibold text-gray-900">{{store.link?.label}}</h1>
+                            <h1 class="text-xl font-semibold tracking-tight text-gray-900">{{store.link?.label}}</h1>
                         </div>
                         <div class="mx-auto px-4 sm:px-6 md:px-8">
-                            <div class="py-4">
+                            <div class="pt-5 pb-4">
                                 <dashboard v-if="(routes.admin ?? '') === ''"></dashboard>
                                 <analytics v-else-if="routes.admin === 'analytics'"></analytics>
                                 <identity-users v-else-if="routes.admin === 'users' && server?.plugins.auth?.identityAuth"></identity-users>
@@ -155,7 +155,7 @@ DEBUG = true /*debug*/
                                 <database v-else-if="routes.admin === 'database'"></database>
                                 <div v-else>
                                     <section v-if="routes.admin === 'chat'">
-                                        <div class="p-4 max-w-3xl">
+                                        <div class="max-w-3xl">
                                             <alert type="info">Admin Chat UI is not enabled</alert>
                                             <div class="my-4">
                                                 <div>

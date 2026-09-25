@@ -99,7 +99,7 @@ export const Redis = {
     components: { NewKey },
     template:`
 <section v-if="!plugin">
-  <div class="p-4 max-w-3xl">
+  <div class="max-w-3xl">
     <Alert type="info">Redis Admin UI is not enabled</Alert>
     <div class="my-4">
       <div>
@@ -220,7 +220,7 @@ export const Redis = {
             <thead class="bg-gray-50">
             <tr>
               <th v-for="k in searchResultKeys"
-                  class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                  class="cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">
                 <div class="flex">
                   <span class="mr-1 select-none">{{ k }}</span>
                 </div>
@@ -229,8 +229,8 @@ export const Redis = {
             </thead>
             <tbody>
             <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
-                :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50') + ' hover:bg-yellow-50']">
-              <td v-for="k in searchResultKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-50' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50/60') + ' hover:bg-gray-100']">
+              <td v-for="k in searchResultKeys" :key="k" class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
                 <span :title="row[k]">{{ row[k] }}</span>
               </td>
             </tr>
@@ -261,7 +261,7 @@ export const Redis = {
                 <table>
                   <tr v-for="(row,index) in itemValue" :key="index"
                       :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ row }}</td>
+                    <td class="px-4 py-2.5 text-sm text-gray-700">{{ row }}</td>
                   </tr>
                 </table>
               </div>
@@ -271,8 +271,8 @@ export const Redis = {
                 <table class="divide-y divide-gray-200">
                   <tr v-for="(value,key,index) in itemValue" :key="index"
                       :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ key }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-900">{{ value }}</td>
+                    <td class="px-4 py-2.5 text-sm text-gray-700">{{ key }}</td>
+                    <td class="px-4 py-2.5 text-sm text-gray-700">{{ value }}</td>
                   </tr>
                 </table>
               </div>
@@ -327,7 +327,7 @@ export const Redis = {
                   <table>
                     <tr v-for="(row,index) in itemValue" :key="index"
                         :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                      <td class="px-6 py-4 text-sm text-gray-900">{{ row }}</td>
+                      <td class="px-4 py-2.5 text-sm text-gray-700">{{ row }}</td>
                       <td class="pr-2 pt-2 w-6">
                         <button type="button" @click="delItem(row)" title="Remove"
                                 class="flex-shrink-0 rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -360,8 +360,8 @@ export const Redis = {
                   <table>
                     <tr v-for="(value,key,index) in itemValue" :key="index"
                         :class="index % 2 === 0 ? 'bg-white' : 'bg-gray-50'">
-                      <td class="px-6 py-4 text-sm text-gray-900">{{ key }}</td>
-                      <td class="px-6 py-4 text-sm text-gray-900">
+                      <td class="px-4 py-2.5 text-sm text-gray-700">{{ key }}</td>
+                      <td class="px-4 py-2.5 text-sm text-gray-700">
                         <HtmlFormat v-if="isComplexJson(value)" :value="tryJsonParse(value)" />
                         <div v-else>{{ value }}</div>
                       </td>
@@ -456,14 +456,14 @@ export const Redis = {
         <div class="md:shadow border-b border-gray-200 md:rounded-lg">
           <table class="divide-y divide-gray-200 w-full">
             <tr v-for="(c, index) in callLog" :key="index"
-                :class="c.error ? 'bg-red-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')">
-              <td class="px-6 py-4 text-sm text-gray-900 font-medium whitespace-nowrap w-6 align-top">
+                :class="c.error ? 'bg-red-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50/60')">
+              <td class="px-4 py-2.5 text-sm text-gray-700 font-medium whitespace-nowrap w-6 align-top">
                 <span>{{ c.request.db }}&gt;</span>
                 <span v-if="c.request.query">query</span>
                 <span v-else-if="hasItems(c.request.args)">command</span>
                 <span v-else>unknown</span>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-900 align-top truncate">
+              <td class="px-4 py-2.5 text-sm text-gray-700 align-top truncate">
                 <div class="grid">
                   <span v-if="c.request.query" :title="c.request.query">{{ c.request.query }}</span>
                   <span v-else-if="hasItems(c.request.args)" :title="join(c.request.args)"

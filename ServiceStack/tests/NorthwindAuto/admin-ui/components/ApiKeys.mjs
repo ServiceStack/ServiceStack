@@ -6,7 +6,7 @@ import { AdminQueryApiKeys } from "dtos"
 export const ApiKeys = {
     template:`
       <section v-if="!plugin">
-          <div class="p-4 max-w-3xl">
+          <div class="max-w-3xl">
             <Alert type="info">API Keys Admin UI is not enabled</Alert>
             <div class="my-4">
               <div>
@@ -61,9 +61,9 @@ export const ApiKeys = {
                     </span>
               </p>
             </div>
-            <a v-href="{ new:1,edit:null }" class="ml-3 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-              New
-              <span class="hidden md:ml-1 md:inline">API Key</span>
+            <a v-href="{ new:1,edit:null }" class="ml-auto inline-flex items-center gap-x-1 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="-ml-0.5 h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/></svg>
+                New <span class="hidden md:inline">API Key</span>
             </a>
           </div>
         </form>
@@ -72,7 +72,7 @@ export const ApiKeys = {
         <div class="w-full overflow-scroll px-1 -ml-1">
           <DataGrid v-if="results.length" :items="results"
                     @row-selected="rowSelected" :is-selected="row => routes.edit === row.id"
-                    :rowClass="(row,i) => !row.active ? 'cursor-pointer hover:bg-yellow-50 bg-red-100' : css.grid.getTableRowClass('stripedRows', i, routes.edit === row.id, true)"
+                    :rowClass="(row,i) => !row.active ? 'cursor-pointer hover:bg-gray-100 bg-red-100' : css.grid.getTableRowClass('stripedRows', i, routes.edit === row.id, true)"
                     :selectedColumns="columns">
 
             <template #id-header><SortableColumn name="id" /></template>

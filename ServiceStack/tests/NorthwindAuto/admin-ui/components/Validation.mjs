@@ -10,14 +10,16 @@ const rowClass = 'col-span-12'
 const ApiSelector = {
     template:/*html*/`
       <div>
-          <div class="flex flex-wrap">
-            <div v-for="x in tags" @click="selectTag(x)"
-                 :class="[x === tag ? 'bg-white shadow-inner' : 'bg-indigo-100 border-white', 'mt-0.5 whitespace-nowrap border text-xs inline-flex items-center font-bold leading-4 uppercase px-3 py-0.5 mr-1 text-indigo-800 rounded-full cursor-pointer']">
-              {{ x }}
-            </div>
+          <div class="max-w-lg">
+            <label for="op" class="block text-sm font-medium text-gray-700 mb-1">API</label>
+            <Combobox ref="combo" id="op" label="" v-model="opEntry" :values="opNames" placeholder="Select an API to manage its validation rules" />
           </div>
-          <div class="mt-2 max-w-lg">
-            <Combobox ref="combo" id="op" label="" v-model="opEntry" :values="opNames" />
+          <div v-if="tags.length" class="mt-3 flex flex-wrap items-center gap-1.5">
+            <span class="mr-1 text-xs font-medium text-gray-500">Filter by tag</span>
+            <button v-for="x in tags" type="button" @click="selectTag(x)" :aria-pressed="x === tag"
+                 :class="[x === tag ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200', 'whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium cursor-pointer']">
+              {{ x }}
+            </button>
           </div>
       </div>
     `,
@@ -298,7 +300,7 @@ export const Validation = {
     components: { ApiSelector, EditValidationRule },
     template:`
     <section v-if="!plugin">
-      <div class="p-4 max-w-3xl">
+      <div class="max-w-3xl">
         <Alert type="info">ValidationSource is not enabled</Alert>
         <div class="my-4">
           <div>
@@ -317,12 +319,19 @@ export const Validation = {
       </div>
     </section>
     <section v-else>
-        <ApiSelector class="mt-4" />
+        <ApiSelector />
         
         <ErrorSummary />
         
         <main class="mt-8 max-w-screen-xl">
-          <div v-if="operation" class="flex flex-wrap">
+          <div v-if="!operation" class="max-w-lg rounded-lg border border-dashed border-gray-300 px-6 py-10 text-center">
+            <svg class="mx-auto h-8 w-8 text-gray-300" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M12 2C9.243 2 7 4.243 7 7v2H6c-1.103 0-2 .897-2 2v9c0 1.103.897 2 2 2h12c1.103 0 2-.897 2-2v-9c0-1.103-.897-2-2-2h-1V7c0-2.757-2.243-5-5-5zM9 7c0-1.654 1.346-3 3-3s3 1.346 3 3v2H9V7zm9.002 13H13v-2.278c.595-.347 1-.985 1-1.722c0-1.103-.897-2-2-2s-2 .897-2 2c0 .736.405 1.375 1 1.722V20H6v-9h12l.002 9z"/>
+            </svg>
+            <p class="mt-2 text-sm font-medium text-gray-900">No API selected</p>
+            <p class="mt-1 text-sm text-gray-500">Select an API above to view and manage its type and property validation rules.</p>
+          </div>
+          <div v-else class="flex flex-wrap">
             <div class="md:flex-1 md:w-1/2 md:p-2 pl-0">
         
               <div class="">

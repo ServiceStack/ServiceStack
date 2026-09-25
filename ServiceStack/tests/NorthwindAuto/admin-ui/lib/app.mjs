@@ -1,6 +1,6 @@
 import { reactive } from "vue"
 import { JsonServiceClient, map, lastLeftPart, trimEnd, queryString, enc, sanitize, } from "@servicestack/client"
-import ServiceStackVue, { useMetadata, useAuth, useConfig, useUtils } from "@servicestack/vue"
+import ServiceStackVue, { useMetadata, useAuth, useConfig, useUtils, css } from "@servicestack/vue"
 import hljs from "highlight.js"
 import { App, usePageRoutes, useBreakpoints, setBodyClass, sortOps } from "core"
 import { Authenticate } from "./dtos.mjs"
@@ -357,6 +357,20 @@ app.directive('highlightjs', (el, binding) => {
     }
 })
 
+
+/** Denser, calmer data grids for day-to-day Admin use */
+Object.assign(css.grid, {
+    grid4Class: 'overflow-hidden shadow-sm ring-1 ring-gray-900/5 md:rounded-lg',
+    theadCellClass: 'px-4 py-2.5 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 tracking-wide whitespace-nowrap',
+    tableCellClass: 'px-4 py-2.5 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300',
+    getTableRowClass(style = 'stripedRows', i, selected, allowSelection) {
+        return (allowSelection ? 'cursor-pointer ' : '')
+            + (selected
+                ? 'bg-indigo-50 dark:bg-blue-900'
+                : (allowSelection ? 'hover:bg-gray-100 dark:hover:bg-gray-800 ' : '')
+                    + (i % 2 === 0 ? 'bg-white dark:bg-black' : 'bg-gray-50/60 dark:bg-gray-900'))
+    },
+})
 
 setConfig({
     navigate: (url) => {

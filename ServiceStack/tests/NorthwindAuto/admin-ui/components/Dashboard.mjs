@@ -7,178 +7,84 @@ import { AdminDashboard } from "dtos"
 
 export const Dashboard = {
     template:/*html*/`
-<div class="rounded-lg bg-white overflow-hidden shadow mb-3">
-    <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
-    <div class="bg-white p-6">
-        <div class="sm:flex sm:justify-between">
-            <div class="sm:flex sm:space-x-5">
-                <div class="flex-shrink-0">
-                    <img class="mx-auto max-h-24 max-w-24 rounded-full"
-                         :src="store.authProfileUrl" alt="">
-                </div>
-                <div class="mt-4 sm:mt-0 sm:pt-1 sm:text-left">
-                    <p class="text-sm font-medium text-gray-600">Welcome back,</p>
-                    <p class="text-xl font-bold text-gray-900 sm:text-2xl mb-2">{{ store.displayName }}</p>
-                    <div v-if="store.authRoles.length" class="mb-2 flex flex-wrap">
-                        <span v-for="role in store.authRoles" title="Role"
-                              class="inline-flex items-center mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                          {{ role }}
-                        </span>
-                    </div>
-                    <div v-if="store.authPermissions.length" class="mb-2 flex flex-wrap">
-                        <span v-for="perm in store.authPermissions" title="Permission"
-                              class="inline-flex items-center mr-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                          {{ perm }}
-                        </span>
-                    </div>
-                </div>
+<div class="max-w-7xl space-y-8">
+    <section class="flex flex-wrap items-center justify-between gap-4 rounded-lg bg-white px-5 py-4 shadow-sm ring-1 ring-gray-900/5">
+        <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
+        <div class="flex items-center gap-4 min-w-0">
+            <img class="h-12 w-12 shrink-0 rounded-full bg-gray-100" :src="store.authProfileUrl" alt="">
+            <div class="min-w-0">
+                <p class="text-sm text-gray-500">Welcome back,</p>
+                <p class="truncate text-lg font-semibold text-gray-900">{{ store.displayName }}</p>
             </div>
-            <div class="">
-                <button type="button" @click="store.logout()"
-                        class="cursor-pointer inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm md:text-lg font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Sign Out
-                </button>
+            <div v-if="store.authRoles.length || store.authPermissions.length" class="ml-2 hidden sm:flex flex-wrap items-center gap-1.5">
+                <span v-for="role in store.authRoles" title="Role"
+                      class="inline-flex items-center rounded-md bg-gray-50 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-500/15">{{ role }}</span>
+                <span v-for="perm in store.authPermissions" title="Permission"
+                      class="inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-600/20">{{ perm }}</span>
             </div>
         </div>
-    </div>
-</div>
+        <button type="button" @click="store.logout()"
+                class="cursor-pointer inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            Sign Out
+        </button>
+    </section>
 
-<a :href="urlApiExplorer" title="go to /ui" class="block pt-3">
-    <h3 class="text-lg leading-6 font-medium text-gray-900">
-        API Stats
-    </h3>
-    <dl class="mt-5 grid grid-cols-1 rounded-lg bg-white hover:bg-gray-50 overflow-hidden shadow divide-y divide-gray-200 md:grid-cols-4 md:divide-y-0 md:divide-x">
-        <div class="px-4 py-5 sm:p-6">
-            <dt class="text-base font-normal text-gray-900">
-                Total APIs
-            </dt>
-            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{ server.api.operations.length }}
-                </div>
-            </dd>
+    <section>
+        <div class="mb-3 flex items-baseline justify-between">
+            <h3 class="text-sm font-semibold text-gray-900">API Stats</h3>
+            <a :href="urlApiExplorer" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">API Explorer <span aria-hidden="true">&rarr;</span></a>
         </div>
+        <dl class="grid grid-cols-2 md:grid-cols-4 gap-px overflow-hidden rounded-lg bg-gray-900/5 shadow-sm ring-1 ring-gray-900/5">
+            <div v-for="stat in apiStats" class="bg-white px-5 py-4">
+                <dt class="text-sm text-gray-500">{{ stat.label }}</dt>
+                <dd class="mt-1 text-2xl font-semibold tracking-tight tabular-nums text-gray-900">{{ fmtNum(stat.value) }}</dd>
+            </div>
+        </dl>
+    </section>
 
-        <div class="px-4 py-5 sm:p-6">
-            <dt class="text-base font-normal text-gray-900">
-                Protected APIs
-            </dt>
-            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{ server.api.operations.filter(op => op.requiresAuth).length }}
+    <section v-for="group in statGroups" :key="group.id">
+        <div class="mb-3 flex items-center gap-1.5">
+            <h3 class="text-sm font-semibold text-gray-900">{{ group.title }}</h3>
+            <div v-if="group.info" class="relative flex items-center group">
+                <svg class="w-4 h-4 text-gray-400 hover:text-gray-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z"/>
+                </svg>
+                <div class="absolute left-6 top-0 z-10 hidden group-hover:block">
+                    <span class="block rounded-md bg-gray-900 p-2 text-xs leading-snug text-white shadow-lg font-mono whitespace-pre">{{ group.info }}</span>
                 </div>
-            </dd>
-        </div>
-
-        <div class="px-4 py-5 sm:p-6">
-            <dt class="text-base font-normal text-gray-900">
-                Built-in APIs
-            </dt>
-            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{ server.api.operations.filter(op => (op.request.namespace || "").startsWith('ServiceStack')).length }}
-                </div>
-            </dd>
-        </div>
-
-        <div class="px-4 py-5 sm:p-6">
-            <dt class="text-base font-normal text-gray-900">
-                Unique DTOs
-            </dt>
-            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{ Object.keys(store.allTypes).length }}
-                </div>
-            </dd>
-        </div>
-    </dl>
-</a>
-
-<div v-if="serverStats.redis" class="mt-5">
-    <h3 class="text-lg leading-6 font-medium text-gray-900">
-        Redis Stats
-    </h3>
-    <dl class="grid grid-cols-1 bg-white overflow-hidden xl:grid-cols-5 md:grid-cols-4">
-        <div v-for="(stat,name) in serverStats.redis" class="py-3 sm:p-3">
-            <dt class="text-base font-normal text-gray-900">
-                {{ statLabel(name) }}
-            </dt>
-            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{ stat }}
-                </div>
-            </dd>
-        </div>
-    </dl>
-</div>
-
-<div v-if="serverStats.serverEvents" class="mt-5">
-    <h3 class="text-lg leading-6 font-medium text-gray-900">
-        Server Events Stats
-    </h3>
-    <dl class="grid grid-cols-1 bg-white overflow-hidden xl:grid-cols-5 md:grid-cols-4">
-        <div v-for="(stat,name) in serverStats.serverEvents" class="py-3 sm:p-3">
-            <dt class="text-base font-normal text-gray-900">
-                {{ statLabel(name) }}
-            </dt>
-            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{ stat }}
-                </div>
-            </dd>
-        </div>
-    </dl>
-</div>
-
-<div v-if="serverStats.mqWorkers" class="mt-5">
-    <div class="flex items-center">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">
-            MQ Worker Stats
-        </h3>
-        <div class="ml-1 relative flex flex-col items-center group">
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fill="currentColor"
-                      d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10zm0-2a8 8 0 1 0 0-16a8 8 0 0 0 0 16zM11 7h2v2h-2V7zm0 4h2v6h-2v-6z"/>
-            </svg>
-            <div class="absolute bottom-0 flex flex-col items-center hidden mb-6 group-hover:flex">
-            <span
-                    class="relative z-10 p-2 text-xs leading-none text-white whitespace-no-wrap bg-black shadow-lg font-mono whitespace-pre">{{ serverStats.mqDescription }}</span>
-                <div class="w-3 h-3 -mt-2 rotate-45 bg-black"></div>
             </div>
         </div>
-    </div>
+        <dl class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-px overflow-hidden rounded-lg bg-gray-900/5 shadow-sm ring-1 ring-gray-900/5">
+            <div v-for="(stat,name) in group.stats" class="bg-white px-5 py-4">
+                <dt class="text-sm text-gray-500 truncate" :title="statLabel(name)">{{ statLabel(name) }}</dt>
+                <dd :class="['mt-1 text-2xl font-semibold tracking-tight tabular-nums', Number(stat) ? 'text-gray-900' : 'text-gray-400']">{{ fmtNum(stat) }}</dd>
+            </div>
+            <div v-for="i in fillers(group.stats)" class="hidden xl:block bg-white"></div>
+        </dl>
+    </section>
 
-    <dl class="grid grid-cols-1 bg-white overflow-hidden xl:grid-cols-5 md:grid-cols-4">
-        <div v-for="(stat,name) in serverStats.mqWorkers" class="py-3 sm:p-3">
-            <dt class="text-base font-normal text-gray-900">
-                {{ statLabel(name) }}
-            </dt>
-            <dd class="mt-1 flex justify-between items-baseline md:block lg:flex">
-                <div class="flex items-baseline text-2xl font-semibold text-indigo-600">
-                    {{ stat }}
-                </div>
-            </dd>
+    <section class="rounded-lg bg-white px-5 py-4 shadow-sm ring-1 ring-gray-900/5">
+        <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="text-sm font-semibold text-gray-900">Admin UI Features</h3>
+            <a href="https://docs.servicestack.net/admin-ui-features" target="_blank"
+               class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Discover how to enable more features <span aria-hidden="true">&rarr;</span></a>
         </div>
-    </dl>
+        <div class="mt-3 flex flex-wrap gap-2">
+            <template v-for="(label,id) in adminFeatures" :key="id">
+                <a v-if="isRegistered(id)" v-href="{ admin:id, $clear:true }"
+                   class="inline-flex items-center gap-x-1.5 rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-800 ring-1 ring-inset ring-green-600/20 hover:bg-green-100">
+                    <svg class="h-1.5 w-1.5 fill-green-500" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3"/></svg>
+                    {{ label }}
+                </a>
+                <span v-else title="Not enabled"
+                      class="inline-flex items-center gap-x-1.5 rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-500 ring-1 ring-inset ring-gray-500/10">
+                    <svg class="h-1.5 w-1.5 fill-gray-300" viewBox="0 0 6 6" aria-hidden="true"><circle cx="3" cy="3" r="3"/></svg>
+                    {{ label }}
+                </span>
+            </template>
+        </div>
+    </section>
 </div>
-
-<a href="https://docs.servicestack.net/admin-ui-features"
-   class="block mt-5 rounded-lg bg-white hover:bg-gray-50 shadow">
-    <div class="px-4 py-5 sm:p-6">
-        <h3 class="text-lg leading-6 font-medium text-gray-900">Admin UI Features</h3>
-        <div class="mt-2 max-w-2xl text-sm text-gray-500">
-            <p>Discover and learn how to enable new Admin UI Features</p>
-        </div>
-        <div class="mt-5">
-            <span v-for="(label,id) in adminFeatures" :key="id"
-                  :class="['mr-2 mb-1 inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium', 
-                  isRegistered(id) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800']">
-              <svg :class="['-ml-0.5 mr-1.5 h-2 w-2', isRegistered(id) ? 'text-green-400' : 'text-gray-400']" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
-              {{ label }}
-            </span>
-        </div>
-    </div>
-</a>
     `,
     setup() {
         const store = inject('store')
@@ -199,8 +105,16 @@ export const Dashboard = {
             validation:'Validation', 
             database:'Database', 
             redis:'Redis',
-            aichat:'AI Chat',
+            chat:'AI Chat',
+            pdf:'PDF',
         }))
+
+        const apiStats = computed(() => [
+            { label:'Total APIs',     value:server.api.operations.length },
+            { label:'Protected APIs', value:server.api.operations.filter(op => op.requiresAuth).length },
+            { label:'Built-in APIs',  value:server.api.operations.filter(op => (op.request.namespace || "").startsWith('ServiceStack')).length },
+            { label:'Unique DTOs',    value:Object.keys(store.allTypes).length },
+        ])
         
         function isRegistered(id) {
             return server.ui.adminLinks.some(link => link.id === id)
@@ -215,6 +129,14 @@ export const Dashboard = {
         function statLabel(name) {
             return humanify(name.replace('Total',''))
         }
+        const statGroups = computed(() => [
+            { id:'redis',        title:'Redis Stats',         stats:serverStats.value.redis },
+            { id:'serverEvents', title:'Server Events Stats', stats:serverStats.value.serverEvents },
+            { id:'mqWorkers',    title:'MQ Worker Stats',     stats:serverStats.value.mqWorkers, info:serverStats.value.mqDescription },
+        ].filter(x => x.stats))
+        const fmtNum = n => typeof n == 'number' ? n.toLocaleString() : n
+        /** pad last row of 5-col grid so hairline dividers stay continuous */
+        const fillers = stats => { const n = Object.keys(stats || {}).length % 5; return n ? 5 - n : 0 }
         
         let sub = null
         onMounted(async () => {
@@ -235,6 +157,10 @@ export const Dashboard = {
             updated,
             serverStats,
             statLabel,
+            apiStats,
+            statGroups,
+            fmtNum,
+            fillers,
         }
     }
 }

@@ -536,7 +536,7 @@ export const AdminChat = {
             <!-- Header with Title and Month Selector -->
             <div class="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-2 sm:px-4 py-3">
                 <div class="max-w-6xl mx-auto flex items-center justify-between">
-                    <h1 class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Chat Analytics</h1>
+                    <h1 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">Chat Analytics</h1>
                     <MonthSelector :months="months" />
                 </div>
             </div>
@@ -548,7 +548,7 @@ export const AdminChat = {
                         @click="routes.to({ tab:'' })"
                         :class="['py-3 px-1 border-b-2 font-medium text-sm transition-colors',
                                  !routes.tab || routes.tab === 'cost'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
                         Cost Analysis
                     </button>
@@ -556,7 +556,7 @@ export const AdminChat = {
                         @click="routes.to({ tab:'tokens' })"
                         :class="['py-3 px-1 border-b-2 font-medium text-sm transition-colors',
                                  routes.tab === 'tokens'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
                         Token Usage
                     </button>
@@ -564,7 +564,7 @@ export const AdminChat = {
                         @click="routes.to({ tab:'activity' })"
                         :class="['py-3 px-1 border-b-2 font-medium text-sm transition-colors',
                                  routes.tab === 'activity'
-                                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                                     : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200']">
                         Activity
                     </button>
@@ -1707,7 +1707,7 @@ export const AdminChat = {
             selectedLog.value = logs.value.find(log => log.id === parseInt(routes.show))
             // Focus the scrollable content to enable keyboard navigation (Page Up/Down, Home/End)
             nextTick(() => {
-                scrollableContent.value?.focus()
+                scrollableContent.value?.focus({ preventScroll: true })
             })
         })
 

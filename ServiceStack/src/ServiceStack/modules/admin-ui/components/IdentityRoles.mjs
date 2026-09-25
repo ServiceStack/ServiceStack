@@ -64,22 +64,22 @@ export const EditRole = {
         
         <div class="mt-8 pt-4 border-t border-gray-900/10 px-4 sm:px-6">
           <h2 class="mb-3 text-lg font-medium text-gray-900 dark:text-gray-50" id="SlideOver-title">Manage Claims</h2>
-          <div v-if="claims.length" class="mb-2 shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+          <div v-if="claims.length" class="mb-2 overflow-hidden shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
               <tr>
-                <th class="group cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Name</th>
-                <th class="group cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Value</th>
+                <th class="group cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">Name</th>
+                <th class="group cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">Value</th>
                 <th class="w-8"></th>
               </tr>
               </thead>
               <tbody>
               <tr v-for="(row,index) in claims" :key="row.id"
                   :class="[index % 2 === 0 ? 'bg-white' : 'bg-gray-50']">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
                   {{row.name}}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
                   {{row.value}}
                 </td>
                 <td class="w-8">
@@ -241,7 +241,7 @@ export const IdentityRoles = {
     components: { NewRole, EditRole },
     template:/*html*/`
 <section v-if="!plugin">
-  <div class="p-4 max-w-3xl">
+  <div class="max-w-3xl">
     <Alert type="info">AdminUsersFeature is not enabled</Alert>
     <div class="my-4">
       <div>
@@ -256,9 +256,9 @@ export const IdentityRoles = {
   </div>
 </section>
 <section v-else id="admin-users">
-  <a v-href="{ new:1,edit:null }" class="inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-    New
-    <span class="hidden md:ml-1 md:inline">Role</span>
+  <a v-href="{ new:1,edit:null }" class="inline-flex items-center gap-x-1 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="-ml-0.5 h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/></svg>
+                New <span class="hidden md:inline">Role</span>
   </a>
   
   <EditRole v-if="routes.edit" :id="routes.edit" @done="close" @save="formSearch" />
@@ -266,12 +266,12 @@ export const IdentityRoles = {
   <Loading v-if="loading" />
     <div v-else-if="results.length" class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
+            <div class="overflow-hidden shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg my-3">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
                         <th v-for="name in fieldNames" scope="col" 
-                            class="w-1/2 group cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            class="w-1/2 group cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">
                             <a v-href="{ sort:sortBy(name), $on:search }" class="flex items-center">
                                 <div>{{humanify(name)}}</div>
                                 <svg v-if="name === request.orderBy || '-' + name === request.orderBy" 
@@ -287,8 +287,8 @@ export const IdentityRoles = {
                     </thead>
                     <tbody>
                     <tr v-for="(row,index) in results" :key="mapGet(row, 'Id')" @click="toggle(row)"
-                        :class="['w-1/2 cursor-pointer', expanded(mapGet(row, 'Id')) ? 'bg-indigo-100' : 'hover:bg-yellow-50 ' + (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')]">
-                        <td v-for="name in fieldNames" :key="mapGet(row, 'Id')" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        :class="['w-1/2 cursor-pointer', expanded(mapGet(row, 'Id')) ? 'bg-indigo-50' : 'hover:bg-gray-100 ' + (index % 2 === 0 ? 'bg-white' : 'bg-gray-50/60')]">
+                        <td v-for="name in fieldNames" :key="mapGet(row, 'Id')" class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
                             {{apiValueFmt(mapGet(row,name))}}
                         </td>
                     </tr>

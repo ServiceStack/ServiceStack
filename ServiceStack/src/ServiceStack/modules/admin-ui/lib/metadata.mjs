@@ -38,6 +38,25 @@ export default {
           "namespace": "System",
           "isValueType": true,
           "isPrimaryKey": true
+        },
+        {
+          "name": "SingletonKey",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "LeaseToken",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "LeaseExpiresAt",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
         }
       ]
     },
@@ -74,6 +93,18 @@ export default {
           "name": "Worker",
           "type": "String",
           "namespace": "System"
+        },
+        {
+          "name": "Queue",
+          "type": "String",
+          "namespace": "System",
+          "isRequired": true
+        },
+        {
+          "name": "Priority",
+          "type": "Int32",
+          "namespace": "System",
+          "isValueType": true
         },
         {
           "name": "Tag",
@@ -166,6 +197,67 @@ export default {
           "isValueType": true
         },
         {
+          "name": "RunAfter",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "CancelRequestedDate",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "ExpiresAt",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "ConcurrencyKey",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "SingletonKey",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "TenantId",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "TraceId",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "LeaseOwner",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "LogsTruncated",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Boolean"
+          ]
+        },
+        {
           "name": "ErrorCode",
           "type": "String",
           "namespace": "System"
@@ -174,6 +266,15 @@ export default {
           "name": "ErrorMessage",
           "type": "String",
           "namespace": "System"
+        },
+        {
+          "name": "Meta",
+          "type": "Dictionary\u00602",
+          "namespace": "System.Collections.Generic",
+          "genericArgs": [
+            "String",
+            "String"
+          ]
         }
       ]
     },
@@ -192,8 +293,7 @@ export default {
         {
           "name": "Name",
           "type": "String",
-          "namespace": "System",
-          "isRequired": true
+          "namespace": "System"
         },
         {
           "name": "Interval",
@@ -212,8 +312,7 @@ export default {
         {
           "name": "RequestType",
           "type": "String",
-          "namespace": "System",
-          "isRequired": true
+          "namespace": "System"
         },
         {
           "name": "Command",
@@ -223,19 +322,94 @@ export default {
         {
           "name": "Request",
           "type": "String",
-          "namespace": "System",
-          "isRequired": true
+          "namespace": "System"
         },
         {
           "name": "RequestBody",
           "type": "String",
-          "namespace": "System",
-          "isRequired": true
+          "namespace": "System"
         },
         {
           "name": "Options",
           "type": "BackgroundJobOptions",
           "namespace": "ServiceStack.Jobs"
+        },
+        {
+          "name": "Enabled",
+          "type": "Boolean",
+          "namespace": "System",
+          "isValueType": true
+        },
+        {
+          "name": "StartDate",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "EndDate",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "MaxRuns",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Int32"
+          ]
+        },
+        {
+          "name": "RunCount",
+          "type": "Int32",
+          "namespace": "System",
+          "isValueType": true
+        },
+        {
+          "name": "NextRun",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "TimeZoneId",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "MisfirePolicy",
+          "type": "ScheduleMisfirePolicy",
+          "namespace": "ServiceStack.Jobs",
+          "isValueType": true,
+          "isEnum": true
+        },
+        {
+          "name": "OverlapPolicy",
+          "type": "ScheduleOverlapPolicy",
+          "namespace": "ServiceStack.Jobs",
+          "isValueType": true,
+          "isEnum": true
+        },
+        {
+          "name": "LastErrorCode",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "LastErrorMessage",
+          "type": "String",
+          "namespace": "System"
         },
         {
           "name": "LastRun",
@@ -253,6 +427,52 @@ export default {
           "isValueType": true,
           "genericArgs": [
             "Int64"
+          ]
+        },
+        {
+          "name": "LastRunState",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "isEnum": true,
+          "genericArgs": [
+            "BackgroundJobState"
+          ]
+        },
+        {
+          "name": "LastRunDurationMs",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Int32"
+          ]
+        },
+        {
+          "name": "CreatedDate",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "ModifiedDate",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "Meta",
+          "type": "Dictionary\u00602",
+          "namespace": "System.Collections.Generic",
+          "genericArgs": [
+            "String",
+            "String"
           ]
         }
       ]
@@ -296,14 +516,12 @@ export default {
         {
           "name": "TraceId",
           "type": "String",
-          "namespace": "System",
-          "isRequired": true
+          "namespace": "System"
         },
         {
           "name": "OperationName",
           "type": "String",
-          "namespace": "System",
-          "isRequired": true
+          "namespace": "System"
         },
         {
           "name": "DateTime",
@@ -701,8 +919,23 @@ export default {
           ],
           "dataMember": {
             "order": 7
+          },
+          "input": {
+            "id": "Meta",
+            "type": "hidden",
+            "required": false
           }
         }
+      ]
+    },
+    {
+      "name": "JobDependencyPolicy",
+      "namespace": "ServiceStack.Jobs",
+      "implements": [],
+      "isEnum": true,
+      "enumNames": [
+        "OnSuccess",
+        "OnFinished"
       ]
     },
     {
@@ -717,6 +950,18 @@ export default {
         "Completed",
         "Failed",
         "Cancelled"
+      ]
+    },
+    {
+      "name": "RetryBackoff",
+      "namespace": "ServiceStack.Jobs",
+      "implements": [],
+      "isEnum": true,
+      "enumNames": [
+        "Fixed",
+        "Linear",
+        "Exponential",
+        "ExponentialJitter"
       ]
     },
     {
@@ -752,6 +997,18 @@ export default {
           "namespace": "System"
         },
         {
+          "name": "Queue",
+          "type": "String",
+          "namespace": "System",
+          "isRequired": true
+        },
+        {
+          "name": "Priority",
+          "type": "Int32",
+          "namespace": "System",
+          "isValueType": true
+        },
+        {
           "name": "Tag",
           "type": "String",
           "namespace": "System"
@@ -774,6 +1031,36 @@ export default {
           "genericArgs": [
             "Int64"
           ]
+        },
+        {
+          "name": "DependsOnBatch",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "ConcurrencyKey",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "DependsOnPolicy",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "isEnum": true,
+          "genericArgs": [
+            "JobDependencyPolicy"
+          ]
+        },
+        {
+          "name": "TenantId",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "TraceId",
+          "type": "String",
+          "namespace": "System"
         },
         {
           "name": "RunAfter",
@@ -882,6 +1169,34 @@ export default {
           ]
         },
         {
+          "name": "RetryBackoff",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "isEnum": true,
+          "genericArgs": [
+            "RetryBackoff"
+          ]
+        },
+        {
+          "name": "RetryDelayMs",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Int32"
+          ]
+        },
+        {
+          "name": "MaxRetryDelayMs",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Int32"
+          ]
+        },
+        {
           "name": "Attempts",
           "type": "Int32",
           "namespace": "System",
@@ -922,6 +1237,15 @@ export default {
           "namespace": "System"
         },
         {
+          "name": "LogsTruncated",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Boolean"
+          ]
+        },
+        {
           "name": "LastActivityDate",
           "type": "Nullable\u00601",
           "namespace": "System",
@@ -929,6 +1253,29 @@ export default {
           "genericArgs": [
             "DateTime"
           ]
+        },
+        {
+          "name": "CancelRequestedDate",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "ExpiresAt",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "LeaseOwner",
+          "type": "String",
+          "namespace": "System"
         },
         {
           "name": "ReplyTo",
@@ -976,6 +1323,18 @@ export default {
           "namespace": "System"
         },
         {
+          "name": "DuplicateRefIdBehavior",
+          "type": "DuplicateRefIdBehavior",
+          "namespace": "ServiceStack.Jobs",
+          "isValueType": true,
+          "isEnum": true
+        },
+        {
+          "name": "SingletonKey",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
           "name": "ParentId",
           "type": "Nullable\u00601",
           "namespace": "System",
@@ -990,12 +1349,44 @@ export default {
           "namespace": "System"
         },
         {
+          "name": "Queue",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "Priority",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Int32"
+          ]
+        },
+        {
           "name": "RunAfter",
           "type": "Nullable\u00601",
           "namespace": "System",
           "isValueType": true,
           "genericArgs": [
             "DateTime"
+          ]
+        },
+        {
+          "name": "ExpiresAt",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "DateTime"
+          ]
+        },
+        {
+          "name": "ExpiresIn",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "TimeSpan"
           ]
         },
         {
@@ -1013,6 +1404,31 @@ export default {
           ]
         },
         {
+          "name": "DependsOnBatch",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "DependsOnPolicy",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "isEnum": true,
+          "genericArgs": [
+            "JobDependencyPolicy"
+          ]
+        },
+        {
+          "name": "ConcurrencyKey",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
+          "name": "TenantId",
+          "type": "String",
+          "namespace": "System"
+        },
+        {
           "name": "UserId",
           "type": "String",
           "namespace": "System"
@@ -1024,6 +1440,52 @@ export default {
           "isValueType": true,
           "genericArgs": [
             "Int32"
+          ]
+        },
+        {
+          "name": "RetryBackoff",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "isEnum": true,
+          "genericArgs": [
+            "RetryBackoff"
+          ]
+        },
+        {
+          "name": "RetryDelayMs",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Int32"
+          ]
+        },
+        {
+          "name": "MaxRetryDelayMs",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "Int32"
+          ]
+        },
+        {
+          "name": "RetryDelay",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "TimeSpan"
+          ]
+        },
+        {
+          "name": "MaxRetryDelay",
+          "type": "Nullable\u00601",
+          "namespace": "System",
+          "isValueType": true,
+          "genericArgs": [
+            "TimeSpan"
           ]
         },
         {
@@ -1085,6 +1547,26 @@ export default {
       ]
     },
     {
+      "name": "ScheduleMisfirePolicy",
+      "namespace": "ServiceStack.Jobs",
+      "implements": [],
+      "isEnum": true,
+      "enumNames": [
+        "RunOnce",
+        "Skip"
+      ]
+    },
+    {
+      "name": "ScheduleOverlapPolicy",
+      "namespace": "ServiceStack.Jobs",
+      "implements": [],
+      "isEnum": true,
+      "enumNames": [
+        "Allow",
+        "Skip"
+      ]
+    },
+    {
       "name": "ResponseError",
       "namespace": "ServiceStack",
       "implements": [],
@@ -1129,6 +1611,16 @@ export default {
             "order": 4
           }
         }
+      ]
+    },
+    {
+      "name": "DuplicateRefIdBehavior",
+      "namespace": "ServiceStack.Jobs",
+      "implements": [],
+      "isEnum": true,
+      "enumNames": [
+        "Throw",
+        "ReturnExisting"
       ]
     }
   ],

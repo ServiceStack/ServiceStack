@@ -4,11 +4,12 @@ const SidebarNav = {
     template:/*html*/`
       <div>
           <Brand class="flex items-center flex-shrink-0 px-4" :icon="server.ui.brandIcon" :name="server.app.serviceName" />
-          <nav class="mt-5 flex-1 px-2 bg-white space-y-1" aria-label="Sidebar">
+          <nav class="mt-6 flex-1 px-3 bg-white space-y-0.5" aria-label="Sidebar">
             <a v-for="({id,label,icon}) in store.adminLinks" v-href="{ admin:id, $clear:true }"
+               :aria-current="(routes.admin ?? '') === id ? 'page' : undefined"
                :class="[(routes.admin ?? '') === id ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900', 
-                            'group flex items-center px-2 py-2 text-base font-medium rounded-md']">
-              <Icon :image="icon" :class="[(routes.admin ?? '') === id ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500', 'mr-3 h-6 w-6']" />
+                            'group flex items-center gap-x-3 px-2.5 py-2 text-sm font-medium rounded-md transition-colors']">
+              <Icon :image="icon" :class="[(routes.admin ?? '') === id ? 'text-indigo-600' : 'text-gray-400 group-hover:text-gray-500', 'h-5 w-5 shrink-0']" />
               {{ label }}
             </a>
           </nav>
@@ -30,9 +31,9 @@ const SidebarAuth = {
     template:/*html*/`
       <a v-href="{ $page:'' }" class="flex-shrink-0 w-full group block">
       <div class="flex items-center">
-        <img v-if="store.authProfileUrl" class="h-8 w-8 rounded-full text-gray-700" :src="store.authProfileUrl" :onerror="'this.src=' + JSON.stringify(store.userIconUri)" alt="">
-        <div class="ml-3">
-          <p class="text-base font-medium text-gray-700 group-hover:text-gray-900">
+        <img v-if="store.authProfileUrl" class="h-8 w-8 rounded-full bg-gray-100 text-gray-700" :src="store.authProfileUrl" :onerror="'this.src=' + JSON.stringify(store.userIconUri)" alt="">
+        <div class="ml-3 min-w-0">
+          <p class="truncate text-sm font-medium text-gray-700 group-hover:text-gray-900">
             {{ store.displayName }}
           </p>
         </div>
@@ -67,7 +68,7 @@ export const Sidebar = {
                 </div>
               <SidebarNav class="flex-1 h-0 pt-5 pb-4 overflow-y-auto" />
               <!---: sm: use top-nav  -->
-              <SidebarAuth class="flex-shrink-0 flex border-t border-gray-200 p-4" />
+              <SidebarAuth class="flex-shrink-0 flex border-t border-gray-200 px-4 py-3" />
             </div>
             <div class="flex-shrink-0 w-14">
                 <!---: Force sidebar to shrink to fit close icon -->
@@ -79,7 +80,7 @@ export const Sidebar = {
               <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
                 <SidebarNav class="overflow-y-auto flex-1 flex flex-col overflow-y-auto" />
               </div>
-              <SidebarAuth class="flex-shrink-0 flex border-t border-gray-200 p-4"></SidebarAuth>
+              <SidebarAuth class="flex-shrink-0 flex border-t border-gray-200 px-4 py-3"></SidebarAuth>
             </div>
         </div>
     </div>

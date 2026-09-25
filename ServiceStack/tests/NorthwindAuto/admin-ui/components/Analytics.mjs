@@ -38,7 +38,7 @@ function round(n) {
 
 const ApiAnalytics = {
     template: `
-      <div class="mt-2 mb-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 max-w-md">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboApis" id="op" label="" placeholder="Select API"
@@ -73,68 +73,60 @@ const ApiAnalytics = {
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
           <div>
-            <div class="bg-white rounded shadow p-4" style="height:300px">
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refOpStatusCodes"></canvas>
             </div>
           </div>
           <div>
-            <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refOpDurationRanges"></canvas>
             </div>
           </div>
         </div>
         <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.apis[routes.op],['users','apiKeys','ips']) === 3 ? 'lg:grid-cols-3' : '']">
           <div v-if="mapCounts(analytics.apis[routes.op],'users')">
-            Top Users
-            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top Users</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refOpTopUsers"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.apis[routes.op],'apiKeys')">
-            Top API Keys
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top API Keys</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refOpTopApiKeys"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.apis[routes.op],'ips')">
-            Top IP Addresses
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top IP Addresses</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refOpTopIps"></canvas>
             </div>
           </div>
         </div>
       </div>
       <div :class="{ hidden:!!routes.op }">
-        <div class="mb-2 flex justify-between">
-          <div>
-            Overview
-          </div>
-        </div>
+        <h3 class="mb-2 text-sm font-semibold text-gray-900">Overview</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-2">
-          <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
             <canvas ref="refBrowsers"></canvas>
           </div>
-          <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
             <canvas ref="refDevices"></canvas>
           </div>
-          <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
             <canvas ref="refBots"></canvas>
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
           <div>
-            <div class="mb-2">
-              Requests per day
-            </div>
-            <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="mb-2 text-sm font-semibold text-gray-900">Requests per day</h3>
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refWeeklyRequests"></canvas>
             </div>
           </div>
           <div>
-            <div class="mb-2">
-              API tag groups
-            </div>
-            <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="mb-2 text-sm font-semibold text-gray-900">API tag groups</h3>
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refTags"></canvas>
             </div>
           </div>
@@ -149,7 +141,7 @@ const ApiAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.api" :values="resultLimits" />
           </div>
         </div>
-        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.api)) + 'px'}">
+        <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.api)) + 'px'}">
           <canvas ref="refApiRequests"></canvas>
         </div>
       </div>
@@ -163,13 +155,13 @@ const ApiAnalytics = {
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
-          <div class="bg-white rounded shadow p-2" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-2" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
             <canvas ref="refApiTotalDurations"></canvas>
           </div>
-          <div class="bg-white rounded shadow p-2" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-2" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apis ?? {}).length, limits.duration)) + 'px'}">
             <canvas ref="refApiAverageDurations"></canvas>
           </div>
-          <div class="bg-white rounded shadow p-2" style="height:300px">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-2" style="height:300px">
             <canvas ref="refApiDurationRanges"></canvas>
           </div>
         </div>
@@ -865,7 +857,7 @@ const ApiAnalytics = {
 
 const UserAnalytics = {
     template: `
-      <div class="mt-2 mb-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 max-w-md">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select User"
@@ -927,29 +919,29 @@ const UserAnalytics = {
           </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
-          <div class="bg-white rounded shadow p-4" style="height:300px">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
             <canvas ref="refUserStatusCodes"></canvas>
           </div>
-          <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+          <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
             <canvas ref="refUserDurationRanges"></canvas>
           </div>
         </div>
         <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.users[routes.userId],['apis','apiKeys','ips']) === 3 ? 'lg:grid-cols-3' : '']">
           <div v-if="mapCounts(analytics.users[routes.userId],'apis')">
-            Top APIs
-            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top APIs</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refUserTopApis"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.users[routes.userId],'apiKeys')">
-            Top API Keys
-            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top API Keys</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refUserTopApiKeys"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.users[routes.userId],'ips')">
-            Top IP Addresses
-            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top IP Addresses</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refUserTopIps"></canvas>
             </div>
           </div>
@@ -964,7 +956,7 @@ const UserAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.user" :values="resultLimits" />
           </div>
         </div>
-        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.users ?? {}).length, limits.user)) + 'px'}">
+        <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.users ?? {}).length, limits.user)) + 'px'}">
           <canvas ref="refUserRequests"></canvas>
         </div>
       </div>
@@ -1182,7 +1174,7 @@ const UserAnalytics = {
 
 const ApiKeyAnalytics = {
     template: `
-      <div class="mt-2 mb-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 max-w-md">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select API Key"
@@ -1267,32 +1259,32 @@ const ApiKeyAnalytics = {
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
           <div>
-            <div class="bg-white rounded shadow p-4" style="height:300px">
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refApiKeyStatusCodes"></canvas>
             </div>
           </div>
           <div>
-            <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refApiKeyDurationRanges"></canvas>
             </div>
           </div>
         </div>
         <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.apiKeys[routes.apiKey],['apis','users','ips']) === 3 ? 'lg:grid-cols-3' : '']">
           <div v-if="mapCounts(analytics.apiKeys[routes.apiKey],'apis')">
-            Top APIs
-            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top APIs</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refApiKeyTopApis"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.apiKeys[routes.apiKey],'users')">
-            Top Users
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top Users</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refApiKeyTopUsers"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.apiKeys[routes.apiKey],'ips')">
-            Top IPs
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top IPs</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refApiKeyTopIps"></canvas>
             </div>
           </div>
@@ -1307,7 +1299,7 @@ const ApiKeyAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.apiKey" :values="resultLimits" />
           </div>
         </div>
-        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apiKeys ?? {}).length, limits.apiKey)) + 'px'}">
+        <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.apiKeys ?? {}).length, limits.apiKey)) + 'px'}">
           <canvas ref="refApiKeyRequests"></canvas>
         </div>
       </div>
@@ -1531,7 +1523,7 @@ const ApiKeyAnalytics = {
 
 const IpAnalytics = {
     template: `
-      <div class="mt-2 mb-4 mx-auto max-w-sm">
+      <div class="mt-2 mb-4 max-w-md">
         <div class="flex">
           <div class="flex-grow">
             <Autocomplete ref="cboUsers" id="op" label="" placeholder="Select IP Address"
@@ -1577,32 +1569,32 @@ const IpAnalytics = {
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 w-full gap-2">
           <div>
-            <div class="bg-white rounded shadow p-4" style="height:300px">
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refIpStatusCodes"></canvas>
             </div>
           </div>
           <div>
-            <div class="bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refIpDurationRanges"></canvas>
             </div>
           </div>
         </div>
         <div :class="['mt-8 grid grid-cols-1 md:grid-cols-2 w-full gap-2', mapCounts(analytics.ips[routes.ip],['apis','users','apiKeys']) === 3 ? 'lg:grid-cols-3' : '']">
           <div v-if="mapCounts(analytics.ips[routes.ip],'apis')">
-            Top APIs
-            <div class="mt-1 bg-white rounded shadow p-4" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top APIs</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4" style="height:300px">
               <canvas ref="refIpTopApis"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.ips[routes.ip],'users')">
-            Top Users
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top Users</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refIpTopUsers"></canvas>
             </div>
           </div>
           <div v-if="mapCounts(analytics.ips[routes.ip],'apiKeys')">
-            Top API Keys
-            <div class="mt-1 bg-white rounded shadow p-4 mb-8" style="height:300px">
+            <h3 class="text-sm font-semibold text-gray-900">Top API Keys</h3>
+            <div class="mt-2 bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" style="height:300px">
               <canvas ref="refIpTopApiKeys"></canvas>
             </div>
           </div>
@@ -1617,7 +1609,7 @@ const IpAnalytics = {
             <SelectInput id="apiLimit" label="" v-model="limits.ip" :values="resultLimits" />
           </div>
         </div>
-        <div class="bg-white rounded shadow p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.ips ?? {}).length, limits.ip)) + 'px'}">
+        <div class="bg-white rounded-lg shadow-sm ring-1 ring-gray-900/5 p-4 mb-8" :style="{height:chartHeight(Math.min(Object.keys(analytics?.ips ?? {}).length, limits.ip)) + 'px'}">
           <canvas ref="refIpRequests"></canvas>
         </div>
       </div>
@@ -1826,7 +1818,7 @@ export const Analytics = {
     },
     template: `
       <section v-if="!plugin">
-          <div class="p-4 max-w-3xl">
+          <div class="max-w-3xl">
             <Alert type="info">Admin Analytics UI is not enabled</Alert>
             <div class="my-4">
               <div>
@@ -1848,34 +1840,12 @@ export const Analytics = {
       </section>
       <div v-else class="container mx-auto">
         <ErrorSummary v-if="api.error" :status="api.error" />
-        <div>
-            <div class="relative">
-              <nav class="-mt-2 absolute flex space-x-4" aria-label="Tabs">
-                <a v-for="(tab,label) in tabs" v-href="{ tab }"
-                   :class="['rounded-md px-3 py-2 text-sm font-medium', routes.tab === tab ? 'bg-indigo-100 text-indigo-700' : 'text-gray-500 hover:text-gray-700']" aria-current="page">{{ label }}</a>
-              </nav>
-            </div>
-            
-            <div v-if="months.length" class="my-2 flex flex-wrap justify-center">
-              <template v-for="year in years">
-                <b v-if="year === (routes.year || new Date().getFullYear().toString())" class="ml-3 text-sm font-semibold">
-                  {{ year }}
-                </b>
-                <a v-else v-href="{ year }" class="ml-3 text-sm text-indigo-700 font-semibold hover:underline">
-                  {{ year }}
-                </a>
-              </template>
-            </div>
-            <div v-if="months.length" class="flex flex-wrap justify-center">
-              <template v-for="month in months.filter(x => x.startsWith(routes.year || new Date().getFullYear().toString()))">
-               <span v-if="month === (routes.month || (new Date().getFullYear() + '-' + (new Date().getMonth() + 1).toString().padStart(2,'0')))" class="mr-2 mb-2 text-xs leading-5 font-semibold bg-indigo-600 text-white rounded-full py-1 px-3 flex items-center space-x-2">
-               {{ new Date(month + '-01').toLocaleString('default', { month: 'long' }) }}
-               </span>
-                <a v-else v-href="{ month }" class="mr-2 mb-2 text-xs leading-5 font-semibold bg-slate-400/10 rounded-full py-1 px-3 flex items-center space-x-2 hover:bg-slate-400/20 dark:highlight-white/5">
-                  {{ new Date(month + '-01').toLocaleString('default', { month: 'short' }) }}
-                </a>
-              </template>
-            </div>
+        <div class="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-3 border-b border-gray-200">
+          <nav class="-mb-px flex gap-x-6" aria-label="Tabs">
+            <a v-for="(tab,label) in tabs" v-href="{ tab }" :aria-current="(routes.tab ?? '') === tab ? 'page' : undefined"
+               :class="['whitespace-nowrap border-b-2 px-1 pb-3 pt-1 text-sm font-medium', (routes.tab ?? '') === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700']">{{ label }}</a>
+          </nav>
+          <MonthPicker :months="months" class="pb-2.5" />
         </div>
 
         <div v-if="loading" class="flex justify-center p-4">

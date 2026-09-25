@@ -8,7 +8,7 @@ Chart.register(...registerables)
 export const Commands = {
     template:`
     <section v-if="!plugin">
-      <div class="p-4 max-w-3xl">
+      <div class="max-w-3xl">
         <Alert type="info">Admin Commands UI is not enabled</Alert>
         <div class="my-4">
           <div>
@@ -34,9 +34,9 @@ export const Commands = {
         </div>
         <div class="hidden sm:block">
           <div class="border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <nav class="-mb-px flex gap-x-6" aria-label="Tabs">
               <a v-for="(tab,name) in tabs" v-href="{ tab, op:'', show:'', body:'', type:'' }"
-                 :class="[routes.tab === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']">
+                 :class="[routes.tab === tab ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap pb-3 pt-1 px-1 border-b-2 font-medium text-sm']">
                 {{ name }}
               </a>
             </nav>
@@ -47,18 +47,18 @@ export const Commands = {
         
       <div v-if="api.response">
         <div v-if="routes.tab === 'explore'" class="flex">
-          <div class="w-64 mt-2">
+          <div class="w-64 mt-4">
             <div class="relative">
-              <svg class="absolute ml-2.5 mt-2 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path>
-              </svg>
-              <input type="search" placeholder="Filter..." v-model="q" class="border rounded-full overflow-hidden flex w-full px-4 pl-8 border-gray-200">
+              <svg class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path>
+                </svg>
+              <input type="search" placeholder="Filter..." v-model="q" class="block h-9 w-full rounded-md border-gray-300 py-1.5 pl-8 pr-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
-            <nav class="w-64 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Sidebar">
-              <div v-for="nav in filteredNav" class="space-y-1">
+            <nav class="mt-2 w-64 bg-white pb-4 md:pb-scroll" aria-label="Sidebar">
+              <div v-for="nav in filteredNav">
                 <button v-if="nav.tag" type="button" @click.prevent="toggleNav(nav.tag)"
-                        class="bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pr-2 py-2 text-left text-sm font-medium">
-                  <svg :class="[nav.expanded ? 'text-gray-400 rotate-90' : 'text-gray-300','mr-2 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 20 20" aria-hidden="true">
+                        class="group flex w-full items-center rounded-md px-2 py-1.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                  <svg :class="[nav.expanded ? 'rotate-90 text-gray-500' : 'text-gray-400','mr-1.5 h-4 w-4 shrink-0 transform transition-transform duration-150 group-hover:text-gray-500']" viewBox="0 0 20 20" aria-hidden="true">
                     <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
                   </svg>
                   {{nav.tag}}
@@ -66,7 +66,7 @@ export const Commands = {
                 <div v-if="nav.expanded" class="space-y-1">
                   <a v-for="op in nav.commands" v-href="{ op:op.name, type:'' }"
                      :class="[op.name === routes.op ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
-                        'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
+                        'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-2 group w-full flex justify-between items-center pl-8 pr-2 py-1.5 text-sm']">
                     <span class="nav-item flex-grow">{{op.name}}</span>
                   </a>
                 </div>
@@ -126,34 +126,25 @@ export const Commands = {
           <div :class="['mt-2',{ hidden: !routes.op }]" style="max-width:1024px;max-height:512px">
             <canvas ref="elChart"></canvas>
           </div>
-          <div class="mt-2 flex flex-wrap items-center">
-            <div>
-              <button type="button" @click="refresh()" title="Refresh" class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-                  <path d="M21.168 8A10.003 10.003 0 0 0 12 2c-5.185 0-9.45 3.947-9.95 9"></path><path d="M17 8h4.4a.6.6 0 0 0 .6-.6V3M2.881 16c1.544 3.532 5.068 6 9.168 6c5.186 0 9.45-3.947 9.951-9"></path><path d="M7.05 16h-4.4a.6.6 0 0 0-.6.6V21"></path></g>
-                </svg>
-              </button>
-            </div>
-            <div class="ml-2">
-                <span class="inline-flex">
-                  <label for="message-type" class="sr-only">Select Type</label>
-                  <select id="message-type" v-model="type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base focus:outline-none sm:text-sm rounded-md dark:text-white dark:bg-gray-900 dark:border-gray-600 disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200 disabled:shadow-none shadow-sm border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="ALL">All</option>
-                    <option value="API">APIs</option>
-                    <option value="CMD">Commands</option>
-                  </select>
-                </span>
-            </div>
-            <div class="ml-2">
-              <div class="relative">
-                <svg class="absolute ml-2.5 mt-2 h-4 w-4 text-gray-500" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <div class="mt-4 mb-3 flex flex-wrap items-center gap-2">
+            <button type="button" @click="refresh()" title="Refresh" class="inline-flex h-9 items-center rounded-md bg-white px-2.5 text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                <path d="M21.168 8A10.003 10.003 0 0 0 12 2c-5.185 0-9.45 3.947-9.95 9"></path><path d="M17 8h4.4a.6.6 0 0 0 .6-.6V3M2.881 16c1.544 3.532 5.068 6 9.168 6c5.186 0 9.45-3.947 9.951-9"></path><path d="M7.05 16h-4.4a.6.6 0 0 0-.6.6V21"></path></g>
+              </svg>
+            </button>
+            <label for="message-type" class="sr-only">Select Type</label>
+            <select id="message-type" v-model="type" class="block h-9 w-36 rounded-md border-gray-300 py-1.5 pl-3 pr-8 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:text-white dark:bg-gray-900 dark:border-gray-600">
+              <option value="ALL">All</option>
+              <option value="API">APIs</option>
+              <option value="CMD">Commands</option>
+            </select>
+            <div class="relative w-64">
+              <svg class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M16.32 14.9l5.39 5.4a1 1 0 0 1-1.42 1.4l-5.38-5.38a8 8 0 1 1 1.41-1.41zM10 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12z"></path>
                 </svg>
-                <input type="search" placeholder="Filter..." v-model="q" class="border shadow-sm rounded-full overflow-hidden flex w-full px-4 pl-8 border-gray-200">
-              </div>
+              <input type="search" placeholder="Filter..." v-model="q" class="block h-9 w-full rounded-md border-gray-300 py-1.5 pl-8 pr-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
           </div>
-          
           <div class="flex">
             <DataGrid :items="commandTotals"
                       selected-columns="name,count,failed,averageMs,medianMs,minMs,maxMs,retries,lastError"
@@ -267,7 +258,7 @@ export const Commands = {
         let hasMore = true
         
         const q = ref(routes.q)
-        const type = ref(routes.type ?? "ALL")
+        const type = ref(routes.type || "ALL")
         const api = ref(new ApiResult())
         const commandTotals = ref([])
         

@@ -1455,17 +1455,17 @@ const Dashboard = {
                 </select>
               </div>
               <div class="hidden sm:block">
-                <nav class="flex space-x-4" aria-label="Tabs">
+                <nav class="flex flex-wrap gap-1" aria-label="Periods">
                   <span v-for="(period,name) in periods" @click="routes.to({tab:undefined,period})" 
-                    :class="[period === routes.period ? 'bg-indigo-100 text-indigo-700':'text-gray-500 hover:text-gray-700', 'cursor-pointer select-none rounded-md px-3 py-2 text-sm font-medium']" :title="name">{{periodLabels[name]}}</span>
+                    :class="[period === routes.period ? 'bg-indigo-600 text-white shadow-sm':'text-gray-600 hover:bg-gray-100 hover:text-gray-900', 'cursor-pointer select-none rounded-md px-2.5 py-1 text-xs font-semibold']" :title="name">{{periodLabels[name]}}</span>
                 </nav>
               </div>
             </div>
-            <h2 class="lg:block pt-4 mb-2 text-3xl font-bold leading-tight tracking-tight text-gray-900">{{periodLabel}}</h2>
+            <h2 class="lg:block pt-5 mb-2 text-lg font-semibold tracking-tight text-gray-900">{{periodLabel}}</h2>
         </div>
         
         <div v-if="results.waitTimes?.count" class="mb-8">
-            <h4 class="mt-4 font-semibold text-gray-500" title="Time between a Job being queued and starting">Wait Times</h4>
+            <h4 class="mt-6 mb-2 text-sm font-semibold text-gray-900" title="Time between a Job being queued and starting">Wait Times</h4>
             <dl class="mt-2 grid grid-cols-2 gap-4 sm:grid-cols-4 max-w-2xl">
                 <div class="rounded-lg bg-gray-50 px-4 py-3">
                     <dt class="text-xs font-medium text-gray-500">Jobs</dt>
@@ -1486,31 +1486,31 @@ const Dashboard = {
             </dl>
         </div>
         <div v-if="results.queues.length">
-            <h4 class="mt-4 font-semibold text-gray-500">Queue Stats</h4>
+            <h4 class="mt-6 mb-2 text-sm font-semibold text-gray-900">Queue Stats</h4>
             <DataGrid :items="results.queues" selectedColumns="name,total,completed,retries,failed,cancelled">
                 <template #name="{ name }"><Truncate class="w-40 sm:w-80" :value="name" /></template>
             </DataGrid>
         </div>
         <div v-if="isToday && results.today.length" class="mb-8">
-            <h4 class="mt-4 font-semibold text-gray-500">24 hour activity</h4>
+            <h4 class="mt-6 mb-2 text-sm font-semibold text-gray-900">24 hour activity</h4>
             <div style="max-width:1024px;max-height:512px">
                 <canvas ref="elChart"></canvas>
             </div>
         </div>
         <div v-if="results.commands.length">
-            <h4 class="mt-4 font-semibold text-gray-500">Commands Stats</h4>
+            <h4 class="mt-6 mb-2 text-sm font-semibold text-gray-900">Commands Stats</h4>
             <DataGrid :items="results.commands" selectedColumns="name,total,completed,retries,failed,cancelled">
                 <template #name="{ name }"><Truncate class="w-40 sm:w-80" :value="name" /></template>
             </DataGrid>
         </div>
         <div v-if="results.apis.length">
-            <h4 class="mt-4 font-semibold text-gray-500">API Stats</h4>
+            <h4 class="mt-6 mb-2 text-sm font-semibold text-gray-900">API Stats</h4>
             <DataGrid :items="results.apis" selectedColumns="name,total,completed,retries,failed,cancelled">
                 <template #name="{ name }"><Truncate class="w-40 sm:w-80" :value="name" /></template>
             </DataGrid>
         </div>
         <div v-if="results.workers.length">
-            <h4 class="mt-4 font-semibold text-gray-500">Worker Stats</h4>
+            <h4 class="mt-6 mb-2 text-sm font-semibold text-gray-900">Worker Stats</h4>
             <DataGrid :items="results.workers" selectedColumns="name,total,completed,retries,failed,cancelled">
                 <template #name="{ name }"><Truncate class="w-40 sm:w-80" :value="name" /></template>
             </DataGrid>
@@ -1663,7 +1663,7 @@ export const BackgroundJobs = {
     },
     template: `
         <section v-if="!plugin">
-          <div class="p-4 max-w-3xl">
+          <div class="max-w-3xl">
             <Alert type="info">Background Jobs Admin UI is not enabled</Alert>
             <div class="my-4">
               <div>
@@ -1681,7 +1681,7 @@ export const BackgroundJobs = {
             </div>
           </div>
         </section>
-        <Tabs v-else :tabs="tabs" :label="tabLabel" :clearQuery="true" />
+        <Tabs v-else :tabs="tabs" :label="tabLabel" :clearQuery="true" tabClass="!w-auto !px-3 !pt-1 !pb-3 whitespace-nowrap" bodyClass="pt-5" />
     `,
     setup() {
         const client = useClient()

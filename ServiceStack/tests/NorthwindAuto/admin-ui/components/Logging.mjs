@@ -10,7 +10,7 @@ import {prettyJson, parseJsv, hasItems} from "core"
 export const Logging = {
     template:`
       <section v-if="!plugin">
-          <div class="p-4 max-w-3xl">
+          <div class="max-w-3xl">
             <Alert type="info">Admin Logging UI is not enabled</Alert>
             <div class="my-4">
               <div>
@@ -34,42 +34,15 @@ export const Logging = {
       </section>
       <div v-else>
           <div v-if="useAutoQuery">
-            <div>
-              <div class="mb-2 flex flex-wrap justify-center">
-                <template v-for="year in years">
-                  <b v-if="year === (routes.year || new Date().getFullYear().toString())"
-                     class="ml-3 text-sm font-semibold">
-                    {{ year }}
-                  </b>
-                  <a v-else v-href="{ year }" class="ml-3 text-sm text-indigo-700 font-semibold hover:underline">
-                    {{ year }}
-                  </a>
-                </template>
-              </div>
-    
-              <div class="flex flex-wrap justify-center">
-                <template
-                    v-for="month in months.filter(x => x.startsWith(routes.year || new Date().getFullYear().toString()))">
-                    <span
-                        v-if="month === (routes.month || (new Date().getFullYear() + '-' + (new Date().getMonth() + 1).toString().padStart(2,'0')))"
-                        class="mr-2 mb-2 text-xs leading-5 font-semibold bg-indigo-600 text-white rounded-full py-1 px-3 flex items-center space-x-2">
-                      {{ new Date(month + '-01').toLocaleString('default', {month: 'long'}) }}
-                    </span>
-                  <a v-else v-href="{ month }"
-                     class="mr-2 mb-2 text-xs leading-5 font-semibold bg-slate-400/10 rounded-full py-1 px-3 flex items-center space-x-2 hover:bg-slate-400/20 dark:highlight-white/5">
-                    {{ new Date(month + '-01').toLocaleString('default', {month: 'short'}) }}
-                  </a>
-                </template>
-              </div>
-            </div>
-    
+            <MonthPicker :months="months" class="mb-4" />
+
             <AutoQueryGrid ref="grid" type="RequestLog"
                            selectedColumns="id,statusCode,httpMethod,pathInfo,operationName,userAuthId,sessionId,ipAddress,requestDuration"
                            :headerTitles="{statusCode:'Status',httpMethod:'Method',operationName:'Operation',userAuthId:'UserId',ipAddress:'IP',requestDuration:'Duration'}"
                            @rowSelected="routes.edit = routes.edit == $event.id ? null : $event.id"
                            :isSelected="(row) => routes.edit == row.id" :filters="gridFilters"
                            hide="forms"
-                           :rowClass="(row,i) => row.statusCode >= 300 ? (statusBackground(row.statusCode,i) + ' cursor-pointer hover:bg-yellow-50') : css.grid.getTableRowClass('stripedRows', i, routes.edit == row.id, true)"
+                           :rowClass="(row,i) => row.statusCode >= 300 ? (statusBackground(row.statusCode,i) + ' cursor-pointer hover:bg-gray-100') : css.grid.getTableRowClass('stripedRows', i, routes.edit == row.id, true)"
             >
               <template #requestDuration="{requestDuration}">
                 <span :title="requestDuration">{{ valueFmt(requestDuration, 'requestDuration') }}</span>
@@ -130,7 +103,7 @@ export const Logging = {
                       <tr>
                         <th v-for="k in uniqueKeys"
                             v-href="{ orderBy:routes.orderBy === k ? ('-' + k) : routes.orderBy === ('-' + k) ? '' : k }"
-                            class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            class="cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">
                           <div class="flex">
                             <span class="mr-1 select-none">{{ keyFmt(fieldLabels[k] || k) }}</span>
                             <svg class="w-4 h-4" v-if="routes.orderBy===k" xmlns="http://www.w3.org/2000/svg"
@@ -156,8 +129,8 @@ export const Logging = {
                       </thead>
                       <tbody>
                       <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
-                          :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : statusBackground(row.statusCode,index) + ' hover:bg-yellow-50']">
-                        <td v-for="k in uniqueKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-50' : statusBackground(row.statusCode,index) + ' hover:bg-gray-100']">
+                        <td v-for="k in uniqueKeys" :key="k" class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
                           <span :title="row[k]">{{ valueFmt(row[k], k) }}</span>
                         </td>
                       </tr>
@@ -706,7 +679,7 @@ export const Logging = {
             },
             statusBackground(status, index) {
                 return status < 300
-                    ? (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')
+                    ? (index % 2 === 0 ? 'bg-white' : 'bg-gray-50/60')
                     : status < 400
                         ? 'bg-amber-100'
                         : status < 500

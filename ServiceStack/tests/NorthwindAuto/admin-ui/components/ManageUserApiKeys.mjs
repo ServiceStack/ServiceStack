@@ -350,7 +350,7 @@ export const ManageUserApiKeys = {
         <div class="w-full overflow-auto px-1 -ml-1">
             <DataGrid v-if="api.response?.results?.length" :items="api.response.results"
                       @rowSelected="rowSelected" :isSelected="row => selected === row.id"
-                      :rowClass="(row,i) => !row.active ? 'cursor-pointer hover:bg-yellow-50 bg-red-100' : css.grid.getTableRowClass('stripedRows', i, selected === row.id, true)"
+                      :rowClass="(row,i) => !row.active ? 'cursor-pointer hover:bg-gray-100 bg-red-100' : css.grid.getTableRowClass('stripedRows', i, selected === row.id, true)"
                       :headerTitles="{visibleKey:'Secret Key',createdDate:'Created',expiryDate:'Expires'}"
                       :selectedColumns="columns">
               <template #createdDate="{createdDate}">

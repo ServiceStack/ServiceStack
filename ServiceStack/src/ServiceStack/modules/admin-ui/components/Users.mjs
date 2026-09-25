@@ -397,7 +397,7 @@ export const Users = {
     components: { NewUser, EditUser },
     template:`
 <section v-if="!plugin">
-  <div class="p-4 max-w-3xl">
+  <div class="max-w-3xl">
     <Alert type="info">AdminUsersFeature is not enabled</Alert>
     <div class="my-4">
       <div>
@@ -448,9 +448,9 @@ export const Users = {
                     </span>
                 </p>
             </div>
-            <a v-href="{ new:1,edit:null }" class="ml-3 inline-flex items-center px-3 py-2.5 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                New 
-                <span class="hidden md:ml-1 md:inline">User</span>
+            <a v-href="{ new:1,edit:null }" class="ml-auto inline-flex items-center gap-x-1 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="-ml-0.5 h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z"/></svg>
+                New <span class="hidden md:inline">User</span>
             </a>
         </div>
     </form>
@@ -460,7 +460,7 @@ export const Users = {
     <Loading v-if="loading" />
     <div v-else-if="results.length" class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg my-3">
+            <div class="overflow-hidden shadow-sm ring-1 ring-gray-900/5 sm:rounded-lg my-3">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                     <tr>
@@ -471,7 +471,7 @@ export const Users = {
                             </button>
                         </th>
                         <th v-for="name in fieldNames" scope="col" 
-                            class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                            class="cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">
                             <a v-href="{ sort:sortBy(name), $on:search }" class="flex items-center">
                                 <div>{{humanify(name)}}</div>
                                 <svg v-if="name === request.orderBy || '-' + name === request.orderBy" 
@@ -490,7 +490,7 @@ export const Users = {
                                 <svg class="w-6 h-6 text-gray-500 hover:text-gray-900" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" width="1em" height="1em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></g></svg>
                             </button>
                         </td>
-                        <td v-for="name in fieldNames" key="mapGet(row, 'Id')" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td v-for="name in fieldNames" key="mapGet(row, 'Id')" class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
                             {{apiValueFmt(mapGet(row,name))}}
                         </td>
                     </tr>

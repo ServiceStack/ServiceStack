@@ -9,7 +9,7 @@ import { prettyJson, hasItems } from "core"
 export const Profiling = {
     template:`
 <section v-if="!plugin">
-  <div class="p-4 max-w-3xl">
+  <div class="max-w-3xl">
     <Alert type="info">Admin Profiling UI is not enabled</Alert>
     <div class="my-4">
       <div>
@@ -28,41 +28,37 @@ export const Profiling = {
   </div>
 </section>
 <div v-else>
-    <div class="mb-2 flex flex-wrap">
-    <span class="relative z-0 inline-flex shadow-sm rounded-md">
-          <button v-href="href({ withErrors:!routes.withErrors })" type="button"
-                  class="relative inline-flex items-center px-4 py-2 rounded-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
-              Has Errors
-          </button>
-        </span>
-    <div v-if="hasFilters" class="px-2">
-      <button type="button" @click="clearFilters" title="Reset Filters"
-              class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-        <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/>
-        </svg>
-      </button>
-    </div>
-        <span class="relative z-0 inline-flex shadow-sm rounded-md">
-          <button type="button" :class="[canPrev ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
-            'relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
+    <div class="mb-3 flex flex-wrap items-center gap-2">
+        <button v-href="href({ withErrors:hasErrors ? '' : true })" type="button" :aria-pressed="hasErrors"
+                :class="['inline-flex h-9 items-center gap-x-1.5 rounded-md px-3 text-sm font-medium shadow-sm ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-indigo-500',
+                    hasErrors ? 'bg-red-50 text-red-700 ring-red-300 hover:bg-red-100' : 'bg-white text-gray-700 ring-gray-300 hover:bg-gray-50']">
+            <span :class="['h-2 w-2 rounded-full', hasErrors ? 'bg-red-500' : 'bg-gray-300']" aria-hidden="true"></span>
+            Has Errors
+        </button>
+        <span class="isolate inline-flex rounded-md shadow-sm">
+          <button type="button" :class="[canPrev ? 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' : 'text-gray-300 cursor-default',
+            'relative inline-flex h-9 items-center rounded-l-md bg-white px-2 ring-1 ring-inset ring-gray-300 focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500']"
                   title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path
-                d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
+            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6l6 6l1.41-1.41L10.83 12z" fill="currentColor"/></svg>
           </button>
-          <button type="button" :class="[canNext ? 'text-gray-700 hover:text-indigo-600' : 'text-gray-400',
-                '-ml-px relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500']"
+          <button type="button" :class="[canNext ? 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' : 'text-gray-300 cursor-default',
+                '-ml-px relative inline-flex h-9 items-center rounded-r-md bg-white px-2 ring-1 ring-inset ring-gray-300 focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500']"
                   title="Next page" :disabled="!canNext" v-href="{ skip:nextSkip(take) }">
-                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
+            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41L13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor"/></svg>
           </button>
         </span>
-        <button type="button" @click="update" title="Refresh"
-                class="ml-2 inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-            <svg class="w-6 h-6 p-0.5" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g
-                fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><path
+        <button type="button" @click="update" title="Refresh" class="inline-flex h-9 items-center rounded-md bg-white px-2.5 text-sm font-medium text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><g
+                fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path
                 d="M21.168 8A10.003 10.003 0 0 0 12 2c-5.185 0-9.45 3.947-9.95 9"/><path
                 d="M17 8h4.4a.6.6 0 0 0 .6-.6V3M2.881 16c1.544 3.532 5.068 6 9.168 6c5.186 0 9.45-3.947 9.951-9"/><path
                 d="M7.05 16h-4.4a.6.6 0 0 0-.6.6V21"/></g></svg>
+        </button>
+        <button v-if="hasFilters" type="button" @click="clearFilters" title="Reset Filters" class="inline-flex h-9 items-center rounded-md bg-white px-2.5 text-sm font-medium text-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 gap-x-1.5">
+            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M6.78 2.72a.75.75 0 0 1 0 1.06L4.56 6h8.69a7.75 7.75 0 1 1-7.75 7.75a.75.75 0 0 1 1.5 0a6.25 6.25 0 1 0 6.25-6.25H4.56l2.22 2.22a.75.75 0 1 1-1.06 1.06l-3.5-3.5a.75.75 0 0 1 0-1.06l3.5-3.5a.75.75 0 0 1 1.06 0Z"/>
+            </svg>
+            Reset
         </button>
     </div>
     <section>
@@ -75,7 +71,7 @@ export const Profiling = {
               <tr>
                 <th v-for="k in uniqueKeys"
                     v-href="{ orderBy:routes.orderBy === k ? ('-' + k) : routes.orderBy === ('-' + k) ? '' : k }"
-                    class="cursor-pointer px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                    class="cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">
                   <div class="flex">
                     <span class="mr-1 select-none">{{ keyFmt(fieldLabels[k] || k) }}</span>
                     <svg class="w-4 h-4" v-if="routes.orderBy===k" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -95,8 +91,8 @@ export const Profiling = {
               </thead>
               <tbody>
               <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
-                  :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : statusBackground(row.error,index) + ' hover:bg-yellow-50']">
-                <td v-for="k in uniqueKeys" :key="k" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-50' : statusBackground(row.error,index) + ' hover:bg-gray-100']">
+                <td v-for="k in uniqueKeys" :key="k" class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
                   <span :title="apiValueTitle(row[k],k)">{{ valueFmt(row[k], k) }}</span>
                 </td>
               </tr>
@@ -350,9 +346,12 @@ export const Profiling = {
             linkFields.forEach(x => {
                 if (routes[x]) request[x] = routes[x]
             })
+            // route values from the URL are strings
+            request.withErrors = hasErrors.value || undefined
             api.value = await client.api(request, { jsconfig: 'eccn' })
         }
         const errorSummary = computed(() => api.value.summaryMessage())
+        const hasErrors = computed(() => routes.withErrors === true || routes.withErrors === 'true')
         /** @type {ComputedRef<DiagnosticEntry[]>} */
         const results = computed(() => api.value.response?.results || [])
         const total = computed(() => api.value.response?.total)
@@ -447,6 +446,7 @@ export const Profiling = {
         })
         
         return {
+            hasErrors,
             plugin,
             routes,
             api,
@@ -484,7 +484,7 @@ export const Profiling = {
             },
             statusBackground(error,index) {
                 return !error
-                    ? (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')
+                    ? (index % 2 === 0 ? 'bg-white' : 'bg-gray-50/60')
                     : 'bg-red-100'
             },
             selectedSession,

@@ -7,7 +7,7 @@ import { prettyJson } from "core"
 export const Database = {
     template:`
     <section v-if="!plugin">
-      <div class="p-4 max-w-3xl">
+      <div class="max-w-3xl">
         <Alert type="info">Database Admin UI is not enabled</Alert>
         <div class="my-4">
           <div>
@@ -22,26 +22,28 @@ export const Database = {
       </div>
     </section>
     <section v-else>
-        <div v-if="!routes.table" class="flex flex-wrap">
-            <nav v-for="db in databases" class="flex-1 space-y-1 bg-white pb-4 md:pb-scroll" aria-label="Tables">
-                <div class="">
-                    <span class="text-2xl text-gray-900 group flex items-center pr-2 py-2 text-sm font-medium rounded-md">
-                        <svg class="text-gray-500 mr-3 h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6a8 3 0 0 0 16 0V6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></g></svg>
-                        {{db.alias || db.name}}
-                    </span>
-                    <div v-for="schema in db.schemas" class="space-y-1">
-                        <button type="button" @click.prevent="toggleSchema(db.name,schema.name)"
-                                class="bg-white text-gray-600 hover:bg-gray-50 hover:text-gray-900 group w-full flex items-center pr-2 py-2 text-left text-sm font-medium">
-                            <svg :class="[!isCollapsed(db.name,schema.name) ? 'text-gray-400 rotate-90' : 'text-gray-300','mr-2 flex-shrink-0 h-5 w-5 transform group-hover:text-gray-400 transition-colors ease-in-out duration-150']" viewBox="0 0 20 20" aria-hidden="true">
+        <div v-if="!routes.table" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 items-start">
+            <nav v-for="db in databases" class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5" aria-label="Tables">
+                <div class="flex items-center gap-x-2.5 border-b border-gray-100 bg-gray-50/60 px-4 py-3">
+                    <svg class="h-5 w-5 shrink-0 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6a8 3 0 0 0 16 0V6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></g></svg>
+                    <span class="truncate text-sm font-semibold text-gray-900">{{db.alias || db.name}}</span>
+                    <span class="ml-auto text-xs tabular-nums text-gray-500">{{ db.schemas.reduce((n,x) => n + (x.tables?.length || 0), 0) }} tables</span>
+                </div>
+                <div class="py-2">
+                    <div v-for="schema in db.schemas">
+                        <button type="button" @click.prevent="toggleSchema(db.name,schema.name)" :aria-expanded="!isCollapsed(db.name,schema.name)"
+                                class="group flex w-full items-center px-3 py-1.5 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900">
+                            <svg :class="[!isCollapsed(db.name,schema.name) ? 'rotate-90 text-gray-500' : 'text-gray-400','mr-1.5 h-4 w-4 shrink-0 transform transition-transform duration-150 group-hover:text-gray-500']" viewBox="0 0 20 20" aria-hidden="true">
                                 <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
                             </svg>
                             {{schema.alias || schema.name}}
+                            <span class="ml-auto text-xs font-normal tabular-nums text-gray-400">{{ schema.tables?.length || 0 }}</span>
                         </button>
-                        <div v-if="!isCollapsed(db.name,schema.name)" class="space-y-1">
+                        <div v-if="!isCollapsed(db.name,schema.name)">
                             <a v-for="table in schema.tables" v-href="{ db:db.name, schema:schema.name, table }"
                                :class="[table === routes.table ? 'bg-indigo-50 border-indigo-600 text-indigo-600' : 
-                                    'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-4 group w-full flex justify-between items-center pl-10 pr-2 py-2 text-sm font-medium']">
-                                <span class="nav-item flex-grow">{{table}}</span>
+                                    'border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50', 'border-l-2 group flex w-full items-center pl-9 pr-3 py-1.5 text-sm']">
+                                <span class="nav-item truncate">{{table}}</span>
                             </a>
                         </div>
                     </div>
@@ -182,7 +184,7 @@ export const Database = {
                                 <table class="table-array min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                     <tr>
-                                        <th v-for="c in columns" :key="c.name" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">
+                                        <th v-for="c in columns" :key="c.name" class="px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">
                                             <div @click="onHeaderSelected(c,$event)">
                                               <div v-if="complexProp(c)" class="flex justify-between items-center text-sm">
                                                 <span class="mr-1 select-none">{{fieldName(c.name)}}</span>
@@ -197,9 +199,9 @@ export const Database = {
                                     </thead>
                                     <tbody>
                                     <tr v-for="(row,index) in results" @click="toggle(row)"
-                                        :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-100' : 'hover:bg-yellow-50']">
-                                        <td v-for="c in columns" :key="c.name" class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                          <HtmlFormat :value="mapGet(row,c.name)" :format="c.format" />  
+                                        :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-50' : 'hover:bg-gray-100']">
+                                        <td v-for="c in columns" :key="c.name" class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700 [&_.prose]:text-sm! [&_.prose]:leading-5! [&_.prose_table]:my-0!">
+                                          <HtmlFormat v-if="mapGet(row,c.name) != null" :value="mapGet(row,c.name)" :format="c.format" />
                                         </td>
                                     </tr>
                                     </tbody>
