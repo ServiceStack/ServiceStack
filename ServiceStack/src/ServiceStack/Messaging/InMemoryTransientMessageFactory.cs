@@ -73,8 +73,18 @@ public class InMemoryTransientMessageFactory
         public void Publish(string queueName, IMessage message)
         {
             if (string.IsNullOrEmpty(queueName) || message == null) return;
-            this.parent?.transientMessageService?.MessageQueueFactory?
-                .PublishMessage(queueName, MessageSerializer.Instance.ToBytes(message));
+            using var activity = MessagingDiagnostics.StartPublish(MessagingDiagnostics.Systems.InMemory, queueName, message);
+            MessagingDiagnostics.Inject(message);
+            try
+            {
+                this.parent?.transientMessageService?.MessageQueueFactory?
+                    .PublishMessage(queueName, MessageSerializer.Instance.ToBytes(message));
+            }
+            catch (Exception ex)
+            {
+                activity.RecordError(ex);
+                throw;
+            }
         }
 
         public void SendOneWay(object requestDto)

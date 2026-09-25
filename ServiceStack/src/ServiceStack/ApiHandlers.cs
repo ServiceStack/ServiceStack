@@ -73,7 +73,8 @@ public static class ApiHandlers
                 }
 
                 return new GenericHandler(useContentType, useRequestAttrs, useFeature) {
-                    RequestName = apiName
+                    RequestName = apiName,
+                    RouteTemplate = apiPath,
                 };
             }
             return null;
@@ -112,7 +113,8 @@ public static class ApiHandlers
         }
 
         return new GenericHandler(useContentType, useRequestAttrs, useFeature) {
-            RequestName = apiName
+            RequestName = apiName,
+            RouteTemplate = apiPath + "/{Request}",
         };
     }
 }

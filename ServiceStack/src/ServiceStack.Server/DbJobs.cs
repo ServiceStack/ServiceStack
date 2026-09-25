@@ -452,6 +452,7 @@ public partial class DbJobs : BackgroundJobsProviderBase, IBackgroundJobs, IBack
     // Executed on BackgroundJobsWorker Thread
     public async Task ExecuteJobAsync(BackgroundJob job)
     {
+        using var activity = JobsDiagnostics.StartActivity(job);
         if (cancelJobIds.ContainsKey(job.Id))
         {
             FailJob(job, new TaskCanceledException("Job was cancelled"));
@@ -494,6 +495,7 @@ public partial class DbJobs : BackgroundJobsProviderBase, IBackgroundJobs, IBack
                     x.CancelRequestedDate == null && x.LeaseToken == job.LeaseToken);
                 if (claimed == 0)
                 {
+                    activity?.SetTag("job.claimed", false);
                     log.LogWarning("JOBS Skipping Job {Id}: it was cancelled or claimed by another node", job.Id);
                     return;
                 }
@@ -506,7 +508,6 @@ public partial class DbJobs : BackgroundJobsProviderBase, IBackgroundJobs, IBack
             }
 
             JobsDiagnostics.RecordStarted(job);
-            using var activity = JobsDiagnostics.StartActivity(job);
             var diagnosticId = JobsDiagnostics.WriteJobBefore(job);
 
             // Execute Command
@@ -1333,6 +1334,7 @@ public partial class DbJobs : BackgroundJobsProviderBase, IBackgroundJobs, IBack
             catch (ObjectDisposedException) {}
         });
         log.LogInformation("JOBS Starting...");
+        using var startupActivity = JobsDiagnostics.StartInternalActivity("jobs startup");
         LoadJobQueue();
         LoadScheduledTasks();
         return Task.CompletedTask;
@@ -1832,6 +1834,7 @@ public partial class DbJobs : BackgroundJobsProviderBase, IBackgroundJobs, IBack
     /// </summary>
     public async Task StopAsync(CancellationToken token = default)
     {
+        using var shutdownActivity = JobsDiagnostics.StartInternalActivity("jobs shutdown");
         log.LogInformation("JOBS Stopping...");
         stopping = true;
 
@@ -1926,6 +1929,8 @@ public partial class DbJobs : BackgroundJobsProviderBase, IBackgroundJobs, IBack
             return Task.CompletedTask;
         try
         {
+            // Profiling only, exporting a trace per tick would flood the tracing backend
+            using var pollActivity = JobsDiagnostics.StartProfilingScope("jobs poll");
             Interlocked.Increment(ref ticks);
             if (log.IsEnabled(LogLevel.Debug))
                 log.LogDebug("JOBS Tick {Ticks}", ticks);

@@ -19,6 +19,7 @@ using ServiceStack.Host;
 using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
 
 namespace ServiceStack.Extensions.Tests;
 
@@ -1843,6 +1844,116 @@ public class DbJobsTests
         Assert.That(entry.NamedArgs["BatchId"], Is.EqualTo("batch-1"));
         Assert.That(entry.NamedArgs["Worker"], Is.EqualTo("mail"));
         Assert.That(entry.NamedArgs["Attempt"], Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Polling_db_jobs_does_not_export_a_trace_per_tick()
+    {
+        ResetState();
+        var started = new ConcurrentBag<Activity>();
+        using var listener = new ActivityListener {
+            ShouldListenTo = source => source.Name == JobsDiagnostics.Name,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = started.Add,
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        await Jobs.TickAsync();
+
+        // Executing a Job still has its own span, left over Jobs from other tests may be run by this tick
+        Assert.That(started.Where(x => !x.DisplayName.StartsWith("job ")), Is.Empty);
+    }
+
+    [Test]
+    public void Polling_db_jobs_groups_its_Profiling_events_with_OpenTelemetry_registered()
+    {
+        var profiling = new ProfilingFeature();
+        appHost.Plugins.Add(profiling);
+        var started = new ConcurrentBag<Activity>();
+        using var listener = new ActivityListener {
+            ShouldListenTo = source => source.Name == JobsDiagnostics.Name,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = started.Add,
+        };
+        ActivitySource.AddActivityListener(listener);
+        var previous = Activity.Current;
+        Activity.Current = null;
+        try
+        {
+            using var poll = JobsDiagnostics.StartProfilingScope("jobs poll");
+            Assert.That(poll, Is.Not.Null);
+            Assert.That(poll!.Source.Name, Is.Not.EqualTo(JobsDiagnostics.Name));
+            var evt = new OrmLiteDiagnosticEvent { EventType = "ConnectionOpenBefore" }.Init(Activity.Current);
+            var entry = new ProfilerDiagnosticObserver(profiling).ToDiagnosticEntry(evt);
+            Assert.That(entry.TraceId, Is.EqualTo(poll.ParentId));
+            Assert.That(started, Is.Empty);
+        }
+        finally
+        {
+            Activity.Current = previous;
+            appHost.Plugins.Remove(profiling);
+        }
+    }
+
+    [Test]
+    public void Job_profiling_retains_queued_W3C_trace_without_an_active_activity()
+    {
+        const string traceId = "0123456789abcdef0123456789abcdef";
+        var job = new BackgroundJob {
+            Id = 123,
+            RequestType = CommandResult.Command,
+            Request = nameof(DbRequest),
+            Command = nameof(DbJobCommand),
+            TraceId = $"00-{traceId}-0123456789abcdef-01",
+        };
+        var observer = new ProfilerDiagnosticObserver(new ProfilingFeature());
+        var previous = Activity.Current;
+        try
+        {
+            Activity.Current = null;
+            var entry = observer.ToDiagnosticEntry(new JobDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteJobBefore,
+                Job = job,
+            });
+            Assert.That(entry.TraceId, Is.EqualTo(traceId));
+            Assert.That(entry.SpanId, Is.Null);
+        }
+        finally
+        {
+            Activity.Current = previous;
+        }
+    }
+
+    [Test]
+    public void Background_jobs_have_a_Profiling_trace_without_OpenTelemetry()
+    {
+        var profiling = new ProfilingFeature();
+        appHost.Plugins.Add(profiling);
+        try
+        {
+            Assert.That(JobsDiagnostics.ActivitySource.HasListeners(), Is.False);
+            using (var poll = JobsDiagnostics.StartProfilingScope("jobs poll"))
+            {
+                Assert.That(poll, Is.Not.Null);
+                var evt = new OrmLiteDiagnosticEvent { EventType = "ConnectionOpenBefore" }.Init(Activity.Current);
+                var entry = new ProfilerDiagnosticObserver(profiling).ToDiagnosticEntry(evt);
+                Assert.That(entry.TraceId, Is.Not.Null.And.Not.Empty);
+                Assert.That(entry.TraceId, Is.EqualTo(poll!.ParentId));
+            }
+
+            var job = new BackgroundJob { Request = nameof(DbRequest), Command = nameof(DbJobCommand) };
+            using var execution = JobsDiagnostics.StartActivity(job);
+            Assert.That(execution, Is.Not.Null);
+            var jobEntry = new ProfilerDiagnosticObserver(profiling).ToDiagnosticEntry(new JobDiagnosticEvent {
+                EventType = Diagnostics.Events.ServiceStack.WriteJobBefore,
+                Job = job,
+            }.Init(Activity.Current));
+            Assert.That(jobEntry.TraceId, Is.EqualTo(execution!.ParentId));
+        }
+        finally
+        {
+            appHost.Plugins.Remove(profiling);
+        }
     }
 
     [Test]

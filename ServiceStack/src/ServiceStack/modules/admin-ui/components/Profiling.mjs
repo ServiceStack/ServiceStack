@@ -1,4 +1,4 @@
-import { computed, inject, onMounted, onUnmounted, ref } from "vue"
+import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue"
 import {
     ApiResult, map, apiValueFmt, humanize, toPascalCase, fromXsdDuration, toCamelCase, lastRightPart, toDate
 } from "@servicestack/client"
@@ -29,6 +29,12 @@ export const Profiling = {
 </section>
 <div v-else>
     <div class="mb-3 flex flex-wrap items-center gap-2">
+        <label class="text-sm text-gray-700" for="profiling-trace-id">Trace Id</label>
+        <input id="profiling-trace-id" type="search" :value="routes.traceId || ''"
+               @input="onTraceFilterInput($event.target.value)"
+               @change="setTraceFilter($event.target.value)" @keyup.enter="setTraceFilter($event.target.value)"
+               placeholder="Trace Id" aria-label="Filter by Trace Id"
+               class="h-9 w-72 rounded-md border border-gray-300 px-2 font-mono text-xs" />
         <button v-href="href({ withErrors:hasErrors ? '' : true })" type="button" :aria-pressed="hasErrors"
                 :class="['inline-flex h-9 items-center gap-x-1.5 rounded-md px-3 text-sm font-medium shadow-sm ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-indigo-500',
                     hasErrors ? 'bg-red-50 text-red-700 ring-red-300 hover:bg-red-100' : 'bg-white text-gray-700 ring-gray-300 hover:bg-gray-50']">
@@ -61,7 +67,47 @@ export const Profiling = {
             Reset
         </button>
     </div>
-    <section>
+    <div v-if="routes.traceId" class="mb-4 border-b border-gray-200" role="tablist" aria-label="Profiling results view">
+      <button type="button" role="tab" id="profiling-details-tab" aria-controls="profiling-details-panel"
+              :aria-selected="activeView === 'details'" @click="setView('details')"
+              :class="[activeView === 'details' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700', 'mr-6 border-b-2 px-1 py-2 text-sm font-medium']">
+        Details <span class="text-xs">({{ total ?? results.length }})</span>
+      </button>
+      <button type="button" role="tab" id="profiling-trace-tab" aria-controls="profiling-trace-panel"
+              :aria-selected="activeView === 'trace'" @click="setView('trace')"
+              :class="[activeView === 'trace' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700', 'border-b-2 px-1 py-2 text-sm font-medium']">
+        Trace view
+      </button>
+    </div>
+    <section v-if="routes.traceId && activeView === 'trace'" id="profiling-trace-panel" role="tabpanel" aria-labelledby="profiling-trace-tab"
+             class="mb-4 rounded-md border border-gray-200 bg-white p-3" aria-label="Trace view">
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <strong>Trace view</strong>
+        <a v-href="href({ traceId:routes.traceId, skip:'' })" class="font-mono text-blue-600 hover:underline">{{ routes.traceId }}</a>
+        <a v-if="externalTraceUrl" :href="externalTraceUrl" target="_blank" rel="noopener noreferrer"
+           class="text-blue-600 hover:underline">Open in trace backend</a>
+      </div>
+      <p v-if="total > results.length" class="mt-2 text-sm text-gray-600">
+        Showing {{ results.length }} of {{ total }} events.
+        <button type="button" @click="loadAllEvents" class="text-blue-600 hover:underline">Load all</button>
+      </p>
+      <p v-if="!traceRows.length" class="mt-2 text-sm text-gray-600">No locally retained events for this trace.</p>
+      <p v-if="hasMissingParent" class="mt-2 text-xs text-gray-500">Some parent spans aren't in local profiling history. The trace backend may have the full hierarchy.</p>
+      <ol v-if="traceRows.length" class="mt-2 divide-y divide-gray-100">
+        <li v-for="row in traceRows" :key="row.id" class="py-2 text-sm" :style="{ paddingLeft: (row.depth * 16) + 'px' }">
+          <div class="flex flex-wrap items-center gap-2">
+            <span :class="row.error ? 'text-red-700' : 'text-gray-800'">{{ row.operation || row.message || row.eventType }}</span>
+            <span class="text-gray-500">{{ row.source }} · {{ valueFmt(row.duration, 'duration') }}</span>
+            <span v-if="row.error" class="text-red-700">error</span>
+            <span v-else-if="row.pending" class="text-amber-700" title="No matching After event, the step is still running or never completed">pending</span>
+          </div>
+          <div v-if="row.spanId" class="flex items-center gap-1 text-xs text-gray-500">
+            span <a v-href="href({ spanId:row.spanId, skip:'' })" class="font-mono text-blue-600 hover:underline">{{ row.spanId }}</a>
+          </div>
+        </li>
+      </ol>
+    </section>
+    <section v-if="!routes.traceId || activeView === 'details'" id="profiling-details-panel" role="tabpanel" :aria-labelledby="routes.traceId ? 'profiling-details-tab' : undefined">
     <div class="flex flex-col">
       <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="py-2 align-middle inline-block sm:px-6 lg:px-8">
@@ -73,7 +119,7 @@ export const Profiling = {
                     v-href="{ orderBy:routes.orderBy === k ? ('-' + k) : routes.orderBy === ('-' + k) ? '' : k }"
                     class="cursor-pointer px-4 py-2.5 text-left text-xs font-semibold text-gray-600 tracking-wide whitespace-nowrap">
                   <div class="flex">
-                    <span class="mr-1 select-none">{{ keyFmt(fieldLabels[k] || k) }}</span>
+                    <span class="mr-1 select-none">{{ fieldLabels[k] || keyFmt(k) }}</span>
                     <svg class="w-4 h-4" v-if="routes.orderBy===k" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                       <g fill="none">
                         <path d="M8.998 4.71L6.354 7.354a.5.5 0 1 1-.708-.707L9.115 3.18A.499.499 0 0 1 9.498 3H9.5a.5.5 0 0 1 .354.147l.01.01l3.49 3.49a.5.5 0 1 1-.707.707l-2.65-2.649V16.5a.5.5 0 0 1-1 0V4.71z" fill="currentColor"/>
@@ -93,7 +139,10 @@ export const Profiling = {
               <tr v-for="(row,index) in results" :key="row.id" @click="toggle(row)"
                   :class="['cursor-pointer', expanded(row.id) ? 'bg-indigo-50' : statusBackground(row.error,index) + ' hover:bg-gray-100']">
                 <td v-for="k in uniqueKeys" :key="k" class="px-4 py-2.5 whitespace-nowrap text-sm text-gray-700">
-                  <span :title="apiValueTitle(row[k],k)">{{ valueFmt(row[k], k) }}</span>
+                  <a v-if="row[k] && ['traceId','spanId'].includes(k)"
+                     v-href="identifierHref(k, row[k])" @click.stop
+                     :title="row[k]" class="text-blue-600 hover:underline">{{ valueFmt(row[k], k) }}</a>
+                  <span v-else :title="apiValueTitle(row[k],k)">{{ valueFmt(row[k], k) }}</span>
                 </td>
               </tr>
               </tbody>
@@ -114,91 +163,61 @@ export const Profiling = {
               <form v-if="selected" class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
                 <div class="flex-1">
                   <!-- Header -->
-                  <div class="bg-gray-50 px-4 py-6 sm:px-6">
-                    <div class="flex items-start justify-between space-x-3">
-                      <div class="space-y-1">
-                        <h2 class="flex text-lg">
-                          <div :class="['font-medium text-gray-900',statusColor(selected.error)]"
-                               :title="selected.message || valueFmt(selected.eventType,'eventType')">
-                            {{ msgFmt(selected.message || valueFmt(selected.eventType, 'eventType')) }}
-                          </div>
-                          <div class="ml-2 text-gray-600">
-                            (<a v-href="href({ source:selected.source })"
-                                class="text-blue-600 hover:text-blue-800">{{ selected.source }}</a>
-                            <a v-href="href({ eventType:selected.eventType })" class="text-blue-600 hover:text-blue-800"
-                               :title="selected.eventType">{{ valueFmt(selected.eventType, 'eventType') }}</a>)
-                          </div>
+                  <div class="bg-gray-50 px-4 py-5 sm:px-6">
+                    <div class="flex items-start gap-4">
+                      <div class="min-w-0 flex-1">
+                        <h2 id="slide-over-title" :class="['break-words text-lg font-semibold leading-6', statusColor(selected.error)]"
+                            :title="selected.message || valueFmt(selected.eventType,'eventType')">
+                          {{ msgFmt(selected.message || valueFmt(selected.eventType, 'eventType')) }}
                         </h2>
-                        <div class="text-sm text-gray-500 flex flex-wrap">
-                          <div v-if="selected.traceId" class="" title="Trace Id">
-                            <a v-href="href({ traceId:selected.traceId })"
-                               class="flex items-center text-blue-600 hover:text-blue-800" :title="selected.traceId">
-                              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
-                                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-                                  <path d="M13.544 10.456a4.368 4.368 0 0 0-6.176 0l-3.089 3.088a4.367 4.367 0 1 0 6.177 6.177L12 18.177"/>
-                                  <path d="M10.456 13.544a4.368 4.368 0 0 0 6.176 0l3.089-3.088a4.367 4.367 0 1 0-6.177-6.177L12 5.823"/>
-                                </g>
-                              </svg>
-                              trace request
-                            </a>
-                          </div>
-    
-                          <div v-if="selected.threadId" class="ml-2 flex items-end" title="Thread Id">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-500" viewBox="0 0 24 24">
-                              <path fill="currentColor" d="M14 12.415V5h1V4H8v1h1v7.414l-2 2V15h9v-.586l-2-2Zm3 1.583v2L12 16v4.5l-.5 1.5l-.5-1.5V16l-5-.002v-2h.002L8 12V5.998H7v-3h8.999v3h-1V12l2 1.998Z"/>
-                            </svg>
-                            <a v-href="href({ threadId:selected.threadId })" class="text-blue-600 hover:text-blue-800">
-                              {{ selected.threadId }}
-                            </a>
-                          </div>
-                          <div v-if="selected.userAuthId" class="ml-2 flex items-center" title="User Id">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
-                              <path fill="currentColor" d="M12 2a5 5 0 1 0 5 5a5 5 0 0 0-5-5zm0 8a3 3 0 1 1 3-3a3 3 0 0 1-3 3zm9 11v-1a7 7 0 0 0-7-7h-4a7 7 0 0 0-7 7v1h2v-1a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v1z"/>
-                            </svg>
-                            <a v-href="href({ userAuthId:selected.userAuthId })" class="text-blue-600 hover:text-blue-800">
-                              {{ selected.userAuthId }}
-                            </a>
-                          </div>
-                          <div v-if="selectedSession" class="ml-2 flex items-center"
-                               :title="(selectedSession?.key || '') + ' cookie'">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
-                              <path fill="currentColor" d="M21 18.5h-6.18A3 3 0 0 0 13 16.68V13.5h3.17a4.33 4.33 0 0 0 1.3-8.5A6 6 0 0 0 6.06 6.63A3.5 3.5 0 0 0 7 13.5h4v3.18a3 3 0 0 0-1.82 1.82H3a1 1 0 0 0 0 2h6.18a3 3 0 0 0 5.64 0H21a1 1 0 0 0 0-2Zm-14-7a1.5 1.5 0 0 1 0-3a1 1 0 0 0 1-1a4 4 0 0 1 7.79-1.29a1 1 0 0 0 .78.67a2.31 2.31 0 0 1 1.93 2.29a2.34 2.34 0 0 1-2.33 2.33Zm5 9a1 1 0 1 1 1-1a1 1 0 0 1-1 1Z"/>
-                            </svg>
-                            <a v-href="href({ sessionId:selectedSession.value })" class="text-blue-600 hover:text-blue-800">
-                              {{ selectedSession.value }}
-                            </a>
-                          </div>
-                          <div v-if="selected.duration" class="ml-2 flex items-center" title="Duration">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500" viewBox="0 0 24 24">
-                              <g fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'>
-                                <path d='M10 2h4m-2 12l3-3'/>
-                                <circle cx='12' cy='14' r='8'/>
-                              </g>
-                            </svg>
-                            <span class="text-gray-600">
-                                {{ valueFmt(selected.duration, 'duration') }}
-                            </span>
-                          </div>
-                          <div v-if="selected.date" class="ml-2 flex items-center" title="Time">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-0.5 text-gray-500"
-                                 viewBox="0 0 24 24">
-                              <path fill="currentColor"
-                                    d="M7 11h2v2H7v-2zm14-5v14c0 1.1-.9 2-2 2H5a2 2 0 0 1-2-2l.01-14c0-1.1.88-2 1.99-2h1V2h2v2h8V2h2v2h1c1.1 0 2 .9 2 2zM5 8h14V6H5v2zm14 12V10H5v10h14zm-4-7h2v-2h-2v2zm-4 0h2v-2h-2v2z"/>
-                            </svg>
-                            <span class="text-gray-600">
-                                {{ valueFmt(selected.date, 'date') }}
-                            </span>
-                          </div>
+                        <div class="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm text-gray-600">
+                          <a v-href="href({ source:selected.source })" class="text-blue-600 hover:text-blue-800">{{ selected.source }}</a>
+                          <span aria-hidden="true">·</span>
+                          <a v-href="href({ eventType:selected.eventType })" class="text-blue-600 hover:text-blue-800"
+                             :title="selected.eventType">{{ valueFmt(selected.eventType, 'eventType') }}</a>
                         </div>
                       </div>
-                      <div class="flex h-7 items-center">
-                        <CloseButton @close="toggle(selected)" button-class="bg-gray-50" />
-                      </div>
+                      <CloseButton @close="toggle(selected)" button-class="shrink-0 bg-gray-50" />
                     </div>
+                    <dl v-if="selected.traceId || selected.spanId || selected.threadId || selected.duration || selected.date"
+                        class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
+                      <div v-if="selected.traceId" class="min-w-0">
+                        <dt class="text-xs text-gray-500">Trace Id</dt>
+                        <dd class="mt-0.5"><a v-href="href({ traceId:selected.traceId, skip:'' })" :title="selected.traceId"
+                                            class="font-mono text-blue-600 hover:underline">{{ shortId(selected.traceId) }}</a></dd>
+                      </div>
+                      <div v-if="selected.spanId" class="min-w-0">
+                        <dt class="text-xs text-gray-500">Span Id</dt>
+                        <dd class="mt-0.5"><a v-href="href({ spanId:selected.spanId, skip:'' })" :title="selected.spanId"
+                                            class="font-mono text-blue-600 hover:underline">{{ shortId(selected.spanId) }}</a></dd>
+                      </div>
+                      <div v-if="selected.threadId" class="min-w-0">
+                        <dt class="text-xs text-gray-500">Thread</dt>
+                        <dd class="mt-0.5"><a v-href="href({ threadId:selected.threadId })" class="text-blue-600 hover:text-blue-800">{{ selected.threadId }}</a></dd>
+                      </div>
+                      <div v-if="selected.date" class="min-w-0">
+                        <dt class="text-xs text-gray-500">Time</dt>
+                        <dd class="mt-0.5 text-gray-700">{{ valueFmt(selected.date, 'date') }}</dd>
+                      </div>
+                      <div v-if="selected.duration" class="min-w-0">
+                        <dt class="text-xs text-gray-500">Duration</dt>
+                        <dd class="mt-0.5 text-gray-700">{{ valueFmt(selected.duration, 'duration') }}</dd>
+                      </div>
+                    </dl>
                   </div>
-    
                   <!-- Divider container -->
                   <div class="space-y-6 py-6 sm:space-y-0 sm:divide-y sm:divide-gray-200 sm:py-0">
+                    <dl v-if="selected.userAuthId || selectedSession"
+                        class="space-y-3 border-b border-gray-200 px-4 py-4 text-sm text-gray-600 sm:px-6">
+                        <div v-if="selected.userAuthId">
+                          <dt class="text-xs text-gray-500">User Id</dt>
+                          <dd class="mt-1 break-all"><a v-href="href({ userAuthId:selected.userAuthId })" class="text-blue-600 hover:underline">{{ selected.userAuthId }}</a></dd>
+                        </div>
+                        <div v-if="selectedSession">
+                          <dt class="text-xs text-gray-500">Session Id</dt>
+                          <dd class="mt-1 break-all"><a v-href="href({ sessionId:selectedSession.value })" class="text-blue-600 hover:underline">{{ selectedSession.value }}</a></dd>
+                        </div>
+                    </dl>
                     <div v-if="selected.tag" class="bg-indigo-700 text-white px-3 py-3">
                       <div class="flex items-start justify-between space-x-3">
                         <h2 class="font-medium text-white">{{ keyFmt(fieldLabels.tag || 'tag') }}</h2>
@@ -326,12 +345,18 @@ export const Profiling = {
     `,
     setup() {
         const routes = inject('routes')
+        const activeView = computed(() => routes.view === 'trace' ? 'trace' : 'details')
+        function setView(view) {
+            routes.to({ view: view === 'details' ? '' : view })
+        }
+        const loadAll = ref(false)
+        watch(() => routes.traceId, () => { loadAll.value = false })
         const server = inject('server')
         const client = useClient()
         let plugin = server.plugins.profiling
         let summaryFields = server.plugins.profiling.summaryFields.map(toCamelCase)
-        let linkFields = 'id,traceId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,tag,skip'.split(',')
-        let fieldLabels = { eventType:'event', threadId:'thread', userAuthId:'userId', date:'time' }
+        let linkFields = 'id,traceId,spanId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,tag,skip'.split(',')
+        let fieldLabels = { eventType:'Event', threadId:'Thread', userAuthId:'User Id', date:'Time', traceId:'Trace Id' }
         if (plugin.tagLabel)
             fieldLabels.tag = plugin.tagLabel
         let timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric',minute:'numeric',second:'numeric',fractionalSecondDigits:3,hour12:false})
@@ -348,13 +373,46 @@ export const Profiling = {
             })
             // route values from the URL are strings
             request.withErrors = hasErrors.value || undefined
+            if (loadAll.value && routes.traceId) {
+                request.skip = 0
+                request.take = Math.max(total.value || 0, results.value.length)
+            }
             api.value = await client.api(request, { jsconfig: 'eccn' })
         }
         const errorSummary = computed(() => api.value.summaryMessage())
         const hasErrors = computed(() => routes.withErrors === true || routes.withErrors === 'true')
         /** @type {ComputedRef<DiagnosticEntry[]>} */
         const results = computed(() => api.value.response?.results || [])
+        const externalTraceUrl = computed(() => api.value.response?.externalTraceUrl)
+        // Before events start a step, After/Error events complete it with its duration
+        const isStartEvent = eventType => /Before$/.test(eventType || '') || /\.Request$/.test(eventType || '')
+        const opId = x => x.operationId && !/^[0-]+$/.test(x.operationId) ? x.operationId : null
+        const traceRows = computed(() => {
+            const completed = new Set(results.value.filter(x => !isStartEvent(x.eventType) && opId(x)).map(opId))
+            // One row per step: its After or Error event, or its Before event if the step never completed
+            const rows = results.value
+                .filter(x => !isStartEvent(x.eventType) || !opId(x) || !completed.has(opId(x)))
+                .map(x => isStartEvent(x.eventType) ? { ...x, pending:true } : x)
+                .sort((a,b) => new Date(a.date) - new Date(b.date))
+            const spans = new Map(rows.filter(x => x.spanId).map(x => [x.spanId, x]))
+            return rows.map(row => {
+                const seen = new Set([row.spanId])
+                let depth = 0, parent = row.parentSpanId
+                while (parent && spans.has(parent) && !seen.has(parent) && depth < 8) {
+                    seen.add(parent)
+                    depth++
+                    parent = spans.get(parent).parentSpanId
+                }
+                return { ...row, depth, missingParent: !!row.parentSpanId && !spans.has(row.parentSpanId) }
+            })
+        })
+        const hasMissingParent = computed(() => traceRows.value.some(row => row.missingParent))
         const total = computed(() => api.value.response?.total)
+        function loadAllEvents() {
+            loadAll.value = true
+            if (routes.skip) routes.to({ skip:'' })
+            else update()
+        }
         const uniqueKeys = summaryFields
         const selected = computed(() => routes.show && results.value.find(x => x.id == routes.show))
         const selectedArgs = computed(() => {
@@ -369,11 +427,7 @@ export const Profiling = {
         
         function valueFmt(obj, k) {
             if (obj == null) return ''
-            if (k === 'traceId') {
-                return obj.indexOf(':') >= 0
-                    ? lastRightPart(obj, ':')
-                    : lastRightPart(obj, '-')
-            }
+            if (k === 'traceId' || k === 'spanId') return shortId(obj)
             if (k === 'eventType') {
                 let evt = lastRightPart(obj, '.')
                 if (evt.startsWith('Write')) {
@@ -396,6 +450,9 @@ export const Profiling = {
         function keyFmt(t) {
             return humanize(toPascalCase(t))
         }
+        function shortId(id) {
+            return id?.length > 8 ? id.slice(-8) : id
+        }
         function msgFmt(s) {
             let size = 30
             return !s || s.length < size
@@ -405,7 +462,7 @@ export const Profiling = {
                     : s.substring(0, Math.min(size, s.length - size)) + '...'
         }
         function hasFilters() {
-            for (let i; i<linkFields.length; i++) {
+            for (let i=0; i<linkFields.length; i++) {
                 let x = linkFields[i]
                 if (routes[x])
                     return true
@@ -414,7 +471,17 @@ export const Profiling = {
         }
         const selectedSession = computed(() => map(selected.value?.sessionId, x => ({ key:'ss-id', value: x })))
         function href(links) {
-            return Object.assign(linkFields.reduce((acc,x) => { acc[x] = ''; return acc }, {}), links)
+            return Object.assign({ show:'', view:'' }, linkFields.reduce((acc,x) => { acc[x] = ''; return acc }, {}), links)
+        }
+        function identifierHref(key, value) {
+            return href({ [key]:value, skip:'' })
+        }
+        function setTraceFilter(value) {
+            const traceId = value.trim()
+            if (traceId === (routes.traceId || '')) return
+            routes.to(traceId
+                ? href({ traceId:traceId, skip:'' })
+                : { traceId:'', skip:'', show:'' })
         }
         function clearFilters() {
             routes.to(href({show:''}))
@@ -449,6 +516,9 @@ export const Profiling = {
             hasErrors,
             plugin,
             routes,
+            activeView,
+            setView,
+            loadAllEvents,
             api,
             prettyJson,
             fieldLabels,
@@ -469,9 +539,15 @@ export const Profiling = {
             },
             valueFmt,
             results,
+            traceRows,
+            hasMissingParent,
+            externalTraceUrl,
+            setTraceFilter,
+            onTraceFilterInput(value) { if (!value.trim()) setTraceFilter('') },
             total,
             uniqueKeys,
             keyFmt,
+            shortId,
             msgFmt,
             hasFilters,
             selected,
@@ -489,6 +565,7 @@ export const Profiling = {
             },
             selectedSession,
             href,
+            identifierHref,
             clearFilters,
             keydown,
             canPrev,

@@ -206,6 +206,7 @@ public static class ServiceStackDiagnosticsUtils
             }
         }
         evt.Timestamp = Stopwatch.GetTimestamp();
+        evt.Date = DateTime.UtcNow;
         return evt;
     }
     

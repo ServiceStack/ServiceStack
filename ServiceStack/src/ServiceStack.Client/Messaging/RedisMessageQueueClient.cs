@@ -71,19 +71,39 @@ namespace ServiceStack.Messaging
 
         public void Publish(string queueName, IMessage message)
         {
-            var messageBytes = MessageSerializer.Instance.ToBytes(message);
-            this.ReadWriteClient.LPush(queueName, messageBytes);
-            this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
+            using var activity = MessagingDiagnostics.StartPublish(MessagingDiagnostics.Systems.Redis, queueName, message);
+            MessagingDiagnostics.Inject(message);
+            try
+            {
+                var messageBytes = MessageSerializer.Instance.ToBytes(message);
+                this.ReadWriteClient.LPush(queueName, messageBytes);
+                this.ReadWriteClient.Publish(QueueNames.TopicIn, queueName.ToUtf8Bytes());
 
-            onPublishedCallback?.Invoke();
+                onPublishedCallback?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                activity.RecordError(ex);
+                throw;
+            }
         }
 
         public void Notify(string queueName, IMessage message)
         {
-            var messageBytes = MessageSerializer.Instance.ToBytes(message);
-            this.ReadWriteClient.LPush(queueName, messageBytes);
-            this.ReadWriteClient.LTrim(queueName, 0, this.MaxSuccessQueueSize);
-            this.ReadWriteClient.Publish(QueueNames.TopicOut, queueName.ToUtf8Bytes());
+            using var activity = MessagingDiagnostics.StartPublish(MessagingDiagnostics.Systems.Redis, queueName, message);
+            MessagingDiagnostics.Inject(message);
+            try
+            {
+                var messageBytes = MessageSerializer.Instance.ToBytes(message);
+                this.ReadWriteClient.LPush(queueName, messageBytes);
+                this.ReadWriteClient.LTrim(queueName, 0, this.MaxSuccessQueueSize);
+                this.ReadWriteClient.Publish(QueueNames.TopicOut, queueName.ToUtf8Bytes());
+            }
+            catch (Exception ex)
+            {
+                activity.RecordError(ex);
+                throw;
+            }
         }
 
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeOut = null)

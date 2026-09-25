@@ -6,6 +6,9 @@ using ServiceStack.IO;
 using ServiceStack.Jobs;
 using ServiceStack.Messaging;
 using ServiceStack.Web;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 [assembly: HostingStartup(typeof(MyApp.ConfigureProfiling))]
 
@@ -20,6 +23,23 @@ public class ConfigureProfiling : IHostingStartup
             {
                 if (context.HostingEnvironment.IsDevelopment())
                 {
+                    services.AddOpenTelemetry()
+                        .ConfigureResource(resource => resource
+                            .AddService("northwind-auto", serviceVersion: typeof(ConfigureProfiling).Assembly.GetName().Version?.ToString())
+                            .AddAttributes(new Dictionary<string, object> {
+                                ["deployment.environment.name"] = context.HostingEnvironment.EnvironmentName,
+                            }))
+                        .WithTracing(tracing => tracing
+                            .AddAspNetCoreInstrumentation()
+                            .AddHttpClientInstrumentation()
+                            .AddSource(ServiceStack.Telemetry.OperationDiagnostics.Name,
+                                MessagingDiagnostics.Name, JobsDiagnostics.Name)
+                            .AddOtlpExporter())
+                        .WithMetrics(metrics => metrics
+                            .AddAspNetCoreInstrumentation()
+                            .AddMeter(ServiceStack.Telemetry.OperationDiagnostics.Name,
+                                MessagingDiagnostics.Name, JobsDiagnostics.Name)
+                            .AddOtlpExporter());
                     var vfs = new FileSystemVirtualFiles(context.HostingEnvironment.ContentRootPath);
                     services.AddHostedService<RequestLogsHostedService>();
                     services.AddPlugin(new PostmanFeature());
@@ -56,6 +76,7 @@ public class ConfigureProfiling : IHostingStartup
 
                     services.AddPlugin(new ProfilingFeature
                     {
+                        ExternalTraceUrlTemplate = context.Configuration["OTEL_TRACE_URL_TEMPLATE"],
                         // TagLabel = "Tenant",
                         // TagResolver = req => req.PathInfo.ToMd5Hash().Substring(0, 5),
                         IncludeStackTrace = true,

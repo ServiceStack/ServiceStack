@@ -60,6 +60,43 @@ public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
         }
     }
 
+    /// <summary>Applies Pre-Request Filters inside the optional detailed telemetry phase span</summary>
+    protected bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
+    {
+        using (Telemetry.OperationDiagnostics.StartPhase(Telemetry.OperationDiagnostics.PreRequestFiltersPhase))
+        {
+            return appHost.ApplyPreRequestFilters(httpReq, httpRes);
+        }
+    }
+
+    /// <summary>Applies Request Filters inside the optional detailed telemetry phase span</summary>
+    protected Task ApplyRequestFiltersAsync(IRequest httpReq, IResponse httpRes, object request) =>
+        Telemetry.OperationDiagnostics.IsPhaseEnabled
+            ? ApplyRequestFiltersTracedAsync(httpReq, httpRes, request)
+            : appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request);
+
+    private async Task ApplyRequestFiltersTracedAsync(IRequest httpReq, IResponse httpRes, object request)
+    {
+        using (Telemetry.OperationDiagnostics.StartPhase(Telemetry.OperationDiagnostics.RequestFiltersPhase))
+        {
+            await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
+        }
+    }
+
+    /// <summary>Executes the Service inside the optional detailed telemetry phase span</summary>
+    protected Task<object> InvokeServiceAsync(IRequest httpReq, object request) =>
+        Telemetry.OperationDiagnostics.IsPhaseEnabled
+            ? InvokeServiceTracedAsync(httpReq, request)
+            : GetResponseAsync(httpReq, request);
+
+    private async Task<object> InvokeServiceTracedAsync(IRequest httpReq, object request)
+    {
+        using (Telemetry.OperationDiagnostics.StartPhase(Telemetry.OperationDiagnostics.ServiceInvocationPhase))
+        {
+            return await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
+        }
+    }
+
     public virtual Task<object> GetResponseAsync(IRequest httpReq, object request)
     {
         using (Profiler.Current.Step("Execute " + GetType().Name + " Service"))

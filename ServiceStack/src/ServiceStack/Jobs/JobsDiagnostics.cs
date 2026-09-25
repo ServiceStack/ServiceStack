@@ -16,8 +16,8 @@ namespace ServiceStack.Jobs;
 public static class JobsDiagnostics
 {
     public const string Name = "ServiceStack.Jobs";
-    public static readonly ActivitySource ActivitySource = new(Name);
-    public static readonly Meter Meter = new(Name);
+    public static readonly ActivitySource ActivitySource = new(Name, typeof(JobsDiagnostics).Assembly.GetName().Version?.ToString());
+    public static readonly Meter Meter = new(Name, typeof(JobsDiagnostics).Assembly.GetName().Version?.ToString());
 
     private static readonly Counter<long> QueuedCounter =
         Meter.CreateCounter<long>("servicestack.jobs.queued", "job", "Jobs added to a queue");
@@ -89,17 +89,19 @@ public static class JobsDiagnostics
     }
 
     /// <summary>
-    /// Starts an Activity for a Job execution. Returns null when nothing is listening, which is
-    /// the usual case, so this costs nothing when OpenTelemetry isn't configured.
+    /// Starts an Activity for a Job execution. Profiling retains a local correlation Id even
+    /// without an OpenTelemetry listener.
     /// </summary>
     public static Activity? StartActivity(BackgroundJobBase job)
     {
         var name = job.Command ?? job.Request;
         // Continue the trace of whatever queued the Job so an API request and the work it queued
         // appear in one trace, instead of the Job starting a disconnected root.
-        var activity = job.TraceId != null
-            ? ActivitySource.StartActivity($"job {name}", ActivityKind.Consumer, job.TraceId)
+        var activity = job.TraceId != null &&
+            ActivityContext.TryParse(job.TraceId, null, isRemote: true, out var parent)
+            ? ActivitySource.StartActivity($"job {name}", ActivityKind.Consumer, parent)
             : ActivitySource.StartActivity($"job {name}", ActivityKind.Consumer);
+        activity ??= StartProfilingActivity($"job {name}", job.TraceId);
         if (activity == null)
             return null;
 
@@ -117,6 +119,28 @@ public static class JobsDiagnostics
         if (job.Tag != null)
             activity.SetTag("job.tag", job.Tag);
         return activity;
+    }
+
+    /// <summary>Groups the database work of a background jobs pass in local Profiling history.</summary>
+    public static Activity? StartInternalActivity(string name) =>
+        ActivitySource.StartActivity(name, ActivityKind.Internal) ?? StartProfilingActivity(name);
+
+    /// <summary>
+    /// Groups the database work of a frequent background jobs pass (e.g. each poll) in local Profiling history only.
+    /// Never uses the exported ActivitySource, so it doesn't create a root trace per tick.
+    /// </summary>
+    public static Activity? StartProfilingScope(string name) =>
+        Activity.Current == null ? StartProfilingActivity(name, ignoreListeners: true) : null;
+
+    private static Activity? StartProfilingActivity(string name, string? parentId = null, bool ignoreListeners = false)
+    {
+        if ((!ignoreListeners && ActivitySource.HasListeners()) || HostContext.AppHost?.HasPlugin<ProfilingFeature>() != true)
+            return null;
+
+        var traceId = parentId != null && ActivityContext.TryParse(parentId, null, out var parent)
+            ? parent.TraceId.ToString()
+            : parentId ?? Guid.NewGuid().ToString();
+        return new Activity(name).SetParentId(traceId).Start();
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -731,6 +731,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
         {
+            using var activity = Telemetry.OperationDiagnostics.StartPhase("ServiceStack AutoQuery execute");
             return AutoQuery.Execute(dto, q, db);
         }
     }
@@ -748,6 +749,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
         {
+            using var activity = Telemetry.OperationDiagnostics.StartPhase("ServiceStack AutoQuery execute");
             return await AutoQuery.ExecuteAsync(dto, q, db).ConfigAwait();
         }
     }
@@ -765,6 +767,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
         {
+            using var activity = Telemetry.OperationDiagnostics.StartPhase("ServiceStack AutoQuery execute");
             return AutoQuery.Execute(dto, q, db);
         }
     }
@@ -782,6 +785,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
         }
         using (Profiler.Current.Step("AutoQuery.Execute"))
         {
+            using var activity = Telemetry.OperationDiagnostics.StartPhase("ServiceStack AutoQuery execute");
             return await AutoQuery.ExecuteAsync(dto, q, db).ConfigAwait();
         }
     }

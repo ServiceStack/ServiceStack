@@ -777,6 +777,20 @@ public abstract partial class ServiceStackHost
         if (handler is IServiceStackHandler ssHandler)
             httpReq.OperationName = ssHandler.GetOperationName();
 
+        Telemetry.OperationDiagnostics.OperationScope operationScope = null;
+        if (Telemetry.OperationDiagnostics.IsEnabled && httpReq.GetItem(Keywords.OperationScope) == null)
+        {
+            var operation = GetTelemetryOperationName(handler, httpReq, out var route);
+            if (operation != null)
+            {
+                operationScope = Telemetry.OperationDiagnostics.Start(httpReq, operation, route);
+                if (operationScope.IsNoop)
+                    operationScope = null;
+                else
+                    httpReq.SetItem(Keywords.OperationScope, operationScope);
+            }
+        }
+
         var shouldProfile = ShouldProfileRequest(httpReq);
         if (shouldProfile || AddTimings)
         {
@@ -784,6 +798,37 @@ public abstract partial class ServiceStackHost
         }
         if (shouldProfile)
         {
+#if NET8_0_OR_GREATER
+            var userId = TryGetUserId(httpReq);
+            var tag = GetPlugin<ProfilingFeature>()?.TagResolver?.Invoke(httpReq);
+            var span = operationScope?.Activity;
+            if (span == null)
+            {
+                // Local Activity that groups this request's events in Profiling. It's never exported.
+                var activity = new System.Diagnostics.Activity(Diagnostics.Activity.HttpBegin);
+                activity.SetParentId(httpReq.GetTraceId());
+                if (userId != null)
+                    activity.AddTag(Diagnostics.Activity.UserId, userId);
+                if (tag != null)
+                    activity.AddTag(Diagnostics.Activity.Tag, tag);
+                httpReq.SetItem(Keywords.RequestActivity, activity);
+                Diagnostics.ServiceStack.StartActivity(activity,
+                    new ServiceStackActivityArgs { Request = httpReq, Activity = activity });
+                var id = Diagnostics.ServiceStack.WriteRequestBefore(httpReq);
+                activity.AddTag(Diagnostics.Activity.OperationId, id);
+                httpReq.SetItem(Keywords.ProfilingOperationId, id);
+            }
+            else
+            {
+                // Custom properties aren't exported, so User Ids stay out of the tracing backend
+                if (userId != null)
+                    span.SetCustomProperty(Diagnostics.Activity.UserId, userId);
+                if (tag != null)
+                    span.SetCustomProperty(Diagnostics.Activity.Tag, tag);
+                var id = Diagnostics.ServiceStack.WriteRequestBefore(httpReq);
+                httpReq.SetItem(Keywords.ProfilingOperationId, id);
+            }
+#else
             // https://github.com/dotnet/corefx/blob/master/src/System.Diagnostics.DiagnosticSource/src/ActivityUserGuide.md
             var activity = new System.Diagnostics.Activity(Diagnostics.Activity.HttpBegin);
             activity.SetParentId(httpReq.GetTraceId());
@@ -801,10 +846,43 @@ public abstract partial class ServiceStackHost
 
             httpReq.SetItem(Keywords.RequestActivity, activity);
             Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackActivityArgs { Request = httpReq, Activity = activity });
+#endif
         }
         return handler;
     }
         
+    /// <summary>
+    /// Resolve the trusted operation name (and route template) used in telemetry span names and metric tags.
+    /// Returns null for handlers that aren't known API operations, e.g. static files, redirects and 404s.
+    /// </summary>
+    public virtual string GetTelemetryOperationName(IHttpHandler handler, IHttpRequest httpReq, out string route)
+    {
+        route = null;
+        if (handler is Host.RestHandler restHandler)
+        {
+            var restPath = restHandler.RestPath ?? restHandler.GetRestPath(httpReq);
+            if (restPath?.RequestType == null)
+                return null;
+            route = (restPath as Host.RestPath)?.Path;
+            return restPath.RequestType.GetOperationName();
+        }
+        if (handler is IServiceStackHandler ssHandler)
+        {
+            var name = ssHandler.GetOperationName();
+            if (string.IsNullOrEmpty(name))
+                return null;
+            var extPos = name.IndexOf('.');
+            if (extPos >= 0)
+                name = name.Substring(0, extPos);
+            var requestType = Metadata.GetOperationType(name);
+            if (requestType == null)
+                return null;
+            route = (handler as Host.Handlers.GenericHandler)?.RouteTemplate;
+            return requestType.GetOperationName();
+        }
+        return null;
+    }
+
     /// <summary>
     /// Try infer UserId from IRequest
     /// </summary>

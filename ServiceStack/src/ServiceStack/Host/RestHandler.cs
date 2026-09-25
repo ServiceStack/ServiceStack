@@ -84,7 +84,7 @@ public class RestHandler
             if (ResponseContentType != null)
                 httpReq.ResponseContentType = ResponseContentType;
 
-            if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
+            if (ApplyPreRequestFilters(httpReq, httpRes))
                 return;
 
             appHost.AssertContentType(httpReq.ResponseContentType);
@@ -92,7 +92,7 @@ public class RestHandler
             var request = httpReq.Dto = await CreateRequestAsync(httpReq, restPath).ConfigAwaitNetCore();
             HostContext.AppHost?.OnAfterAwait(httpReq);
 
-            await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
+            await ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
             HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;
@@ -100,7 +100,7 @@ public class RestHandler
             var requestContentType = ContentFormat.GetEndpointAttributes(httpReq.ResponseContentType);
             httpReq.RequestAttributes |= HandlerAttributes | requestContentType;
 
-            var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
+            var rawResponse = await InvokeServiceAsync(httpReq, request).ConfigAwaitNetCore();
             HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;

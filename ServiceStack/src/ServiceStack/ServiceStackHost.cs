@@ -1513,20 +1513,42 @@ public abstract partial class ServiceStackHost
         {
             if (request != null)
             {
-                if (ShouldProfileRequest(request))
+                try
                 {
-                    // Populated in HttpHandlerFactory.InitHandler
-                    if (request.GetItem(Keywords.RequestActivity) is System.Diagnostics.Activity activity
-                        && activity.GetTagItem(Diagnostics.Activity.OperationId) is Guid id)
+                    if (ShouldProfileRequest(request))
                     {
-                        var ex = HttpError.GetException(request.Response.Dto);
-                        if (ex != null)
-                            Diagnostics.ServiceStack.WriteRequestError(id, request, ex);
-                        else
-                            Diagnostics.ServiceStack.WriteRequestAfter(id, request);
-                            
-                        Diagnostics.ServiceStack.StopActivity(activity, new ServiceStackActivityArgs { Request = request, Activity = activity });
+#if NET8_0_OR_GREATER
+                        if (request.GetItem(Keywords.ProfilingOperationId) is Guid profilingId)
+                        {
+                            var error = HttpError.GetException(request.Response.Dto);
+                            if (error != null)
+                                Diagnostics.ServiceStack.WriteRequestError(profilingId, request, error);
+                            else
+                                Diagnostics.ServiceStack.WriteRequestAfter(profilingId, request);
+                        }
+                        if (request.GetItem(Keywords.RequestActivity) is System.Diagnostics.Activity profilingActivity)
+                            Diagnostics.ServiceStack.StopActivity(profilingActivity,
+                                new ServiceStackActivityArgs { Request = request, Activity = profilingActivity });
+#else
+                        // Populated in HttpHandlerFactory.InitHandler
+                        if (request.GetItem(Keywords.RequestActivity) is System.Diagnostics.Activity activity
+                            && activity.GetTagItem(Diagnostics.Activity.OperationId) is Guid id)
+                        {
+                            var ex = HttpError.GetException(request.Response.Dto);
+                            if (ex != null)
+                                Diagnostics.ServiceStack.WriteRequestError(id, request, ex);
+                            else
+                                Diagnostics.ServiceStack.WriteRequestAfter(id, request);
+
+                            Diagnostics.ServiceStack.StopActivity(activity, new ServiceStackActivityArgs { Request = request, Activity = activity });
+                        }
+#endif
                     }
+                }
+                finally
+                {
+                    if (request.GetItem(Keywords.OperationScope) is Telemetry.OperationDiagnostics.OperationScope scope)
+                        scope.Complete(request.Response.StatusCode, HttpError.GetException(request.Response.Dto));
                 }
                     
                 // Release Buffered Streams immediately

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-24 21:56:53
+Date: 2026-09-25 18:56:21
 Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -3567,6 +3567,10 @@ export class QueueCheckUrl implements IReturn<QueueCheckUrlResponse>, IPost
 {
     // @Validate(Validator="NotEmpty")
     public url: string;
+
+    /** @description Optional queue to run this Job on */
+    // @ApiMember(Description="Optional queue to run this Job on")
+    public queue?: string;
 
     /** @description Specify a user-defined UUID for the Job */
     // @ApiMember(Description="Specify a user-defined UUID for the Job")

@@ -18,6 +18,7 @@ public class MessageHandler<T>
 
     public const int DefaultRetryCount = 2; //Will be a total of 3 attempts
     private readonly IMessageService messageService;
+    private string messagingSystem;
     private readonly Func<IMessage<T>, object> processMessageFn;
     private readonly Action<IMessageHandler, IMessage<T>, Exception> processInExceptionFn;
     public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
@@ -124,30 +125,13 @@ public class MessageHandler<T>
     public void ProcessMessage(IMessageQueueClient mqClient, IMessage<T> message)
     {
         if (mqClient == null || message == null) return;
+        // Profiling groups the message's events under one TraceId, with or without OpenTelemetry
+        using var consumer = MessagingDiagnostics.StartProcess(message, messagingSystem ??= MessagingDiagnostics.GetSystem(messageService),
+            QueueNames<T>.In,
+            Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore) ? CreateActivityArgs : null);
         this.MqClient = mqClient;
         bool msgHandled = false;
 
-
-        Activity origActivity = null;
-        Activity activity = null;
-        if (Diagnostics.ServiceStack.IsEnabled(Diagnostics.Events.ServiceStack.WriteMqRequestBefore))
-        {
-            origActivity = Activity.Current;
-            if (origActivity == null)
-            {
-                var traceId = message.TraceId;
-                if (traceId != null)
-                {
-                    activity = new Activity(Diagnostics.Activity.MqBegin);
-                    activity.SetParentId(traceId);
-                    if (message.Tag != null)
-                        activity.AddTag(Diagnostics.Activity.Tag, message.Tag);
-
-                    Diagnostics.ServiceStack.StartActivity(activity, new ServiceStackMqActivityArgs { Message = message, Activity = activity });
-                }
-            }
-        }
-            
         var id = Diagnostics.ServiceStack.WriteMqRequestBefore(message);
         try
         {
@@ -167,6 +151,7 @@ public class MessageHandler<T>
                 
             if (responseEx != null)
             {
+                consumer.RecordError(responseEx);
                 Diagnostics.ServiceStack.WriteMqRequestError(id, message, responseEx);
                 TotalMessagesFailed++;
 
@@ -278,6 +263,7 @@ public class MessageHandler<T>
         }
         catch (Exception ex)
         {
+            consumer.RecordError(ex);
             try
             {
                 if (ex is AggregateException)
@@ -299,13 +285,11 @@ public class MessageHandler<T>
 
             this.TotalNormalMessagesReceived++;
             LastMessageProcessed = DateTime.UtcNow;
-
-            if (activity != null)
-            {
-                Diagnostics.ServiceStack.StopActivity(activity, new ServiceStackMqActivityArgs { Message = message, Activity = activity });
-            }
         }
     }
+
+    private static readonly Func<Activity, IMessage, object> CreateActivityArgs =
+        (activity, message) => new ServiceStackMqActivityArgs { Message = message, Activity = activity };
 
     public void Dispose()
     {

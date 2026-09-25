@@ -119,8 +119,17 @@ public class DbJobsWorker : IDisposable
         if (Interlocked.CompareExchange(ref running, 1, 0) == 0)
         {
             Interlocked.Increment(ref tasksStarted);
-            bgTask = Task.Factory.StartNew(RunAsync, new JobWorkerContext(jobs, ct),
+            Task StartWorker() => Task.Factory.StartNew(RunAsync, new JobWorkerContext(jobs, ct),
                 CancellationToken.None, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default).Unwrap();
+            // The Job carries its own trace context. Do not inherit a request or polling Activity
+            // from the thread that happened to dispatch it.
+            if (ExecutionContext.IsFlowSuppressed())
+                bgTask = StartWorker();
+            else
+            {
+                using (ExecutionContext.SuppressFlow())
+                    bgTask = StartWorker();
+            }
         }
     }
 

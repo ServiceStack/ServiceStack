@@ -94,6 +94,27 @@ public class ProfilingFeature : IPlugin, IConfigureServices, Model.IHasStringId,
     /// Default take, if none is specified
     /// </summary>
     public int DefaultLimit { get; set; } = 50;
+
+    /// <summary>
+    /// URL with a {traceId} placeholder for an external trace viewer. Must be HTTPS, or HTTP for localhost,
+    /// e.g. http://localhost:16686/trace/{traceId}
+    /// </summary>
+    public string? ExternalTraceUrlTemplate { get; set; }
+
+    /// <summary>
+    /// Returns the external trace viewer URL for a 32 hex-char W3C traceId, or null if the template
+    /// or traceId is invalid.
+    /// </summary>
+    public static string? GetExternalTraceUrl(string? template, string? traceId)
+    {
+        if (template == null || traceId == null || traceId.Length != 32 ||
+            !traceId.All(Uri.IsHexDigit) || !template.Contains("{traceId}") ||
+            !Uri.TryCreate(template.Replace("{traceId}", traceId), UriKind.Absolute, out var uri) ||
+            !(uri.Scheme == Uri.UriSchemeHttps || (uri.Scheme == Uri.UriSchemeHttp && uri.IsLoopback)) ||
+            uri.UserInfo.Length > 0)
+            return null;
+        return uri.AbsoluteUri;
+    }
     
     /// <summary>
     /// Customize DiagnosticEntry that gets captured
@@ -199,6 +220,14 @@ public class ProfilingFeature : IPlugin, IConfigureServices, Model.IHasStringId,
         if (IncludeStackTrace != null)
             Diagnostics.IncludeStackTrace = IncludeStackTrace.Value;
         
+        if (ExternalTraceUrlTemplate != null &&
+            GetExternalTraceUrl(ExternalTraceUrlTemplate, "0123456789abcdef0123456789abcdef") == null)
+        {
+            LogManager.GetLogger(typeof(ProfilingFeature)).Warn(
+                $"Ignoring invalid {nameof(ExternalTraceUrlTemplate)} '{ExternalTraceUrlTemplate}'. It must be an absolute " +
+                "HTTPS URL (or HTTP for localhost) without user info, containing a {traceId} placeholder.");
+        }
+
         Observer = new ProfilerDiagnosticObserver(this);
         var subscription = DiagnosticListener.AllListeners.Subscribe(Observer);
         appHost.OnDisposeCallbacks.Add(host => subscription.Dispose());
@@ -332,11 +361,27 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
             ThreadId = Thread.CurrentThread.ManagedThreadId,
             OperationId = e.OperationId,
         };
+        if (Telemetry.OperationDiagnostics.HasListeners)
+        {
+            // Only W3C Activities have real trace and span Ids, hierarchical Ids are all zeros
+            if (Activity.Current is { IdFormat: ActivityIdFormat.W3C } current)
+            {
+                to.TraceId = current.TraceId.ToString();
+                to.SpanId = current.SpanId.ToString();
+                to.ParentSpanId = current.ParentSpanId == default ? null : current.ParentSpanId.ToString();
+                to.SpanKind = current.Kind.ToString();
+            }
+            else
+            {
+                to.TraceId = (orig?.DiagnosticEntry as DiagnosticEntry)?.TraceId ?? to.TraceId;
+            }
+        }
         SetException(to, e.Exception);
 
         if (orig != null)
         {
-            to.Duration = TimeSpan.FromTicks(e.Timestamp - orig.Timestamp);
+            to.Duration = TimeSpan.FromSeconds((e.Timestamp - orig.Timestamp) / (double)Stopwatch.Frequency);
+            to.Date = orig.Date;
         }
 
         return to;
@@ -489,6 +534,12 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
     {
         var to = CreateDiagnosticEntry(e, orig);
         var job = e.Job;
+
+#if NET8_0_OR_GREATER
+        // A queued job retains its parent trace even when no listener creates a job Activity.
+        if (job.TraceId != null && ActivityContext.TryParse(job.TraceId, null, out var parent))
+            to.TraceId = parent.TraceId.ToString();
+#endif
 
         to.Command = job.Command ?? job.Request;
         to.Message = job.Queue != JobQueues.Default
@@ -880,7 +931,8 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
                     HttpRequest = httpReq,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
-                entry.Date = feature.startDateTime + TimeSpan.FromTicks(timestamp - feature.startTick);
+                entry.Date = feature.startDateTime +
+                    TimeSpan.FromSeconds((timestamp - feature.startTick) / (double)Stopwatch.Frequency);
                 entry.ClientOperationId = httpReq.Options.TryGetValue(Diagnostics.Keys.HttpRequestOperationId, out var operationId)
                         ? operationId
                         : null;
@@ -920,7 +972,8 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
                         : null,
                 }.Init(Activity.Current);
                 entry.Timestamp = timestamp;
-                entry.Date = feature.startDateTime + TimeSpan.FromTicks(timestamp - feature.startTick);
+                entry.Date = feature.startDateTime +
+                    TimeSpan.FromSeconds((timestamp - feature.startTick) / (double)Stopwatch.Frequency);
 
                 // JsonApiClient
                 if (refs.TryRemove(loggingRequestId, out var orig) && orig is HttpClientDiagnosticEvent reqOrig)
@@ -1175,9 +1228,12 @@ public class DiagnosticEntry
     /// </summary>
     public long Id { get; set; }
     /// <summary>
-    /// Request Id
+    /// W3C trace Id when ServiceStack tracing is registered; otherwise the request Id.
     /// </summary>
     public string? TraceId { get; set; }
+    public string? SpanId { get; set; }
+    public string? ParentSpanId { get; set; }
+    public string? SpanKind { get; set; }
     /// <summary>
     /// ServiceStack, OrmLite, Redis
     /// </summary>

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-24 21:56:53
+Date: 2026-09-25 18:56:22
 Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -3666,10 +3666,14 @@ export class GetKey {
     createResponse() { return '' }
 }
 export class QueueCheckUrl {
-    /** @param {{url?:string,refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number}} [init] */
+    /** @param {{url?:string,queue?:string,refId?:string,parentId?:number,worker?:string,runAfter?:string,callback?:string,dependsOn?:number,userId?:string,retryLimit?:number,replyTo?:string,tag?:string,batchId?:string,createdBy?:string,timeoutSecs?:number}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string} */
     url;
+    /**
+     * @type {?string}
+     * @description Optional queue to run this Job on */
+    queue;
     /**
      * @type {?string}
      * @description Specify a user-defined UUID for the Job */

@@ -14,6 +14,7 @@ public class AdminProfiling : IReturn<AdminProfilingResponse>
     public string? EventType { get; set; }
     public int? ThreadId { get; set; }
     public string? TraceId { get; set; }
+    public string? SpanId { get; set; }
     public string? UserAuthId { get; set; }
     public string? SessionId { get; set; }
     public string? Tag { get; set; }
@@ -28,6 +29,7 @@ public class AdminProfilingResponse
 {
     public List<DiagnosticEntry> Results { get; set; }
     public int Total { get; set; }
+    public string? ExternalTraceUrl { get; set; }
     public ResponseStatus ResponseStatus { get; set; }
 }
 
@@ -56,6 +58,8 @@ public class AdminProfilingService : Service
             logs = logs.Where(x => x.EventType == request.EventType);
         if (!request.TraceId.IsNullOrEmpty())
             logs = logs.Where(x => x.TraceId == request.TraceId);
+        if (!request.SpanId.IsNullOrEmpty())
+            logs = logs.Where(x => x.SpanId == request.SpanId);
         if (request.ThreadId != null)
             logs = logs.Where(x => x.ThreadId == request.ThreadId.Value);
         if (!request.UserAuthId.IsNullOrEmpty())
@@ -69,17 +73,22 @@ public class AdminProfilingService : Service
                 ? logs.Where(x => x.Error != null)
                 : logs.Where(x => x.Error == null);
 
+        var isTrace = !request.TraceId.IsNullOrEmpty();
         var query = string.IsNullOrEmpty(request.OrderBy)
-            ? logs.OrderByDescending(x => x.Id)
+            ? isTrace ? logs.OrderBy(x => x.Date) : logs.OrderByDescending(x => x.Id)
             : logs.OrderBy(request.OrderBy);
 
-        var results = query.Skip(request.Skip);
-        results = results.Take(request.Take.GetValueOrDefault(feature.DefaultLimit));
+        // Traces are read in full, so return the whole trace unless a page size was requested
+        var take = request.Take ?? (isTrace ? feature.Capacity : feature.DefaultLimit);
+        var total = logs.Count();
+        var results = query.Skip(System.Math.Max(0, request.Skip));
+        results = results.Take(System.Math.Max(1, System.Math.Min(take, feature.Capacity)));
         
         return new AdminProfilingResponse
         {
             Results = results.ToList(),
-            Total = snapshot.Count,
+            Total = total,
+            ExternalTraceUrl = ProfilingFeature.GetExternalTraceUrl(feature.ExternalTraceUrlTemplate, request.TraceId),
         };
     }
 }

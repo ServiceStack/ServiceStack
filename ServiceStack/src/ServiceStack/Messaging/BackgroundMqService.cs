@@ -263,48 +263,66 @@ public class BackgroundMqService : IMessageService
     public void Publish(string queueName, IMessage message)
     {
         AssertNotDisposed();
-            
-        var msgType = GetMessageType(message);
-        if (collectionsMap.TryGetValue(msgType, out var collection))
+        using var publishActivity = MessagingDiagnostics.StartPublish(MessagingDiagnostics.Systems.Background, queueName, message);
+        MessagingDiagnostics.Inject(message);
+        try
         {
-            collection.Add(queueName, message);
-        }
-        else
-        {
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Publish message for '{queueName}' to unknownQueues");
-
-            if (message is Message msg)
+            var msgType = GetMessageType(message);
+            if (collectionsMap.TryGetValue(msgType, out var collection))
             {
-                (msg.Meta ?? (msg.Meta = new Dictionary<string, string>()))[MessageQueueKey] = queueName;
-                (unknownQueues ??= new BlockingCollection<IMessage>()).Add(msg);
+                collection.Add(queueName, message);
             }
             else
             {
-                Log.Warn($"Could not queue message for '{queueName}' of unknown Message type '{message.GetType().Name}'");
+                if (Log.IsDebugEnabled)
+                    Log.Debug($"Publish message for '{queueName}' to unknownQueues");
+
+                if (message is Message msg)
+                {
+                    (msg.Meta ?? (msg.Meta = new Dictionary<string, string>()))[MessageQueueKey] = queueName;
+                    (unknownQueues ??= new BlockingCollection<IMessage>()).Add(msg);
+                }
+                else
+                {
+                    Log.Warn($"Could not queue message for '{queueName}' of unknown Message type '{message.GetType().Name}'");
+                }
             }
         }
+        catch (Exception ex)
+        {
+            publishActivity.RecordError(ex);
+            throw;
+        }
     }
-
     public void Notify(string queueName, IMessage message)
     {
-        if (Log.IsDebugEnabled)
-            Log.Debug($"Publish message for '{queueName}' to outQueues");
-
-        var msgType = GetMessageType(message);
-        if (collectionsMap.TryGetValue(msgType, out var collection))
+        using var publishActivity = MessagingDiagnostics.StartPublish(MessagingDiagnostics.Systems.Background, queueName, message);
+        MessagingDiagnostics.Inject(message);
+        try
         {
-            collection.Add(queueName, message);
-        }
-        else
-        {
-            Log.Warn($"Could not queue message for .outq '{queueName}' of unknown Message type '{message.GetType().Name}'");
-        }
+            if (Log.IsDebugEnabled)
+                Log.Debug($"Publish message for '{queueName}' to outQueues");
 
-        if (Log.IsDebugEnabled)
-            Log.Debug($"Sending '{queueName}' notification to {OutHandlers.Count} handler(s)");
-            
-        OutHandlers.Each(x => x(queueName, message));
+            var msgType = GetMessageType(message);
+            if (collectionsMap.TryGetValue(msgType, out var collection))
+            {
+                collection.Add(queueName, message);
+            }
+            else
+            {
+                Log.Warn($"Could not queue message for .outq '{queueName}' of unknown Message type '{message.GetType().Name}'");
+            }
+
+            if (Log.IsDebugEnabled)
+                Log.Debug($"Sending '{queueName}' notification to {OutHandlers.Count} handler(s)");
+
+            OutHandlers.Each(x => x(queueName, message));
+        }
+        catch (Exception ex)
+        {
+            publishActivity.RecordError(ex);
+            throw;
+        }
     }
 
     public IMessage<T>? Get<T>(string queueName, TimeSpan? timeout = null)

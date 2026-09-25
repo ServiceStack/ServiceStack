@@ -23,6 +23,9 @@ public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
 
     public RequestAttributes ContentTypeAttribute { get; set; }
 
+    /// <summary>The configured API route this handler serves, e.g. /api/{Request}</summary>
+    public string RouteTemplate { get; set; }
+
     public async Task<object> CreateRequestAsync(IRequest req, string operationName)
     {
         var requestType = GetOperationType(operationName);
@@ -73,20 +76,20 @@ public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
 
             httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
 
-            if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
+            if (ApplyPreRequestFilters(httpReq, httpRes))
                 return;
 
             var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName).ConfigAwaitNetCore();
             HostContext.AppHost?.OnAfterAwait(httpReq);
 
-            await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
+            await ApplyRequestFiltersAsync(httpReq, httpRes, request).ConfigAwaitNetCore();
             HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;
 
             httpReq.RequestAttributes |= HandlerAttributes;
 
-            var rawResponse = await GetResponseAsync(httpReq, request).ConfigAwaitNetCore();
+            var rawResponse = await InvokeServiceAsync(httpReq, request).ConfigAwaitNetCore();
             HostContext.AppHost?.OnAfterAwait(httpReq);
             if (httpRes.IsClosed)
                 return;

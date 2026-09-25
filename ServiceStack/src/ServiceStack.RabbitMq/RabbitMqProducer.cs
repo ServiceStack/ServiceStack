@@ -110,28 +110,38 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
 
     public virtual void Publish(string queueName, IMessage message, string exchange)
     {
-        var props = Channel.CreateBasicProperties();
-        props.Persistent = true;
-        props.PopulateFromMessage(message);
-
-        if (message.Meta != null)
+        using var activity = MessagingDiagnostics.StartPublish(MessagingDiagnostics.Systems.RabbitMq, queueName, message);
+        MessagingDiagnostics.Inject(message);
+        try
         {
-            props.Headers = new Dictionary<string, object>();
-            foreach (var entry in message.Meta)
+            var props = Channel.CreateBasicProperties();
+            props.Persistent = true;
+            props.PopulateFromMessage(message);
+
+            if (message.Meta != null)
             {
-                props.Headers[entry.Key] = entry.Value;
+                props.Headers = new Dictionary<string, object>();
+                foreach (var entry in message.Meta)
+                {
+                    props.Headers[entry.Key] = entry.Value;
+                }
             }
+
+            PublishMessageFilter?.Invoke(queueName, props, message);
+
+            var messageBytes = message.Body.ToJson().ToUtf8Bytes();
+
+            PublishMessage(exchange ?? QueueNames.Exchange,
+                routingKey: queueName,
+                basicProperties: props, body: messageBytes);
+
+            OnPublishedCallback?.Invoke();
         }
-
-        PublishMessageFilter?.Invoke(queueName, props, message);
-
-        var messageBytes = message.Body.ToJson().ToUtf8Bytes();
-
-        PublishMessage(exchange ?? QueueNames.Exchange,
-            routingKey: queueName,
-            basicProperties: props, body: messageBytes);
-
-        OnPublishedCallback?.Invoke();
+        catch (Exception ex)
+        {
+            activity.RecordError(ex);
+            throw;
+        }
     }
 
     static readonly ConcurrentDictionary<string, bool> Queues = new();

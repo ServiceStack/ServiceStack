@@ -68,6 +68,8 @@ public static class Keywords
     public const string FilePath = nameof(FilePath);
     public const string RequestDuration = "__timestamp";
     public const string RequestActivity = "__activity";
+    public const string OperationScope = "__operationScope";
+    public const string ProfilingOperationId = "__profilingOperationId";
     public const string TraceId = nameof(TraceId);
     public const string FileName = nameof(FileName);
     public const string ClaimsPrincipal = nameof(ClaimsPrincipal);

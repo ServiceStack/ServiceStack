@@ -249,10 +249,31 @@ public static class DiagnosticsUtils
     }
 
     public static string? GetTraceId(this Activity? activity) => GetRoot(activity)?.ParentId;
-    public static string? GetUserId(this Activity? activity) => 
+#if NET8_0_OR_GREATER
+    public static string? GetUserId(this Activity? activity) => FindValue(activity, Diagnostics.Activity.UserId);
+    public static string? GetTag(this Activity? activity) => FindValue(activity, Diagnostics.Activity.Tag);
+
+    /// <summary>
+    /// Walks up from activity and returns the first value found, checking custom properties
+    /// (which aren't exported) before tags. The root Activity may belong to ASP.NET Core.
+    /// </summary>
+    private static string? FindValue(Activity? activity, string name)
+    {
+        for (var current = activity; current != null; current = current.Parent)
+        {
+            if (current.GetCustomProperty(name) is string property)
+                return property;
+            if (current.GetTagItem(name) is string tag)
+                return tag;
+        }
+        return null;
+    }
+#else
+    public static string? GetUserId(this Activity? activity) =>
         GetRoot(activity)?.GetTagItem(Diagnostics.Activity.UserId) as string;
-    public static string? GetTag(this Activity? activity) => 
+    public static string? GetTag(this Activity? activity) =>
         GetRoot(activity)?.GetTagItem(Diagnostics.Activity.Tag) as string;
+#endif
 
     public static T Init<T>(this T evt, Activity? activity)
         where T : DiagnosticEvent
@@ -261,8 +282,13 @@ public static class DiagnosticsUtils
         if (rootActivity != null)
         {
             evt.TraceId ??= rootActivity.GetTraceId();
+#if NET8_0_OR_GREATER
+            evt.UserAuthId ??= activity.GetUserId();
+            evt.Tag ??= activity.GetTag();
+#else
             evt.UserAuthId ??= rootActivity.GetUserId();
             evt.Tag ??= rootActivity.GetTag();
+#endif
         }
         evt.Timestamp = Stopwatch.GetTimestamp();
         evt.Date = DateTime.UtcNow;
