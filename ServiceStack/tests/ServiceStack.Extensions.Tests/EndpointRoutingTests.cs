@@ -32,6 +32,9 @@ public class EndpointRoutingTests
     {
         public override void Configure()
         {
+            // Open generic services are not discovered by other hosts scanning this test assembly.
+            RegisterService<RateLimitedOrderService<int>>();
+            RegisterService<RateLimitedBatchService<int>>();
         }
     }
 
@@ -119,12 +122,12 @@ public class EndpointRoutingTests
         Assert.That((int)(await client.GetAsync(root + "/api/RateLimitedOrderB.json")).StatusCode, Is.EqualTo(200));
         Assert.That((int)(await client.GetAsync(root + "/rate-limited-c")).StatusCode, Is.EqualTo(200));
         Assert.That((int)(await client.GetAsync(root + "/rate-limited-c.json")).StatusCode, Is.EqualTo(200));
-        Assert.That(RateLimitedOrderService.Calls, Is.EqualTo(4));
+        Assert.That(RateLimitedOrderService<int>.Calls, Is.EqualTo(4));
         Assert.That((int)(await client.GetAsync(root + "/api/RateLimitedOrderA")).StatusCode, Is.EqualTo(429));
         Assert.That((int)(await client.GetAsync(root + "/api/RateLimitedOrderC.json")).StatusCode, Is.EqualTo(429));
         Assert.That((int)(await client.PostAsync(root + "/rate-limited-c", new StringContent("{}", System.Text.Encoding.UTF8, "application/json"))).StatusCode, Is.EqualTo(429));
         Assert.That((int)(await client.GetAsync(root + "/json/reply/RateLimitedOrderA")).StatusCode, Is.Not.EqualTo(200));
-        Assert.That(RateLimitedOrderService.Calls, Is.EqualTo(4));
+        Assert.That(RateLimitedOrderService<int>.Calls, Is.EqualTo(4));
     }
 
     [Test]
@@ -247,7 +250,7 @@ public class RateLimitedOrderB : IGet, IReturn<StringResponse> { }
 [Route("/rate-limited-c", "GET,POST")]
 public class RateLimitedOrderC : IGet, IReturn<StringResponse> { }
 
-public class RateLimitedOrderService : Service
+public class RateLimitedOrderService<T> : Service
 {
     public static int Calls;
     public object Get(RateLimitedOrderA request) { System.Threading.Interlocked.Increment(ref Calls); return new StringResponse { Result = "A" }; }
@@ -258,7 +261,7 @@ public class RateLimitedOrderService : Service
 
 [Tag("endpoint-batch")]
 public class RateLimitedBatch : IPost, IReturn<StringResponse> { }
-public class RateLimitedBatchService : Service
+public class RateLimitedBatchService<T> : Service
 {
     public object Post(RateLimitedBatch request) => new StringResponse { Result = "batch" };
 }
@@ -268,7 +271,7 @@ public class RateLimitBindingTests
 {
     static Operation Op<T>(params string[] tags) => new()
     {
-        RequestType = typeof(T), ServiceType = typeof(RateLimitedOrderService),
+        RequestType = typeof(T), ServiceType = typeof(RateLimitedOrderService<int>),
         Method = "GET", Tags = new System.Collections.Generic.List<string>(tags),
     };
 
