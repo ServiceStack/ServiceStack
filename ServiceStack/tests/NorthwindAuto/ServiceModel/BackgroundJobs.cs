@@ -7,6 +7,8 @@ public class QueueCheckUrl : IPost, IReturn<QueueCheckUrlResponse>
 {
     [ValidateNotEmpty]
     public required string Url { get; set; }
+    [ApiMember(Description = "Optional queue to run this Job on")]
+    public string? Queue { get; set; }
     
     [ApiMember(Description = "Specify a user-defined UUID for the Job")]
     public string? RefId { get; set; }
