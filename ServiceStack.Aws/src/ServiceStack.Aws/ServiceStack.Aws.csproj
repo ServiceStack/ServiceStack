@@ -36,11 +36,11 @@
   </ItemGroup>
 
   <ItemGroup>
-      <PackageReference Include="AWSSDK.Core" Version="4.0.102.3" />
-      <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.103.6" />
-      <PackageReference Include="AWSSDK.S3" Version="4.0.103" />
-      <PackageReference Include="AWSSDK.SQS" Version="4.0.100.12" />
-      <PackageReference Include="AWSSDK.TranscribeService" Version="4.0.101.1" />
+      <PackageReference Include="AWSSDK.Core" Version="4.0.102.7" />
+      <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.105" />
+      <PackageReference Include="AWSSDK.S3" Version="4.0.103.4" />
+      <PackageReference Include="AWSSDK.SQS" Version="4.0.100.14" />
+      <PackageReference Include="AWSSDK.TranscribeService" Version="4.0.102" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
