@@ -28,6 +28,18 @@ public class ToolsExtension() : ChatExtension("tools")
     public Dictionary<string, ChatTool> Tools { get; } = [];
     public Dictionary<string, List<string>> Groups { get; } = [];
 
+    public List<IChatToolProvider> Providers { get; } = [];
+
+    public async Task<ResolvedChatTools> ResolveAsync(ChatContext context, string? selector = null)
+    {
+        selector ??= context.Tools;
+        var selected = SelectTools(selector == "__list" ? "all" : selector);
+        if (selector != "none")
+            foreach (var provider in Providers)
+                selected.AddRange(await provider.ResolveAsync(context, selector).ConfigAwait());
+        return new ResolvedChatTools(selected);
+    }
+
     public void Register(ChatTool tool)
     {
         var name = tool.Name;
@@ -95,23 +107,25 @@ public class ToolsExtension() : ChatExtension("tools")
             AllowedDirectories.Add(ctx.AppData.BasePath.CombineWith("workspace").AssertDir());
         }
         
-        ctx.AddGet("", _ =>
+        ctx.AddGet("", async req =>
         {
+            var catalog = await ResolveAsync(new ChatContext { User = req.UserName, Request = req.Request, CancellationToken = req.Request.RequestAborted }, "__list").ConfigAwait();
             var groups = new JsonObject();
+            // Preserve host-defined local group aliases, including membership in multiple groups.
             foreach (var entry in Groups)
-            {
                 groups[entry.Key] = new JsonArray(entry.Value.Select(x => (JsonNode)x).ToArray());
+            foreach (var entry in catalog.Tools.Where(x => x.Source != null && x.Group != null).GroupBy(x => x.Group!))
+            {
+                var names = groups[entry.Key] as JsonArray ?? new JsonArray();
+                if (groups[entry.Key] == null) groups[entry.Key] = names;
+                foreach (var tool in entry) names.Add(tool.Name);
             }
             var definitions = new JsonArray();
-            foreach (var tool in Tools.Values)
+            foreach (var tool in catalog.Tools)
             {
                 definitions.Add(tool.Definition.Clone());
             }
-            return Task.FromResult<object?>(new JsonObject
-            {
-                ["groups"] = groups,
-                ["definitions"] = definitions,
-            });
+            return new JsonObject { ["groups"] = groups, ["definitions"] = definitions };
         });
 
         ctx.AddPost("exec/{name}", async req =>
@@ -119,8 +133,10 @@ public class ToolsExtension() : ChatExtension("tools")
             var name = req.GetPathParam("name");
             var args = await req.GetJsonBodyAsync().ConfigAwait();
 
-            var toolDef = Ctx.GetToolDefinition(name)
-                ?? throw new Exception($"Tool '{name}' not found");
+            var context = new ChatContext { User = req.UserName, Request = req.Request, CancellationToken = req.Request.RequestAborted, Tools = name };
+            context.ResolvedTools = await ResolveAsync(context).ConfigAwait();
+            var tool = context.ResolvedTools.GetTool(name) ?? throw HttpError.NotFound("Tool not found");
+            var toolDef = tool.Definition;
             var type = toolDef.GetString("type");
             if (type != "function")
                 throw new Exception($"Tool '{name}' of type '{type}' is not supported");
@@ -136,7 +152,9 @@ public class ToolsExtension() : ChatExtension("tools")
                 }
             }
 
-            var context = new ChatContext { User = req.UserName, Request = req.Request };
+            if (tool.Source != null) functionArgs = args;
+            if (tool.ApprovalHandler != null && await tool.ApprovalHandler(functionArgs, context).ConfigAwait() != null)
+                throw HttpError.Forbidden("Interactive approval required; start a conversation to review this call");
             var (text, resources) = await ctx.Feature.ExecToolAsync(name, functionArgs, context).ConfigAwait();
 
             var results = new JsonArray();

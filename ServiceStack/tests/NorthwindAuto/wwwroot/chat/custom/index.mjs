@@ -6,7 +6,7 @@ let mcpExt
 
 const McpToolPageHeader = {
     template: `
-    <div class="text-sm flex flex-col items-end mb-8">
+    <div class="text-sm flex flex-col items-start mb-6">
         <!-- Collapsed Header -->
         <div
             @click="toggleExpanded"
@@ -33,8 +33,9 @@ const McpToolPageHeader = {
         <!-- Expanded Details -->
         <div
             v-if="isExpanded"
-            class="w-full mt-3 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 text-left"
+            class="w-full mt-3 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 text-left"
             :class="[$styles.bgCard]"
+            style="background:var(--background,#fff);color:var(--assistant-text,#111827)"
         >
             <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between">

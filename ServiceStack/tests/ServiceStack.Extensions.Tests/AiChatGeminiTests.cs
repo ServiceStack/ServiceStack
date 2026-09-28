@@ -647,6 +647,31 @@ public class AiChatGeminiTests
     }
 
     [Test]
+    public void Local_search_excludes_exhausted_documents_until_reindexed()
+    {
+        var db = CreateDb();
+        var storeId = AddFilestore(db, "Retry docs");
+        var id = AddDocument(db, storeId, "invalid.md", new string('b', 64));
+        var doc = db.GetDocument(id, User)!;
+        db.SetSearchDesired(doc);
+        db.UpdateDocument(doc);
+        db.UpdateSearchError(id, "Invalid content", 3);
+
+        Assert.That(db.GetSearchCandidates(100, 3).Any(x => x.Id == id), Is.False);
+        Assert.That(db.GetDocument(id, User)!.SearchIndexedHash, Is.Null);
+        Assert.That(db.SearchStats(storeId, User).Failed, Is.EqualTo(1));
+
+        doc = db.GetDocument(id, User)!;
+        db.SetSearchDesired(doc);
+        Assert.That(doc.SearchError, Is.EqualTo("Invalid content"));
+        Assert.That(doc.SearchRetries, Is.EqualTo(3));
+        db.SetSearchDesired(doc, force: true);
+        db.UpdateDocument(doc);
+        Assert.That(db.GetSearchCandidates(100, 3).Any(x => x.Id == id), Is.True);
+        Assert.That(db.GetDocument(id, User)!.SearchRetries, Is.Null);
+    }
+
+    [Test]
     public void Local_search_preserves_filename_underscores_and_prefers_frontmatter_titles()
     {
         var doc = new ChatDocument { DisplayName = "2025-10-15_ormlite-new-configuration.md" };

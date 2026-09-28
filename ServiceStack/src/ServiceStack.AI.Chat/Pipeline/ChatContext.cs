@@ -22,6 +22,25 @@ public class ChatContext
     /// </summary>
     public const string McpTransport = "mcp_transport";
 
+    internal string CompletionCorrelationId { get; set; } = Guid.NewGuid().ToString("N");
+    public string? ToolInvocationId { get; internal set; }
+    public ResolvedChatTools? ResolvedTools { get; set; }
+
+    /// <summary>Preserve trusted request identity, selection, durable metadata and extension correlation.</summary>
+    public ChatContext CreateChild(CancellationToken cancellationToken)
+    {
+        var child = new ChatContext {
+            Chat = Chat, User = User, Request = Request, ThreadId = ThreadId, RunId = RunId, StepId = StepId,
+            Tools = Tools, ResolvedTools = ResolvedTools, ToolInvocationId = ToolInvocationId, CompletionCorrelationId = CompletionCorrelationId, ProjectedContext = ProjectedContext,
+            NoStore = NoStore, NoHistory = NoHistory, Provider = Provider, ModelInfo = ModelInfo,
+            ModelCost = ModelCost, ProviderResponse = ProviderResponse, CancellationToken = cancellationToken,
+            lastMessageTimestamp = lastMessageTimestamp,
+        };
+        child.ProjectedKnownTimestamps.UnionWith(ProjectedKnownTimestamps);
+        foreach (var item in Items) child.Items[item.Key] = item.Value;
+        return child;
+    }
+
     public JsonObject? Chat { get; set; }
     public string? User { get; set; }
     public long? ThreadId { get; set; }
@@ -133,6 +152,7 @@ public class ChatFilters
     public List<Func<Exception, ChatContext, Task>> ChatErrorFilters { get; } = [];
     public List<Action<CacheSavedContext>> CacheSavedFilters { get; } = [];
     public List<Func<IRequest, Task>> SetupUserHandlers { get; } = [];
+    public List<Func<CancellationToken, Task>> AsyncShutdownHandlers { get; } = [];
     public List<Action> ShutdownHandlers { get; } = [];
 
     public async Task OnChatRequestAsync(JsonObject chat, ChatContext context)

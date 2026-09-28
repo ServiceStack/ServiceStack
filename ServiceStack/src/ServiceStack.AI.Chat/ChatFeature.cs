@@ -246,6 +246,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new AnalyticsExtension(),
             new ApiToolsExtension(),
             new McpExtension(),
+            new McpClientExtension { Disabled = true },
             new IdentityUiExtension(),
             new CredentialsExtension(),
             // last, so this App's own extension can see everything the built-ins registered
@@ -275,6 +276,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public PdfExtension Pdf => AssertExtension<PdfExtension>();
     public AnalyticsExtension Analytics => AssertExtension<AnalyticsExtension>();
     public ApiToolsExtension ApiTools => AssertExtension<ApiToolsExtension>();
+    public McpClientExtension McpClient => AssertExtension<McpClientExtension>();
     public McpExtension Mcp => AssertExtension<McpExtension>();
     public IdentityUiExtension IdentityUi => AssertExtension<IdentityUiExtension>();
     public CredentialsExtension Credentials => AssertExtension<CredentialsExtension>();
@@ -283,6 +285,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public void Configure(IServiceCollection services)
     {
         services.AddSingleton(this);
+        services.AddHostedService<ChatShutdownService>();
         services.RegisterService<ChatServices>();
         if (!DisableAdminUi)
         {
@@ -823,6 +826,9 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
                 Log.LogError(e, "Shutdown handler failed");
             }
         }
+        // ASP.NET Core awaits the hosted service. Plain AppHost disposal has only a synchronous
+        // callback; use the same bounded cleanup task as a compatibility fallback.
+        Task.Run(() => RunAsyncShutdownHandlers()).GetAwaiter().GetResult();
     }
 
     public JsonObject ErrorAuthRequired() =>

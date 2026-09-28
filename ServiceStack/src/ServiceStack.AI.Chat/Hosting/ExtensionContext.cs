@@ -79,9 +79,12 @@ public class ExtensionContext(ChatFeature feature, string name)
     public void RegisterChatErrorFilter(Func<Exception, ChatContext, Task> handler) => feature.Filters.ChatErrorFilters.Add(handler);
     public void RegisterCacheSavedFilter(Action<CacheSavedContext> handler) => feature.Filters.CacheSavedFilters.Add(handler);
     public void RegisterSetupUserHandler(Func<IRequest, Task> handler) => feature.Filters.SetupUserHandlers.Add(handler);
+    public void RegisterShutdownHandler(Func<CancellationToken, Task> handler) => feature.Filters.AsyncShutdownHandlers.Add(handler);
     public void RegisterShutdownHandler(Action handler) => feature.Filters.ShutdownHandlers.Add(handler);
 
     // ── Tools ──
+
+    public void RegisterToolProvider(IChatToolProvider provider) => feature.Tools.Providers.Add(provider);
 
     public void RegisterTool(JsonObject definition, ChatToolHandler handler, string? group = null,
         ChatToolApprovalHandler? approvalHandler = null, JsonObject? outputSchema = null,

@@ -46,7 +46,7 @@ const ThreadItem = {
                     <div v-if="thread.model" class="text-xs truncate" :class="$styles.highlighted">
                         {{ thread.model }}
                     </div>
-                    <div v-if="thread.run" class="mt-1 flex items-center gap-1 text-xs" :class="$styles.highlighted"
+                    <div v-if="thread.run && !thread.completedAt && !thread.error" class="mt-1 flex items-center gap-1 text-xs" :class="$styles.highlighted"
                         :title="runTitle(thread.run)">
                         <span v-if="['queued','running'].includes(thread.run.status)"
                             class="inline-block size-2 rounded-full bg-emerald-500 animate-pulse"></span>

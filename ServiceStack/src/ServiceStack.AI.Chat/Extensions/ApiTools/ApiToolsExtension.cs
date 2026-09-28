@@ -124,9 +124,8 @@ public class ApiToolsExtension() : ChatExtension("api_tools"), IHasSchema
         if (ctx.Feature.ChatDb != null)
         {
             ctx.RegisterUiExtension("/custom/ApiApprovalForm.mjs");
-            approvals = new ApiToolApprovalCoordinator(this, ctx);
-            approvals.Install();
-            ctx.Feature.ToolApprovalCoordinator = approvals;
+            approvals = ApiToolApprovalCoordinator.GetOrCreate(this, ctx);
+            approvals.RegisterRoutes(ctx);
         }
     }
 

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-25 18:56:21
+Date: 2026-09-27 13:34:53
 Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1924,6 +1924,12 @@ export class ChatToolApproval
     public toolCallId: string;
     public toolName: string;
     public apiName: string;
+    public source?: string;
+    public title?: string;
+    public invocationId?: string;
+    // @StringLength(2147483647)
+    public sourceMetadata?: string;
+
     public requestType?: string;
     public method?: string;
     public route?: string;

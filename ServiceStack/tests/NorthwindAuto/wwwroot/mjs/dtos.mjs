@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-25 18:56:22
+Date: 2026-09-27 13:34:53
 Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1984,7 +1984,7 @@ export class ChatToolApprovalBatch {
     completedAt;
 }
 export class ChatToolApproval {
-    /** @param {{id?:number,batchId?:string,threadId?:number,user?:string,toolCallId?:string,toolName?:string,apiName?:string,requestType?:string,method?:string,route?:string,safety?:string,status?:string,sequence?:number,description?:string,schema?:string,proposedArgs?:string,effectiveArgs?:string,result?:string,toolResult?:string,error?:string,reason?:string,createdAt?:string,updatedAt?:string,resolvedAt?:string}} [init] */
+    /** @param {{id?:number,batchId?:string,threadId?:number,user?:string,toolCallId?:string,toolName?:string,apiName?:string,source?:string,title?:string,invocationId?:string,sourceMetadata?:string,requestType?:string,method?:string,route?:string,safety?:string,status?:string,sequence?:number,description?:string,schema?:string,proposedArgs?:string,effectiveArgs?:string,result?:string,toolResult?:string,error?:string,reason?:string,createdAt?:string,updatedAt?:string,resolvedAt?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -2000,6 +2000,14 @@ export class ChatToolApproval {
     toolName;
     /** @type {string} */
     apiName;
+    /** @type {?string} */
+    source;
+    /** @type {?string} */
+    title;
+    /** @type {?string} */
+    invocationId;
+    /** @type {?string} */
+    sourceMetadata;
     /** @type {?string} */
     requestType;
     /** @type {?string} */

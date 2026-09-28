@@ -22,6 +22,10 @@ public class ChatToolApproval
     public string ToolCallId { get; set; } = null!;
     public string ToolName { get; set; } = null!;
     public string ApiName { get; set; } = null!;
+    public string? Source { get; set; }
+    public string? Title { get; set; }
+    public string? InvocationId { get; set; }
+    [StringLength(StringLengthAttribute.MaxText)] public string? SourceMetadata { get; set; }
     public string? RequestType { get; set; }
     public string? Method { get; set; }
     public string? Route { get; set; }
@@ -67,6 +71,7 @@ public static class ApiToolApprovalStatus
 {
     public const string Pending = "pending";
     public const string Executing = "executing";
+    public const string OutcomeUnknown = "outcome_unknown";
     public const string Completed = "completed";
     public const string Rejected = "rejected";
     public const string Failed = "failed";
@@ -84,12 +89,40 @@ public static class ApiToolApprovalBatchStatus
     public const string Canceled = "canceled";
 }
 
-/// <summary>Persistence, authenticated routes, execution, and continuation for api_call approvals.</summary>
+/// <summary>Shared source-aware approval persistence and continuation; retains its original API type and routes.</summary>
 public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionContext ctx)
     : IChatToolApprovalCoordinator, IHasSchema
 {
     readonly ChatDb db = ctx.Feature.ChatDb!;
     IThreadApi Threads => ctx.Threads;
+
+    public Dictionary<string, Func<ChatToolApproval, JsonObject, ChatRequestContext, Task<string>>> Executors { get; } = new() {
+        ["api_tools"] = async (row, args, request) => {
+            var tool = apiTools.GetTool(row.ApiName, request.Request)
+                ?? throw HttpError.Forbidden($"API '{row.ApiName}' is no longer available to this user");
+            var response = await apiTools.ExecuteAsync(tool, args, request.Request).ConfigAwait();
+            return apiTools.FormatResult(tool, args, response).ToJsonString(ChatJson.Options);
+        },
+    };
+
+    public static ApiToolApprovalCoordinator GetOrCreate(ApiToolsExtension apiTools, ExtensionContext ctx)
+    {
+        if (ctx.Feature.ToolApprovalCoordinator is ApiToolApprovalCoordinator current) return current;
+        if (ctx.Feature.ToolApprovalCoordinator != null) throw new InvalidOperationException("A different approval coordinator is already configured");
+        var coordinator = new ApiToolApprovalCoordinator(apiTools, ctx);
+        if (ctx.Feature.AutoInitSchema) coordinator.InitSchema();
+        ctx.Feature.ToolApprovalCoordinator = coordinator;
+        return coordinator;
+    }
+
+    public void RegisterRoutes(ExtensionContext routes)
+    {
+        routes.AddGet("approvals/{threadId}", ListAsync);
+        routes.AddPost("approvals/{id}/approve", ApproveAsync);
+        routes.AddPost("approvals/{id}/reject", RejectAsync);
+        routes.AddPost("approval-batches/{id}/continue", ContinueAsync);
+        if (routes.Name == "mcp_client") routes.AddPost("approvals/{id}/reconcile", ReconcileAsync);
+    }
 
     public void Install()
     {
@@ -143,7 +176,7 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
             foreach (var call in calls)
             {
                 var meta = call.Approval.Metadata;
-                var proposedArgs = NormalizeArguments(call.Approval.Schema, call.Approval.Arguments);
+                var proposedArgs = meta.GetString("source") == "mcp_client" ? call.Approval.Arguments.Clone() : NormalizeArguments(call.Approval.Schema, call.Approval.Arguments);
                 conn.Insert(new ChatToolApproval
                 {
                     BatchId = batch.Id,
@@ -151,6 +184,10 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
                     User = user,
                     ToolCallId = call.ToolCallId,
                     ToolName = call.ToolName,
+                    Source = meta.GetString("source") ?? "api_tools",
+                    Title = call.Approval.Title,
+                    InvocationId = Guid.NewGuid().ToString("N"),
+                    SourceMetadata = meta.ToJsonString(),
                     ApiName = meta.GetString("apiName") ?? call.Approval.Title,
                     RequestType = meta.GetString("requestType"),
                     Method = meta.GetString("method"),
@@ -223,6 +260,14 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
             throw HttpError.NotFound("Thread not found");
 
         using var conn = db.OpenDb();
+        // An abandoned claim must never be replayed after a process crash. Wait beyond the
+        // maximum call + drain deadline so another live worker cannot still finish normally.
+        var abandoned = DateTime.Now.AddMinutes(-10);
+        conn.UpdateOnly(() => new ChatToolApproval {
+            Status = ApiToolApprovalStatus.OutcomeUnknown,
+            Error = "Execution was interrupted. Verify the outcome on the remote service before continuing.",
+        }, x => x.ThreadId == threadId && x.User == user && x.Source == "mcp_client"
+            && x.Status == ApiToolApprovalStatus.Executing && x.UpdatedAt < abandoned);
         var rows = conn.Select(conn.From<ChatToolApproval>()
             .Where(x => x.ThreadId == threadId && x.User == user)
             .OrderBy(x => x.CreatedAt).ThenBy(x => x.Sequence));
@@ -239,6 +284,7 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
         var user = Partition(req.UserName);
         var body = await req.GetJsonBodyAsync().ConfigAwait();
         var row = GetApproval(id, user) ?? throw HttpError.NotFound("Approval not found");
+        if (row.Source == "mcp_client") McpClientExtension.AssertMutation(req);
         AssertThreadActive(row.ThreadId, user);
 
         if (row.Status == ApiToolApprovalStatus.Pending && Claim(id, user, ApiToolApprovalStatus.Executing))
@@ -247,20 +293,27 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
             var effectiveArgs = body["args"] is JsonObject args
                 ? args.Clone()
                 : proposedArgs.Clone();
+            using (var conn = db.OpenDb())
+                conn.UpdateOnly(() => new ChatToolApproval { EffectiveArgs = effectiveArgs.ToJsonString(ChatJson.Options) },
+                    x => x.Id == id && x.User == user && x.Status == ApiToolApprovalStatus.Executing);
             try
             {
-                var tool = apiTools.GetTool(row.ApiName, req.Request)
-                    ?? throw HttpError.Forbidden($"API '{row.ApiName}' is no longer available to this user");
-                var response = await apiTools.ExecuteAsync(tool, effectiveArgs, req.Request).ConfigAwait();
-                var result = apiTools.FormatResult(tool, effectiveArgs, response).ToJsonString(ChatJson.Options);
-                var content = ToolResult("approved", row.ApiName, proposedArgs, effectiveArgs, ResultNode(result));
+                if (row.Source == "mcp_client" && body["alwaysApprove"]?.GetValue<bool>() == true)
+                    await ctx.Feature.McpClient.SaveApprovalGrantAsync(row, req).ConfigAwait();
+                var executor = Executors.GetValueOrDefault(row.Source ?? "api_tools")
+                    ?? throw HttpError.Forbidden("Tool source is no longer enabled");
+                var result = await executor(row, effectiveArgs, req).ConfigAwait();
+                var resultNode = ResultNode(result);
+                if (row.Source == "mcp_client" && resultNode is JsonObject remoteResult) remoteResult.Remove("resources");
+                var content = ToolResult("approved", row.ApiName, proposedArgs, effectiveArgs, resultNode);
                 Complete(id, user, ApiToolApprovalStatus.Completed, effectiveArgs, result, content, null, null);
             }
             catch (Exception e)
             {
                 var error = ChatJson.ToErrorMessage(e);
                 var content = ToolResult("error", row.ApiName, proposedArgs, effectiveArgs, null, error);
-                Complete(id, user, ApiToolApprovalStatus.Failed, effectiveArgs, null, content, error, null);
+                Complete(id, user, e is McpClientException { Code: "outcome_unknown" }
+                    ? ApiToolApprovalStatus.OutcomeUnknown : ApiToolApprovalStatus.Failed, effectiveArgs, null, content, error, null);
             }
         }
 
@@ -275,6 +328,7 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
         var user = Partition(req.UserName);
         var body = await req.GetJsonBodyAsync().ConfigAwait();
         var row = GetApproval(id, user) ?? throw HttpError.NotFound("Approval not found");
+        if (row.Source == "mcp_client") McpClientExtension.AssertMutation(req);
         if (row.Status == ApiToolApprovalStatus.Pending)
         {
             var reason = body.GetString("reason") ?? "User declined; API was not executed";
@@ -286,6 +340,28 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
         row = GetApproval(id, user)!;
         await AfterDecisionAsync(row.BatchId, row.ThreadId, user, req.Request).ConfigAwait();
         return ToDto(GetApproval(id, user)!, GetBatch(row.BatchId, user));
+    }
+
+    async Task<object?> ReconcileAsync(ChatRequestContext req)
+    {
+        McpClientExtension.AssertMutation(req);
+        var user = Partition(req.UserName);
+        var row = GetApproval(ApprovalId(req), user) ?? throw HttpError.NotFound("Approval not found");
+        AssertThreadActive(row.ThreadId, user);
+        var body = await req.GetJsonBodyAsync().ConfigAwait();
+        if (row.Source != "mcp_client" || row.Status != ApiToolApprovalStatus.OutcomeUnknown
+            || body.GetString("decision") != "continue_without_replay")
+            throw HttpError.Conflict("This call is not awaiting reconciliation");
+        var content = ToolResult("outcome_unknown", row.ApiName, ParseObject(row.ProposedArgs),
+            ParseObject(row.EffectiveArgs), null, "The user acknowledged the uncertain remote outcome. Do not repeat this operation.");
+        using (var conn = db.OpenDb())
+            conn.UpdateOnly(() => new ChatToolApproval {
+                Status = ApiToolApprovalStatus.Failed, ToolResult = content,
+                Reason = "User reconciled the uncertain outcome; continued without replay",
+                ResolvedAt = DateTime.Now, UpdatedAt = DateTime.Now,
+            }, x => x.Id == row.Id && x.User == user && x.Status == ApiToolApprovalStatus.OutcomeUnknown);
+        await AfterDecisionAsync(row.BatchId, row.ThreadId, user, req.Request).ConfigAwait();
+        return ToDto(GetApproval(row.Id, user)!, GetBatch(row.BatchId, user));
     }
 
     async Task<object?> ContinueAsync(ChatRequestContext req)
@@ -303,7 +379,7 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
         {
             var remaining = conn.Count(conn.From<ChatToolApproval>()
                 .Where(x => x.BatchId == batchId
-                    && (x.Status == ApiToolApprovalStatus.Pending || x.Status == ApiToolApprovalStatus.Executing)));
+                    && (x.Status == ApiToolApprovalStatus.Pending || x.Status == ApiToolApprovalStatus.Executing || x.Status == ApiToolApprovalStatus.OutcomeUnknown)));
             if (remaining > 0)
             {
                 await Threads.UpdateThreadAsync(threadId,
@@ -333,7 +409,7 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
             {
                 if (existing.Contains(approval.ToolCallId))
                     continue;
-                messages.Add(new JsonObject
+                var toolMessage = new JsonObject
                 {
                     ["role"] = "tool",
                     ["tool_call_id"] = approval.ToolCallId,
@@ -342,7 +418,10 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
                         approval.EffectiveArgs != null ? ParseObject(approval.EffectiveArgs) : null, null,
                         approval.Error ?? "Approval did not produce a result"),
                     ["timestamp"] = timestamp++,
-                });
+                };
+                if (approval.Source == "mcp_client" && ChatJson.TryParseObject(approval.Result)?.GetArray("resources") is { } resources)
+                    foreach (var entry in ChatFeature.GroupResources(resources.OfType<JsonObject>().ToList())) toolMessage[entry.Key] = entry.Value;
+                messages.Add(toolMessage);
             }
             await Threads.UpdateThreadAsync(threadId, new JsonObject { ["messages"] = messages }, user).ConfigAwait();
             await ctx.Feature.App.QueueContinuationAsync(threadId, user, request).ConfigAwait();
@@ -541,6 +620,10 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
         ["toolCallId"] = row.ToolCallId,
         ["toolName"] = row.ToolName,
         ["apiName"] = row.ApiName,
+        ["source"] = row.Source ?? "api_tools",
+        ["title"] = row.Title ?? row.ApiName,
+        ["invocationId"] = row.InvocationId,
+        ["sourceMetadata"] = ChatDtos.ParseJson(row.SourceMetadata),
         ["requestType"] = row.RequestType,
         ["method"] = row.Method,
         ["route"] = row.Route,

@@ -299,3 +299,11 @@ old `paths` array — along with the `$WORKSPACE`/`$TEMP` aliases — is dropped
 is saved. Projects that pointed at directories outside `App_Data/chat` no longer reach them; move the
 files under `user/<user>/projects/<folder>/` (created for you on save) or keep them available to every
 user via `ToolsConfig.AllowedDirectories`.
+
+## Outbound MCP tools (C# only)
+
+Enable the separately disabled `ChatFeature.McpClient` extension to consume host-approved Streamable
+HTTP servers. It supports contextual selection, host credentials, user OAuth, shared approvals and
+remote results without exporting imported tools through the inbound MCP server. See
+[MCP_CLIENT_USER.md](MCP_CLIENT_USER.md) for configuration, defaults, tested compatibility and the
+remaining release-validation gates.

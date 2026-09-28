@@ -1,11 +1,20 @@
 #!/usr/bin/env bash
 # Syncs UI + config assets from the llms-py project (source of truth) into chat/
-# Usage: ./sync.sh [path-to-llms-package-dir]
+# Usage: ./sync.sh [--extension name] [path-to-llms-package-dir]
 # Platform-specific behavior is applied server-side (base url substitution in ai.mjs/index.html),
 # so all synced files remain byte-identical to the Python originals.
 set -e
 
 cd "$(dirname "$0")"
+SYNC_EXTENSION=""
+if [ "${1:-}" = "--extension" ]; then
+    SYNC_EXTENSION="${2:-}"
+    if [[ ! "$SYNC_EXTENSION" =~ ^[a-z][a-z0-9_]*$ ]]; then
+        echo "A valid extension name is required" >&2
+        exit 1
+    fi
+    shift 2
+fi
 LLMS="${1:-${LLMS:-../../../../llms/llms}}"
 
 if [ ! -f "$LLMS/index.html" ]; then
@@ -20,6 +29,25 @@ SKIP_EXT="credentials github_auth browser"
 # UI extensions not under $LLMS/extensions, so never deleted as stale:
 # identity + credentials are C#-only
 KEEP_EXT="identity credentials"
+
+# A focused sync leaves unrelated core assets and host configuration untouched.
+# mcp_client originated in C# and now shares its UI with the Python implementation.
+if [ -n "$SYNC_EXTENSION" ]; then
+    if [[ " $SKIP_EXT " == *" $SYNC_EXTENSION "* ]] || [ ! -d "$LLMS/extensions/$SYNC_EXTENSION/ui" ]; then
+        echo "Extension has no shared UI: $SYNC_EXTENSION" >&2
+        exit 1
+    fi
+    mkdir -p "chat/ext/$SYNC_EXTENSION"
+    rsync -a --delete "$LLMS/extensions/$SYNC_EXTENSION/ui/" "chat/ext/$SYNC_EXTENSION/"
+    for asset in prompts examples; do
+        if [ -d "$LLMS/extensions/$SYNC_EXTENSION/$asset" ]; then
+            mkdir -p "chat/ext/$SYNC_EXTENSION/$asset"
+            rsync -a --delete "$LLMS/extensions/$SYNC_EXTENSION/$asset/" "chat/ext/$SYNC_EXTENSION/$asset/"
+        fi
+    done
+    echo "Synced shared extension: $SYNC_EXTENSION"
+    exit 0
+fi
 
 # clear stale config files
 rm -f ../../tests/NorthwindAuto/App_Data/chat/llms.json

@@ -375,3 +375,9 @@ Read/search/preview tools may work while the final write is rejected by approval
 - Audit service-side mutations independently of the assistant's narrative.
 
 An MCP assistant is another API client. It should receive no more authority than the user it represents, and server-side authorization and validation remain the final enforcement boundary.
+
+## Consuming other MCP servers
+
+The separate, disabled-by-default outbound `McpClientExtension` imports approved remote tools into
+AI.Chat. It does not change this server's exposure or confirmation-token behavior. See
+[MCP_CLIENT_USER.md](MCP_CLIENT_USER.md) for client setup and tested compatibility.

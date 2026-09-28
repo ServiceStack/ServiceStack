@@ -47,7 +47,7 @@ public partial class ChatFeature
         var maxIterations = context.Items.GetValueOrDefault("max_iterations") as int? ?? Limits.MaxIterations;
 
         // inject global tools + apply pre-chat filters ONCE
-        var baseChat = CreateChatWithTools(chat, context.Tools);
+        var baseChat = await CreateChatWithToolsAsync(chat, context).ConfigAwait();
         context.Chat = baseChat;
         await Filters.OnChatRequestAsync(baseChat, context).ConfigAwait();
 
@@ -95,7 +95,8 @@ public partial class ChatFeature
                     // Provider preparation removes internal identities and may repair/merge legacy
                     // history. It must operate on an outbound projection, never our checkpointable
                     // working history.
-                    var providerChat = currentChat.Clone();
+                    var providerChat = Tools.Providers.Count == 0 ? currentChat.Clone()
+                        : await CreateChatWithToolsAsync(currentChat, context).ConfigAwait();
                     var response = await provider.ChatAsync(providerChat, context).ConfigAwait();
 
                     if (ShouldCancelThread(context))
@@ -139,7 +140,7 @@ public partial class ChatFeature
                             var toolCallId = toolCall.GetString("id") ?? "";
                             var fn = toolCall.GetObject("function");
                             var fnName = fn.GetString("name") ?? "";
-                            var tool = Tools.GetTool(fnName);
+                            var tool = context.ResolvedTools?.GetTool(fnName);
                             if (tool?.ApprovalHandler == null)
                                 continue;
 
@@ -301,6 +302,26 @@ public partial class ChatFeature
     };
 
     /// <summary>Inject registered tool definitions into the chat (port of create_chat_with_tools)</summary>
+    public async Task<JsonObject> CreateChatWithToolsAsync(JsonObject chat, ChatContext context)
+    {
+        context.ResolvedTools = chat["response_format"] != null
+            ? new ResolvedChatTools([])
+            : await Tools.ResolveAsync(context).ConfigAwait();
+        var result = chat.Clone();
+        result["messages"] ??= new JsonArray();
+        // Only host-resolved definitions can authorize model-originated execution.
+        var resolvedNames = context.ResolvedTools.Tools.Select(x => x.Name).ToHashSet(StringComparer.Ordinal);
+        var supplied = result.GetArray("tools")?.Where(x => x is JsonObject obj
+            && (obj.GetString("type") != "function" || (obj.GetObject("function").GetString("name") is { } name
+                && !name.StartsWith("mcp_", StringComparison.Ordinal) && !resolvedNames.Contains(name))))
+            .Select(x => x!.DeepClone()).ToArray() ?? [];
+        result.Remove("tools");
+        var definitions = context.ResolvedTools.Tools.OrderBy(x => x.Name, StringComparer.Ordinal)
+            .Select(x => (JsonNode)x.Definition.DeepClone()).Concat(supplied).ToArray();
+        if (definitions.Length > 0) result["tools"] = new JsonArray(definitions);
+        return result;
+    }
+
     public JsonObject CreateChatWithTools(JsonObject chat, string useTools)
     {
         var currentChat = chat.Clone();
@@ -352,7 +373,9 @@ public partial class ChatFeature
             return (toolCallId, $"Error: Failed to parse JSON arguments for tool '{fnName}': {e.Message}", []);
         }
 
-        var (content, resources) = await ExecToolAsync(fnName, args, context).ConfigAwait();
+        var callContext = context.CreateChild(context.CancellationToken);
+        callContext.ToolInvocationId = McpClientHash.Of($"{context.User}\0{context.ThreadId?.ToString() ?? context.CompletionCorrelationId}\0{toolCallId}");
+        var (content, resources) = await ExecToolAsync(fnName, args, callContext).ConfigAwait();
         return (toolCallId, content, resources);
     }
 
@@ -360,7 +383,8 @@ public partial class ChatFeature
     public async Task<(string Content, List<JsonObject> Resources)> ExecToolAsync(
         string fnName, JsonObject args, ChatContext context)
     {
-        var tool = Tools.GetTool(fnName);
+        var catalog = context.ResolvedTools ?? await Tools.ResolveAsync(context, fnName).ConfigAwait();
+        var tool = catalog.GetTool(fnName);
         if (tool == null)
             return ($"Error: Tool '{fnName}' not found", []);
 
@@ -374,7 +398,7 @@ public partial class ChatFeature
             }
 
             // tools declaring a "user" param receive the authenticated username
-            if (context.User != null && tool.Definition.GetObject("function").GetObject("parameters")
+            if (tool.Source == null && context.User != null && tool.Definition.GetObject("function").GetObject("parameters")
                     .GetObject("properties")?.ContainsKey("user") == true)
             {
                 args["user"] = context.User;
@@ -382,16 +406,8 @@ public partial class ChatFeature
 
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(context.CancellationToken);
             cts.CancelAfter(Tools.ToolTimeout);
-            var toolContext = new ChatContext
-            {
-                Chat = context.Chat,
-                User = context.User,
-                Request = context.Request,
-                ThreadId = context.ThreadId,
-                Tools = context.Tools,
-                Provider = context.Provider,
-                CancellationToken = cts.Token,
-            };
+            var toolContext = context.CreateChild(cts.Token);
+            toolContext.ResolvedTools = catalog;
 
             Log.LogInformation("Executing tool '{Tool}'", fnName);
             var result = await tool.Handler(args, toolContext).ConfigAwait();
@@ -429,6 +445,12 @@ public partial class ChatFeature
             }
         }
 
+        // Remote media remains in the authenticated conversation, never the shared cache.
+        if (result is JsonObject envelope && envelope.GetString("source") == "mcp_client") {
+            foreach (var resource in envelope.GetArray("resources")?.OfType<JsonObject>() ?? []) resources.Add(resource.Clone());
+            var textEnvelope = envelope.Clone(); textEnvelope.Remove("resources");
+            return (textEnvelope.ToJsonString(ChatJson.Options), resources);
+        }
         switch (result)
         {
             case null:

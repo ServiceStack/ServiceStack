@@ -91,6 +91,9 @@ public partial class AppExtension
 
     void AttachRun(JsonObject dto, ChatThread row)
     {
+        // The thread can become terminal just before its run record is completed.
+        // Do not expose that transient run as still active to the sidebar.
+        if (IsTerminal(row)) return;
         var run = Db.GetActiveAgentRun(row.Id, ChatDb.AllUsers);
         if (run != null)
         {

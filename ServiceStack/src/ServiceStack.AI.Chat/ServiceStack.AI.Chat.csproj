@@ -15,6 +15,11 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="ModelContextProtocol.Core" Version="2.2.0" />
+        <PackageReference Include="JsonSchema.Net" Version="9.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
         <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
         <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />

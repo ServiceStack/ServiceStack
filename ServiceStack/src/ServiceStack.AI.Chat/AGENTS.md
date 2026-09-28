@@ -47,7 +47,7 @@ Python and C# products will diverge. If a C#-specific UI difference is unavoidab
 explicit C# integration point rather than silently forking a synchronized file.
 
 The sync intentionally skips Python-only `credentials`, `github_auth`, and `browser` extensions and
-preserves C#-owned `identity` and `credentials` UI directories. Read `sync.sh` before changing its copy,
+preserves C#-owned `identity` and `credentials` UI directories. The `mcp_client` UI is shared with Python and copied verbatim. Read `sync.sh` before changing its copy,
 skip, preserve, or deletion rules.
 
 ### Running the sync
@@ -216,8 +216,13 @@ The following list covers every `*.md` file currently under `ServiceStack.AI.Cha
   opt-in API selection, schemas, identity, safety, approvals, and result limits. Read before changing
   ServiceStack API discovery/execution or teaching an assistant to call application APIs.
 
-### MCP references (C#-only feature)
+### MCP references (shared outbound client; C#-only inbound server)
 
+- [`MCP_CLIENT.md`](MCP_CLIENT.md) — implementation plan for the separate `mcp_client`
+  extension: outbound connections, contextual tools, OAuth, approvals, durable execution, and UI ownership.
+  This is the implementation/release checklist, distinct from the existing inbound MCP server. Its UI now comes from upstream `extensions/mcp_client/ui`; use `./sync.sh --extension mcp_client` for a focused sync.
+- [`MCP_CLIENT_USER.md`](MCP_CLIENT_USER.md) — outbound MCP client configuration, OAuth host requirements,
+  contextual selection, approvals, network policy, limits, tested compatibility and remaining release validation.
 - [`MCP.md`](MCP.md) — authoritative developer reference for enabling and exposing AI.Chat/API tools over
   MCP Streamable HTTP, authentication, tool/result mapping, approvals, errors, and security. Read before
   changing `Extensions/Mcp` or configuring an MCP server.
