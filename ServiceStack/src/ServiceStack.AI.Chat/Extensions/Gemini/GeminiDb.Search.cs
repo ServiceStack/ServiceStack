@@ -606,20 +606,26 @@ public partial class GeminiDb
         };
     }
 
-    public List<ChatDocument> GetSearchCandidates(int limit = 100)
+    public List<ChatDocument> GetSearchCandidates(int limit = 100, int? maxRetries = null)
     {
         using var conn = OpenDb();
         var q = conn.From<ChatDocument>().Where(x => x.TombstonedAt == null
-            && x.SearchHash != null && (x.SearchIndexedHash == null || x.SearchIndexedHash != x.SearchHash))
+            && x.SearchHash != null && (x.SearchIndexedHash == null || x.SearchIndexedHash != x.SearchHash)
+            && (maxRetries == null || x.SearchRetries == null || x.SearchRetries < maxRetries))
             .OrderBy(x => x.Id).Limit(limit);
         return conn.Select(q);
     }
 
     public void SetSearchDesired(ChatDocument doc, bool force = false)
     {
-        doc.SearchHash = GeminiSearch.DesiredHash(doc);
+        var desired = GeminiSearch.DesiredHash(doc);
+        if (force || doc.SearchHash != desired)
+        {
+            doc.SearchRetries = null;
+            doc.SearchError = null;
+        }
+        doc.SearchHash = desired;
         if (force) doc.SearchIndexedHash = null;
-        doc.SearchError = null;
     }
 
     public int EnsureSearchDesiredHashes()
@@ -630,15 +636,17 @@ public partial class GeminiDb
         {
             var desired = GeminiSearch.DesiredHash(doc);
             if (doc.SearchHash == desired) continue;
-            doc.SearchHash = desired; doc.SearchError = null; doc.UpdatedAt = DateTime.Now; conn.Update(doc); changed++;
+            doc.SearchHash = desired; doc.SearchError = null; doc.SearchRetries = null;
+            doc.UpdatedAt = DateTime.Now; conn.Update(doc); changed++;
         }
         return changed;
     }
 
-    public void UpdateSearchError(long id, string error)
+    public void UpdateSearchError(long id, string error, int? retries = null)
     {
         using var conn = OpenDb();
-        conn.UpdateOnly(() => new ChatDocument { SearchError = error, SearchStartedAt = null, UpdatedAt = DateTime.Now }, x => x.Id == id);
+        conn.UpdateOnly(() => new ChatDocument { SearchError = error, SearchRetries = retries,
+            SearchStartedAt = null, UpdatedAt = DateTime.Now }, x => x.Id == id);
     }
 
     public void MarkSearchStarted(long id)
@@ -667,7 +675,7 @@ public partial class GeminiDb
         conn.UpdateOnly(() => new ChatDocument
         {
             SearchHash = desiredHash, SearchIndexedHash = desiredHash, SearchIndexedAt = DateTime.Now,
-            SearchStartedAt = null, SearchError = null, UpdatedAt = DateTime.Now,
+            SearchStartedAt = null, SearchError = null, SearchRetries = null, UpdatedAt = DateTime.Now,
         }, x => x.Id == doc.Id);
         tx.Commit();
     }

@@ -6,7 +6,8 @@ namespace ServiceStack.AI;
 /// <summary>Durably drains local Search work; desired/completed hashes make restarts idempotent.</summary>
 public class GeminiSearchWorker
 {
-    static readonly HashSet<string> BinaryExtensions = ["pdf", "docx", "pptx", "xlsx"];
+    readonly int maxRetries = int.TryParse(Environment.GetEnvironmentVariable("GEMINI_SEARCH_MAX_RETRIES"), out var retries)
+        ? Math.Max(1, retries) : 3;
     readonly ExtensionContext ctx;
     readonly GeminiDb db;
     readonly object syncRoot = new();
@@ -53,7 +54,7 @@ public class GeminiSearchWorker
             {
                 lock (syncRoot) { if (cancelRequested) break; restartRequested = false; }
                 List<ChatDocument> rows;
-                try { rows = db.GetSearchCandidates(100).Where(x => !completed.Contains((x.Id, GeminiSearch.DesiredHash(x)))).ToList(); }
+                try { rows = db.GetSearchCandidates(100, maxRetries).Where(x => !completed.Contains((x.Id, GeminiSearch.DesiredHash(x)))).ToList(); }
                 catch (Exception e)
                 {
                     ctx.Log.LogError(e, "Gemini SearchWorker failed reading its queue; retrying");
@@ -70,8 +71,13 @@ public class GeminiSearchWorker
                     try { await IndexDocumentAsync(doc, token).ConfigAwait(); lock (syncRoot) done++; }
                     catch (Exception e)
                     {
-                        ctx.Log.LogError(e, "Failed indexing document {DocumentId} for Search", doc.Id);
-                        db.UpdateSearchError(doc.Id, ChatJson.ToErrorMessage(e)); lock (syncRoot) failed++;
+                        if (e is OperationCanceledException && token.IsCancellationRequested) throw;
+                        var attempts = (doc.SearchRetries ?? 0) + 1;
+                        ctx.Log.LogError(e, "Failed indexing document {DocumentId} for Search (attempt {Attempt}/{MaxRetries})",
+                            doc.Id, attempts, maxRetries);
+                        if (attempts >= maxRetries) db.RemoveSearchDocument(doc.Id);
+                        db.UpdateSearchError(doc.Id, ChatJson.ToErrorMessage(e), attempts);
+                        lock (syncRoot) failed++;
                     }
                 }
             }
@@ -98,14 +104,9 @@ public class GeminiSearchWorker
         var extracted = GeminiIngest.Extract(bytes, filename, new JsonObject { ["minWords"] = 0 });
         if (extracted.Skip != null)
         {
-            var ext = Path.GetExtension(filename).TrimStart('.').ToLowerInvariant();
-            if (BinaryExtensions.Contains(ext))
-            {
-                db.ReplaceSearchSections(doc, [], desired);
-                db.UpdateSearchError(doc.Id, $"Not locally searchable: {extracted.Skip}");
-                return;
-            }
-            throw new InvalidOperationException(extracted.Skip);
+            db.ReplaceSearchSections(doc, [], desired);
+            db.UpdateSearchError(doc.Id, $"Not locally searchable: {extracted.Skip}");
+            return;
         }
         db.ReplaceSearchSections(doc, GeminiSearch.SplitSections(extracted.Text, doc,
             documentTitle: extracted.Frontmatter.GetString("title")), desired);

@@ -135,6 +135,7 @@ public class ChatDocument
     public DateTime? SearchIndexedAt { get; set; }
     [StringLength(StringLengthAttribute.MaxText)]
     public string? SearchError { get; set; }
+    public int? SearchRetries { get; set; }
 
     public string? Metadata { get; set; }          // JSON
     [StringLength(StringLengthAttribute.MaxText)]
@@ -475,6 +476,7 @@ public static class GeminiDtos
         ["searchStartedAt"] = ChatDb.ToDateNode(x.SearchStartedAt),
         ["searchIndexedAt"] = ChatDb.ToDateNode(x.SearchIndexedAt),
         ["searchError"] = x.SearchError,
+        ["searchRetries"] = x.SearchRetries,
         ["metadata"] = ChatDtos.ParseJson(x.Metadata),
         ["error"] = x.Error,
         ["ref"] = x.Ref,
