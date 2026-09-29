@@ -1,4 +1,6 @@
-﻿using ServiceStack.DataAnnotations;
+﻿using System;
+using System.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Converters;
 
 namespace ServiceStack.OrmLite.Firebird.Converters
@@ -21,6 +23,19 @@ namespace ServiceStack.OrmLite.Firebird.Converters
                 return MaxColumnDefinition;
 
             return $"VARCHAR({stringLength.GetValueOrDefault(StringLength)})";
+        }
+
+        // StringLength (128) is the default VARCHAR length for CREATE TABLE, not a limit on values.
+        // StringConverter also uses it as the Size of any string parameter that has none, and
+        // FirebirdClient truncates a parameter value to its Size without an error. Leave Size unset
+        // so FirebirdClient sizes the parameter from its value; an explicitly set Size is kept.
+        public override void InitDbParam(IDbDataParameter p, Type fieldType)
+        {
+            var sizeWasSet = p.Size != default;
+            base.InitDbParam(p, fieldType);
+
+            if (!sizeWasSet && fieldType == typeof(string))
+                p.Size = default;
         }
     }
 
