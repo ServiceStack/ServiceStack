@@ -29,6 +29,13 @@ public interface IMediaApi
 public interface IProjectsApi
 {
     List<JsonObject> GetUserProjects(string? user = null);
+
+    /// <summary>
+    /// Server-side workspace for a project owned by <paramref name="user"/>: {projectId, directories}.
+    /// Throws <see cref="ArgumentException"/> when the project doesn't exist for that user; a
+    /// client-supplied directory is never authority for filesystem access.
+    /// </summary>
+    JsonObject ResolveWorkspace(string projectId, string? user = null);
 }
 
 public class NullThreadApi : IThreadApi
@@ -46,4 +53,6 @@ public class NullMediaApi : IMediaApi
 public class NullProjectsApi : IProjectsApi
 {
     public List<JsonObject> GetUserProjects(string? user = null) => [];
+    public JsonObject ResolveWorkspace(string projectId, string? user = null) =>
+        throw new ArgumentException("Projects are unavailable");
 }

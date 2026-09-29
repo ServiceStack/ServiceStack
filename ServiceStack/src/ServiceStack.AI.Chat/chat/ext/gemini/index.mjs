@@ -375,7 +375,7 @@ const GeminiModelSelector = {
         <Teleport to="body">
             <div v-if="isModelPickerOpen" class="fixed inset-0 z-[200] !z-[200] overflow-hidden text-gray-900 dark:text-gray-100" @keydown.escape.stop="isModelPickerOpen = false">
                 <div class="fixed inset-0 bg-black/60 transition-opacity" @click="isModelPickerOpen = false"></div>
-                <div class="fixed inset-4 md:inset-10 lg:inset-16 flex items-center justify-center">
+                <div class="fixed inset-4 md:inset-10 lg:inset-16 flex items-center justify-center" @click.self="isModelPickerOpen = false">
                     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
                         <div class="shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                             <div>

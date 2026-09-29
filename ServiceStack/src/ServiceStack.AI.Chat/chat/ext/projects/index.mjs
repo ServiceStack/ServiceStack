@@ -1,5 +1,7 @@
 import { ref, computed, inject, onMounted, onUnmounted } from "vue"
 
+import { CheckBox } from '../../ui/components/CheckBox.mjs'
+
 let ext
 
 function useProjects(ext) {
@@ -32,6 +34,31 @@ function useProjects(ext) {
         get active() { return ctx.ctx.state.prefs.project },
         getProject,
         saveProject,
+        openNewProject() {
+            ctx.projectCreationRequest = { startNew: true }
+            ctx.openModal('projects-manager')
+        },
+        // Open the project's most recent unsent draft, or start one, so the folder
+        // appears in the sidebar with a prompt ready for that project.
+        openDraft(projectId) {
+            const drafts = ctx.chat.drafts
+            const existing = drafts.list()
+                .filter(d => d.projectId === projectId)
+                .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))[0]
+            if (existing) drafts.bind(existing.key)
+            else drafts.fresh(projectId)
+            ctx.threads.clearCurrentThread()
+            ctx.to('/')
+            setTimeout(() => document.getElementById('messageText')?.focus(), 0)
+        },
+        editProject(id) {
+            ctx.projectCreationRequest = { editId: id }
+            ctx.openModal('projects-manager')
+        },
+        createForChat(onCreated) {
+            ctx.projectCreationRequest = { startNew: true, onCreated }
+            ctx.openModal('projects-manager')
+        },
     }
 }
 
@@ -173,6 +200,7 @@ const ProjectsSelector = {
 }
 
 const ProjectsManagerModal = {
+    components: { CheckBox },
     template: `
         <!-- Dialog Overlay -->
         <div class="fixed inset-0 z-50 overflow-hidden text-gray-900 dark:text-gray-100" @keydown.escape="closeDialog">
@@ -180,7 +208,7 @@ const ProjectsManagerModal = {
             <div class="fixed inset-0 bg-black/50 transition-opacity" @click="closeDialog"></div>
             
             <!-- Dialog -->
-            <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center">
+            <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center" @click.self="closeDialog">
                 <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
                     <!-- Header -->
                     <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -222,6 +250,7 @@ const ProjectsManagerModal = {
                                         </svg>
                                         <span class="truncate">{{ p.name }}</span>
                                     </div>
+                                    <span v-if="p.showInSidebar === false" class="ml-2 shrink-0 text-[10px] opacity-60">Hidden</span>
                                 </button>
                             </div>
                         </div>
@@ -275,6 +304,11 @@ const ProjectsManagerModal = {
                                                     User Projects folder path: <code class="font-mono">~/{{ editForm.folder || 'folder-name' }}</code>
                                                 </span>
                                             </div>
+
+                                            <label class="flex items-start gap-2 text-sm cursor-pointer">
+                                                <CheckBox v-model="editForm.showInSidebar" class="mt-0.5" />
+                                                <span>Show folder in sidebar <span class="block text-xs opacity-60">Folders appear after their first chat message.</span></span>
+                                            </label>
 
                                             <!-- Publish Build Directory -->
                                             <div>
@@ -336,6 +370,7 @@ const ProjectsManagerModal = {
     emits: ['done'],
     setup(props, { emit }) {
         const ctx = inject('ctx')
+        const creationRequest = ctx.projectCreationRequest
         const localProjects = ref([])
         const selectedIdx = ref(null)
         const isNewProject = ref(false)
@@ -346,13 +381,20 @@ const ProjectsManagerModal = {
             folder: '',
             description: '',
             publish: '',
-            publishedUrl: ''
+            publishedUrl: '',
+            showInSidebar: true
         })
 
         // Load project data
         onMounted(() => {
             localProjects.value = JSON.parse(JSON.stringify(ctx.state.projects || []))
+            if (creationRequest?.startNew) createNewProject()
+            else if (creationRequest?.editId) {
+                const idx = localProjects.value.findIndex(p => p.id === creationRequest.editId)
+                if (idx !== -1) selectEditProject(idx)
+            }
         })
+        onUnmounted(() => { if (ctx.projectCreationRequest === creationRequest) ctx.projectCreationRequest = null })
 
         function onNameInput() {
             if (!isFolderManuallyEdited.value) {
@@ -389,7 +431,8 @@ const ProjectsManagerModal = {
                 folder: folder,
                 description: proj.description || '',
                 publish: sanitizePublishPath(proj.publish || '', folder),
-                publishedUrl: proj.publishedUrl || ''
+                publishedUrl: proj.publishedUrl || '',
+                showInSidebar: proj.showInSidebar !== false
             }
             isFolderManuallyEdited.value = true
         }
@@ -402,7 +445,8 @@ const ProjectsManagerModal = {
                 folder: '',
                 description: '',
                 publish: '',
-                publishedUrl: ''
+                publishedUrl: '',
+                showInSidebar: true
             }
             isFolderManuallyEdited.value = false
         }
@@ -436,7 +480,8 @@ const ProjectsManagerModal = {
                 folder: folder,
                 description: editForm.value.description.trim(),
                 publish: sanitizePublishPath(editForm.value.publish, folder),
-                publishedUrl: editForm.value.publishedUrl ? editForm.value.publishedUrl.trim() : ''
+                publishedUrl: editForm.value.publishedUrl ? editForm.value.publishedUrl.trim() : '',
+                showInSidebar: editForm.value.showInSidebar
             }
 
             // Check duplicate project name
@@ -457,16 +502,30 @@ const ProjectsManagerModal = {
                 ? updatedProject.name
                 : localProjects.value[selectedIdx.value].name
 
+            const creating = isNewProject.value
+            const selecting = !creating && !isDirty.value
+            // Selecting a hidden project brings its folder back to the sidebar.
+            if (selecting) updatedProject.showInSidebar = true
             const success = await persistProject(updatedProject, originalName)
             if (!success) return
 
             const name = updatedProject.name
+            if (creationRequest?.onCreated) {
+                const project = ctx.state.projects.find(p => p.name === name)
+                if (project) await creationRequest.onCreated(project)
+                closeDialog()
+                return
+            }
+            if (creating || selecting) {
+                const project = ctx.state.projects.find(p => p.name === name)
+                if (project) ctx.projects.openDraft(project.id)
+            }
             const api = await ext.postJson('/active', { name })
             if (api.error) {
                 ctx.setError(api.error, "Failed to switch project")
             } else {
                 ctx.state.prefs.project = name
-                ctx.toast(`Saved project: ${name}`)
+                ctx.toast(selecting ? `Switched to project: ${name}` : `Saved project: ${name}`)
                 closeDialog()
             }
         }
@@ -474,11 +533,7 @@ const ProjectsManagerModal = {
         async function persistProject(updatedProject, originalName) {
             const api = await ctx.projects.saveProject(originalName, updatedProject)
             if (api.response) {
-                if (isNewProject.value) {
-                    localProjects.value.push(updatedProject)
-                } else {
-                    localProjects.value[selectedIdx.value] = updatedProject
-                }
+                localProjects.value = api.response
 
                 // Update active project if needed
                 const active = ctx.state.prefs.project
@@ -520,6 +575,7 @@ const ProjectsManagerModal = {
             if ((editForm.value.folder || '').trim() !== (orig?.folder || ctx.utils.toKebabCase(orig?.name || '')).trim()) return true
             if ((editForm.value.description || '').trim() !== (orig?.description || '').trim()) return true
             if ((editForm.value.publish || '').trim() !== (orig?.publish || '').trim()) return true
+            if (editForm.value.showInSidebar !== (orig?.showInSidebar !== false)) return true
 
             return false
         })
@@ -556,12 +612,6 @@ export default {
 
         ctx.modals({
             'projects-manager': ProjectsManagerModal
-        })
-
-        ctx.setLeftTop({
-            projects: {
-                component: ProjectsSelector,
-            }
         })
 
         ctx.setGlobals({

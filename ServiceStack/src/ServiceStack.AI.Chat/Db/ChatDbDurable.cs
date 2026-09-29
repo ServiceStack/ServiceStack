@@ -8,7 +8,8 @@ public partial class ChatDb
 {
     static readonly System.Collections.Concurrent.ConcurrentDictionary<long, object> MessageSyncLocks = new();
 
-    public long CreateAgentRun(long threadId, string? user, string? model, int maxSteps = 250)
+    public long CreateAgentRun(long threadId, string? user, string? model, int maxSteps = 250,
+        System.Text.Json.Nodes.JsonObject? workspace = null)
     {
         var now = DateTime.Now;
         using var db = OpenDb();
@@ -20,6 +21,7 @@ public partial class ChatDb
             NextAction = "model",
             Model = model,
             MaxSteps = Math.Max(1, maxSteps),
+            Workspace = ChatDtos.ToJson(workspace),
             NextAttemptAt = now,
             CreatedAt = now,
             UpdatedAt = now,

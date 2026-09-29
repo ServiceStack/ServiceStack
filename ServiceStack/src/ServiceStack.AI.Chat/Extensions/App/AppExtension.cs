@@ -37,6 +37,7 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
             return error != null && error.Contains("cancel", StringComparison.OrdinalIgnoreCase);
         };
 
+        RegisterSidebarRoutes(ctx);
         RegisterThreadRoutes(ctx);
         RegisterRequestRoutes(ctx);
         RegisterAvatarRoutes(ctx);
@@ -75,10 +76,14 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
         {
             var thread = await req.GetJsonBodyAsync().ConfigAwait();
             var user = req.UserName ?? ChatDb.DefaultUser;
+            RemoveProtectedFields(thread);
+            // membership is validated against the user's own projects before it's persisted
+            ResolveWorkspace(thread.GetString("projectId"), user);
             var now = DateTime.Now;
             var row = new ChatThread { User = user, CreatedAt = now, UpdatedAt = now };
             row.PopulateFrom(thread);
             row.Id = Db.InsertThread(row);
+            Updates.NotifySidebar();
             var created = Db.GetThread(row.Id, user, includeMessages: false);
             return created != null ? ThreadWindowDto(created) : null;
         });
@@ -105,10 +110,35 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
         {
             var id = ThreadId(req);
             var thread = await req.GetJsonBodyAsync().ConfigAwait();
-            if (ResolveThread(req, id, out var user, includeMessages: false) == null)
-                throw new Exception("Thread not found");
-            if (!await threadApi.UpdateThreadInternalAsync(id, thread, user).ConfigAwait())
-                throw new Exception("Thread not found");
+            if (ResolveThread(req, id, out var user, includeMessages: false) is not { } existing)
+                throw HttpError.NotFound("Thread not found");
+            if (thread.ContainsKey("projectId"))
+            {
+                // Membership belongs to the whole thread: move it with a compare-and-set on its
+                // membership version; rejected while a run is active so a run keeps its workspace
+                var projectId = thread.GetString("projectId");
+                ResolveWorkspace(projectId, existing.User ?? user);
+                if (thread["membershipVersion"] is not JsonValue v || !v.TryGetValue<long>(out var version))
+                    throw HttpError.BadRequest("membershipVersion is required");
+                if (!Db.MoveThread(id, projectId, version, user))
+                    throw HttpError.Conflict("Thread changed or has an active run; refresh and retry");
+                thread.Remove("projectId");
+            }
+            if (thread.ContainsKey("title"))
+            {
+                try
+                {
+                    Db.RenameThread(id, thread.GetString("title") ?? "", user);
+                }
+                catch (ArgumentException e)
+                {
+                    throw HttpError.BadRequest(e.Message);
+                }
+                thread.Remove("title");
+            }
+            RemoveProtectedFields(thread);
+            if (thread.Count > 0 && !await threadApi.UpdateThreadInternalAsync(id, thread, user).ConfigAwait())
+                throw HttpError.NotFound("Thread not found");
             Updates.NotifyThreadUpdate(id);
             var updated = Db.GetThread(id, user, includeMessages: false);
             return updated != null ? ThreadWindowDto(updated) : null;
@@ -122,6 +152,7 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
                 if (Ctx.Feature.ToolApprovalCoordinator != null)
                     await Ctx.Feature.ToolApprovalCoordinator.CancelThreadAsync(id, user).ConfigAwait();
                 Db.DeleteThread(id, user);
+                Updates.NotifySidebar();
                 Db.DeleteDurableThreadData(id);
             }
             return new JsonObject();
@@ -156,18 +187,47 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
     /// Queue a completion for this thread: merge and persist the request, create a durable run,
     /// wake the bounded async scheduler, and return immediately. SSE or long-poll then delivers it.
     /// </summary>
+    readonly System.Collections.Concurrent.ConcurrentDictionary<long, SemaphoreSlim> submissionLocks = new();
+
+    /// <summary>
+    /// Serialize submissions per thread so a duplicate (retried) submission can't race the first
+    /// past the active-run and submission-ID checks. Separate from the thread write lock, which the
+    /// handler takes while updating.
+    /// </summary>
     async Task<object?> QueueChatAsync(ChatRequestContext req)
     {
         var (isAuthenticated, _) = Ctx.CheckAuth(req.Request);
         if (!isAuthenticated)
             return ChatResult.Unauthorized(Ctx.Feature.ErrorAuthRequired());
 
+        var submissionLock = submissionLocks.GetOrAdd(ThreadId(req), _ => new SemaphoreSlim(1, 1));
+        await submissionLock.WaitAsync().ConfigAwait();
+        try
+        {
+            return await QueueChatLockedAsync(req).ConfigAwait();
+        }
+        finally
+        {
+            submissionLock.Release();
+        }
+    }
+
+    async Task<object?> QueueChatLockedAsync(ChatRequestContext req)
+    {
         var id = ThreadId(req);
         ResolveThread(req, id, out var user, includeMessages: false);
         if (Ctx.Feature.ToolApprovalCoordinator?.HasPending(id, user) == true)
             return ChatResult.Json(ChatJson.CreateErrorResponse(
                 "Resolve or cancel the pending tool approval before sending another message", "ApprovalRequired"), 409);
         var chatReq = await req.GetJsonBodyAsync().ConfigAwait();
+
+        // A resubmission of an already accepted turn (e.g. retried after a lost response) returns
+        // the accepted state instead of queueing it twice
+        var submissionId = chatReq.GetString("submissionId");
+        if (!string.IsNullOrEmpty(submissionId)
+            && Db.GetThread(id, user, includeMessages: false) is { } accepted
+            && accepted.LastSubmissionId == submissionId)
+            return ThreadWindowDto(accepted);
 
         if (Db.GetActiveAgentRun(id, user) is { } activeRun)
             return ChatResult.Json(ChatJson.CreateErrorResponse(
@@ -177,12 +237,15 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
         if (messages.Count == 0)
             throw new Exception("messages required");
 
-        var thread = Db.GetThread(id, user, includeMessages: false)?.ToDto(includeMessages: false)
-            ?? throw new Exception("Thread not found");
+        var threadRow = Db.GetThread(id, user, includeMessages: false) ?? throw new Exception("Thread not found");
+        var thread = threadRow.ToDto(includeMessages: false);
+        // Runs execute in the thread's stored project, resolved server-side, never a browser preference
+        var workspace = ResolveWorkspace(threadRow.ProjectId, threadRow.User ?? user);
 
         var update = new JsonObject
         {
             ["messages"] = messages,
+            ["lastSubmissionId"] = submissionId,
             // editing/redoing a message deliberately rewrites history, everything else may only
             // extend it (see DbThreadApi.PrepareThreadUpdate)
             [DbThreadApi.TruncateKey] = chatReq.GetBool(DbThreadApi.TruncateKey),
@@ -213,11 +276,17 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
         }
         update["args"] = args;
 
-        var title = chatReq.GetString("title");
-        if (title != null)
-            update["title"] = title;
-        else if (thread.GetString("title").IsNullOrEmpty())
-            update["title"] = PromptToTitle(LastUserPrompt(chatReq));
+        // Only the first accepted turn owns an automatic fallback title; a separate generated
+        // title may later replace it (see ThreadTitles). Existing and manual titles are kept.
+        if (threadRow.TitleSource == ChatDb.TitleSources.Placeholder)
+        {
+            var prompt = ThreadTitles.PromptText(messages);
+            var firstUser = messages.Select((m, i) => (m, i)).FirstOrDefault(x => (x.m as JsonObject).GetString("role") == "user");
+            update["titlePromptSequence"] = firstUser.m != null ? firstUser.i + 1 : null;
+            update["title"] = !string.IsNullOrWhiteSpace(prompt) ? PromptToTitle(prompt) : "Image attachment";
+            update["titleSource"] = ChatDb.TitleSources.Fallback;
+            update["metadataVersion"] = (threadRow.MetadataVersion ?? 0) + 1;
+        }
 
         await threadApi.UpdateThreadInternalAsync(id, update, user).ConfigAwait();
         thread = Db.GetThread(id, user, includeMessages: false)?.ToDto(includeMessages: false)
@@ -228,9 +297,12 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
         var row = Db.GetThread(id, user, includeMessages: false)!;
         var result = ThreadWindowDto(row);
         var maxSteps = chatReq.GetObject("metadata").GetInt("maxSteps") ?? 250;
-        var runId = Db.CreateAgentRun(id, user, thread.GetString("model"), maxSteps);
+        var runId = Db.CreateAgentRun(id, user, thread.GetString("model"), maxSteps, workspace);
         result["run"] = Db.GetAgentRun(runId, user)?.ToDto();
         Scheduler.Enqueue(runId, ChatContext.DetachRequest(req.Request));
+        Updates.NotifySidebar(); // new activity and an active run
+        // runs alongside the main response and never blocks or fails it
+        _ = Titles.Enqueue(row, messages, user);
 
         return result;
     }

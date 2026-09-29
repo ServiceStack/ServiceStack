@@ -373,7 +373,11 @@ const SharePanel = {
         const publish = computed(() => ext.state.publish || {})
         const isConfigured = computed(() => !!(publish.value.userName && publish.value.apiKey))
 
-        const activeProjectName = computed(() => ctx.state.prefs.project || null)
+        const activeProjectName = computed(() => {
+            const thread = ctx.threads?.currentThread.value
+            if (thread) return (ctx.state.projects || []).find(p => p.id === thread.projectId)?.name || null
+            return ctx.state.prefs.project || null
+        })
         const activeProjectFolder = computed(() => {
             if (!activeProjectName.value) return ''
             const p = ctx.projects?.getProject ? ctx.projects.getProject(activeProjectName.value) : null
@@ -466,7 +470,7 @@ const SharePanel = {
                     overrideDistPath.value = sanitizePublishPath(project.publish, folder)
                     return
                 }
-                const api = await ext.getJson('/detect-dist')
+                const api = await ext.getJson('/detect-dist' + (ctx.threads?.currentThread.value?.id ? '?threadId=' + ctx.threads.currentThread.value.id : ''))
                 if (api.response && api.response.dist !== undefined) {
                     overrideDistPath.value = sanitizePublishPath(api.response.dist, folder)
                 } else {

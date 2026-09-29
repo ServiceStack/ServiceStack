@@ -874,6 +874,9 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     public List<string> ResolveAllowedDirectories(string? user = null)
     {
+        // A durable run's captured workspace wins over the user's standalone selection
+        if (WorkspaceScope.Current is { } scope && scope.AppliesTo(user))
+            return scope.Directories.ToList();
         var dirs = AllowedDirectories.GetValueOrDefault(user ?? "default") ?? [];
         var ret = new List<string>();
         foreach (var dir in dirs)

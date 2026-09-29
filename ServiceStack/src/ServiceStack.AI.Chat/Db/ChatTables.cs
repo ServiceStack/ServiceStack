@@ -22,6 +22,28 @@ public class ChatThread
     public DateTime UpdatedAt { get; set; }
 
     public string? Title { get; set; }
+
+    /// <summary>Stable project ID the conversation belongs to; null shows it under Recents</summary>
+    [Index]
+    public string? ProjectId { get; set; }
+    /// <summary>Client submission ID of the last accepted turn, so a resubmitted message isn't sent twice</summary>
+    public string? LastSubmissionId { get; set; }
+    /// <summary>Sidebar ordering: accepted turns only, never title or membership writes</summary>
+    [Index]
+    public DateTime? LastActivityAt { get; set; }
+    /// <summary>Bumped on title/project changes so watchers see metadata-only updates</summary>
+    public long? MetadataVersion { get; set; }
+    /// <summary>Compare-and-set token guarding conflicting project moves</summary>
+    public long? MembershipVersion { get; set; }
+    /// <summary>placeholder | fallback | generated | manual | legacy</summary>
+    public string? TitleSource { get; set; }
+    /// <summary>idle | pending | complete | failed | skipped</summary>
+    public string? TitleStatus { get; set; }
+    /// <summary>Bumped by manual renames so a late generated title is discarded</summary>
+    public long? TitleVersion { get; set; }
+    /// <summary>Canonical sequence of the first user message the title was derived from</summary>
+    public long? TitlePromptSequence { get; set; }
+
     [StringLength(StringLengthAttribute.MaxText)]
     public string? SystemPrompt { get; set; }
     [Index]
@@ -72,7 +94,7 @@ public class ChatThread
     /// [Ignore] keeps it out of the OrmLite table — it's computed and surfaced only in the DTO.
     /// </summary>
     [Ignore]
-    public string Sig => ChatSignature.Compute(Messages, StreamingMessage, Status, CompletedAt, Error);
+    public string Sig => ChatSignature.Compute(Messages, StreamingMessage, Status, CompletedAt, Error, MetadataVersion);
 }
 
 /// <summary>
@@ -85,7 +107,7 @@ public class ChatThread
 public static class ChatSignature
 {
     public static string Compute(string? messagesJson, string? streamingMessageJson, string? status,
-        DateTime? completedAt, string? error)
+        DateTime? completedAt, string? error, long? metadataVersion = null)
     {
         var msg = messagesJson ?? "";
         var msgLen = msg.Length;
@@ -94,7 +116,7 @@ public static class ChatSignature
         var streamingTail = streaming.Length > 100 ? streaming[^100..] : streaming;
         var completed = completedAt != null ? ChatDb.ToDateString(completedAt.Value) : "";
 
-        var raw = $"{msgLen}:{msgTail}:{streaming.Length}:{streamingTail}:{status ?? ""}:{completed}:{error ?? ""}";
+        var raw = $"{msgLen}:{msgTail}:{streaming.Length}:{streamingTail}:{status ?? ""}:{completed}:{error ?? ""}:{metadataVersion ?? 0}";
         var hash = Convert.ToHexString(
             System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(raw)));
         return $"{msgLen}:{hash[..12].ToLowerInvariant()}";
@@ -102,12 +124,12 @@ public static class ChatSignature
 
     /// <summary>A signature for normalized history that does not require reading the legacy blob.</summary>
     public static string Compute(long messageCount, long? lastSequence, string? streamingMessage,
-        string? status, DateTime? completedAt, string? error)
+        string? status, DateTime? completedAt, string? error, long? metadataVersion = null)
     {
         var streaming = streamingMessage ?? "";
         var streamingTail = streaming.Length > 100 ? streaming[^100..] : streaming;
         var completed = completedAt != null ? ChatDb.ToDateString(completedAt.Value) : "";
-        var raw = $"{messageCount}:{lastSequence}:{streaming.Length}:{streamingTail}:{status ?? ""}:{completed}:{error ?? ""}";
+        var raw = $"{messageCount}:{lastSequence}:{streaming.Length}:{streamingTail}:{status ?? ""}:{completed}:{error ?? ""}:{metadataVersion ?? 0}";
         var hash = Convert.ToHexString(
             System.Security.Cryptography.MD5.HashData(System.Text.Encoding.UTF8.GetBytes(raw)));
         return $"{messageCount}:{hash[..12].ToLowerInvariant()}";

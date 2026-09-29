@@ -13,6 +13,7 @@ const Brand = {
                     {{ $state.title }}
                 </button>
             </div>
+            <div class="flex items-center justify-end"><slot /></div>
         </div>
     </div>
     `,

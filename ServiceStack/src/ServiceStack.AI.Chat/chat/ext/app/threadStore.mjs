@@ -130,6 +130,7 @@ async function loadMessageRange({ after = null, before = null, take = 100 } = {}
     const messages = mergeWindowMessages(
         thread.messages, api.response.messages, before != null ? 'end' : 'start'
     )
+    if (currentThread.value?.id !== thread.id) return api.response
     currentThread.value = {
         ...thread,
         messages,
@@ -307,7 +308,7 @@ function replaceThread(thread, opt = {}) {
         if (!threadActions.value[thread.id] || opt?.forceActions) {
             loadThreadActions(thread.id, opt?.forceActions ? { force: true } : undefined)
         }
-        stopWatchingThread()
+        if (currentThread.value?.id === thread.id) stopWatchingThread()
     } else if (currentThread.value?.id === thread.id && !isWatchingThread.value) {
         startWatchingThread()
     }
@@ -455,7 +456,9 @@ async function getThread(threadId) {
 
 // Delete thread
 async function deleteThread(threadId) {
-    await ext.delete(`/threads/${threadId}`)
+    const response = await ext.delete(`/threads/${threadId}`)
+    if (!response.ok) throw new Error('Unable to delete chat')
+    await ctx.chat.drafts.discard(String(threadId))
 
     threads.value = threads.value.filter(t => t.id !== threadId)
 
@@ -483,13 +486,16 @@ function getThreadActions(threadId) {
 }
 
 // Set current thread
+let selectionGeneration = 0
 async function setCurrentThread(threadId) {
+    const generation = ++selectionGeneration
     if (!threadId) {
         currentThread.value = null
         stopWatchingThread()
         return null
     }
     const thread = await fetchThread(threadId)
+    if (generation !== selectionGeneration) return thread
     if (thread) {
         currentThread.value = thread
         startWatchingThread()
@@ -501,11 +507,7 @@ async function setCurrentThread(threadId) {
 
 // Set current thread from router params (router-aware version)
 async function setCurrentThreadFromRoute(threadId, router) {
-    if (!threadId) {
-        currentThread.value = null
-        stopWatchingThread()
-        return null
-    }
+    if (!threadId) return setCurrentThread(null)
 
     loadThreadDetails(threadId)
     loadThreadActions(threadId)
@@ -525,6 +527,7 @@ async function setCurrentThreadFromRoute(threadId, router) {
 
 // Clear current thread (go back to initial state)
 function clearCurrentThread() {
+    selectionGeneration++
     currentThread.value = null
     stopWatchingThread()
 }
@@ -589,18 +592,14 @@ async function startNewThread(args = {}) {
     console.log('startNewThread', title, ctx.router.currentRoute.value?.path, latestThread?.messages?.length)
     ctx.setLayout({ left: 'ThreadsSidebar' })
 
-    if (latestThread && latestThread.title == title && !latestThread.messages?.length) {
-        if (ctx.router.currentRoute.value?.path != `/c/${latestThread.id}`) {
-            ctx.to(`/c/${latestThread.id}`)
-        }
-        return latestThread
-    }
     const newThread = await createThread({
         title,
         ...(tools ? { tools } : {}),
         ...(model ? { model: typeof model === 'string' ? model : model.name || model.id } : {}),
         ...rest
     })
+    // createThread reports the error and returns the unsaved request, which has no id
+    if (!newThread?.id) return null
 
     console.log('newThread', newThread)
     if (redirect) {

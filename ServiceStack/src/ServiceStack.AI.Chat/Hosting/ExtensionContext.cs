@@ -184,7 +184,10 @@ public class ExtensionContext(ChatFeature feature, string name)
     public void AddAllowedDirectory(string path, string? user = null) => feature.AddAllowedDirectory(path, user);
     public void SetAllowedDirectories(IEnumerable<string> directories, string? user = null) => feature.SetAllowedDirectories(directories, user);
     public string? ResolveDirectory(string dir) => feature.ResolveDirectory(dir);
-    public List<string> GetAllowedDirectories(string? user = null) => feature.AllowedDirectories.GetValueOrDefault(user ?? "default") ?? [];
+    public List<string> GetAllowedDirectories(string? user = null) =>
+        WorkspaceScope.Current is { } scope && scope.AppliesTo(user)
+            ? scope.Directories.ToList()
+            : feature.AllowedDirectories.GetValueOrDefault(user ?? "default") ?? [];
     public List<string> ResolveAllowedDirectories(string? user = null) => feature.ResolveAllowedDirectories(user);
 
     public JsonNode? GetUserPref(string key, string? user = null) => feature.AppData.GetUserPrefs(user)[key]?.DeepClone();

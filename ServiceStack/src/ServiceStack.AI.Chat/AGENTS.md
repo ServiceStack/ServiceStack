@@ -184,6 +184,19 @@ short-lived confirmation tokens.
   to the API-key implementation because a web host should not reuse a local CLI subscription.
 - C# includes ServiceStack API Tools, PDF runtime integration, Admin UI integration, and host-specific
   configuration surfaces. Determine whether a feature is shared or C#-only before changing upstream.
+- Project chat threads (upstream `docs/CHAT_THREADS.md`) share the same routes and contracts, with
+  these implementation differences:
+  - a durable run's captured workspace is applied through `WorkspaceScope` (an `AsyncLocal`, the
+    equivalent of Python's `ContextVar`), which `ResolveAllowedDirectories` consults;
+  - a thread without a project uses `ToolsConfig.AllowedDirectories` (the host's default policy),
+    where Python grants no directories;
+  - `projects.json` read-modify-write is serialized with an in-process lock plus atomic replace,
+    not Python's cross-process file lock, because one web host owns `App_Data`;
+  - `run_bash` already starts a fresh shell per command in the first allowed directory, so there
+    is no per-run persistent shell to release;
+  - sidebar and compare-and-set SQL in `Db/ChatDb.Sidebar.cs` is built from dialect-quoted
+    identifiers and parameters (subqueries use `UnsafeAnd`) so it stays portable across OrmLite
+    databases.
 
 ## Architecture orientation
 

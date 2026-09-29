@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-27 13:34:53
+Date: 2026-09-29 17:09:59
 Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1007,6 +1007,9 @@ export class AgentRun
     public status: string;
     public nextAction?: string;
     public model?: string;
+    // @StringLength(2147483647)
+    public workspace?: string;
+
     public stepCount: number;
     public sliceCount: number;
     public maxSteps: number;
@@ -1550,6 +1553,7 @@ export class ChatDocument
     // @StringLength(2147483647)
     public searchError?: string;
 
+    public searchRetries?: number;
     public metadata?: string;
     // @StringLength(2147483647)
     public error?: string;
@@ -1854,6 +1858,15 @@ export class ChatThread
     public createdAt: string;
     public updatedAt: string;
     public title?: string;
+    public projectId?: string;
+    public lastSubmissionId?: string;
+    public lastActivityAt?: string;
+    public metadataVersion?: number;
+    public membershipVersion?: number;
+    public titleSource?: string;
+    public titleStatus?: string;
+    public titleVersion?: number;
+    public titlePromptSequence?: number;
     // @StringLength(2147483647)
     public systemPrompt?: string;
 

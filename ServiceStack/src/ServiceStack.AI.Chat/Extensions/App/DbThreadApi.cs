@@ -44,6 +44,10 @@ public class DbThreadApi(ChatDb db, ThreadUpdates updates, ILogger log) : IThrea
     public async Task<bool> UpdateThreadInternalAsync(long threadId, JsonObject thread, string? user)
     {
         using var _ = await updates.LockThreadAsync(threadId).ConfigAwait();
+        // Sidebar ordering follows accepted turns / conversation progress only, never title,
+        // membership or status writes (port of AppDB.prepare_thread)
+        if (thread.ContainsKey("messages") || thread.ContainsKey("startedAt"))
+            thread["lastActivityAt"] = ChatDb.ToDateString(DateTime.Now);
         if (!thread.ContainsKey("messages"))
         {
             var partial = new ChatThread { Id = threadId };

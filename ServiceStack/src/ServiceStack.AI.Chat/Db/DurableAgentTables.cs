@@ -22,6 +22,11 @@ public class AgentRun
     [Index] public string Status { get; set; } = AgentRunStatus.Queued;
     public string? NextAction { get; set; }
     public string? Model { get; set; }
+    /// <summary>
+    /// Server-resolved workspace captured when the run was queued ({projectId, directories}), so a
+    /// resumed run keeps its project even if the thread moves or the process restarts.
+    /// </summary>
+    [StringLength(StringLengthAttribute.MaxText)] public string? Workspace { get; set; } // JSON
     public int StepCount { get; set; }
     public int SliceCount { get; set; }
     public int MaxSteps { get; set; } = 250;

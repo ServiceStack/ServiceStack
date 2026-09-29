@@ -51,7 +51,7 @@ public partial class PublishExtension : ChatExtension
             return GetPublishConfig(user);
         });
 
-        ctx.AddGet("detect-dist", req => Task.FromResult<object?>(DetectDist(req.UserName)));
+        ctx.AddGet("detect-dist", req => Task.FromResult<object?>(DetectDist(req.UserName, req.QueryString("threadId"))));
         ctx.AddGet("list-subdirs", req => Task.FromResult<object?>(ListSubdirs(req)));
 
         ctx.AddGet("thread/{id}", req =>
@@ -121,10 +121,27 @@ public partial class PublishExtension : ChatExtension
             .FirstOrDefault(p => p.GetString("name") == activeProject);
     }
 
-    /// <summary>The active project's publish directory, relative to its project folder ("" = project root)</summary>
-    JsonObject DetectDist(string? user)
+    /// <summary>
+    /// The project's publish directory, relative to its project folder ("" = project root). With a
+    /// threadId it's the thread's own project, otherwise the user's standalone active project.
+    /// </summary>
+    JsonObject DetectDist(string? user, string? threadId = null)
     {
-        var project = ActiveProject(user);
+        JsonObject? project;
+        if (!string.IsNullOrEmpty(threadId))
+        {
+            var thread = long.TryParse(threadId, out var id)
+                ? Ctx.Feature.ChatDb?.GetThread(id, user, includeMessages: false) : null;
+            if (thread == null)
+                throw HttpError.NotFound("Thread not found");
+            var projectId = thread.ProjectId;
+            project = projectId == null ? null
+                : Ctx.Projects.GetUserProjects(user).FirstOrDefault(p => p.GetString("id") == projectId);
+        }
+        else
+        {
+            project = ActiveProject(user);
+        }
         if (project == null)
             return new JsonObject { ["dist"] = "" };
 

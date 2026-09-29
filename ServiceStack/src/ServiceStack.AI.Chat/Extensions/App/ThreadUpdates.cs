@@ -14,9 +14,30 @@ public class ThreadUpdates
     /// <summary>How long GET threads/{id}/updates waits before returning the unchanged thread</summary>
     public TimeSpan LongPollTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
+    TaskCompletionSource sidebarSignal = NewSignal();
+
+    /// <summary>Cached sidebar revision per user, cleared by <see cref="NotifySidebar"/></summary>
+    public ConcurrentDictionary<string, string> SidebarRevisions { get; } = new();
+
+    /// <summary>
+    /// Something the project sidebar shows may have changed (threads, runs, titles, projects).
+    /// Sidebar subscribers recompute a user's revision only after this, so an idle sidebar costs no
+    /// database queries (port of llms-py's SidebarSignal).
+    /// </summary>
+    public void NotifySidebar()
+    {
+        SidebarRevisions.Clear();
+        Interlocked.Exchange(ref sidebarSignal, NewSignal()).TrySetResult();
+    }
+
+    /// <summary>Completes on the next <see cref="NotifySidebar"/>; capture before reading state</summary>
+    public Task NextSidebarSignalAsync() => Volatile.Read(ref sidebarSignal).Task;
+
     /// <summary>Wake any long-poll waiters for this thread (port of notify_thread_update)</summary>
     public void NotifyThreadUpdate(long threadId)
     {
+        // title, membership, activity and run changes all arrive here
+        NotifySidebar();
         // complete the current signal and install a fresh one so the next NextSignalAsync blocks again
         if (updateEvents.TryGetValue(threadId, out var tcs))
         {

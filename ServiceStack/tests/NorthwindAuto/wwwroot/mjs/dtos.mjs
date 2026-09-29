@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-27 13:34:53
+Date: 2026-09-29 17:09:59
 Version: 10.21
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -994,7 +994,7 @@ export class Level {
     data = [];
 }
 export class AgentRun {
-    /** @param {{id?:number,threadId?:number,user?:string,status?:string,nextAction?:string,model?:string,stepCount?:number,sliceCount?:number,maxSteps?:number,contextTokens?:number,contextLimit?:number,leaseOwner?:string,leaseExpiresAt?:string,nextAttemptAt?:string,error?:string,createdAt?:string,updatedAt?:string,completedAt?:string}} [init] */
+    /** @param {{id?:number,threadId?:number,user?:string,status?:string,nextAction?:string,model?:string,workspace?:string,stepCount?:number,sliceCount?:number,maxSteps?:number,contextTokens?:number,contextLimit?:number,leaseOwner?:string,leaseExpiresAt?:string,nextAttemptAt?:string,error?:string,createdAt?:string,updatedAt?:string,completedAt?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1008,6 +1008,8 @@ export class AgentRun {
     nextAction;
     /** @type {?string} */
     model;
+    /** @type {?string} */
+    workspace;
     /** @type {number} */
     stepCount;
     /** @type {number} */
@@ -1418,7 +1420,7 @@ export class ChatAssistant {
     config;
 }
 export class ChatDocument {
-    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,tags?:string,startedAt?:string,uploadedAt?:string,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string,metadata?:string,error?:string,ref?:string}} [init] */
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,tags?:string,startedAt?:string,uploadedAt?:string,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string,searchRetries?:number,metadata?:string,error?:string,ref?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1504,6 +1506,8 @@ export class ChatDocument {
     searchIndexedAt;
     /** @type {?string} */
     searchError;
+    /** @type {?number} */
+    searchRetries;
     /** @type {?string} */
     metadata;
     /** @type {?string} */
@@ -1898,7 +1902,7 @@ export class ChatSource {
     error;
 }
 export class ChatThread {
-    /** @param {{id?:number,user?:string,createdAt?:string,updatedAt?:string,title?:string,systemPrompt?:string,model?:string,modelInfo?:string,modalities?:string,messages?:string,streamingMessage?:string,args?:string,tools?:string,toolHistory?:string,cost?:number,inputTokens?:number,outputTokens?:number,stats?:string,provider?:string,providerModel?:string,startedAt?:string,completedAt?:string,metadata?:string,status?:string,error?:string,ref?:string,providerResponse?:string,contextTokens?:number,parentId?:number,publishedAt?:string,publishedUrl?:string,sig?:string}} [init] */
+    /** @param {{id?:number,user?:string,createdAt?:string,updatedAt?:string,title?:string,projectId?:string,lastSubmissionId?:string,lastActivityAt?:string,metadataVersion?:number,membershipVersion?:number,titleSource?:string,titleStatus?:string,titleVersion?:number,titlePromptSequence?:number,systemPrompt?:string,model?:string,modelInfo?:string,modalities?:string,messages?:string,streamingMessage?:string,args?:string,tools?:string,toolHistory?:string,cost?:number,inputTokens?:number,outputTokens?:number,stats?:string,provider?:string,providerModel?:string,startedAt?:string,completedAt?:string,metadata?:string,status?:string,error?:string,ref?:string,providerResponse?:string,contextTokens?:number,parentId?:number,publishedAt?:string,publishedUrl?:string,sig?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1910,6 +1914,24 @@ export class ChatThread {
     updatedAt;
     /** @type {?string} */
     title;
+    /** @type {?string} */
+    projectId;
+    /** @type {?string} */
+    lastSubmissionId;
+    /** @type {?string} */
+    lastActivityAt;
+    /** @type {?number} */
+    metadataVersion;
+    /** @type {?number} */
+    membershipVersion;
+    /** @type {?string} */
+    titleSource;
+    /** @type {?string} */
+    titleStatus;
+    /** @type {?number} */
+    titleVersion;
+    /** @type {?number} */
+    titlePromptSequence;
     /** @type {?string} */
     systemPrompt;
     /** @type {?string} */

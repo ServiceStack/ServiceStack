@@ -56,6 +56,7 @@ public partial class ChatDb(IDbConnectionFactory dbFactory, string? namedConnect
         AddMissingColumns<AgentStep>(db);
         AddMissingColumns<ChatMessage>(db);
         AddMissingColumns<ContextSnapshot>(db);
+        MigrateThreadMetadata(db);
     }
 
     public void DropSchema()
@@ -130,6 +131,7 @@ public partial class ChatDb(IDbConnectionFactory dbFactory, string? namedConnect
 
     public long InsertThread(ChatThread thread)
     {
+        InitNewThread(thread);
         using var db = OpenDb();
         return db.Insert(thread, selectIdentity: true);
     }

@@ -21,6 +21,14 @@ public static class ChatDtos
             ["createdAt"] = ChatDb.ToDateString(x.CreatedAt),
             ["updatedAt"] = ChatDb.ToDateString(x.UpdatedAt),
             ["title"] = x.Title,
+            ["projectId"] = x.ProjectId,
+            ["lastActivityAt"] = ChatDb.ToDateNode(x.LastActivityAt),
+            ["metadataVersion"] = x.MetadataVersion ?? 0,
+            ["membershipVersion"] = x.MembershipVersion ?? 0,
+            ["titleSource"] = x.TitleSource,
+            ["titleStatus"] = x.TitleStatus,
+            ["titleVersion"] = x.TitleVersion ?? 0,
+            ["titlePromptSequence"] = x.TitlePromptSequence,
             ["systemPrompt"] = x.SystemPrompt,
             ["model"] = x.Model,
             ["modelInfo"] = ParseJson(x.ModelInfo),
@@ -184,6 +192,17 @@ public static class ChatDtos
     public static ChatThread PopulateFrom(this ChatThread to, JsonObject dto)
     {
         if (dto.ContainsKey("title")) to.Title = dto.GetString("title");
+        // Ownership/revision fields: routes strip these from client payloads (AppExtension
+        // ProtectedThreadFields), so only server code can set them.
+        if (dto.ContainsKey("projectId")) to.ProjectId = dto.GetString("projectId");
+        if (dto.ContainsKey("lastSubmissionId")) to.LastSubmissionId = dto.GetString("lastSubmissionId");
+        if (dto.ContainsKey("lastActivityAt")) to.LastActivityAt = ParseDate(dto["lastActivityAt"]);
+        if (dto.ContainsKey("metadataVersion")) to.MetadataVersion = dto.GetLong("metadataVersion");
+        if (dto.ContainsKey("membershipVersion")) to.MembershipVersion = dto.GetLong("membershipVersion");
+        if (dto.ContainsKey("titleSource")) to.TitleSource = dto.GetString("titleSource");
+        if (dto.ContainsKey("titleStatus")) to.TitleStatus = dto.GetString("titleStatus");
+        if (dto.ContainsKey("titleVersion")) to.TitleVersion = dto.GetLong("titleVersion");
+        if (dto.ContainsKey("titlePromptSequence")) to.TitlePromptSequence = dto.GetLong("titlePromptSequence");
         if (dto.ContainsKey("systemPrompt")) to.SystemPrompt = dto.GetString("systemPrompt");
         if (dto.ContainsKey("model")) to.Model = dto.GetString("model");
         if (dto.ContainsKey("modelInfo")) to.ModelInfo = ToJson(dto["modelInfo"]);

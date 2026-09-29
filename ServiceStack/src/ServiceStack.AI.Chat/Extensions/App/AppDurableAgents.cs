@@ -44,7 +44,7 @@ public partial class AppExtension
             before: (bounds.Last ?? 0) + 1, take: 1).Select(x => (JsonNode)x).ToArray());
         dto["messageCount"] = bounds.Count;
         dto["sig"] = ChatSignature.Compute(bounds.Count, bounds.Last, row.StreamingMessage,
-            row.Status, row.CompletedAt, row.Error);
+            row.Status, row.CompletedAt, row.Error, row.MetadataVersion);
         AttachRun(dto, row);
         return dto;
     }
@@ -64,7 +64,7 @@ public partial class AppExtension
             ChatDtos.ParseJson(row.StreamingMessage) as JsonObject);
         dto["messageCount"] = bounds.Count;
         dto["sig"] = ChatSignature.Compute(bounds.Count, bounds.Last, row.StreamingMessage,
-            row.Status, row.CompletedAt, row.Error);
+            row.Status, row.CompletedAt, row.Error, row.MetadataVersion);
         dto["messageWindow"] = new JsonObject
         {
             ["messageCount"] = bounds.Count,
@@ -84,7 +84,7 @@ public partial class AppExtension
         dto["messageCount"] = messages.Count;
         var last = messages.LastOrDefault()?.GetLong("_sequence");
         dto["sig"] = ChatSignature.Compute(messages.Count, last, row.StreamingMessage,
-            row.Status, row.CompletedAt, row.Error);
+            row.Status, row.CompletedAt, row.Error, row.MetadataVersion);
         AttachRun(dto, row);
         return dto;
     }
@@ -225,10 +225,44 @@ public partial class AppExtension
         await response.OutputStream.FlushAsync().ConfigAwait();
     }
 
+    /// <summary>
+    /// Execute a slice inside the workspace the run captured when it was queued. Runs created
+    /// before workspaces were recorded resolve (and persist) the thread's current project once. A
+    /// project that was removed or whose folder changed fails the run visibly instead of silently
+    /// falling back to another workspace.
+    /// </summary>
     async Task ExecuteAgentSliceAsync(AgentRun claimed, IRequest? request, CancellationToken token)
     {
         var run = Db.GetAgentRun(claimed.Id, ChatDb.AllUsers);
         if (run == null) return;
+        var workspace = ChatDtos.ParseJson(run.Workspace) as JsonObject;
+        if (workspace == null)
+        {
+            var thread = Db.GetThread(run.ThreadId, run.User, includeMessages: false);
+            workspace = ResolveWorkspace(thread?.ProjectId, run.User);
+            run.Workspace = ChatDtos.ToJson(workspace);
+            Db.UpdateAgentRun(run);
+        }
+        var directories = workspace.GetArray("directories")?.Select(x => x?.GetValue<string>())
+            .Where(x => x != null).Select(x => x!).ToList() ?? [];
+        if (workspace.GetString("projectId") is { } projectId)
+        {
+            JsonObject? current = null;
+            try { current = Ctx.Projects.ResolveWorkspace(projectId, run.User); }
+            catch (ArgumentException) { /* project removed */ }
+            var currentDirs = current?.GetArray("directories")?.Select(x => x?.GetValue<string>()).ToList();
+            if (currentDirs == null || !currentDirs.SequenceEqual(directories) || directories.Any(x => !Directory.Exists(x)))
+                throw new Exception("The run's project workspace is no longer available");
+        }
+        using (WorkspaceScope.Enter(new WorkspaceScope(workspace.GetString("projectId"), directories,
+                   run.User ?? ChatDb.DefaultUser, run.Id)))
+        {
+            await ExecuteScopedAgentSliceAsync(run, request, token).ConfigAwait();
+        }
+    }
+
+    async Task ExecuteScopedAgentSliceAsync(AgentRun run, IRequest? request, CancellationToken token)
+    {
         if (run.StepCount >= run.MaxSteps)
             throw new Exception($"Agent run reached its maximum step budget ({run.MaxSteps})");
 

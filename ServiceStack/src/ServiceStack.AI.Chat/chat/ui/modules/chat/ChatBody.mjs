@@ -1080,9 +1080,14 @@ export const AgentAvatar = {
 
 export const ChatBody = {
     template: `
-        <div class="flex flex-col h-full">
+        <div class="relative flex flex-col h-full" @dragenter="dragEnter" @dragover="dragOver" @dragleave="dragLeave" @drop="dropFiles">
+            <div v-if="dropDepth" class="absolute inset-2 z-50 pointer-events-none flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-blue-500/70 bg-white/90 dark:bg-gray-900/90" role="status">
+                <svg class="size-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3m0 0L7.5 7.5M12 3l4.5 4.5"/><path d="M4 14v4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-4"/></svg>
+                <span class="text-lg font-semibold">Drop to attach</span>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Images, audio and documents</span>
+            </div>
             <!-- Messages Area -->
-            <div id="messages" class="flex-1 overflow-y-auto" ref="messagesContainer" @scroll="checkUserScroll">
+            <div id="messages" class="flex-1 overflow-y-auto" ref="messagesContainer" :style="{paddingBottom:composerHeight + 24 + 'px'}" @scroll="checkUserScroll">
                 <div class="mx-auto max-w-7xl px-4 py-6">
 
                     <div v-if="!$ai.hasAccess">
@@ -1095,6 +1100,8 @@ export const ChatBody = {
                     <div v-else-if="!currentThread" class="text-center py-12">
                         <Welcome />
                         <HomeTools />
+                        <!-- e.g. a new chat's first message could not be sent -->
+                        <div class="max-w-3xl mx-auto text-left"><ErrorBubble /></div>
                     </div>
 
                     <!-- Messages -->
@@ -1367,7 +1374,7 @@ export const ChatBody = {
             </div>
 
             <!-- Input Area -->
-            <div v-if="$ai.hasAccess && hasThreads" :class="$ctx.cls('chat-input', 'flex-shrink-0 px-6 py-4 border-t ' + $styles.chromeBorder + ' ' + $styles.bgChat)">
+            <div ref="composerShell" v-if="$ai.hasAccess && hasThreads" class="absolute bottom-0 inset-x-0 px-3 pb-3" style="padding-bottom:max(.75rem,env(safe-area-inset-bottom))">
                 <ChatPrompt :model="$chat.getSelectedModel()" />
             </div>
         </div>
@@ -1392,6 +1399,25 @@ export const ChatBody = {
             return models.find(m => m.name === selectedModel.value) || models.find(m => m.id === selectedModel.value)
         })
         const messagesContainer = ref(null)
+        const composerShell = ref(null), composerHeight = ref(200), dropDepth = ref(0)
+        const isFiles = e => Array.from(e.dataTransfer?.types || []).includes('Files')
+        const dragEnter = e => { if (isFiles(e)) { e.preventDefault(); dropDepth.value++ } }
+        const dragOver = e => { if (isFiles(e)) e.preventDefault() }
+        const dragLeave = e => { if (isFiles(e)) dropDepth.value = Math.max(0, dropDepth.value - 1) }
+        const resetDrop = () => { dropDepth.value = 0 }
+        const dropFiles = e => {
+            resetDrop()
+            if (!e.dataTransfer?.files?.length) return
+            e.preventDefault(); e.stopPropagation()
+            chatPrompt.attachFiles(chatPrompt.drafts.state.key, e.dataTransfer.files)
+        }
+        let composerObserver
+        onMounted(() => {
+            composerObserver = new ResizeObserver(entries => { composerHeight.value = entries[0].contentRect.height })
+            if (composerShell.value) composerObserver.observe(composerShell.value)
+            window.addEventListener('dragend', resetDrop)
+        })
+        onUnmounted(() => { composerObserver?.disconnect(); window.removeEventListener('dragend', resetDrop) })
         const copying = ref(null)
         const runClock = ref(Date.now())
         const lastRunActivityAt = ref(Date.now())
@@ -1505,12 +1531,11 @@ export const ChatBody = {
         // Watch for route changes and load the appropriate thread
         watch(() => route.params.id, async (newId) => {
             // console.debug('watch route.params.id', newId)
+            resetDrop()
             ctx.clearError()
             threads?.setCurrentThreadFromRoute(newId, router)
 
-            if (!newId) {
-                chatPrompt.reset()
-            }
+            chatPrompt.drafts.bind(newId ? String(newId) : chatPrompt.drafts.state.key.startsWith('local:') ? chatPrompt.drafts.state.key : 'local:initial')
             nextTick(ctx.chat.addCopyButtons)
         }, { immediate: true })
 
@@ -1804,6 +1829,7 @@ export const ChatBody = {
             selectedModel,
             selectedModelObj,
             messagesContainer,
+            composerShell, composerHeight, dropDepth, dragEnter, dragOver, dragLeave, dropFiles,
             checkUserScroll,
             scrollToBottom,
             copying,

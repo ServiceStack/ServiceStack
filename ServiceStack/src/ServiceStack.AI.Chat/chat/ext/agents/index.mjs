@@ -218,76 +218,46 @@ function useAgents(ext) {
 
 const AgentSelector = {
     template: `
-    <div class="agent-selector relative inline-block text-left">
-        <button 
-            @click="toggleDropdown" 
-            class="agent-trigger inline-flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap h-[38px] box-border transition-all duration-150 ease-out transition-colors"
-            :class="[{ 'border-blue-500 dark:border-blue-500': isOpen }, $styles.dropdownButton]"
+    <div class="agent-selector relative min-w-0 max-w-full" @keydown.esc="isOpen = false">
+        <button type="button"
+            @click="toggleDropdown"
+            class="agent-trigger inline-flex items-center gap-[7px] max-w-full rounded-[18px] bg-[rgb(128_128_128/0.08)] hover:bg-[rgb(128_128_128/0.14)] py-[5px] px-2.5 text-sm cursor-pointer transition-colors outline-none! focus:outline-none! focus-visible:ring-2 focus-visible:ring-blue-500/50"
+            :aria-expanded="isOpen" aria-haspopup="menu" title="Change the agent profile"
         >
-            <img 
-                v-if="$ctx.agents.selected"
-                :src="$ctx.agents.getAvatarUrl($ctx.agents.selected.id)" 
-                :alt="$ctx.agents.selected.id"
-                class="w-5 h-5 min-w-[20px] max-w-[20px] rounded-full object-cover shrink-0"
+            <img
+                :src="$ctx.agents.selected ? $ctx.agents.getAvatarUrl($ctx.agents.selected.id) : $ctx.getDefaultAgentAvatar()"
+                :alt="$ctx.agents.selected?.name || 'Default'"
+                class="size-[18px] rounded-full object-cover shrink-0"
             />
-            <img v-else
-                :src="$ctx.getDefaultAgentAvatar()" 
-                alt="Default Agent"
-                class="w-6 h-6 min-w-[24px] max-w-[24px] rounded-full object-cover shrink-0"
-            />
-            <span class="whitespace-nowrap overflow-hidden text-ellipsis max-w-[100px] text-gray-700 dark:text-gray-300">{{ $ctx.agents.selected?.name || 'Default' }}</span>
-            <svg class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-150 ease-in-out" :class="{ 'rotate-180': isOpen }" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-            </svg>
+            <span class="truncate">{{ $ctx.agents.selected?.name || 'Default' }}</span>
         </button>
-        
-        <div v-show="isOpen" class="absolute top-[calc(100%+4px)] left-0 min-w-full w-max max-w-[220px] rounded-lg shadow-lg z-50 overflow-hidden" :class="$styles.bgPopover">
-            <button 
+
+        <div v-show="isOpen" role="menu" class="absolute bottom-full left-0 mb-2 w-max min-w-[220px] max-w-[calc(100vw-48px)] rounded-[22px] p-[7px] shadow-[0_8px_28px_rgb(0_0_0/0.12)] z-50 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+            <button type="button" role="menuitemradio" :aria-checked="!ext.prefs.selectedAgent"
                 @click="selectAgent(null)"
-                class="flex items-center gap-2 w-full px-3 py-2 border-none cursor-pointer text-left transition-colors duration-100 ease-in-out"
-                :class="[$styles.popoverButton, !ext.prefs.selectedAgent ? $styles.popoverButtonActive : 'bg-transparent']"
+                class="flex items-center gap-2.5 w-full py-2 px-2.5 rounded-xl text-sm text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-                <img 
-                    :src="$ctx.getDefaultAgentAvatar()" 
-                    alt="Default Agent"
-                    class="w-6 h-6 min-w-[24px] max-w-[24px] rounded-full object-cover shrink-0"
-                />
-                <div class="flex-1 min-w-0 flex flex-col gap-[1px]">
-                    <span class="text-[13px] font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap overflow-hidden text-ellipsis">Default</span>
-                </div>
-                <svg v-if="!ext.prefs.selectedAgent" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-blue-500 shrink-0">
-                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 011.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-                </svg>
+                <img :src="$ctx.getDefaultAgentAvatar()" alt="" class="size-6 rounded-full object-cover shrink-0" />
+                <span class="flex-1 min-w-0 truncate">Default</span>
+                <svg v-if="!ext.prefs.selectedAgent" class="size-4 shrink-0 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
             </button>
-            <button 
-                v-for="agent in $ctx.agents.all" 
+            <button type="button" role="menuitemradio" :aria-checked="ext.prefs.selectedAgent === agent.id"
+                v-for="agent in $ctx.agents.all"
                 :key="agent.id"
                 @click="selectAgent(agent.id)"
-                class="flex items-center gap-2 w-full px-3 py-2 border-none cursor-pointer text-left transition-colors duration-100 ease-in-out"
-                :class="[$styles.popoverButton, ext.prefs.selectedAgent === agent.id ? $styles.popoverButtonActive : 'bg-transparent']"
+                class="flex items-center gap-2.5 w-full py-2 px-2.5 rounded-xl text-sm text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
             >
-                <img 
-                    :src="agent.avatar" 
-                    :alt="agent.name"
-                    class="w-6 h-6 min-w-[24px] max-w-[24px] rounded-full object-cover shrink-0"
-                />
-                <div class="flex-1 min-w-0 flex flex-col gap-[1px]">
-                    <span class="text-[13px] font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap overflow-hidden text-ellipsis">{{ agent.name }}</span>
-                </div>
-                <svg v-if="ext.prefs.selectedAgent === agent.id" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-blue-500 shrink-0">
-                    <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 011.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-                </svg>
+                <img :src="agent.avatar" alt="" class="size-6 rounded-full object-cover shrink-0" />
+                <span class="flex-1 min-w-0 truncate">{{ agent.name }}</span>
+                <svg v-if="ext.prefs.selectedAgent === agent.id" class="size-4 shrink-0 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg>
             </button>
-
-            <!-- Manage Profiles Button -->
-            <button type="button" @click="manageProfiles"
-                class="w-full text-left px-3 py-2 flex items-center space-x-2 transition-colors text-sm border-t cursor-pointer"
-                :class="[$styles.popoverButton, $styles.chromeBorder]">
-                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 flex-shrink-0" :class="$styles.mutedIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-                <span class="font-medium">Manage Profiles</span>
-            </button>
+            <div class="pt-[5px] mt-1 border-t border-gray-200 dark:border-gray-700">
+                <button type="button" @click="manageProfiles"
+                    class="flex items-center gap-2.5 w-full py-2 px-2.5 rounded-xl text-sm text-left cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <svg class="size-[18px] shrink-0 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    <span>Manage Profiles</span>
+                </button>
+            </div>
         </div>
     </div>
     `,
@@ -367,7 +337,7 @@ const ProfilesManagerModal = {
             <div class="fixed inset-0 bg-black/50 transition-opacity" @click="closeDialog"></div>
             
             <!-- Dialog -->
-            <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center">
+            <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center" @click.self="closeDialog">
                 <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
                     <!-- Header -->
                     <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
@@ -882,7 +852,7 @@ const ProfilesManagerModal = {
             <!-- Inner Model Selection Sub-Dialog -->
             <div v-if="isModelPickerOpen" class="fixed inset-0 z-[60] overflow-hidden text-gray-900 dark:text-gray-100" @keydown.escape.stop="isModelPickerOpen = false">
                 <div class="fixed inset-0 bg-black/60 transition-opacity" @click="isModelPickerOpen = false"></div>
-                <div class="fixed inset-4 md:inset-10 lg:inset-16 flex items-center justify-center">
+                <div class="fixed inset-4 md:inset-10 lg:inset-16 flex items-center justify-center" @click.self="isModelPickerOpen = false">
                     <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
                         <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                             <div>
@@ -1763,7 +1733,7 @@ export default {
         ctx.components({ AgentSelector, ProfilesManagerModal })
         ctx.modals({ ProfilesManagerModal })
 
-        ctx.setLeftTop({
+        ctx.setComposerTop({
             agents: {
                 component: AgentSelector,
             }
@@ -1861,8 +1831,18 @@ export default {
                                     return
                                 }
 
-                                ctx.agents.selectAgent(action.profile)
                                 const thread = ctx.threads.currentThread.value
+                                const projectId = (thread ? thread.projectId : ctx.chat.drafts.get().projectId) ?? null
+                                ctx.agents.selectAgent(action.profile)
+                                if (action.message) {
+                                    ctx.chat.drafts.fresh(projectId)
+                                    const draft = ctx.chat.drafts.get()
+                                    draft.text = action.message
+                                    ctx.chat.drafts.touch(draft)
+                                    ctx.threads.clearCurrentThread()
+                                    await ctx.chat.sendUserMessage(action.message)
+                                    return
+                                }
                                 const messages = thread.messages.filter(x => x.role !== 'system')
 
                                 if (agent.prompt) {
@@ -1878,6 +1858,7 @@ export default {
 
                                 const newThread = await ctx.threads.startNewThread({
                                     title: `Execute Plan ${thread.title}`,
+                                    projectId,
                                     model: ctx.chat.getSelectedModel(),
                                     messages,
                                     redirect: true,

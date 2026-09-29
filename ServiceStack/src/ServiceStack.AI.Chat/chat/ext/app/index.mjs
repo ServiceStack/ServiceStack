@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { appendQueryString } from '@servicestack/client'
 import ThreadStore from './threadStore.mjs'
 import Recents from './Recents.mjs'
+import ProjectThreads from './ProjectThreads.mjs'
 
 let ext
 const runClock = ref(Date.now())
@@ -216,7 +217,7 @@ const ThreadsSidebar = {
                             :class="[$styles.icon, $styles.iconHover]"
                             title="New Chat"
                         >
-                            <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></g></svg>
+                            <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/></g></svg>
                         </button>
                     </div>
 
@@ -368,12 +369,13 @@ export default {
     install(ctx) {
         ext = ctx.scope('app')
         ctx.components({
-            ThreadsSidebar,
+            ThreadsSidebar: ProjectThreads,
             ThreadItem,
             GroupedThreads,
             Recents,
         })
         ctx.routes.push(...[
+            { path: '/chat/recents', component: Recents },
             { path: '/recents', component: Recents },
         ])
         ThreadStore.install(ctx)

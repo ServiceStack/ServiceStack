@@ -174,7 +174,7 @@ const ModelSelectorModal = {
             <div class="fixed inset-0 bg-black/50 transition-opacity" @click="closeDialog"></div>
             
             <!-- Dialog -->
-            <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center">
+            <div class="fixed inset-4 md:inset-8 lg:inset-12 flex items-center justify-center" @click.self="closeDialog">
                 <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden">
                     <!-- Header -->
                     <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -694,7 +694,7 @@ const ModelSelectorModal = {
 const ModelTooltip = {
     template: `
         <div v-if="model" 
-            class="absolute z-50 top-full mt-1 left-0 p-3 text-sm w-72 rounded-lg shadow-xl"
+            class="absolute z-50 bottom-full mb-2 left-0 p-3 text-sm w-72 rounded-lg shadow-xl pointer-events-none"
             :class="$styles.bgPopover">
             <div class="font-semibold text-gray-900 dark:text-gray-100 mb-2">{{ model.name }}</div>
             <div class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ model.provider }}</div>
@@ -754,17 +754,17 @@ const ModelTooltip = {
 const ModelSelector = {
     template: `
         <!-- Model Selector Button -->
-        <div class="pl-1.5 relative">
+        <div class="relative min-w-0 max-w-full">
             <button type="button" @click="openDialog"
-                class="select-none flex items-center space-x-2 px-3 py-2 rounded-md text-sm w-full md:w-auto md:min-w-48 max-w-96 transition-colors"
-                :class="$styles.dropdownButton"
+                class="select-none inline-flex items-center gap-[7px] max-w-full rounded-[18px] bg-[rgb(128_128_128/0.08)] hover:bg-[rgb(128_128_128/0.14)] py-[5px] px-2.5 text-sm cursor-pointer transition-colors outline-none! focus:outline-none! focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                :class="selectedModel ? '' : 'text-gray-500 dark:text-gray-400'"
+                title="Change model"
                 @mouseenter="showTooltip = true"
-                @mouseleave="showTooltip = false">
-                <ProviderIcon v-if="selectedModel?.provider" :provider="selectedModel.provider" class="size-5 flex-shrink-0" />
-                <span class="truncate flex-1 text-left">{{ selectedModel?.name || 'Select Model...' }}</span>
-                <svg class="size-4 flex-shrink-0" :class="[$styles.mutedIcon]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
+                @mouseleave="showTooltip = false"
+                @focus="showTooltip = false">
+                <ProviderIcon v-if="selectedModel?.provider" :provider="selectedModel.provider" class="size-[18px] shrink-0" />
+                <svg v-else class="size-[18px] shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z"/></svg>
+                <span class="truncate max-w-64">{{ selectedModel?.name || 'Select model' }}</span>
             </button>
 
             <!-- Info Tooltip (on hover) -->

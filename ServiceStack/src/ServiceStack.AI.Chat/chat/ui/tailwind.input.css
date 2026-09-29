@@ -9,6 +9,19 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@media (any-hover: none) {
+    .folder-row-action,
+    .thread-row-action {
+        opacity: 1;
+    }
+    .thread-row-title {
+        padding-right: 2rem;
+    }
+    .folder-title {
+        padding-right: 4rem;
+    }
+}
+
 @layer base {
     :root {
         --background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1' height='1'%3E%3Crect width='1' height='1' fill='%2300000000'/%3E%3C/svg%3E%0A");
@@ -992,5 +1005,17 @@
         .has-iframes {
             min-width: 1240px;
         }
+    }
+}
+
+/* Sidebar focus uses a quiet surface highlight instead of a browser outline.
+   Kept in the base layer so explicit utilities (e.g. a red confirm button) still win. */
+@layer base {
+    #sidebar :focus {
+        outline: none;
+        box-shadow: none;
+    }
+    #sidebar :focus-visible {
+        background-color: rgb(128 128 128 / .12);
     }
 }

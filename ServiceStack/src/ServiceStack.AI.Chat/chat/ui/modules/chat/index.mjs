@@ -1,11 +1,13 @@
 import { ref, watch, computed, nextTick, inject, onMounted, onUnmounted } from 'vue'
 import { $$, createElement, lastRightPart, ApiResult, createErrorStatus } from "@servicestack/client"
+import ComposerContextBar from './ComposerContextBar.mjs'
 import SettingsDialog, { useSettings } from './SettingsDialog.mjs'
 import {
     ChatBody, ErrorBubble, LightboxImage, TypeText, TypeImage, TypeAudio, TypeFile, ViewType, ViewTypes,
     ViewToolTypes, TextViewer, ToolCall, ToolArguments, ToolOutput, MessageUsage, MessageReasoning,
     CompactThreadButton, UserAvatar, AgentAvatar, CodeBlock, JsonPreview,
 } from './ChatBody.mjs'
+import { createDraftStore } from './draftStore.mjs'
 import { AppContext } from '../../ctx.mjs'
 
 const imageExts = 'png,webp,jpg,jpeg,gif,bmp,svg,tiff,ico'.split(',')
@@ -117,14 +119,15 @@ export function addCopyButtons() {
 }
 
 export function useChatPrompt(ctx) {
-    const messageText = ref('')
+    const drafts = createDraftStore(() => `${ctx.ai.base || ''}:${ctx.ai.auth?.userName || ctx.ai.auth?.username || ctx.ai.auth?.id || 'default'}`)
+    const messageText = drafts.adapter('text')
     const promptHistory = ref([])
-    const attachedFiles = ref([])
+    const attachedFiles = drafts.adapter('attachments')
     const hasImage = () => attachedFiles.value.some(f => imageExts.includes(lastRightPart(f.name, '.')))
     const hasAudio = () => attachedFiles.value.some(f => audioExts.includes(lastRightPart(f.name, '.')))
     const hasFile = () => attachedFiles.value.length > 0
 
-    const editingMessage = ref(null)
+    const editingMessage = drafts.adapter('editingMessage')
 
     function reset() {
         // Ensure initial state is ready to accept input
@@ -239,7 +242,7 @@ export function useChatPrompt(ctx) {
             request.metadata['voice'] = voice
         }
 
-        if (text) {
+        if (text || files?.length) {
             const content = createContent({ text, files })
             request.messages.push({
                 role: 'user',
@@ -364,129 +367,164 @@ export function useChatPrompt(ctx) {
     }
 
     async function sendUserMessage(text, { model, target, redirect = true } = {}) {
-        ctx.clearError()
+        const sent = drafts.snapshot()
+        if (sent.draft.sending || sent.attachments.some(f => f.state && f.state !== 'ready')) return
+        sent.draft.sending = true
+        try {
+            ctx.clearError()
 
-        if (!model) {
-            model = getSelectedModel()
-        }
-
-        let content = createContent({ text, files: attachedFiles.value })
-
-        let thread
-
-        // Create thread if none exists
-        if (target === "new" || !ctx.threads.currentThread.value) {
-            thread = await ctx.threads.startNewThread({ redirect })
-        } else {
-            thread = ctx.threads.currentThread.value
-        }
-
-        let threadId = thread.id
-        let messages = thread.messages || []
-        if (!threadId) {
-            console.error('No thread ID found', thread, ctx.threads.currentThread.value)
-            return
-        }
-
-        // Handle Editing / Redo Logic
-        // truncate tells the server this request intends to rewrite history; without it
-        // a shrinking write is refused so an in-flight request can't erase the thread
-        let truncate = false
-        const editingMsg = editingMessage.value
-        if (editingMsg) {
-            let messageIndex = messages.findIndex(m => m.timestamp === editingMsg)
-            if (messageIndex == -1) {
-                messageIndex = messages.findLastIndex(m => m.role === 'user')
+            if (!model) {
+                model = getSelectedModel()
             }
-            console.log('Editing message', editingMsg, messageIndex, messages)
 
-            if (messageIndex >= 0) {
-                messages[messageIndex].content = content
-                // Truncate messages to only include up to the edited message
-                messages.length = messageIndex + 1
-                truncate = true
-            } else {
-                messages.push({
-                    timestamp: new Date().valueOf(),
-                    role: 'user',
-                    content,
-                })
-            }
-        } else {
-            // Regular Send Logic
-            const lastMessage = messages[messages.length - 1]
+            let content = createContent({ text, files: sent.attachments })
 
-            // Check duplicate based on text content extracted from potential array
-            const getLastText = (msgContent) => {
-                if (typeof msgContent === 'string') return msgContent
-                if (Array.isArray(msgContent)) return msgContent.find(c => c.type === 'text')?.text || ''
-                return ''
-            }
-            const newText = text // content[0].text
-            const lastText = lastMessage && lastMessage.role === 'user' ? getLastText(lastMessage.content) : null
-            const isDuplicate = lastText === newText
+            let thread
 
-            // Add user message only if it's not a duplicate
-            // Note: We are saving the FULL STRUCTURED CONTENT array here
-            if (!isDuplicate) {
-                messages.push({
-                    timestamp: new Date().valueOf(),
-                    role: 'user',
-                    content,
-                })
-            }
-        }
-
-        if (text === 'retry') {
-            let lastMessage = messages[messages.length - 1]
-            if (lastMessage.role === 'user' && lastMessage.content[0].text === 'retry') {
-                messages.pop()
-                // Also remove assistant message before it
-                lastMessage = messages[messages.length - 1]
-                if (lastMessage.role === 'assistant') {
-                    messages.pop()
+            // Create thread if none exists
+            if (target === "new" || sent.key.startsWith('local:')) {
+                // A draft's project may have been deleted since; its chip already shows "No project"
+                const projects = ctx.state.projects
+                const projectId = sent.projectId && Array.isArray(projects) && !projects.some(p => p.id === sent.projectId)
+                    ? null : sent.projectId
+                thread = await ctx.threads.startNewThread({ redirect: false, projectId })
+                // Creation failed (error already shown): keep the draft exactly as it is. The project
+                // may have been deleted elsewhere, so reload projects: its chip then shows "No project"
+                if (!thread?.id) {
+                    if (projectId && ctx.state.config.extensions.includes('projects')) {
+                        const api = await ctx.getJson('/ext/projects/projects.json')
+                        if (api.response) ctx.setState({ projects: api.response })
+                    }
+                    return
                 }
-                truncate = true
+                drafts.transfer(sent.key, thread.id, sent.draft)
+                if (redirect && drafts.state.key === String(thread.id)) ctx.to(`/c/${thread.id}`)
+            } else {
+                thread = String(ctx.threads.currentThread.value?.id) === sent.key
+                    ? ctx.threads.currentThread.value : await ctx.threads.fetchThread(sent.key)
             }
-        }
+            if (!thread) return
 
-        const request = createRequest({ model })
-        if (truncate) {
-            request.truncate = true
-        }
+            let threadId = thread.id
+            let messages = JSON.parse(JSON.stringify(thread.messages || []))
+            if (!threadId) {
+                console.error('No thread ID found', thread, ctx.threads.currentThread.value)
+                return
+            }
 
-        // Add Thread History
-        messages.forEach(m => {
-            request.messages.push(m)
-        })
+            // Handle Editing / Redo Logic
+            // truncate tells the server this request intends to rewrite history; without it
+            // a shrinking write is refused so an in-flight request can't erase the thread
+            let truncate = false
+            const editingMsg = sent.editingMessage
+            if (editingMsg) {
+                let messageIndex = messages.findIndex(m => m.timestamp === editingMsg)
+                if (messageIndex == -1) {
+                    messageIndex = messages.findLastIndex(m => m.role === 'user')
+                }
+                console.log('Editing message', editingMsg, messageIndex, messages)
 
-        // Update Thread Title if not set or is default
-        if (!thread.title || thread.title === 'New Chat' || request.title === 'New Chat') {
-            request.title = text.length > 100
-                ? text.slice(0, 100) + '...'
-                : text
-            console.debug(`changing thread title from '${thread.title}' to '${request.title}'`)
-        } else {
-            console.debug(`thread title is '${thread.title}'`, request.title)
-        }
+                if (messageIndex >= 0) {
+                    messages[messageIndex].content = content
+                    // Truncate messages to only include up to the edited message
+                    messages.length = messageIndex + 1
+                    truncate = true
+                } else {
+                    messages.push({
+                        timestamp: new Date().valueOf(),
+                        role: 'user',
+                        content,
+                    })
+                }
+            } else {
+                // Regular Send Logic
+                const lastMessage = messages[messages.length - 1]
 
-        const api = await ctx.threads.queueChat({ request, thread, model })
-        if (api.response) {
-            // success
-            thread = api.response
-            completeChat(thread)
-        } else {
-            ctx.setError(api.error)
+                // Check duplicate based on text content extracted from potential array
+                const getLastText = (msgContent) => {
+                    if (typeof msgContent === 'string') return msgContent
+                    if (Array.isArray(msgContent)) return msgContent.find(c => c.type === 'text')?.text || ''
+                    return ''
+                }
+                const newText = text // content[0].text
+                const lastText = lastMessage && lastMessage.role === 'user' ? getLastText(lastMessage.content) : null
+                const isDuplicate = lastText === newText
+
+                // Add user message only if it's not a duplicate
+                // Note: We are saving the FULL STRUCTURED CONTENT array here
+                if (!isDuplicate) {
+                    messages.push({
+                        timestamp: new Date().valueOf(),
+                        role: 'user',
+                        content,
+                    })
+                }
+            }
+
+            if (text === 'retry') {
+                let lastMessage = messages[messages.length - 1]
+                if (lastMessage.role === 'user' && lastMessage.content[0].text === 'retry') {
+                    messages.pop()
+                    // Also remove assistant message before it
+                    lastMessage = messages[messages.length - 1]
+                    if (lastMessage.role === 'assistant') {
+                        messages.pop()
+                    }
+                    truncate = true
+                }
+            }
+
+            const request = createRequest({ model })
+            const fingerprint = JSON.stringify([sent.text, sent.attachments.map(f => f.id || f.url), sent.editingMessage])
+            if (sent.draft.pendingSubmission?.fingerprint !== fingerprint) {
+                sent.draft.pendingSubmission = { fingerprint, id: crypto.randomUUID() }
+            }
+            request.submissionId = sent.draft.pendingSubmission.id
+            if (truncate) {
+                request.truncate = true
+            }
+
+            // Add Thread History
+            messages.forEach(m => {
+                request.messages.push(m)
+            })
+
+            const api = await ctx.threads.queueChat({ request, thread, model })
+            if (api.response) {
+                // success
+                thread = api.response
+                drafts.accepted(sent)
+                delete sent.draft.pendingSubmission
+                completeChat(thread)
+            } else {
+                ctx.setError(api.error)
+            }
+        } finally { sent.draft.sending = false }
+    }
+
+    // Uploads are content-addressed, so keep the local file's name/type rather than
+    // whichever name the cached upload was first stored under.
+    async function uploadAttachment(file) {
+        const response = await ctx.ai.uploadFile(file)
+        return {
+            url: response.url,
+            name: file.name,
+            size: response.size,
+            type: file.type,
+            width: response.width,
+            height: response.height,
+            created: Date.now(),
         }
     }
 
     function completeChat(thread) {
-        editingMessage.value = null
-        attachedFiles.value = []
         ctx.threads.replaceThread(thread)
     }
 
     return {
+        drafts,
+        attachFiles: (key, files) => drafts.attach(key, files, uploadAttachment),
+        uploadAttachment,
         completion,
         createContent,
         createRequest,
@@ -521,12 +559,12 @@ const VoiceInput = {
         <button v-if="$state.config.extensions.includes('voice')" type="button" 
             ref="voiceBtn"
             @click="toggleRecording"
-            :class="['absolute bottom-12 right-2 size-8 flex items-center justify-center rounded-full hover:shadow transition-colors',
+            :class="['size-8 flex items-center justify-center rounded-full transition-colors cursor-pointer',
                 isRecording 
                     ? $styles.voiceButtonRecording
                     : isProcessing
                         ? $styles.voiceButtonProcessing
-                        : $styles.voiceButtonDefault
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10'
             ]"
             :title="isProcessing ? 'Processing...' : 'Record voice (Alt+D)'"
         >
@@ -624,6 +662,7 @@ const VoiceInput = {
 
         const startRecording = async () => {
             if (isProcessing.value) return
+            const voiceDraft = ctx.chat.drafts.get()
             try {
                 const requestedAt = performance.now()
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -658,8 +697,10 @@ const VoiceInput = {
                     // "could not be decoded" error from the transcription provider.
                     if (audioBlob.size < 1024) {
                         console.debug(`Recording contained no audio (${audioBlob.size} bytes)`)
-                        ctx.setError({ errorCode: 'Error',
-                            message: 'No audio was captured - check your microphone is not muted, then try again' })
+                        ctx.setError({
+                            errorCode: 'Error',
+                            message: 'No audio was captured - check your microphone is not muted, then try again'
+                        })
                         isProcessing.value = false
                         return
                     }
@@ -681,13 +722,8 @@ const VoiceInput = {
                     })
                     const api = await ctx.createJsonResult(res)
                     if (api.response) {
-                        if (ctx.chat.messageText.value) {
-                            const lastChar = ctx.chat.messageText.value.slice(-1)
-                            ctx.chat.messageText.value += (lastChar === ' ' || lastChar === '\n' ? '' : ' ') + api.response.text
-                        } else {
-                            ctx.chat.messageText.value = api.response.text || ''
-                        }
-                        document.getElementById('messageText')?.focus()
+                        voiceDraft.text += (voiceDraft.text ? ' ' : '') + (api.response.text || '')
+                        ctx.chat.drafts.touch(voiceDraft)
                     } else {
                         ctx.setError(api.error)
                     }
@@ -777,113 +813,107 @@ const VoiceInput = {
 
 const ChatPrompt = {
     template: `
-    <div class="mx-auto max-w-3xl">
+    <div class="mx-auto max-w-3xl rounded-3xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-[0_4px_24px_rgb(0_0_0/0.08)] dark:shadow-[0_4px_24px_rgb(0_0_0/0.4)] px-3 pt-2.5 pb-2.5">
+        <div class="flex flex-wrap items-center gap-2 mb-2 min-w-0">
+            <ComposerContextBar v-if="$state.config.extensions.includes('projects')" />
+            <component v-for="(c, id) in $ctx.visibleComponents($ctx.composerTop)" :key="id" :is="c.component" />
+            <ModelSelector :models="$state.models" v-model="$state.selectedModel" />
+        </div>
         <SettingsDialog :isOpen="showSettings" @close="showSettings = false" />
-        <div class="flex space-x-2">
-            <!-- Attach (+) button and Settings button -->
-            <div class="mt-1.5 flex flex-col space-y-1 items-center">
-                <div>
-                    <button type="button"
-                            @click="triggerFilePicker"
-                            :disabled="$threads.isWatchingThread.value || !model"
-                            class="size-8 flex items-center justify-center rounded-md disabled:cursor-not-allowed"
-                            :class="$styles.chatButton"
-                            title="Attach image or audio">
-                        <svg class="size-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
-                            <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
-                        </svg>
-                    </button>
-                    <!-- Hidden file input -->
-                    <input ref="fileInput" type="file" multiple @change="onFilesSelected"
-                        class="hidden" accept="image/*,audio/*,.pdf,.doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        />
+        <div v-if="$chat.attachedFiles.value.length" class="flex flex-wrap items-start gap-2 pt-2 pl-0.5 pr-2 pb-2 max-h-72 overflow-y-auto">
+            <div v-for="(f,i) in $chat.attachedFiles.value" :key="f.id || i" class="group/attachment relative rounded-xl text-xs" :class="f.type?.startsWith('image/') ? 'size-20' : 'flex items-center gap-2.5 h-14 max-w-64 pl-2 pr-3 border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60'" :title="f.name">
+                <img v-if="f.type?.startsWith('image/')" :src="f.preview || $ctx.resolveUrl(f.url)" :alt="f.name" class="size-full object-cover rounded-xl border border-black/5 dark:border-white/10" :class="{'opacity-60': f.state === 'uploading'}" />
+                <template v-else>
+                    <span class="grid place-items-center size-10 shrink-0 rounded-lg text-white" :class="f.type?.startsWith('audio/') ? 'bg-violet-500' : f.type === 'application/pdf' ? 'bg-red-500' : 'bg-blue-500'">
+                        <svg v-if="f.type?.startsWith('audio/')" class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        <svg v-else class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+                    </span>
+                    <span class="min-w-0 flex flex-col">
+                        <span class="truncate font-medium text-gray-900 dark:text-gray-100">{{f.name}}</span>
+                        <span class="truncate text-gray-500 dark:text-gray-400">{{ f.state === 'uploading' ? 'Uploading…' : f.state === 'failed' ? (f.error || 'Upload failed') : (f.name?.split('.').pop() || 'file').toUpperCase() }}</span>
+                    </span>
+                </template>
+                <div v-if="f.type?.startsWith('image/') && f.state && f.state !== 'ready'" class="absolute inset-0 grid place-items-center rounded-xl text-[11px] font-medium text-white" :class="f.state === 'failed' ? 'bg-red-900/70' : 'bg-black/30'">
+                    <svg v-if="f.state === 'uploading'" class="size-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>
+                    <span v-else class="px-1 text-center">{{f.error || 'Upload failed'}}</span>
                 </div>
-                <div>
-                    <button type="button" title="Settings" @click="showSettings = true"
-                        :disabled="$threads.watchingThread || !model"
-                        class="size-8 flex items-center justify-center rounded-md disabled:cursor-not-allowed"
-                        :class="$styles.chatButton">
-                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256"><path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z"></path></svg>
-                    </button>
-                </div>
+                <span v-if="f.state === 'uploading'" role="status" class="sr-only">Uploading {{f.name}}</span>
+                <button v-if="f.state === 'failed' && f.file" type="button" class="absolute bottom-1 left-1 rounded-full bg-white/90 dark:bg-gray-900/90 text-gray-900 dark:text-gray-100 px-2 py-0.5 text-[11px] font-medium shadow cursor-pointer" @click="$chat.drafts.retry($chat.drafts.state.key, f.id, $chat.uploadAttachment)">Retry</button>
+                <button type="button" class="absolute -top-1.5 -right-1.5 grid place-items-center size-5 rounded-full bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900 ring-2 ring-white dark:ring-gray-900 cursor-pointer opacity-0 transition-opacity duration-150 group-hover/attachment:opacity-100 group-focus-within/attachment:opacity-100 [@media(any-hover:none)]:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2" @click="removeAttachment(i)" :aria-label="'Remove attachment ' + f.name" title="Remove attachment">
+                    <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+                </button>
             </div>
+        </div>
+        <textarea id="messageText"
+            ref="refMessage"
+            rows="1"
+            style="min-height:2.75rem;max-height:40vh;resize:none;overflow-y:auto"
+            @input="resizeEditor"
+            v-model="messageText"
+            @keydown="onKeyDown"
+            @keydown.enter.exact="sendMessage"
+            @keydown.enter.shift.exact="addNewLine"
+            @paste="onPaste"
+            :placeholder="model ? 'Message… (Enter to send, Shift+Enter for new line)' : 'Select a model to start chatting'"
+            class="border-0! outline-none! ring-0! ring-offset-0! [box-shadow:none]! focus:border-0! focus:outline-none! focus:ring-0! focus:ring-offset-0! focus:[box-shadow:none]! block w-full px-1.5 py-1.5 text-[15px] leading-6 bg-transparent!"
+            :class="$styles.textInput"
+            aria-label="Message"
+            :disabled="!model"
+        ></textarea>
 
-            <div class="flex-1">
-                <div class="relative">
-                    <textarea id="messageText"
-                        ref="refMessage"
-                        v-model="messageText"
-                        @keydown="onKeyDown"
-                        @keydown.enter.exact.prevent="sendMessage"
-                        @keydown.enter.shift.exact="addNewLine"
-                        @paste="onPaste"
-                        @dragover="onDragOver"
-                        @dragleave="onDragLeave"
-                        @drop="onDrop"
-                        placeholder="Type message... (Enter to send, Shift+Enter for new line, drag & drop or paste files)"
-                        :class="[
-                            'h-22 block w-full rounded-md border px-3 py-2 pr-12 text-sm focus:outline-none focus:ring-1 ' + $styles.textInput + ' ' + $styles.bgInput,
-                            isDragging
-                                ? $styles.draggingInput
-                                : $styles.borderInput
-                        ]"
-                        :disabled="$threads.watchingThread || !model"
-                    ></textarea>
-                    <VoiceInput />
-                    <button v-if="!$threads.watchingThread" title="Send (Enter)" type="button"
-                        @click="sendMessage"
-                        :disabled="!messageText.trim() || $threads.watchingThread || !model"
-                        class="absolute bottom-2 right-2 size-8 flex items-center justify-center rounded-md"
-                        :class="$styles.chatButton">
-                        <svg class="size-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="20" stroke-dashoffset="20" d="M12 21l0 -17.5"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.2s" values="20;0"/></path><path stroke-dasharray="12" stroke-dashoffset="12" d="M12 3l7 7M12 3l-7 7"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.2s" dur="0.2s" values="12;0"/></path></g></svg>
-                    </button>
-                    <button v-else title="Cancel request" type="button"
-                        @click="$threads.cancelThread()"
-                        class="absolute bottom-2 right-2 size-8 flex items-center justify-center rounded-md border border-red-300 dark:border-red-600 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
-                        <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        </svg>
-                    </button>
-                </div>
+        <!-- Action row -->
+        <div class="mt-1.5 flex items-center gap-1">
+            <button type="button"
+                    @click="triggerFilePicker"
+                    :disabled="!model"
+                    class="size-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    title="Attach files" aria-label="Attach files">
+                <svg class="size-5" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256">
+                    <path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path>
+                </svg>
+            </button>
+            <!-- Hidden file input -->
+            <input ref="fileInput" type="file" multiple @change="onFilesSelected"
+                class="hidden" accept="image/*,audio/*,.pdf,.doc,.docx,.xml,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                />
+            <button type="button" title="Settings" aria-label="Chat settings" @click="showSettings = true"
+                :disabled="!model"
+                class="size-8 flex items-center justify-center rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                <svg class="size-[18px]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 256 256"><path d="M40,88H73a32,32,0,0,0,62,0h81a8,8,0,0,0,0-16H135a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16Zm64-24A16,16,0,1,1,88,80,16,16,0,0,1,104,64ZM216,168H199a32,32,0,0,0-62,0H40a8,8,0,0,0,0,16h97a32,32,0,0,0,62,0h17a8,8,0,0,0,0-16Zm-48,24a16,16,0,1,1,16-16A16,16,0,0,1,168,192Z"></path></svg>
+            </button>
 
-                <!-- Attachments & Image Options -->
-                <div class="mt-2 flex justify-between items-start gap-2">
-                    <div class="flex flex-wrap gap-2">
-                        <div v-for="(f,i) in $chat.attachedFiles.value" :key="i" class="flex items-center gap-2 px-2 py-1 text-xs rounded-md border" :class="[$styles.tagLabel]">
-                            <span class="truncate max-w-48" :title="f.name">{{ f.name }}</span>
-                            <button type="button" :class="[$styles.icon, $styles.iconHover]" @click="removeAttachment(i)" title="Remove Attachment">
-                                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                            </button>
-                        </div>
-                    </div>
+            <!-- Image Aspect Ratio Selector -->
+            <select v-if="$chat.canGenerateImage(model)" name="aspect_ratio" v-model="$state.selectedAspectRatio" aria-label="Image aspect ratio"
+                    class="ml-1 rounded-full pl-3 pr-7 py-1 text-xs" :class="[$styles.textInput, $styles.bgInput, $styles.borderInput]">
+                <option v-for="(ratio, size) in imageAspectRatios" :key="size" :value="size">
+                    {{ ratio }}
+                </option>
+            </select>
 
-                    <div class="flex gap-x-2">
-                        <!-- Image Aspect Ratio Selector -->
-                        <div v-if="$chat.canGenerateImage(model)">
-                            <select name="aspect_ratio" v-model="$state.selectedAspectRatio" 
-                                    class="block w-full rounded-md pl-2 pr-6 py-1 text-xs" :class="[$styles.textInput, $styles.bgInput, $styles.borderInput]">
-                                <option v-for="(ratio, size) in imageAspectRatios" :key="size" :value="size">
-                                    {{ ratio }}
-                                </option>
-                            </select>
-                        </div>
+            <!-- Voice Selector -->
+            <select v-if="$chat.getVoices(model).length" name="voice" v-model="$state.selectedVoice" aria-label="Voice"
+                    class="ml-1 rounded-full pl-3 pr-7 py-1 text-xs" :class="[$styles.textInput, $styles.bgInput, $styles.borderInput]">
+                <option v-for="(voice, idx) in $chat.getVoices(model)" :key="idx" :value="voice">
+                    {{ voice }}
+                </option>
+            </select>
 
-                        <!-- Voice Selector -->
-                        <div v-if="$chat.getVoices(model).length">
-                            <select name="voice" v-model="$state.selectedVoice" 
-                                    class="block w-full rounded-md pl-2 pr-6 py-1 text-xs" :class="[$styles.textInput, $styles.bgInput, $styles.borderInput]">
-                                <option v-for="(voice, idx) in $chat.getVoices(model)" :key="idx" :value="voice">
-                                    {{ voice }}
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
+            <span v-if="!model" class="ml-1 text-xs text-red-600 dark:text-red-400">Please select a model</span>
 
-                <div v-if="!model" class="mt-2 text-sm text-red-600 dark:text-red-400">
-                    Please select a model
-                </div>
-            </div>
+            <div class="flex-1"></div>
+
+            <VoiceInput />
+            <button v-if="!$threads.watchingThread" title="Send (Enter)" aria-label="Send message" type="button"
+                @click="sendMessage"
+                :disabled="(!messageText.trim() && !$chat.attachedFiles.value.length) || !model"
+                class="size-8 flex items-center justify-center rounded-full bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white disabled:opacity-25 disabled:cursor-not-allowed transition cursor-pointer">
+                <svg class="size-[18px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"><path d="M12 20V4.5"/><path d="M12 4l6.5 6.5M12 4l-6.5 6.5"/></g></svg>
+            </button>
+            <button v-else title="Stop" aria-label="Stop response" type="button"
+                @click="$threads.cancelThread()"
+                class="size-8 flex items-center justify-center rounded-full bg-gray-900 text-white hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white transition cursor-pointer">
+                <svg class="size-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
+            </button>
         </div>
     </div>    
     `,
@@ -908,43 +938,22 @@ const ChatPrompt = {
 
         const fileInput = ref(null)
         const refMessage = ref(null)
+        function resizeEditor() {
+            const el = refMessage.value
+            if (!el) return
+            el.style.height = 'auto'
+            el.style.height = Math.min(el.scrollHeight, window.innerHeight * .4) + 'px'
+        }
+        watch(messageText, () => nextTick(resizeEditor))
+        let editorObserver
+        onMounted(() => { editorObserver = new ResizeObserver(resizeEditor); if (refMessage.value) editorObserver.observe(refMessage.value); resizeEditor() })
+        onUnmounted(() => editorObserver?.disconnect())
         const showSettings = ref(false)
         const historyIndex = ref(-1)
         const isNavigatingHistory = ref(false)
+        let historyDraft = ''
 
-        const uploadFiles = async (files) => {
-            if (files.length) {
-                // Upload files immediately
-                const uploadedFiles = await Promise.all(files.map(async f => {
-                    try {
-                        const response = await ctx.ai.uploadFile(f)
-                        const metadata = {
-                            url: response.url,
-                            name: f.name,
-                            size: response.size,
-                            type: f.type,
-                            width: response.width,
-                            height: response.height,
-                            threadId: ctx.threads.currentThread.value?.id,
-                            created: Date.now()
-                        }
-
-                        return {
-                            ...metadata,
-                            file: f // Keep original file for preview/fallback if needed
-                        }
-                    } catch (error) {
-                        ctx.setError({
-                            errorCode: 'Upload Failed',
-                            message: `Failed to upload ${f.name}: ${error.message}`
-                        })
-                        return null
-                    }
-                }))
-
-                ctx.chat.attachedFiles.value.push(...uploadedFiles.filter(f => f))
-            }
-        }
+        const uploadFiles = files => ctx.chat.attachFiles(ctx.chat.drafts.state.key, files)
 
         // File attachments (+) handlers
         const triggerFilePicker = () => {
@@ -952,12 +961,14 @@ const ChatPrompt = {
         }
         const onFilesSelected = async (e, { populateImagePrompt = true } = {}) => {
             const files = Array.from(e.target?.files || [])
+            const origin = ctx.chat.drafts.get()
             await uploadFiles(files)
 
 
             // allow re-selecting the same file
             if (fileInput.value) fileInput.value.value = ''
 
+            if (origin !== ctx.chat.drafts.get()) return
             if (!messageText.value?.trim()) {
                 if (hasImage()) {
                     if (populateImagePrompt) {
@@ -971,7 +982,9 @@ const ChatPrompt = {
             }
         }
         const removeAttachment = (i) => {
-            ctx.chat.attachedFiles.value.splice(i, 1)
+            const file = ctx.chat.attachedFiles.value[i]
+            if (file.id) ctx.chat.drafts.remove(ctx.chat.drafts.state.key, file.id)
+            else ctx.chat.attachedFiles.value.splice(i, 1)
         }
 
         // Handle paste events for clipboard images, audio, and files
@@ -1023,36 +1036,11 @@ const ChatPrompt = {
             }
         }
 
-        // Handle drag and drop events
-        const isDragging = ref(false)
-
-        const onDragOver = (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            isDragging.value = true
-        }
-
-        const onDragLeave = (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            isDragging.value = false
-        }
-
-        const onDrop = async (e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            isDragging.value = false
-
-            const files = Array.from(e.dataTransfer?.files || [])
-            if (files.length > 0) {
-                // Reuse the same logic as onFilesSelected for consistency
-                const event = { target: { files: files } }
-                await onFilesSelected(event)
-            }
-        }
 
         // Send message
-        const sendMessage = async () => {
+        const sendMessage = async (event) => {
+            if (event?.isComposing) return
+            event?.preventDefault()
             if (!messageText.value?.trim() && !hasImage() && !hasAudio() && !hasFile()) return
             if (ctx.threads.isWatchingThread.value || !props.model) return
 
@@ -1066,8 +1054,6 @@ const ChatPrompt = {
                 }
                 promptHistory.value.push(text)
             }
-
-            messageText.value = ''
 
             await sendUserMessage(text, { model: props.model })
 
@@ -1088,6 +1074,7 @@ const ChatPrompt = {
                     if (promptHistory.value.length > 0) {
                         e.preventDefault()
                         if (historyIndex.value === -1) {
+                            historyDraft = messageText.value
                             historyIndex.value = promptHistory.value.length - 1
                         } else {
                             historyIndex.value = Math.max(0, historyIndex.value - 1)
@@ -1109,7 +1096,7 @@ const ChatPrompt = {
                     } else {
                         historyIndex.value = -1
                         isNavigatingHistory.value = true
-                        messageText.value = ''
+                        messageText.value = historyDraft
                     }
                     nextTick(() => {
                         refMessage.value.setSelectionRange(0, 0)
@@ -1141,14 +1128,11 @@ const ChatPrompt = {
             messageText,
             fileInput,
             refMessage,
+            resizeEditor,
             showSettings,
-            isDragging,
             triggerFilePicker,
             onFilesSelected,
             onPaste,
-            onDragOver,
-            onDragLeave,
-            onDrop,
             removeAttachment,
             sendMessage,
             addNewLine,
@@ -1427,6 +1411,7 @@ export default {
         const Home = ChatBody
         ctx.components({
             SettingsDialog,
+            ComposerContextBar,
             ChatPrompt,
             VoiceInput,
             ErrorBubble,

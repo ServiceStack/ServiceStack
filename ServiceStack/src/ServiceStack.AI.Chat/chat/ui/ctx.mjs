@@ -162,6 +162,7 @@ export class AppContext {
         this.top = {}
         this.left = {}
         this.leftTop = {}
+        this.composerTop = {}
         this.pdf = {
             previewActions: reactive({}),
             setPreviewActions: (components) => {
@@ -305,6 +306,13 @@ export class AppContext {
         Object.assign(this.prefs, storageObject(this.getPrefsKey()))
 
         const override = this.agents?.getProfileOverride ? this.agents.getProfileOverride(profileId) : null
+        // A profile that sets its own theme applies it for as long as it's selected. Any other
+        // profile uses the theme the user chose, so leaving a themed profile restores it. This also
+        // replaces any theme remembered in the profile's prefs so a stale one can't come back.
+        const targetTheme = override?.theme || profile?.overrideTheme || profile?.theme || this.userTheme
+        if (targetTheme) {
+            this.selectTheme(targetTheme, { user: false })
+        }
 
         if (!profile) {
             const targetModel = override?.model || this.prefs.model
@@ -312,18 +320,10 @@ export class AppContext {
                 this.setState({ selectedModel: targetModel })
                 this.setPrefs({ model: targetModel })
             }
-            const targetTheme = override?.theme || this.prefs.theme || this.selectedTheme
-            if (targetTheme) {
-                this.selectTheme(targetTheme)
-            }
             return
         }
 
         const prefs = this.prefs
-        const targetTheme = override?.theme || profile.overrideTheme || profile.theme || prefs.theme || this.selectedTheme
-        if (targetTheme) {
-            this.selectTheme(targetTheme)
-        }
 
         const targetModel = override?.model || profile.overrideModel || profile.model || prefs.model
         const profilePrefs = {
@@ -361,6 +361,10 @@ export class AppContext {
     }
     setLeftTop(componentMap) {
         Object.assign(this.leftTop, this._validateComponents(componentMap))
+    }
+    /** Controls shown beside the project chip at the top of the chat prompt */
+    setComposerTop(componentMap) {
+        Object.assign(this.composerTop, this._validateComponents(componentMap))
     }
     _validateIcons(icons) {
         Object.entries(icons).forEach(([id, icon]) => {
@@ -766,8 +770,21 @@ export class AppContext {
             || this.ai.light
     }
 
-    selectTheme(theme) {
+    /**
+     * The theme the user chose themselves, as opposed to one applied by a profile. Falls back to
+     * the default profile's theme, then the current theme, for users who haven't chosen one since.
+     */
+    get userTheme() {
+        return localStorage.getItem('llms.userTheme')
+            || storageObject(`${this.ai.prefsKey}.default`).theme
+            || localStorage.getItem('llms.theme')
+            || this.selectedTheme
+    }
+
+    /** Apply a theme. A user's choice (the default) is remembered as their theme; profiles pass user: false. */
+    selectTheme(theme, { user = true } = {}) {
         if (!theme) return
+        if (user) localStorage.setItem('llms.userTheme', theme)
         localStorage.setItem('llms.theme', theme)
         this.setPrefs({
             theme

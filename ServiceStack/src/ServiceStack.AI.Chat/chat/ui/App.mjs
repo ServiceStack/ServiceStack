@@ -207,11 +207,10 @@ export default {
                 </div>
 
                 <!-- Main Area -->
-                <div id="main" :class="$ctx.cls('main', 'flex-1 flex flex-col')">
+                <div id="main" :class="$ctx.cls('main', 'flex-1 min-w-0 flex flex-col')">
                     <div id="main-inner" :class="$ctx.cls('main-inner', 'flex flex-col h-full w-full overflow-hidden')">
                         <div v-if="$ai.hasAccess" id="header" :class="$ctx.cls('header', 'py-1 pr-1 flex items-center justify-between shrink-0')">
                             <div class="flex items-center gap-2">
-                                <ModelSelector :models="$state.models" v-model="$state.selectedModel" />
                                 <component v-for="(c, id) in $ctx.visibleComponents($ctx.leftTop)" :is="c.component" />
                                 <!--ThemeSelector /-->
                             </div>

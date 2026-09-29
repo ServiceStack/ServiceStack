@@ -56,6 +56,13 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                     await WriteResultAsync(res, ChatResult.Unauthorized(feature.ErrorAuthRequired())).ConfigAwait();
                     return;
                 }
+                catch (HttpError e) when (e.Status is >= 400 and < 500)
+                {
+                    // Client errors (400 invalid input, 404, 409 conflict) keep their status and message
+                    await WriteResultAsync(res, ChatResult.Json(
+                        ChatJson.CreateErrorResponse(e.Message, e.ErrorCode), e.Status)).ConfigAwait();
+                    return;
+                }
                 catch (Exception e)
                 {
                     feature.Log.LogError(e, "Error handling {Method} {Path}: {Message}", req.Verb, path, e.Message);

@@ -21,6 +21,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         ctx.AddPost("projects.json", SaveProjectsAsync);
         ctx.AddPost("save/{name}", SaveProjectAsync);
         ctx.AddPost("active", SetActiveProjectAsync);
+        ctx.AddPatch("sidebar/{id}", SetSidebarVisibilityAsync);
 
         // first-time user setup: apply their active project's directory
         ctx.RegisterSetupUserHandler(request =>
@@ -129,10 +130,36 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
 
     // ── Persistence ──
 
+    /// <summary>
+    /// Serializes projects.json read-modify-write so concurrent requests can't assign competing IDs
+    /// or lose projects. Writes are atomic (temp file + replace). A single web host owns App_Data, so
+    /// this is an in-process lock rather than llms-py's cross-process file lock.
+    /// </summary>
+    readonly SemaphoreSlim projectsLock = new(1, 1);
+
+    async Task<IDisposable> LockProjectsAsync()
+    {
+        await projectsLock.WaitAsync().ConfigAwait();
+        return new Releaser(projectsLock);
+    }
+
+    sealed class Releaser(SemaphoreSlim semaphore) : IDisposable
+    {
+        public void Dispose() => semaphore.Release();
+    }
+
     string ProjectsPath(string? user) =>
         Path.Combine(Ctx.GetUserPath(user), "projects", "projects.json");
 
     JsonArray GetUserProjectsJson(string? user)
+    {
+        projectsLock.Wait();
+        try { return ReadUserProjectsJson(user); }
+        finally { projectsLock.Release(); }
+    }
+
+    /// <summary>Read (caller holds <see cref="projectsLock"/>), persisting any newly assigned IDs</summary>
+    JsonArray ReadUserProjectsJson(string? user)
     {
         var candidatePaths = new List<string>();
         if (user != null)
@@ -147,6 +174,19 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
             {
                 if (JsonNode.Parse(File.ReadAllText(path)) is JsonArray projects)
                 {
+                    // Backfill stable identities once, persisted to the file they were read from so
+                    // repeated reads never invent different IDs for the same project.
+                    var assigned = false;
+                    foreach (var project in projects.OfType<JsonObject>())
+                    {
+                        if (project.GetString("id").IsNullOrEmpty())
+                        {
+                            project["id"] = Guid.NewGuid().ToString();
+                            assigned = true;
+                        }
+                    }
+                    if (assigned)
+                        WriteProjectsFile(path, projects);
                     // migrate v3 projects saved before the folder model
                     foreach (var project in projects.OfType<JsonObject>())
                         NormalizeProject(project, user);
@@ -164,11 +204,59 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
     public List<JsonObject> GetUserProjects(string? user = null) =>
         GetUserProjectsJson(user).OfType<JsonObject>().ToList();
 
-    void WriteProjects(string? user, JsonArray projects)
+    void WriteProjects(string? user, JsonArray projects) => WriteProjectsFile(ProjectsPath(user), projects);
+
+    static void WriteProjectsFile(string path, JsonArray projects)
     {
-        var path = ProjectsPath(user);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, projects.ToJsonString(ChatJson.Indented));
+        var temp = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+        try
+        {
+            File.WriteAllText(temp, projects.ToJsonString(ChatJson.Indented));
+            File.Move(temp, path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temp))
+                File.Delete(temp);
+        }
+    }
+
+    /// <summary>
+    /// Keep identities across saves: match by ID, then by name for compatibility payloads that omit
+    /// it, and carry the sidebar preference over when the payload doesn't mention it. Returns the
+    /// IDs of projects that were removed. Rejects removing a project whose threads have active runs.
+    /// </summary>
+    HashSet<string> PreserveIds(JsonArray projects, List<JsonObject> previous, string? user)
+    {
+        var byId = previous.Where(p => p.GetString("id") != null).ToDictionary(p => p.GetString("id")!);
+        var byName = previous.GroupBy(p => p.GetString("name") ?? "").ToDictionary(g => g.Key, g => g.First());
+        var seen = new HashSet<string>();
+        foreach (var project in projects.OfType<JsonObject>())
+        {
+            var existing = (project.GetString("id") is { } id ? byId.GetValueOrDefault(id) : null)
+                ?? byName.GetValueOrDefault(project.GetString("name") ?? "");
+            var projectId = existing?.GetString("id") ?? Guid.NewGuid().ToString();
+            project["id"] = projectId;
+            if (existing != null && !project.ContainsKey("showInSidebar") && existing.ContainsKey("showInSidebar"))
+                project["showInSidebar"] = existing["showInSidebar"]?.DeepClone();
+            if (!seen.Add(projectId))
+                throw HttpError.BadRequest("Duplicate project");
+        }
+        var removed = byId.Keys.Where(x => !seen.Contains(x)).ToSet();
+        if (removed.Count > 0 && Ctx.Feature.ChatDb is { } db && db.HasActiveRunsInProjects(removed, user))
+            throw HttpError.Conflict("A project has an active run");
+        return removed;
+    }
+
+    /// <summary>Project names, folders and visibility appear in the chat sidebar</summary>
+    void NotifySidebar() => (Ctx.Threads as DbThreadApi)?.Updates.NotifySidebar();
+
+    /// <summary>Move chats of deleted projects to Recents (idempotent; also run by the sidebar)</summary>
+    void ReconcileThreads(JsonArray projects, string? user)
+    {
+        Ctx.Feature.ChatDb?.ReconcileProjects(projects.OfType<JsonObject>()
+            .Select(p => p.GetString("id")).Where(x => x != null).Select(x => x!).ToList(), user ?? ChatDb.DefaultUser);
     }
 
     /// <summary>Back-fill `folder` and keep `publish` relative to the project folder</summary>
@@ -185,6 +273,9 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         NormalizeProject(project, user);
         project.Remove("paths"); // dropped in v4: a project is a single folder
         var projectDir = UserProjectDir(user, project);
+        var projectsRoot = Path.GetFullPath(Path.Combine(Ctx.GetUserPath(user), "projects"));
+        if (!IsWithin(projectDir, projectsRoot) || Path.GetFullPath(projectDir) == projectsRoot)
+            throw HttpError.BadRequest("Project folder must be inside the projects directory");
         try
         {
             if (!Directory.Exists(projectDir))
@@ -206,11 +297,16 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         if (body is not JsonArray projects)
             throw new ArgumentException("Expected a JSON array of projects");
 
-        foreach (var project in projects.OfType<JsonObject>())
+        using (await LockProjectsAsync().ConfigAwait())
         {
-            PrepareProjectForSave(project, user);
+            PreserveIds(projects, ReadUserProjectsJson(user).OfType<JsonObject>().ToList(), user);
+            foreach (var project in projects.OfType<JsonObject>())
+            {
+                PrepareProjectForSave(project, user);
+            }
+            WriteProjects(user, projects);
         }
-        WriteProjects(user, projects);
+        ReconcileThreads(projects, user);
 
         // if the active project was deleted, reset the preference
         var activeProject = Ctx.GetUserPref("project", user)?.GetValue<string>();
@@ -221,6 +317,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
             SetProjectDirectories(null, user);
             Log.LogInformation("Active project '{Project}' was deleted, resetting active project", activeProject);
         }
+        NotifySidebar();
         return projects.Clone();
     }
 
@@ -235,17 +332,26 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
 
         PrepareProjectForSave(projectData, user);
 
-        var projects = GetUserProjectsJson(user);
-        var existing = projects.OfType<JsonObject>().FirstOrDefault(p => p.GetString("name") == name);
-        if (existing != null)
+        JsonArray projects;
+        using (await LockProjectsAsync().ConfigAwait())
         {
-            projects[projects.IndexOf(existing)] = projectData.Clone();
+            projects = ReadUserProjectsJson(user);
+            // matched by the original name route: an edit (including a rename) keeps its identity
+            var existing = projects.OfType<JsonObject>().FirstOrDefault(p => p.GetString("name") == name);
+            if (existing != null)
+            {
+                projectData["id"] = existing.GetString("id");
+                if (!projectData.ContainsKey("showInSidebar") && existing.ContainsKey("showInSidebar"))
+                    projectData["showInSidebar"] = existing["showInSidebar"]?.DeepClone();
+                projects[projects.IndexOf(existing)] = projectData.Clone();
+            }
+            else
+            {
+                projectData["id"] = Guid.NewGuid().ToString();
+                projects.Add(projectData.Clone());
+            }
+            WriteProjects(user, projects);
         }
-        else
-        {
-            projects.Add(projectData.Clone());
-        }
-        WriteProjects(user, projects);
 
         // follow a rename of the active project
         var activeProject = Ctx.GetUserPref("project", user)?.GetValue<string>();
@@ -260,7 +366,38 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
             // the folder may have changed even when the name didn't
             SetProjectDirectories(newName ?? activeProject, user);
         }
+        NotifySidebar();
         return projects.Clone();
+    }
+
+    /// <summary>PATCH sidebar/{id} {"showInSidebar": bool}: the user's folder visibility preference</summary>
+    async Task<object?> SetSidebarVisibilityAsync(ChatRequestContext req)
+    {
+        var user = req.UserName;
+        var data = await req.GetJsonNodeBodyAsync().ConfigAwait();
+        if (data is not JsonObject obj || obj["showInSidebar"] is not JsonValue value
+            || !value.TryGetValue<bool>(out var visible))
+            throw HttpError.BadRequest("showInSidebar must be a boolean");
+        var projectId = req.GetPathParam("id");
+        using var _ = await LockProjectsAsync().ConfigAwait();
+        var projects = ReadUserProjectsJson(user);
+        var project = projects.OfType<JsonObject>().FirstOrDefault(p => p.GetString("id") == projectId)
+            ?? throw HttpError.NotFound("Project not found");
+        project["showInSidebar"] = visible;
+        WriteProjects(user, projects);
+        NotifySidebar();
+        return projects.Clone();
+    }
+
+    public JsonObject ResolveWorkspace(string projectId, string? user = null)
+    {
+        var project = GetUserProjects(user).FirstOrDefault(p => p.GetString("id") == projectId)
+            ?? throw new ArgumentException("Project not found");
+        var directory = UserProjectDir(user, project);
+        var root = Path.GetFullPath(Path.Combine(Ctx.GetUserPath(user), "projects"));
+        if (!IsWithin(directory, root) || directory == root)
+            throw new ArgumentException("Project folder must be inside the projects directory");
+        return new JsonObject { ["projectId"] = projectId, ["directories"] = new JsonArray(directory) };
     }
 
     async Task<object?> SetActiveProjectAsync(ChatRequestContext req)
