@@ -27,7 +27,30 @@ public partial class ThreadTitles(ChatDb db, ExtensionContext ctx, Action<long> 
     /// <summary>Overridable for tests: the provider call returning the model's raw text</summary>
     public Func<JsonObject, string?, CancellationToken, Task<string?>>? RequestTitleOverride { get; set; }
 
-    JsonObject? Template() => ctx.GetConfigDefaults()?["summarize"] as JsonObject;
+    JsonObject? Template()
+    {
+        var defaults = ctx.GetConfigDefaults();
+        if (defaults != null && defaults.ContainsKey("summarize"))
+            return defaults["summarize"] as JsonObject; // an explicit null disables titles
+        // Preserved or programmatic configs from before titles existed: use the bundled default
+        return (bundledSummarize ??= new Lazy<JsonObject?>(ReadBundledSummarize)).Value?.Clone();
+    }
+
+    static Lazy<JsonObject?>? bundledSummarize;
+
+    static JsonObject? ReadBundledSummarize()
+    {
+        try
+        {
+            var json = HostContext.VirtualFileSources.GetFile("chat/llms.json")?.ReadAllText();
+            return json == null ? null
+                : (JsonNode.Parse(json) as JsonObject).GetObject("defaults").GetObject("summarize");
+        }
+        catch (Exception)
+        {
+            return null; // no host (e.g. tests) or unreadable
+        }
+    }
 
     /// <summary>Text of the first user message, string or multipart</summary>
     public static string PromptText(IEnumerable<JsonNode?> messages)
