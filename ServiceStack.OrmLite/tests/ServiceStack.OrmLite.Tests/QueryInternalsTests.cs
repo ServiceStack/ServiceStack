@@ -264,4 +264,82 @@ public class QueryInternalsTests(DialectContext context) : OrmLiteProvidersTestB
         // Sub queries are unchanged
         Assert.That(db.Column<int>(fiveStars).Count, Is.EqualTo(2));
     }
+
+    [Test]
+    public void SeekAfter_resolves_table_prefixed_ORDER_BY_columns_in_joins()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        SqlExpression<Book> Query() => db.From<Book>()
+            .Join<BookReview>((b, r) => b.Id == r.BookId)
+            .OrderByDescending(x => x.Year).ThenBy(x => x.Id);
+        var all = db.Select(Query());
+        Assert.That(Query().OrderByExpression, Does.Contain(DialectProvider.GetQuotedTableName(typeof(Book))));
+
+        var rest = db.Select(Query().SeekAfter(all[0]));
+        Assert.That(rest.Map(x => x.Id), Is.EqualTo(all.Skip(1).Map(x => x.Id)));
+    }
+
+    [Test]
+    public void SeekAfter_works_with_OrderBySafe()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.SeedMany(db, 200);
+
+        // e.g. ?orderBy=-Price,Id&after={cursor}
+        SqlExpression<Book> Query() => db.From<Book>().OrderBySafe("-Price,Id", nameof(Book.Price), nameof(Book.Id));
+        var all = db.Select(Query());
+
+        var page = db.Select(Query().SeekAfter(all[49]).Take(50));
+        Assert.That(page.Map(x => x.Id), Is.EqualTo(all.Skip(50).Take(50).Map(x => x.Id)));
+    }
+
+    [Test]
+    public void MaxInListParams_of_0_always_uses_standard_IN_lists()
+    {
+        var ids = Enumerable.Range(1, 2000).ToArray();
+        foreach (var dialect in new[] { PostgreSqlDialect.Provider, SqlServer2016Dialect.Provider, SqliteDialect.Provider })
+        {
+            var hold = dialect.MaxInListParams;
+            dialect.MaxInListParams = 0;
+            try
+            {
+                var q = dialect.SqlExpression<Book>().Where(x => ids.Contains(x.Id));
+                Assert.That(q.WhereExpression, Does.Not.Contain("ANY(").And.Not.Contain("OPENJSON").And.Not.Contain(" OR "));
+                Assert.That(q.Params.Count, Is.EqualTo(ids.Length));
+            }
+            finally
+            {
+                dialect.MaxInListParams = hold;
+            }
+        }
+    }
+
+    [Test]
+    public void Recursive_CTEs_use_dialect_specific_SQL()
+    {
+        string Sql(IOrmLiteDialectProvider dialect) => dialect.SqlExpression<Subject>()
+            .WithRecursive(dialect.SqlExpression<Subject>().Where(x => x.Id == 1), (p, c) => c.ParentId == p.Id)
+            .ToSelectStatement();
+
+        Assert.That(Sql(PostgreSqlDialect.Provider), Does.StartWith("WITH RECURSIVE "));
+        Assert.That(Sql(SqliteDialect.Provider), Does.StartWith("WITH RECURSIVE "));
+        Assert.That(Sql(SqlServer2016Dialect.Provider), Does.StartWith("WITH \"cte\" (").And.Not.Contain("RECURSIVE"));
+        Assert.That(Sql(OracleDialect.Provider), Does.StartWith("WITH ").And.Not.Contain("RECURSIVE").And.Contain("\nUNION ALL\n"));
+    }
+
+    [Test]
+    public void Raw_SQL_WITH_statements_are_executed_as_is()
+    {
+        using var db = OpenDbConnection();
+        Subjects.Seed(db);
+
+        var table = db.GetQuotedTableName<Subject>();
+        var parentId = DialectProvider.GetQuotedColumnName(nameof(Subject.ParentId));
+        var sql = $"WITH roots AS (SELECT * FROM {table} WHERE {parentId} IS NULL) SELECT * FROM roots";
+
+        Assert.That(db.Select<Subject>(sql).Count, Is.EqualTo(2));
+        Assert.That(db.SelectLazy<Subject>(sql).Count(), Is.EqualTo(2));
+    }
 }

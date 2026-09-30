@@ -9,6 +9,9 @@ namespace ServiceStack.OrmLite.SqlServer
     public class SqlServerExpression<T>(IOrmLiteDialectProvider dialectProvider) 
         : SqlExpression<T>(dialectProvider)
     {
+        // SQL Server doesn't use the RECURSIVE keyword
+        protected override string WithRecursiveKeyword => "WITH";
+
         public override void PrepareUpdateStatement(IDbCommand dbCmd, T item, bool excludeDefaults = false)
         {
             SqlServerExpressionUtils.PrepareSqlServerUpdateStatement(dbCmd, this, item, excludeDefaults);

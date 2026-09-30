@@ -14,19 +14,11 @@ Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
 
 ## 1. Query Expressiveness
 
-### 1.1 Common Table Expressions (CTEs), including recursive ones (M)
-There is no typed CTE support today, so hierarchical data (org charts, categories, threaded comments) needs raw SQL.
-
-```csharp
-var q = db.From<Category>()
-    .WithRecursive("tree",
-        seed: db.From<Category>().Where(x => x.ParentId == null),
-        recurse: (cte, c) => c.ParentId == cte.Id)
-    .Select<Category>();
-var tree = db.Select<Category>(q);
-```
-- Supported by all maintained dialects (MySQL 8+, SQLite 3.8.3+, Firebird 2.1+).
-- Also gives a clean base for 1.2 and 1.3.
+### 1.1 More Common Table Expressions (S/M)
+Recursive CTEs are supported with `q.WithRecursive(seed, recurse)`. Remaining CTE features:
+- Non-recursive `q.With(name, subQuery)` for naming sub queries that are referenced multiple times
+- A depth column and max depth for recursive queries, e.g. to limit how many levels are returned
+- Cycle protection for data with loops, e.g. PostgreSQL 14+ `CYCLE` or tracking visited ids
 
 ### 1.2 Window Functions (M)
 ```csharp
@@ -40,10 +32,10 @@ var q = db.From<Order>()
 - `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`/`LEAD`, `FIRST_VALUE`, and aggregate `OVER (...)`.
 - Enables "top N per group" queries, which are a common request.
 
-### 1.3 `INSERT ... SELECT` and `UPDATE ... FROM` (S/M)
-Set-based data movement without round-tripping rows through .NET:
+### 1.3 `UPDATE ... FROM` (S/M)
+`INSERT ... SELECT` is already supported with `db.InsertIntoSelect<T>(q)`. Add the equivalent for updating rows from
+a joined table without round-tripping rows through .NET:
 ```csharp
-db.InsertInto<OrderArchive>(db.From<Order>().Where(x => x.CreatedDate < cutoff));
 db.UpdateFrom<Order, Customer>((o, c) => o.CustomerId == c.Id, o => new Order { Region = /* c.Region */ });
 ```
 
@@ -54,15 +46,7 @@ var q = db.From<Job>().Where(x => x.Status == "Queued").ForUpdate(skipLocked: tr
 ```
 `SKIP LOCKED` gives a portable way to build reliable work queues on PostgreSQL, MySQL 8, Oracle and SQL Server (`READPAST`).
 
-### 1.5 Keyset (Seek) Pagination (S)
-Offset paging degrades on large tables. A typed helper would fix that:
-```csharp
-var page = db.Select(db.From<Post>().OrderBy(x => x.CreatedDate).ThenBy(x => x.Id)
-    .SeekAfter(last.CreatedDate, last.Id).Take(50));
-```
-This generates the correct compound predicate (`(a > @a) OR (a = @a AND b > @b)`) from the `ORDER BY` columns.
-
-### 1.6 `DISTINCT ON` / Top-N-Per-Group Helper (S)
+### 1.5 `DISTINCT ON` / Top-N-Per-Group Helper (S)
 Native on PostgreSQL. Emulated with `ROW_NUMBER()` (see 1.2) elsewhere.
 
 ---
@@ -134,7 +118,6 @@ Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `
 ### 4.3 Hot-Path Allocation Work (S each)
 These came out of the code review and are listed here so they can be tracked:
 - **`PopulateValues`**: when `reader.GetValues()` throws, the exception and warning log repeat for every row. It should detect the failure once and switch the rest of the reader to per-field reads.
-- **`ConvertInExpressionToSql`**: allocates a `new Regex` per renamed parameter for every sub-select. Should use a single-pass token replacer (like `ReplaceParamToken`).
 - **`FormatFilter`**: does repeated `string.Replace` per `{n}` and also replaces `{n}` inside quoted literals. Should use a single-pass tokenizer that skips literals.
 - **`UpsertAll`**: re-generates the upsert SQL per row, and `PrepareUpsertFields` uses `List.Contains` inside loops. It should prepare once per distinct insert-field set.
 - **`EvaluateExpression` fallback path**: calls `Expression.Lambda(...).Compile()` on every call (`SqlExpression.cs` ~L2579). Should cache it or use `preferInterpretation`.
@@ -169,6 +152,7 @@ Would cover:
 
 ### 6.1 OpenTelemetry `ActivitySource` (S)
 Emit `db.system`, `db.statement` (with an opt-in parameter-redaction policy), `db.operation`, row counts and durations as OTel spans. This would build on the existing `OrmLiteDiagnostics` `DiagnosticListener` events so it works with standard APM tooling without custom listeners.
+Lower value than it looks: OrmLite's diagnostic events already appear in ServiceStack's Profiling UI with trace ids, and ADO.NET providers like Npgsql and SqlClient emit their own database spans.
 
 ### 6.2 `db.Explain(q)` (S)
 Returns the provider's query plan (`EXPLAIN [ANALYZE]`, `SET SHOWPLAN_XML`, `EXPLAIN QUERY PLAN`), which helps with index tuning from tests or admin UIs.

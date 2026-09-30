@@ -9,6 +9,9 @@ namespace ServiceStack.OrmLite.Oracle
         public OracleSqlExpression(IOrmLiteDialectProvider dialectProvider)
             : base(dialectProvider) {}
 
+        // Oracle doesn't use the RECURSIVE keyword
+        protected override string WithRecursiveKeyword => "WITH";
+
         // Oracle uses MINUS for EXCEPT
         protected override string GetSetOperator(string op) => op == "EXCEPT" ? "MINUS" : op;
 

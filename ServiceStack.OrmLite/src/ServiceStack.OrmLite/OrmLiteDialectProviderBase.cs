@@ -646,7 +646,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     }
         
     public virtual bool IsFullSelectStatement(string sql) => !string.IsNullOrEmpty(sql)
-                                                             && sql.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase);
+        && (sql.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase)
+            || sql.TrimStart().StartsWith("WITH ", StringComparison.OrdinalIgnoreCase)); // common table expressions
 
     // Fmt
     public virtual string ToSelectStatement(Type tableType, string sqlFilter, params object[] filterParams)

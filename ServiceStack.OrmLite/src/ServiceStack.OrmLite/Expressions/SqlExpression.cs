@@ -138,6 +138,8 @@ namespace ServiceStack.OrmLite
             to.Params = new List<IDbDataParameter>(Params);
             to.setOperations = setOperations != null ? new List<SetOperation>(setOperations) : null;
             to.setOperationParams = setOperationParams != null ? new List<IDbDataParameter>(setOperationParams) : null;
+            to.setOperationsSelect = setOperationsSelect;
+            to.withClause = withClause;
 
             to.underlyingExpression = underlyingExpression;
             to.SqlFilter = SqlFilter;
@@ -218,6 +220,8 @@ namespace ServiceStack.OrmLite
             sb.Append(hasEnsureConditions ? "1" : "0");
             sb.AppendLine();
 
+            if (withClause != null)
+                sb.AppendLine(withClause);
             DumpSetOperations(sb, includeParams);
 
             if (includeParams)
@@ -1607,6 +1611,7 @@ namespace ServiceStack.OrmLite
                 ? ToSetOperationsSelectStatement(forType)
                 : DialectProvider
                 .ToSelectStatement(forType, modelDef, SelectExpression, BodyExpression, OrderByExpression, offset: Offset, rows: Rows,Tags);
+            sql = PrefixWithClause(sql);
 
             return SqlFilter != null
                 ? SqlFilter(sql)
@@ -1631,6 +1636,7 @@ namespace ServiceStack.OrmLite
             var sql = HasSetOperations
                 ? ToSetOperationsCountStatement()
                 : "SELECT COUNT(*)" + BodyExpression;
+            sql = PrefixWithClause(sql);
 
             return SqlFilter != null
                 ? SqlFilter(sql)

@@ -18,7 +18,7 @@ namespace ServiceStack.OrmLite.SqlServer
         /// </summary>
         protected override string CreateInListSql(object quotedColName, List<object> values)
         {
-            if (values.Count > DialectProvider.MaxInListParams && ToJsonArray(values) is { } json)
+            if (DialectProvider.MaxInListParams > 0 && values.Count > DialectProvider.MaxInListParams && ToJsonArray(values) is { } json)
             {
                 var p = AddParam(json);
                 p.Size = -1; // NVARCHAR(MAX), default string param sizes would truncate the list

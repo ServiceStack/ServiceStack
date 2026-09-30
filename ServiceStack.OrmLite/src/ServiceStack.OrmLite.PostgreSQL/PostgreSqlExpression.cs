@@ -18,7 +18,7 @@ public class PostgreSqlExpression<T> : SqlExpression<T>
     /// </summary>
     protected override string CreateInListSql(object quotedColName, List<object> values)
     {
-        if (values.Count > DialectProvider.MaxInListParams && ToArrayParam(values) is { } array)
+        if (DialectProvider.MaxInListParams > 0 && values.Count > DialectProvider.MaxInListParams && ToArrayParam(values) is { } array)
             return $"{quotedColName} = ANY({ConvertToParam(array)})";
 
         return base.CreateInListSql(quotedColName, values);

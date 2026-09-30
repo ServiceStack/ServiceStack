@@ -37,6 +37,13 @@ public class SetOperationUseCases(DialectContext context) : OrmLiteProvidersTest
 
         Assert.That(db.Column<string>(q).Count, Is.EqualTo(13)); // 8 books + 5 reviews
         Assert.That(db.Count(q), Is.EqualTo(13));
+        Assert.That(db.Exists(q));
+        Assert.That(db.ColumnDistinct<string>(q).Count, Is.EqualTo(10));
+
+        // Exists() is true if any combined query returns rows
+        var none = db.From<Book>().Where(x => x.Year > 3000).Select(x => x.Id);
+        Assert.That(db.Exists(none.Clone().UnionAll(db.From<BookReview>().Select(x => x.BookId))));
+        Assert.That(db.Exists(none.Clone().UnionAll(db.From<Book>().Where(x => x.Year < 0).Select(x => x.Id))), Is.False);
     }
 
     [Test]

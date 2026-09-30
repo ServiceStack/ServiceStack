@@ -17,6 +17,20 @@ namespace ServiceStack.OrmLite
 
         private List<SetOperation> setOperations;
         private List<IDbDataParameter> setOperationParams;
+        private string setOperationsSelect; // SELECT of the combined results, defaults to "SELECT *"
+
+        /// <summary>
+        /// Returns a copy of this query that selects 'exists' for its first row, used by Exists()
+        /// </summary>
+        internal SqlExpression<T> CloneForExists()
+        {
+            var q = Clone().Limit(1);
+            if (q.HasSetOperations)
+                q.setOperationsSelect = "SELECT 'exists'"; // select from the combined results, not the first query
+            else
+                q.Select("'exists'");
+            return q;
+        }
 
         /// <summary>
         /// Whether this query is combined with other queries with Union(), UnionAll(), Intersect() or Except()
@@ -65,6 +79,9 @@ namespace ServiceStack.OrmLite
 
         public virtual string ToSetOperandStatement(string alias)
         {
+            if (HasCommonTableExpression)
+                throw new NotSupportedException("Queries with a common table expression can only be the first query of a set operation");
+
             if (HasSetOperations || Offset != null || Rows != null)
                 return "SELECT * FROM (" + ToSelectStatement(QueryType.Select) + ") " + alias;
 
@@ -152,14 +169,14 @@ namespace ServiceStack.OrmLite
             var sql = ToSetOperationsSql();
 
             var orderBy = OrderByExpression;
-            if (string.IsNullOrEmpty(orderBy) && Offset == null && Rows == null && Tags.Count == 0)
+            if (string.IsNullOrEmpty(orderBy) && Offset == null && Rows == null && Tags.Count == 0 && setOperationsSelect == null)
                 return sql;
 
             // Offset paging requires an ORDER BY in some RDBMS, e.g. SQL Server, order by the first column if unspecified
             if (string.IsNullOrEmpty(orderBy) && Offset is > 0)
                 orderBy = "\nORDER BY 1";
 
-            return DialectProvider.ToSelectStatement(forType, modelDef, "SELECT *", " \nFROM (" + sql + ") q",
+            return DialectProvider.ToSelectStatement(forType, modelDef, setOperationsSelect ?? "SELECT *", " \nFROM (" + sql + ") q",
                 orderBy, offset: Offset, rows: Rows, Tags);
         }
 

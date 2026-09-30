@@ -257,7 +257,8 @@ namespace ServiceStack.OrmLite.Oracle
             if (!string.IsNullOrEmpty(sqlFilter))
             {
                 var cleanFilter = sqlFilter.Trim().Replace('\r', ' ').Replace('\n', ' ').ToUpperInvariant();
-                return cleanFilter.Length > selectStatement.Length && cleanFilter.Substring(0, selectStatement.Length).Equals(selectStatement);
+                return (cleanFilter.Length > selectStatement.Length && cleanFilter.Substring(0, selectStatement.Length).Equals(selectStatement))
+                    || cleanFilter.StartsWith("WITH "); // common table expressions
             }
             return false;
         }

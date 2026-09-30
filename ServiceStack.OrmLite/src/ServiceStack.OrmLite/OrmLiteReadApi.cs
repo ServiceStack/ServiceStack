@@ -388,7 +388,7 @@ public static class OrmLiteReadApi
     /// </summary>
     public static bool Exists<T>(this IDbConnection dbConn, SqlExpression<T> expression)
     {
-        return dbConn.Exec(dbCmd => dbCmd.Scalar(expression.Clone().Limit(1).Select("'exists'"))) != null;
+        return dbConn.Exec(dbCmd => dbCmd.Scalar(expression.CloneForExists())) != null;
     }
     /// <summary>
     /// Returns true if the Query returns any records, using an SqlFormat query. E.g:
