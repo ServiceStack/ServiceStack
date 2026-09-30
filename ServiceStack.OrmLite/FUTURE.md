@@ -98,20 +98,10 @@ SQL Server 2016+ these could be sent as a single array or JSON param when the SQ
 
 ## 3. Modelling
 
-### 3.1 Global Query Filters: Soft Delete and Multi-Tenancy (M)
-`SqlExpressionSelectFilter` exists but is untyped and applies globally. Add typed, composable filters that apply to `Select`, `Count`, `LoadSelect` and joins, and optionally to `Update` / `Delete`:
-```csharp
-OrmLiteConfig.AddQueryFilter<ISoftDelete>(q => q.Where(x => !x.IsDeleted));
-OrmLiteConfig.AddQueryFilter<ITenant>(q => q.Where(x => x.TenantId == TenantContext.Id));
-db.From<Order>().IgnoreQueryFilters();
-```
-- `[SoftDelete]` would turn `db.Delete<T>(...)` into an `UPDATE ... SET IsDeleted = 1`.
-- This is also a good defence-in-depth control, because tenant filters can't be forgotten in individual queries.
-
-### 3.2 Auditing Columns (S)
+### 3.1 Auditing Columns (S)
 Auto-populate columns tagged with `[CreatedDate]`, `[ModifiedDate]`, `[CreatedBy]` and `[ModifiedBy]` on insert, update and upsert. Values come from a pluggable `OrmLiteConfig.AuditUserResolver`, which is cheaper and more discoverable than hand-written `InsertFilter` / `UpdateFilter` code.
 
-### 3.3 LINQ Queries Into JSON / Complex-Type Columns (L)
+### 3.2 LINQ Queries Into JSON / Complex-Type Columns (L)
 Complex properties are already stored as JSON/JSV text blobs, but querying them needs `Sql.JsonValue("path")` strings. Translate member access directly:
 ```csharp
 db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
@@ -120,7 +110,7 @@ db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
 - Includes optional `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes.
 - Requires JSON (not JSV) serialization for the column, so this would be opt-in via `[Json]` / `[PgSqlJsonB]`.
 
-### 3.4 Vector Columns and Similarity Search (M)
+### 3.3 Vector Columns and Similarity Search (M)
 First-class `float[]` / `ReadOnlyMemory<float>` vector columns for AI and RAG apps. Supported natively by pgvector, SQL Server 2025 `VECTOR`, sqlite-vec and MySQL 9 `VECTOR`:
 ```csharp
 public class Doc { public int Id { get; set; } [Vector(1536)] public float[] Embedding { get; set; } }
@@ -129,7 +119,7 @@ var nearest = db.Select(db.From<Doc>().OrderBy(x => Sql.CosineDistance(x.Embeddi
 - Includes index DDL (`HNSW` / `IVFFLAT`) through attributes.
 - Would pair naturally with ServiceStack's AI features.
 
-### 3.5 Temporal / System-Versioned Tables (M)
+### 3.4 Temporal / System-Versioned Tables (M)
 `[SystemVersioned]` DDL support, plus `q.AsOf(timestamp)` / `q.Between(from, to)` for SQL Server temporal tables and MariaDB system-versioned tables. On other dialects this would be emulated with history tables and triggers.
 
 ---
@@ -238,3 +228,14 @@ q.WhereSafe(request.Filters, allowed: [nameof(Order.Status), nameof(Order.Total)
 - `ToDeleteRowStatement()` with joins emits `DELETE ... WHERE pk IN (SELECT pk FROM same_table JOIN ...)`, which MySQL rejects (error 1093). MySQL needs `DELETE t FROM t JOIN ...` or a derived-table wrapper.
 - The SQL Server `SqlGeography` / `SqlGeometry` / `SqlHierarchyId` converters' `ToQuotedString` wrap `ToString()` output in quotes without escaping. The output is WKT, so this is low risk, but it should use `GetQuotedValue`.
 - Firebird `FbSchema/Schema.cs` catalog queries interpolate `'{tableName}'` / `'{name}'` without `.SqlParam()`.
+
+---
+
+## Considered and Not Planned
+
+- **Typed global query filters (soft delete / multi-tenancy):** complete coverage means changing nearly every read and
+  write path (`SqlExpression` generation, JOIN clauses, the raw `SingleById` / `Where(anon)` APIs, reference loading,
+  and every update and delete), which is too disruptive for the value it adds. Soft delete is already supported for
+  typed queries with `OrmLiteConfig.SqlExpressionSelectFilter` and `LoadReferenceSelectFilter`. ServiceStack apps
+  typically handle multi-tenancy with a database per tenant or with AutoQuery / AutoCrud filters rather than
+  ORM-level tenant filters.
