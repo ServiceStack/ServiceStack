@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq.Expressions;
+using System.Text;
+using ServiceStack.Text;
 
 namespace ServiceStack.OrmLite.SqlServer
 {
@@ -8,6 +11,69 @@ namespace ServiceStack.OrmLite.SqlServer
     {
         public SqlServer2016Expression(IOrmLiteDialectProvider dialectProvider)
             : base(dialectProvider) {}
+
+        /// <summary>
+        /// Uses a single JSON array param, i.e. "col IN (SELECT value FROM OPENJSON(@0))", for IN lists larger than
+        /// MaxInListParams to avoid SQL Server's 2100 parameter limit
+        /// </summary>
+        protected override string CreateInListSql(object quotedColName, List<object> values)
+        {
+            if (values.Count > DialectProvider.MaxInListParams && ToJsonArray(values) is { } json)
+            {
+                var p = AddParam(json);
+                p.Size = -1; // NVARCHAR(MAX), default string param sizes would truncate the list
+                return $"{quotedColName} IN (SELECT value FROM OPENJSON({p.ParameterName}))";
+            }
+
+            return base.CreateInListSql(quotedColName, values);
+        }
+
+        // Returns null if any values can't be losslessly compared with OPENJSON's NVARCHAR values
+        private static string ToJsonArray(List<object> values)
+        {
+            var sb = StringBuilderCache.Allocate().Append('[');
+            foreach (var value in values)
+            {
+                if (sb.Length > 1)
+                    sb.Append(',');
+                switch (value)
+                {
+                    case short or int or long or byte or sbyte or ushort or uint or ulong or decimal:
+                        sb.Append(Convert.ToString(value, CultureInfo.InvariantCulture));
+                        break;
+                    case Guid guid:
+                        sb.Append('"').Append(guid.ToString("D")).Append('"');
+                        break;
+                    case string str:
+                        AppendJsonString(sb, str);
+                        break;
+                    default:
+                        StringBuilderCache.Free(sb);
+                        return null;
+                }
+            }
+            return StringBuilderCache.ReturnAndFree(sb.Append(']'));
+        }
+
+        private static void AppendJsonString(StringBuilder sb, string str)
+        {
+            sb.Append('"');
+            foreach (var c in str)
+            {
+                switch (c)
+                {
+                    case '"': sb.Append("\\\""); break;
+                    case '\\': sb.Append("\\\\"); break;
+                    default:
+                        if (c < ' ')
+                            sb.Append("\\u").Append(((int)c).ToString("x4"));
+                        else
+                            sb.Append(c);
+                        break;
+                }
+            }
+            sb.Append('"');
+        }
 
         protected override object VisitSqlMethodCall(MethodCallExpression m)
         {

@@ -122,9 +122,10 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     internal static Task<T> SingleAsync<T>(this IDbCommand dbCmd, SqlExpression<T> expression, CancellationToken token)
     {
-        string sql = expression.Limit(1).SelectInto<T>(QueryType.Single);
+        var q = expression.Clone().Limit(1); // don't mutate the caller's expression
+        string sql = q.SelectInto<T>(QueryType.Single);
 
-        return dbCmd.ExprConvertToAsync<T>(sql, expression.Params, token);
+        return dbCmd.ExprConvertToAsync<T>(sql, q.Params, token);
     }
 
     public static Task<TKey> ScalarAsync<T, TKey>(this IDbCommand dbCmd, Expression<Func<T, object>> field, CancellationToken token)

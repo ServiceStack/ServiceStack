@@ -660,14 +660,41 @@ public static class OrmLiteWriteCommandExtensions
     internal static int DeleteByIds<T>(this IDbCommand dbCmd, IEnumerable idValues)
     {
         OrmLiteUtils.AssertNotAnonType<T>();
-            
-        var sqlIn = dbCmd.SetIdsInSqlParams(idValues);
-        if (string.IsNullOrEmpty(sqlIn))
-            return 0;
 
-        var sql = GetDeleteByIdsSql<T>(sqlIn, dbCmd.GetDialectProvider());
+        var dialect = dbCmd.GetDialectProvider();
+        var batches = OrmLiteUtils.GetIdBatches(idValues, dialect);
+        if (batches.Count == 1)
+        {
+            var sqlIn = dbCmd.SetIdsInSqlParams(batches[0]);
+            if (string.IsNullOrEmpty(sqlIn))
+                return 0;
 
-        return dbCmd.ExecuteSql(sql);
+            return dbCmd.ExecuteSql(GetDeleteByIdsSql<T>(sqlIn, dialect));
+        }
+
+        // Delete all batches atomically
+        IDbTransaction dbTrans = null;
+        try
+        {
+            dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
+
+            var count = 0;
+            foreach (var batch in batches)
+            {
+                dbCmd.Parameters.Clear();
+                var sqlIn = dbCmd.SetIdsInSqlParams(batch);
+                count += dbCmd.ExecuteSql(GetDeleteByIdsSql<T>(sqlIn, dialect));
+            }
+
+            dbTrans?.Commit();
+            return count;
+        }
+        finally
+        {
+            dbTrans?.Dispose();
+            if (dbTrans != null && dbCmd.Transaction == dbTrans)
+                dbCmd.Transaction = null;
+        }
     }
 
     internal static string GetDeleteByIdsSql<T>(string sqlIn, IOrmLiteDialectProvider dialectProvider)

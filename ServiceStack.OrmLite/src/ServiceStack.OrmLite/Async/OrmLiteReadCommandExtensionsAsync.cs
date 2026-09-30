@@ -65,12 +65,27 @@ internal static class OrmLiteReadCommandExtensionsAsync
         return dbCmd.ConvertToListAsync<TModel>(sql, token);
     }
 
-    internal static Task<List<T>> SelectByIdsAsync<T>(this IDbCommand dbCmd, IEnumerable idValues, CancellationToken token)
+    internal static async Task<List<T>> SelectByIdsAsync<T>(this IDbCommand dbCmd, IEnumerable idValues, CancellationToken token)
     {
-        var sqlIn = dbCmd.SetIdsInSqlParams(idValues);
-        return string.IsNullOrEmpty(sqlIn)
-            ? new List<T>().InTask()
-            : SelectAsync<T>(dbCmd, dbCmd.GetDialectProvider().GetQuotedColumnName(ModelDefinition<T>.Definition.PrimaryKey) + " IN (" + sqlIn + ")", (object)null, token);
+        var dialect = dbCmd.GetDialectProvider();
+        var pkColumn = dialect.GetQuotedColumnName(ModelDefinition<T>.Definition.PrimaryKey);
+        var batches = OrmLiteUtils.GetIdBatches(idValues, dialect);
+        if (batches.Count == 1)
+        {
+            var sqlIn = dbCmd.SetIdsInSqlParams(batches[0]);
+            return string.IsNullOrEmpty(sqlIn)
+                ? new List<T>()
+                : await SelectAsync<T>(dbCmd, pkColumn + " IN (" + sqlIn + ")", (object)null, token).ConfigAwait();
+        }
+
+        var to = new List<T>();
+        foreach (var batch in batches)
+        {
+            dbCmd.Parameters.Clear();
+            var sqlIn = dbCmd.SetIdsInSqlParams(batch);
+            to.AddRange(await SelectAsync<T>(dbCmd, pkColumn + " IN (" + sqlIn + ")", (object)null, token).ConfigAwait());
+        }
+        return to;
     }
 
     internal static Task<T> SingleByIdAsync<T>(this IDbCommand dbCmd, object value, CancellationToken token)

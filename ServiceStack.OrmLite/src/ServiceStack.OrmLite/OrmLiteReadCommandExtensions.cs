@@ -112,29 +112,8 @@ public static class OrmLiteReadCommandExtensions
         if (sqlParams == null)
             return dbCmd;
 
-        try
-        {
-            dbCmd.Parameters.Clear();
-            foreach (var sqlParam in sqlParams)
-            {
-                dbCmd.Parameters.Add(sqlParam);
-            }
-        }
-        catch (Exception ex)
-        {
-            //SQL Server + PostgreSql doesn't allow re-using db params in multiple queries
-            if (Log.IsDebugEnabled)
-                Log.Debug("Exception trying to reuse db params, executing with cloned params instead", ex);
-
-            dbCmd.Parameters.Clear();
-            foreach (var sqlParam in sqlParams)
-            {
-                var p = dbCmd.CreateParameter();
-                p.PopulateWith(sqlParam);
-                dbCmd.Parameters.Add(p);
-            }
-        }
-
+        dbCmd.Parameters.Clear();
+        dbCmd.AddParams(sqlParams);
         return dbCmd;
     }
 
@@ -207,7 +186,7 @@ public static class OrmLiteReadCommandExtensions
         return StringBuilderCache.ReturnAndFree(sb);
     }
 
-    private static IEnumerable GetMultiValues(object value)
+    internal static IEnumerable GetMultiValues(object value)
     {
         if (value is SqlInValues inValues)
             return inValues.GetValues();
@@ -436,10 +415,25 @@ public static class OrmLiteReadCommandExtensions
 
     internal static List<T> SelectByIds<T>(this IDbCommand dbCmd, IEnumerable idValues)
     {
-        var sqlIn = dbCmd.SetIdsInSqlParams(idValues);
-        return string.IsNullOrEmpty(sqlIn)
-            ? new List<T>()
-            : Select<T>(dbCmd, dbCmd.GetDialectProvider().GetQuotedColumnName(ModelDefinition<T>.Definition.PrimaryKey) + " IN (" + sqlIn + ")");
+        var dialect = dbCmd.GetDialectProvider();
+        var pkColumn = dialect.GetQuotedColumnName(ModelDefinition<T>.Definition.PrimaryKey);
+        var batches = OrmLiteUtils.GetIdBatches(idValues, dialect);
+        if (batches.Count == 1)
+        {
+            var sqlIn = dbCmd.SetIdsInSqlParams(batches[0]);
+            return string.IsNullOrEmpty(sqlIn)
+                ? new List<T>()
+                : Select<T>(dbCmd, pkColumn + " IN (" + sqlIn + ")");
+        }
+
+        var to = new List<T>();
+        foreach (var batch in batches)
+        {
+            dbCmd.Parameters.Clear();
+            var sqlIn = dbCmd.SetIdsInSqlParams(batch);
+            to.AddRange(Select<T>(dbCmd, pkColumn + " IN (" + sqlIn + ")"));
+        }
+        return to;
     }
 
     internal static T SingleById<T>(this IDbCommand dbCmd, object value)

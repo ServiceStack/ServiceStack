@@ -270,16 +270,45 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             throw new OptimisticConcurrencyException("The row was modified or deleted since the last read");
     }
 
-    internal static Task<int> DeleteByIdsAsync<T>(this IDbCommand dbCmd, IEnumerable idValues, 
+    internal static async Task<int> DeleteByIdsAsync<T>(this IDbCommand dbCmd, IEnumerable idValues, 
         Action<IDbCommand> commandFilter, CancellationToken token)
     {
-        var sqlIn = dbCmd.SetIdsInSqlParams(idValues);
-        if (string.IsNullOrEmpty(sqlIn))
-            return TaskResult.Zero;
+        var dialect = dbCmd.GetDialectProvider();
+        var batches = OrmLiteUtils.GetIdBatches(idValues, dialect);
+        if (batches.Count == 1)
+        {
+            var sqlIn = dbCmd.SetIdsInSqlParams(batches[0]);
+            if (string.IsNullOrEmpty(sqlIn))
+                return 0;
 
-        var sql = OrmLiteWriteCommandExtensions.GetDeleteByIdsSql<T>(sqlIn, dbCmd.GetDialectProvider());
+            var sql = OrmLiteWriteCommandExtensions.GetDeleteByIdsSql<T>(sqlIn, dialect);
+            return await dbCmd.ExecuteSqlAsync(sql, commandFilter, token).ConfigAwait();
+        }
 
-        return dbCmd.ExecuteSqlAsync(sql, commandFilter, token);
+        // Delete all batches atomically
+        IDbTransaction dbTrans = null;
+        try
+        {
+            dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
+
+            var count = 0;
+            foreach (var batch in batches)
+            {
+                dbCmd.Parameters.Clear();
+                var sqlIn = dbCmd.SetIdsInSqlParams(batch);
+                var sql = OrmLiteWriteCommandExtensions.GetDeleteByIdsSql<T>(sqlIn, dialect);
+                count += await dbCmd.ExecuteSqlAsync(sql, commandFilter, token).ConfigAwait();
+            }
+
+            dbTrans?.Commit();
+            return count;
+        }
+        finally
+        {
+            dbTrans?.Dispose();
+            if (dbTrans != null && dbCmd.Transaction == dbTrans)
+                dbCmd.Transaction = null;
+        }
     }
 
     internal static Task<int> DeleteAllAsync<T>(this IDbCommand dbCmd, CancellationToken token)

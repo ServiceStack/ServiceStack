@@ -647,6 +647,35 @@ namespace ServiceStack.OrmLite
             return AppendToWhere("OR", FormatFilter(sqlFilter.SqlVerifyFragment(), filterParams));
         }
 
+        /// <summary>
+        /// Converts interpolated SQL into a filter where each interpolated value is added as a db param
+        /// </summary>
+        protected string FormatFilter(SqlFormattable sqlFilter)
+        {
+            if (sqlFilter == null)
+                return null;
+            return sqlFilter.Build(arg => {
+                if (arg is SqlInValues inValues)
+                    return inValues.Count > 0 ? CreateInParamSql(inValues.GetValues()) : SqlInValues.EmptyIn;
+                if (OrmLiteReadCommandExtensions.GetMultiValues(arg) is { } values)
+                {
+                    var sqlIn = CreateInParamSql(values);
+                    return sqlIn.Length > 0 ? sqlIn : SqlInValues.EmptyIn;
+                }
+                return AddParam(arg).ParameterName;
+            });
+        }
+
+        /// <summary>
+        /// Add a filter from interpolated SQL where each interpolated value is sent as a db param, e.g:
+        /// <para>q.Where(Sql.Fmt($"Age &gt; {age} AND LastName IN ({names})"))</para>
+        /// </summary>
+        public virtual SqlExpression<T> Where(SqlFormattable sqlFilter) => AppendToWhere("AND", FormatFilter(sqlFilter));
+
+        public virtual SqlExpression<T> And(SqlFormattable sqlFilter) => AppendToWhere("AND", FormatFilter(sqlFilter));
+
+        public virtual SqlExpression<T> Or(SqlFormattable sqlFilter) => AppendToWhere("OR", FormatFilter(sqlFilter));
+
         public virtual SqlExpression<T> AddCondition(string condition, string sqlFilter, params object[] filterParams)
         {
             return AppendToWhere(condition, FormatFilter(sqlFilter.SqlVerifyFragment(), filterParams));
@@ -890,6 +919,14 @@ namespace ServiceStack.OrmLite
             return this;
         }
 
+        public virtual SqlExpression<T> Having(SqlFormattable sqlFilter)
+        {
+            havingExpression = FormatFilter(sqlFilter);
+            if (havingExpression != null)
+                havingExpression = "HAVING " + havingExpression;
+            return this;
+        }
+
         public virtual SqlExpression<T> UnsafeHaving(string sqlFilter, params object[] filterParams)
         {
             havingExpression = FormatFilter(sqlFilter, filterParams);
@@ -1030,6 +1067,65 @@ namespace ServiceStack.OrmLite
         public virtual SqlExpression<T> OrderByFields(params string[] fieldNames) => OrderByFields("", fieldNames);
 
         public virtual SqlExpression<T> OrderByFieldsDescending(params string[] fieldNames) => OrderByFields(" DESC", fieldNames);
+
+        /// <summary>
+        /// Order by a user-supplied, comma-delimited list of field names that are resolved to quoted columns instead of
+        /// being embedded as SQL. Fields can be prefixed with '-' or suffixed with ASC/DESC to change the sort direction, e.g:
+        /// <para>q.OrderBySafe(request.OrderBy, nameof(Order.Id), nameof(Order.Total), nameof(Order.CreatedDate))</para>
+        /// <para>Accepts "-Total,Id" or "Total DESC, Id". If no allowed fields are specified any field on the queried tables
+        /// is accepted. Throws an ArgumentException for any other input. A null or empty orderBy leaves the order unchanged.</para>
+        /// </summary>
+        public virtual SqlExpression<T> OrderBySafe(string orderBy, params string[] allowed)
+        {
+            if (string.IsNullOrWhiteSpace(orderBy))
+                return this;
+
+            var fieldNames = new List<string>();
+            foreach (var part in orderBy.Split(','))
+            {
+                var item = part.Trim();
+                if (item.Length == 0)
+                    continue;
+
+                var desc = false;
+                string name;
+                if (item[0] == '-')
+                {
+                    desc = true;
+                    name = item.Substring(1).Trim();
+                }
+                else
+                {
+                    var tokens = item.Split((char[])null, StringSplitOptions.RemoveEmptyEntries);
+                    if (tokens.Length > 2)
+                        throw new ArgumentException($"Invalid OrderBy field '{item}'");
+                    name = tokens[0];
+                    if (tokens.Length == 2)
+                    {
+                        if (string.Equals(tokens[1], "DESC", StringComparison.OrdinalIgnoreCase))
+                            desc = true;
+                        else if (!string.Equals(tokens[1], "ASC", StringComparison.OrdinalIgnoreCase))
+                            throw new ArgumentException($"Invalid OrderBy direction '{tokens[1]}'");
+                    }
+                }
+
+                if (allowed is { Length: > 0 })
+                {
+                    var match = Array.Find(allowed, x => string.Equals(x, name, StringComparison.OrdinalIgnoreCase));
+                    name = match ?? throw new ArgumentException($"OrderBy field '{name}' is not allowed");
+                }
+                else if (FirstMatchingField(name) == null)
+                {
+                    throw new ArgumentException($"Could not find OrderBy field '{name}'");
+                }
+
+                fieldNames.Add(desc ? "-" + name : name);
+            }
+
+            return fieldNames.Count > 0 
+                ? OrderByFields(OrderBySuffix.Asc, fieldNames.ToArray()) 
+                : this;
+        }
 
         public virtual SqlExpression<T> OrderBy(Expression<Func<T, object>> keySelector) => OrderByInternal(keySelector);
 
@@ -1387,26 +1483,7 @@ namespace ServiceStack.OrmLite
             return p.ParameterName;
         }
 
-        public virtual void CopyParamsTo(IDbCommand dbCmd)
-        {
-            try
-            {
-                foreach (var sqlParam in Params)
-                {
-                    dbCmd.Parameters.Add(sqlParam);
-                }
-            }
-            catch (Exception)
-            {
-                //SQL Server + PostgreSql doesn't allow re-using db params in multiple queries
-                foreach (var sqlParam in Params)
-                {
-                    var p = dbCmd.CreateParameter();
-                    p.PopulateWith(sqlParam);
-                    dbCmd.Parameters.Add(p);
-                }
-            }
-        }
+        public virtual void CopyParamsTo(IDbCommand dbCmd) => dbCmd.AddParams(Params);
 
         public virtual string ToDeleteRowStatement()
         {
@@ -2983,11 +3060,9 @@ namespace ServiceStack.OrmLite
 
             var inArgs = Sql.Flatten(result as IEnumerable);
 
-            var sqlIn = inArgs.Count > 0
-                ? CreateInParamSql(inArgs)
-                : "NULL";
-
-            var statement = $"{quotedColName} IN ({sqlIn})";
+            var statement = inArgs.Count > 0
+                ? CreateInListSql(quotedColName, inArgs)
+                : $"{quotedColName} IN (NULL)";
             return new PartialSqlString(statement);
         }
 
@@ -3415,8 +3490,7 @@ namespace ServiceStack.OrmLite
                 if (inArgs.Count == 0)
                     return FalseLiteral; // "column IN ([])" is always false
 
-                string sqlIn = CreateInParamSql(inArgs);
-                return $"{quotedColName} IN ({sqlIn})";
+                return CreateInListSql(quotedColName, inArgs);
             }
 
             if (argValue is ISqlExpression exprArg)
@@ -3456,6 +3530,28 @@ namespace ServiceStack.OrmLite
             }
 
             throw new NotSupportedException($"In({argValue.GetType()})");
+        }
+
+        /// <summary>
+        /// Returns SQL for "{quotedColName} IN (@0,@1,...)". Lists larger than DialectProvider.MaxInListParams are split
+        /// into multiple OR'd IN lists to stay within RDBMS IN list limits (e.g. Oracle's 1000 expressions).
+        /// Dialects can override to use more efficient strategies for large lists, e.g. array or JSON params.
+        /// </summary>
+        protected virtual string CreateInListSql(object quotedColName, List<object> values)
+        {
+            var max = DialectProvider.MaxInListParams;
+            if (max <= 0 || values.Count <= max)
+                return $"{quotedColName} IN ({CreateInParamSql(values)})";
+
+            var sb = StringBuilderCache.Allocate().Append('(');
+            for (var i = 0; i < values.Count; i += max)
+            {
+                if (i > 0)
+                    sb.Append(" OR ");
+                var chunk = values.GetRange(i, Math.Min(max, values.Count - i));
+                sb.Append(quotedColName).Append(" IN (").Append(CreateInParamSql(chunk)).Append(')');
+            }
+            return StringBuilderCache.ReturnAndFree(sb.Append(')'));
         }
 
         protected virtual string CreateInSubQuerySql(object quotedColName, string subSelect)

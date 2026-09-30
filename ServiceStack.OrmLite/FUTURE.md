@@ -76,15 +76,7 @@ Native on PostgreSQL. Emulated with `ROW_NUMBER()` (see 1.2) elsewhere.
 
 ## 2. Data Access
 
-### 2.1 `IAsyncEnumerable<T>` Streaming (S)
-`SelectLazy` / `ColumnLazy` exist for sync only. Add:
-```csharp
-await foreach (var row in db.SelectStreamAsync(db.From<Event>().Where(x => x.Day == today), token))
-    ...
-```
-This processes large result sets with bounded memory, without blocking a thread.
-
-### 2.2 `RETURNING` / `OUTPUT` for Mutations (M)
+### 2.1 `RETURNING` / `OUTPUT` for Mutations (M)
 Return the affected rows (or chosen columns) in one round-trip:
 ```csharp
 List<Order> updated = db.UpdateReturning(
@@ -94,23 +86,13 @@ List<long> ids = db.DeleteReturning<Session>(x => x.Expires < now, returning: x 
 - PostgreSQL, SQLite 3.35+ and MariaDB use `RETURNING`; SQL Server uses `OUTPUT INSERTED.*/DELETED.*`.
 - Also removes the extra `SELECT` that `Upsert` and `Update` currently run to refresh `RowVersion`.
 
-### 2.3 Large `IN` Lists: Chunking and Array Parameters (M)
-`SelectByIds`, `DeleteByIds`, `Where(x => ids.Contains(x.Id))` and `new { ids }` args create one parameter per value. This fails past provider limits (SQL Server: 2100) and bloats the plan cache. Options:
-- PostgreSQL: `= ANY(@ids)` with a single array parameter.
-- SQL Server: `IN (SELECT value FROM OPENJSON(@ids))` or a table-valued parameter.
-- Others: transparent chunking for `DeleteByIds` / `SelectByIds`, and a `NotSupportedException` with a clear message for expressions.
-- A configurable `OrmLiteConfig.MaxInListParams` threshold.
-
-### 2.4 Bulk Upsert / Merge (M)
+### 2.2 Bulk Upsert / Merge (M)
 `BulkInsert` exists. Add `BulkUpsert<T>(rows, updateOnly)` that bulk-loads into a temp table (COPY / SqlBulkCopy / multi-row VALUES), then runs one `MERGE` / `ON CONFLICT` / `ON DUPLICATE KEY` statement.
 
-### 2.5 Interpolated-String Safe Raw SQL (S/M)
-Raw SQL is where most injection bugs appear. A C# `InterpolatedStringHandler` can turn holes into parameters automatically:
-```csharp
-var rows = db.SqlList<Order>(Sql.Fmt($"SELECT * FROM Orders WHERE CustomerId = {customerId} AND Total > {min}"));
-q.Where(Sql.Fmt($"{q.Column<Order>(x => x.Total)} > {min}"));   // column refs stay unparameterized
-```
-This uses an explicit `Sql.Fmt(...)` / `SqlFormattable` type instead of adding `FormattableString` overloads, so existing `string` overloads don't change meaning.
+### 2.3 Large Collection Params in Raw SQL (S)
+Large lists are handled automatically in `SelectByIds`, `DeleteByIds` and `Contains()` expressions, but collection args in raw SQL,
+e.g. `db.Select<T>("Id IN (@ids)", new { ids })` or `Sql.Fmt($"Id IN ({ids})")`, still add a param per value. On PostgreSQL and
+SQL Server 2016+ these could be sent as a single array or JSON param when the SQL can be safely rewritten.
 
 ---
 
@@ -168,8 +150,6 @@ Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `
 
 ### 4.3 Hot-Path Allocation Work (S each)
 These came out of the code review and are listed here so they can be tracked:
-- **`GetIndexFieldsCache`**: builds a `string` of every column name and takes a global `lock` on every query. It should use a `ConcurrentDictionary` with a non-allocating hash key (column count plus a rolling hash of names). Results are also never cached for multi-table reads (`startPos` / `onlyFields`: `SelectMulti`, `LoadSelect`, joins), so the O(columns × fields) mapping is recomputed on every query.
-- **`CopyParamsTo` / `SetParameters`**: use a `try/catch` as control flow. On SQL Server and PostgreSQL, re-executing a `SqlExpression` throws and catches an exception every time. `CopyParamsTo` can also leave duplicate parameters if the first attempt partially succeeded. Params should be cloned deterministically when they're owned by another command.
 - **`PopulateValues`**: when `reader.GetValues()` throws, the exception and warning log repeat for every row. It should detect the failure once and switch the rest of the reader to per-field reads.
 - **`ConvertInExpressionToSql`**: allocates a `new Regex` per renamed parameter for every sub-select. Should use a single-pass token replacer (like `ReplaceParamToken`).
 - **`FormatFilter`**: does repeated `string.Replace` per `{n}` and also replaces `{n}` inside quoted literals. Should use a single-pass tokenizer that skips literals.
@@ -234,16 +214,16 @@ Named connections exist, but routing is manual. An `OpenReadOnlyDbConnection()` 
 
 ### 8.1 Roslyn Analyzer Package (M)
 A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
-- String concatenation or interpolation passed to `Where(string)`, `OrderBy(string)`, `Unsafe*`, `SqlList(string)` and `ExecuteSql(string)`. The code fix would suggest parameters or `Sql.Fmt` (2.5).
+- String concatenation or interpolation passed to `Where(string)`, `OrderBy(string)`, `Unsafe*`, `SqlList(string)` and `ExecuteSql(string)`. The code fix would suggest parameters or `Sql.Fmt()`.
 - Use of `Unsafe*` APIs with non-constant arguments.
-- `SqlVerifyFragment` used as the only defence on user-supplied values that could instead be allow-listed (e.g. `OrderBy` against known field names).
+- `SqlVerifyFragment` used as the only defence on user-supplied values that could instead be allow-listed, e.g. suggesting `OrderBySafe()` for user-supplied `OrderBy` values.
 
-### 8.2 Allow-List Helpers for Dynamic Sorting and Filtering (S)
-The most common reason apps pass user input into `OrderBy(string)` is dynamic sorting. A typed allow-list helper removes the need to rely on fragment deny-lists:
+### 8.2 Allow-List Helpers for Dynamic Filtering (S)
+`OrderBySafe()` covers dynamic sorting. An equivalent helper for user-supplied filters, e.g. `?field=value` pairs, would resolve
+field names to quoted columns and only accept allowed fields and operators:
 ```csharp
-q.OrderBySafe(request.OrderBy, allowed: [nameof(Order.Id), nameof(Order.Total), nameof(Order.CreatedDate)]);
+q.WhereSafe(request.Filters, allowed: [nameof(Order.Status), nameof(Order.Total)]);
 ```
-It would support `-Field` for descending and resolve names via `ModelDefinition` into properly quoted columns.
 
 ### 8.3 Parameter Redaction in Logs (S)
 `GetDebugString` / `DebugCommand` currently log every parameter value. Add `OrmLiteConfig.RedactParam` (for example, redact fields marked `[Secret]` / `[PasswordField]` or matching names like `*password*` / `*token*`) so debug logging is safe to enable in production.

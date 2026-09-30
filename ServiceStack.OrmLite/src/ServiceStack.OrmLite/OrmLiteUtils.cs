@@ -11,11 +11,13 @@
 
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,7 +33,52 @@ public static class OrmLiteUtils
     internal const string AsyncRequiresNet45Error = "Async support is only available in .NET 4.5 builds";
 
     public static int MaxCachedIndexFields { get; set; } = 1000;
-    private static readonly Dictionary<IndexFieldsCacheKey, Tuple<FieldDefinition, int, IOrmLiteConverter>[]> indexFieldsCache = new();
+    private static readonly ConcurrentDictionary<IndexFieldsKey, IndexFieldsEntry> indexFieldsCache = new();
+
+    // Allocation-free cache key of the reader columns being mapped, verified against the entry's column names on hit
+    private readonly struct IndexFieldsKey(ModelDefinition modelDef, IOrmLiteDialectProvider dialect, 
+        int startPos, int endPos, bool hasOnlyFields, int namesHash) : IEquatable<IndexFieldsKey>
+    {
+        private readonly ModelDefinition modelDef = modelDef;
+        private readonly IOrmLiteDialectProvider dialect = dialect;
+        private readonly int startPos = startPos;
+        private readonly int endPos = endPos;
+        private readonly bool hasOnlyFields = hasOnlyFields;
+        private readonly int namesHash = namesHash;
+
+        public bool Equals(IndexFieldsKey other) => ReferenceEquals(modelDef, other.modelDef) 
+            && ReferenceEquals(dialect, other.dialect) && startPos == other.startPos && endPos == other.endPos 
+            && hasOnlyFields == other.hasOnlyFields && namesHash == other.namesHash;
+        public override bool Equals(object obj) => obj is IndexFieldsKey other && Equals(other);
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = namesHash;
+                hash = hash * 31 + modelDef.GetHashCode();
+                hash = hash * 31 + dialect.GetHashCode();
+                hash = hash * 31 + startPos;
+                hash = hash * 31 + endPos;
+                return hash * 31 + (hasOnlyFields ? 1 : 0);
+            }
+        }
+    }
+
+    private sealed class IndexFieldsEntry(string[] columnNames, Tuple<FieldDefinition, int, IOrmLiteConverter>[] result)
+    {
+        public readonly string[] ColumnNames = columnNames;
+        public readonly Tuple<FieldDefinition, int, IOrmLiteConverter>[] Result = result;
+
+        public bool Matches(IDataReader reader, int startPos)
+        {
+            for (var i = 0; i < ColumnNames.Length; i++)
+            {
+                if (!string.Equals(ColumnNames[i], reader.GetName(startPos + i), StringComparison.Ordinal))
+                    return false;
+            }
+            return true;
+        }
+    }
 
     internal static ILog Log => OrmLiteLog.Log;
 
@@ -389,6 +436,77 @@ public static class OrmLiteUtils
         return StringBuilderCache.ReturnAndFree(sb);
     }
 
+    /// <summary>
+    /// Returns ids split into batches of at most dialect.MaxInListParams, always returns at least 1 (possibly empty) batch
+    /// </summary>
+    internal static List<List<object>> GetIdBatches(IEnumerable idValues, IOrmLiteDialectProvider dialect)
+    {
+        var ids = Sql.Flatten(idValues);
+        var max = dialect.MaxInListParams;
+        if (max <= 0 || ids.Count <= max)
+            return [ids];
+
+        var batches = new List<List<object>>();
+        for (var i = 0; i < ids.Count; i += max)
+            batches.Add(ids.GetRange(i, Math.Min(max, ids.Count - i)));
+        return batches;
+    }
+
+    // Input params that have been added to a command, SQL Server + PostgreSQL don't allow re-using them in other commands
+    private static readonly ConditionalWeakTable<IDbDataParameter, object> paramsInUse = new();
+    private static readonly ConditionalWeakTable<IDbDataParameter, object>.CreateValueCallback inUseFn = _ => EmptyObject;
+    private static readonly object EmptyObject = new();
+
+    /// <summary>
+    /// Adds db params to the command, adding clones of Input params that were previously added to another command,
+    /// e.g. when re-executing the same SqlExpression, as SQL Server + PostgreSQL don't allow re-using db params
+    /// </summary>
+    public static void AddParams(this IDbCommand dbCmd, IEnumerable<IDbDataParameter> sqlParams)
+    {
+        if (sqlParams == null)
+            return;
+
+        var startCount = dbCmd.Parameters.Count;
+        try
+        {
+            foreach (var sqlParam in sqlParams)
+            {
+                if (sqlParam.Direction != ParameterDirection.Input)
+                {
+                    // Add Output params as-is so callers can read their values
+                    dbCmd.Parameters.Add(sqlParam);
+                }
+                else if (paramsInUse.TryGetValue(sqlParam, out _))
+                {
+                    dbCmd.Parameters.Add(dbCmd.CloneParam(sqlParam));
+                }
+                else
+                {
+                    dbCmd.Parameters.Add(sqlParam);
+                    paramsInUse.GetValue(sqlParam, inUseFn);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // e.g. params owned by commands created outside of OrmLite
+            if (Log.IsDebugEnabled)
+                Log.Debug("Exception trying to reuse db params, executing with cloned params instead", ex);
+
+            while (dbCmd.Parameters.Count > startCount)
+                dbCmd.Parameters.RemoveAt(dbCmd.Parameters.Count - 1);
+            foreach (var sqlParam in sqlParams)
+                dbCmd.Parameters.Add(dbCmd.CloneParam(sqlParam));
+        }
+    }
+
+    private static IDbDataParameter CloneParam(this IDbCommand dbCmd, IDbDataParameter sqlParam)
+    {
+        var p = dbCmd.CreateParameter();
+        p.PopulateWith(sqlParam);
+        return p;
+    }
+
     internal static string SetIdsInSqlParams(this IDbCommand dbCmd, IEnumerable idValues)
     {
         var inArgs = Sql.Flatten(idValues);
@@ -706,29 +824,17 @@ public static class OrmLiteUtils
         int? endPos = null)
     {
         var fieldCount = reader.FieldCount;
-        var sb = StringBuilderCache.Allocate();
-        for (int i = 0; i < fieldCount; i++)
-        {
-            if (sb.Length > 0)
-                sb.Append(", ");
-            sb.Append(reader.GetName(i));
-        }
-        var fieldNames = StringBuilderCache.ReturnAndFree(sb);
-        
         var end = endPos.GetValueOrDefault(fieldCount);
-        var cacheKey = (startPos == 0 && end == fieldCount && onlyFields == null)
-            ? new IndexFieldsCacheKey(fieldNames, modelDefinition, dialect)
-            : null;
 
-        Tuple<FieldDefinition, int, IOrmLiteConverter>[] value;
-        if (cacheKey != null) 
+        var namesHash = 17;
+        unchecked
         {
-            lock (indexFieldsCache)
-            {
-                if (indexFieldsCache.TryGetValue(cacheKey, out value))
-                    return value;
-            }
+            for (var i = startPos; i < end; i++)
+                namesHash = namesHash * 31 + (reader.GetName(i)?.GetHashCode() ?? 0);
         }
+        var cacheKey = new IndexFieldsKey(modelDefinition, dialect, startPos, end, onlyFields != null, namesHash);
+        if (indexFieldsCache.TryGetValue(cacheKey, out var entry) && entry.Matches(reader, startPos))
+            return entry.Result;
 
         var cache = new List<Tuple<FieldDefinition, int, IOrmLiteConverter>>();
         var ignoredFields = modelDefinition.IgnoredFieldDefinitions;
@@ -789,17 +895,13 @@ public static class OrmLiteUtils
 
         var result = cache.ToArray();
 
-        if (cacheKey != null)
-        {
-            lock (indexFieldsCache)
-            {
-                if (indexFieldsCache.TryGetValue(cacheKey, out value))
-                    return value;
-                if (indexFieldsCache.Count >= MaxCachedIndexFields)
-                    indexFieldsCache.Clear();
-                indexFieldsCache.Add(cacheKey, result);
-            }
-        }
+        var columnNames = new string[end - startPos];
+        for (var i = startPos; i < end; i++)
+            columnNames[i - startPos] = reader.GetName(i);
+
+        if (indexFieldsCache.Count >= MaxCachedIndexFields)
+            indexFieldsCache.Clear();
+        indexFieldsCache[cacheKey] = new IndexFieldsEntry(columnNames, result);
 
         return result;
     }

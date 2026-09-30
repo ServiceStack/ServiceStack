@@ -35,6 +35,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     protected static readonly ILog Log = LogManager.GetLogger(typeof(IOrmLiteDialectProvider));
     public virtual DbKind Kind => DbKind.Unknown;
 
+    public int MaxInListParams { get; set; } = 1000;
+
     #region ADO.NET supported types
     /* ADO.NET UNDERSTOOD DATA TYPES:
         COUNTER	DbType.Int64

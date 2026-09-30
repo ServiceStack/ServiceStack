@@ -35,6 +35,12 @@ public enum DbKind
 public interface IOrmLiteDialectProvider
 {
     DbKind Kind { get; }
+
+    /// <summary>
+    /// Max number of values in a single IN list (i.e. db params) before APIs like SelectByIds / DeleteByIds are
+    /// executed in batches and Contains() expressions use an alternative strategy
+    /// </summary>
+    int MaxInListParams { get; set; }
     
     /// <summary>
     /// Configure Provider with connection string options 
