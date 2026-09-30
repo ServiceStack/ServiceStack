@@ -154,15 +154,7 @@ var nearest = db.Select(db.From<Doc>().OrderBy(x => Sql.CosineDistance(x.Embeddi
 
 ## 4. Performance
 
-### 4.1 Source-Generated Mappers and NativeAOT / Trimming Support (L)
-Row mapping, parameter binding and `ModelDefinition` construction are reflection-based. An incremental source generator (`[OrmLiteModel]` or assembly-level opt-in) could emit:
-- The `ModelDefinition` and field accessors (getters and setters without delegate invocation).
-- A typed `IDataReader` → `T` materializer that uses `GetInt32` / `GetString` instead of `object[]` boxing through `GetValues()`.
-- Parameter binders for insert and update.
-
-This would make OrmLite trimming- and NativeAOT-compatible, which is increasingly important for containers, serverless and edge deployments. It would also reduce startup time and GC pressure.
-
-### 4.2 Compiled / Cached Queries (M)
+### 4.1 Compiled / Cached Queries (M)
 Expression visiting and SQL generation run on every call. A compiled-query API caches the SQL text once and only re-binds parameters:
 ```csharp
 static readonly var ByCustomer = OrmLite.Compile((IDbConnection db, int customerId) =>
@@ -171,10 +163,10 @@ var orders = db.Select(ByCustomer, 42);
 ```
 Prepared-statement reuse (`DbCommand.Prepare()` / `DbBatch`) could be layered on top.
 
-### 4.3 `DbBatch` Support (.NET 6+) (M)
+### 4.2 `DbBatch` Support (.NET 6+) (M)
 Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector.
 
-### 4.4 Hot-Path Allocation Work (S each)
+### 4.3 Hot-Path Allocation Work (S each)
 These came out of the code review and are listed here so they can be tracked:
 - **`GetIndexFieldsCache`**: builds a `string` of every column name and takes a global `lock` on every query. It should use a `ConcurrentDictionary` with a non-allocating hash key (column count plus a rolling hash of names). Results are also never cached for multi-table reads (`startPos` / `onlyFields`: `SelectMulti`, `LoadSelect`, joins), so the O(columns × fields) mapping is recomputed on every query.
 - **`CopyParamsTo` / `SetParameters`**: use a `try/catch` as control flow. On SQL Server and PostgreSQL, re-executing a `SqlExpression` throws and catches an exception every time. `CopyParamsTo` can also leave duplicate parameters if the first attempt partially succeeded. Params should be cloned deterministically when they're owned by another command.
