@@ -140,6 +140,8 @@ namespace ServiceStack.OrmLite
             to.setOperationParams = setOperationParams != null ? new List<IDbDataParameter>(setOperationParams) : null;
             to.setOperationsSelect = setOperationsSelect;
             to.withClause = withClause;
+            to.forUpdate = forUpdate;
+            to.forUpdateSkipLocked = forUpdateSkipLocked;
 
             to.underlyingExpression = underlyingExpression;
             to.SqlFilter = SqlFilter;
@@ -218,6 +220,8 @@ namespace ServiceStack.OrmLite
             sb.Append(skipParameterizationForThisExpression ? "1" : "0");
             sb.Append(UseSelectPropertiesAsAliases ? "1" : "0");
             sb.Append(hasEnsureConditions ? "1" : "0");
+            sb.Append(forUpdate ? "1" : "0");
+            sb.Append(forUpdateSkipLocked ? "1" : "0");
             sb.AppendLine();
 
             if (withClause != null)
@@ -1607,10 +1611,20 @@ namespace ServiceStack.OrmLite
             SelectFilter?.Invoke(this);
             OrmLiteConfig.SqlExpressionSelectFilter?.Invoke(GetUntyped());
 
-            var sql = HasSetOperations
-                ? ToSetOperationsSelectStatement(forType)
-                : DialectProvider
-                .ToSelectStatement(forType, modelDef, SelectExpression, BodyExpression, OrderByExpression, offset: Offset, rows: Rows,Tags);
+            string sql;
+            if (forUpdate)
+            {
+                AssertCanLock();
+                sql = AppendLockClause(DialectProvider
+                    .ToSelectStatement(forType, modelDef, SelectExpression, GetLockedBodyExpression(), OrderByExpression, offset: Offset, rows: Rows, Tags));
+            }
+            else
+            {
+                sql = HasSetOperations
+                    ? ToSetOperationsSelectStatement(forType)
+                    : DialectProvider
+                    .ToSelectStatement(forType, modelDef, SelectExpression, BodyExpression, OrderByExpression, offset: Offset, rows: Rows,Tags);
+            }
             sql = PrefixWithClause(sql);
 
             return SqlFilter != null

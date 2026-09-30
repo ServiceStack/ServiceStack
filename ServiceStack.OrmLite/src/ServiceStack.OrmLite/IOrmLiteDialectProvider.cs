@@ -124,6 +124,20 @@ public interface IOrmLiteDialectProvider
 
     bool HasInsertReturnValues(ModelDefinition modelDef);
 
+    /// <summary>
+    /// Table hint that locks the rows selected from a table for SqlExpression.ForUpdate(), e.g. WITH (UPDLOCK, ROWLOCK)
+    /// in SQL Server, or null if the RDBMS uses a lock clause instead
+    /// </summary>
+    string GetForUpdateTableHint(bool skipLocked);
+
+    /// <summary>
+    /// Clause appended to a SELECT statement to lock the selected rows for SqlExpression.ForUpdate(), e.g. FOR UPDATE,
+    /// or null if the RDBMS uses a table hint or doesn't support row locks
+    /// </summary>
+    /// <param name="lockTable">The quoted table or alias to lock when the query has joins, otherwise null</param>
+    /// <param name="skipLocked">Skip rows locked by other transactions instead of waiting for them</param>
+    string GetForUpdateClause(string lockTable, bool skipLocked);
+
     object GetParamValue(object value, Type fieldType);
 
     // Customize DB Parameters in SELECT or WHERE queries 

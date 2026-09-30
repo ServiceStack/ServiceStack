@@ -518,6 +518,12 @@ namespace ServiceStack.OrmLite.SqlServer
         protected virtual bool ShouldReturnOnInsert(ModelDefinition modelDef, FieldDefinition fieldDef) =>
             fieldDef.ReturnOnInsert || (fieldDef.IsPrimaryKey && fieldDef.AutoIncrement && HasInsertReturnValues(modelDef)) || fieldDef.AutoId;
 
+        // UPDLOCK holds the lock until the end of the transaction, READPAST skips locked rows
+        public override string GetForUpdateTableHint(bool skipLocked) =>
+            skipLocked ? "WITH (UPDLOCK, ROWLOCK, READPAST)" : "WITH (UPDLOCK, ROWLOCK)";
+
+        public override string GetForUpdateClause(string lockTable, bool skipLocked) => null;
+
         public override bool HasInsertReturnValues(ModelDefinition modelDef) =>
             modelDef.FieldDefinitions.Any(x => x.ReturnOnInsert || (x.AutoId && x.FieldType == typeof(Guid)));
 

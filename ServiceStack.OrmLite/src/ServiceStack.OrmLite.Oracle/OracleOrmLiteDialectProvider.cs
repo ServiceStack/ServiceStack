@@ -888,6 +888,10 @@ namespace ServiceStack.OrmLite.Oracle
             return WillQuote(name) ? "\"" + name.Replace("\"", "\"\"") + "\"" : name;
         }
 
+        // Oracle's FOR UPDATE OF takes columns instead of tables
+        public override string GetForUpdateClause(string lockTable, bool skipLocked) =>
+            "FOR UPDATE" + (skipLocked ? " SKIP LOCKED" : "");
+
         public override string GetQuotedName(string name)
         {
             return Quote(name);

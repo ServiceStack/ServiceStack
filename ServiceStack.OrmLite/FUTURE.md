@@ -39,14 +39,7 @@ a joined table without round-tripping rows through .NET:
 db.UpdateFrom<Order, Customer>((o, c) => o.CustomerId == c.Id, o => new Order { Region = /* c.Region */ });
 ```
 
-### 1.4 Pessimistic Locking and Table Hints (S)
-```csharp
-var q = db.From<Account>().Where(x => x.Id == id).ForUpdate();          // FOR UPDATE / WITH (UPDLOCK, ROWLOCK)
-var q = db.From<Job>().Where(x => x.Status == "Queued").ForUpdate(skipLocked: true).Take(10);
-```
-`SKIP LOCKED` gives a portable way to build reliable work queues on PostgreSQL, MySQL 8, Oracle and SQL Server (`READPAST`).
-
-### 1.5 `DISTINCT ON` / Top-N-Per-Group Helper (S)
+### 1.4 `DISTINCT ON` / Top-N-Per-Group Helper (S)
 Native on PostgreSQL. Emulated with `ROW_NUMBER()` (see 1.2) elsewhere.
 
 ---

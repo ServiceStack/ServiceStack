@@ -113,6 +113,9 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     protected virtual bool ShouldReturnOnInsert(ModelDefinition modelDef, FieldDefinition fieldDef) =>
         fieldDef.ReturnOnInsert || (fieldDef.IsPrimaryKey && fieldDef.AutoIncrement && HasInsertReturnValues(modelDef));
 
+    // SQLite only has database-level locks, ForUpdate() is ignored
+    public override string? GetForUpdateClause(string? lockTable, bool skipLocked) => null;
+
     public override bool HasInsertReturnValues(ModelDefinition modelDef) =>
         modelDef.FieldDefinitions.Any(x => x.ReturnOnInsert);
 

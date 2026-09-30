@@ -253,6 +253,9 @@ namespace ServiceStack.OrmLite.Firebird
         protected virtual bool ShouldReturnOnInsert(ModelDefinition modelDef, FieldDefinition fieldDef) =>
             fieldDef.ReturnOnInsert || (fieldDef.IsPrimaryKey && fieldDef.AutoIncrement && HasInsertReturnValues(modelDef)) || fieldDef.AutoId;
 
+        public override string GetForUpdateClause(string lockTable, bool skipLocked) =>
+            "FOR UPDATE WITH LOCK" + (skipLocked ? " SKIP LOCKED" : "");
+
         public override bool HasInsertReturnValues(ModelDefinition modelDef) =>
             modelDef.FieldDefinitions.Any(x => x.ReturnOnInsert || (x.AutoId && x.FieldType == typeof(Guid)));
 

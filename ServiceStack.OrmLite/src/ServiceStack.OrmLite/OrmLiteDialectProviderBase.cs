@@ -1701,6 +1701,11 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual bool HasInsertReturnValues(ModelDefinition modelDef) =>
         modelDef.FieldDefinitions.Any(x => x.ReturnOnInsert);
 
+    public virtual string GetForUpdateTableHint(bool skipLocked) => null;
+
+    public virtual string GetForUpdateClause(string lockTable, bool skipLocked) =>
+        "FOR UPDATE" + (lockTable != null ? " OF " + lockTable : "") + (skipLocked ? " SKIP LOCKED" : "");
+
     public string GetDefaultValue(Type tableType, string fieldName)
     {
         var modelDef = tableType.GetModelDefinition();

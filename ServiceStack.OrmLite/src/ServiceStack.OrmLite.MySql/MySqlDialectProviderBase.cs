@@ -53,6 +53,10 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 
 	public override bool SupportsSchema => false;
 
+	// MariaDB doesn't support FOR UPDATE OF, so rows of all joined tables are locked
+	public override string GetForUpdateClause(string lockTable, bool skipLocked) =>
+		"FOR UPDATE" + (skipLocked ? " SKIP LOCKED" : "");
+
 	/// <summary>
 	/// MySQL's ON DUPLICATE KEY UPDATE also matches secondary UNIQUE constraints.
 	/// Set to false to use OrmLite's primary-key-only Save fallback instead.
