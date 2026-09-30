@@ -385,11 +385,20 @@ public static class OrmLiteWriteCommandExtensions
         OrmLiteConfig.PopulatedObjectFilter?.Invoke(objWithProperties);
     }
 
+    /// <summary>
+    /// Marks a values buffer whose reader's GetValues() failed
+    /// </summary>
+    private static readonly object GetValuesFailed = new();
+
     internal static object[] PopulateValues(this IDataReader reader, object[] values, IOrmLiteDialectProvider dialectProvider)
     {
         if (!OrmLiteConfig.DeoptimizeReader)
         {
             values ??= new object[reader.FieldCount];
+
+            // GetValues() already failed on a previous row of this reader
+            if (values.Length > 0 && ReferenceEquals(values[0], GetValuesFailed))
+                return null;
 
             try
             {
@@ -397,6 +406,9 @@ public static class OrmLiteWriteCommandExtensions
             }
             catch (Exception ex)
             {
+                // Mark the reader's reused values buffer so the rest of its rows use individual field reads
+                if (values.Length > 0)
+                    values[0] = GetValuesFailed;
                 values = null;
                 Log.Warn("Error trying to use GetValues() from DataReader. Falling back to individual field reads...", ex);
             }

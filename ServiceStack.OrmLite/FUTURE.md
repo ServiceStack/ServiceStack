@@ -86,14 +86,13 @@ var orders = db.Select(ByCustomer, 42);
 Prepared-statement reuse (`DbCommand.Prepare()` / `DbBatch`) could be layered on top.
 
 ### 4.2 `DbBatch` Support (.NET 6+) (M)
-Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector.
+Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector. The upsert SQL, which `UpsertAll` currently
+generates for each row, would then be prepared once for each distinct set of insert fields.
 
-### 4.3 Hot-Path Allocation Work (S each)
-These came out of the code review and are listed here so they can be tracked:
-- **`PopulateValues`**: when `reader.GetValues()` throws, the exception and warning log repeat for every row. It should detect the failure once and switch the rest of the reader to per-field reads.
-- **`FormatFilter`**: does repeated `string.Replace` per `{n}` and also replaces `{n}` inside quoted literals. Should use a single-pass tokenizer that skips literals.
-- **`UpsertAll`**: re-generates the upsert SQL per row, and `PrepareUpsertFields` uses `List.Contains` inside loops. It should prepare once per distinct insert-field set.
-- **`EvaluateExpression` fallback path**: calls `Expression.Lambda(...).Compile()` on every call (`SqlExpression.cs` ~L2579). Should cache it or use `preferInterpretation`.
+### 4.3 Per-Provider Reader Optimisation (S)
+`SqliteOrmLiteDialectProviderBase` sets the global `OrmLiteConfig.DeoptimizeReader = true` when it's created, which
+disables the single `GetValues()` call per row for every provider in the process, e.g. an app using SQLite and
+PostgreSQL reads PostgreSQL rows one field at a time. It should be a per-dialect setting.
 
 ---
 
