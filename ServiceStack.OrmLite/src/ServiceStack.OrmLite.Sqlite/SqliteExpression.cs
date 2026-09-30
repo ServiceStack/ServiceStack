@@ -18,7 +18,7 @@ public class SqliteExpression<T>(IOrmLiteDialectProvider dialectProvider) : SqlE
         {
             var arg = args.Count > 0 ? args[0] : null;
             if (arg == null) statement = ToCast(quotedColName.ToString());
-            else statement = $"strftime('{arg}',{quotedColName})";
+            else statement = $"strftime({DialectProvider.GetQuotedValue(arg.ToString())},{quotedColName})";
             return new PartialSqlString(statement);
         }
 

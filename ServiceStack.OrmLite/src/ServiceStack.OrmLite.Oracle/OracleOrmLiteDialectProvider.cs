@@ -877,12 +877,14 @@ namespace ServiceStack.OrmLite.Oracle
         private bool WillQuote(string name)
         {
             return QuoteNames || ReservedNames.Contains(name.ToUpper())
-                              || name.Contains(" ");
+                              || !IsRegularIdentifier(name, "$#.");
         }
 
         private string Quote(string name)
         {
-            return WillQuote(name) ? string.Format("\"{0}\"", name) : name;
+            if (name == null || IsQuotedName(name, '"'))
+                return name;
+            return WillQuote(name) ? "\"" + name.Replace("\"", "\"\"") + "\"" : name;
         }
 
         public override string GetQuotedName(string name)

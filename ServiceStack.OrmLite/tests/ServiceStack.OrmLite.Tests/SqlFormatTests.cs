@@ -113,4 +113,71 @@ public class SqlFormatTests
 		var converter = new ServiceStack.OrmLite.Converters.ByteArrayConverter();
 		Assert.That(converter.ToQuotedString(typeof(byte[]), new byte[] { 0xDE, 0xAD, 0xBE, 0xEF }), Is.EqualTo("0xDEADBEEF"));
 	}
+
+	[Test]
+	public void SqlVerifyFragment_throws_on_symbol_tokens_adjacent_to_identifiers()
+	{
+		Assert.Throws<ArgumentException>(() => "Id--".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() => "Id/*x*/".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() => "Id;TRUNCATE Users".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() => "Id;GRANT ALL ON x TO public".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() => "Id@@version".SqlVerifyFragment());
+	}
+
+	[Test]
+	public void SqlVerifyFragment_does_not_concatenate_tokens_around_quoted_strings()
+	{
+		Assert.Throws<ArgumentException>(() => "Id IN (select'1'from Users)".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() => "1'a'drop".SqlVerifyFragment());
+	}
+
+	[Test]
+	public void SqlVerifyFragment_throws_on_MySql_backslash_escaped_quotes()
+	{
+		Assert.Throws<ArgumentException>(() => "Name = '\\'' OR 1=1 -- '".SqlVerifyFragment());
+		Assert.Throws<ArgumentException>(() => "Name = '\\''; DROP TABLE x; -- '".SqlVerifyFragment());
+	}
+
+	[Test]
+	public void SqlVerifyFragment_allows_common_legal_fragments()
+	{
+		"Id".SqlVerifyFragment();
+		"Id DESC, Name ASC".SqlVerifyFragment();
+		"Id;".SqlVerifyFragment();
+		"Id = @Id AND Name = @Name".SqlVerifyFragment();
+		"Name LIKE 'A%'".SqlVerifyFragment();
+		"Path = 'C:\\temp'".SqlVerifyFragment();
+		"Field = 'a -- b; c /* d */'".SqlVerifyFragment();
+		"Price * Qty".SqlVerifyFragment();
+	}
+
+	[Test]
+	public void GetQuotedName_does_not_passthrough_malformed_quoted_names()
+	{
+		var dialect = SqliteDialect.Provider;
+		Assert.That(dialect.GetQuotedName("\"a\"; DROP TABLE b; --\""),
+			Is.EqualTo("\"\"\"a\"\"; DROP TABLE b; --\"\"\""));
+		Assert.That(dialect.GetQuotedName("\"my\"\"table\""), Is.EqualTo("\"my\"\"table\""));
+	}
+
+	[Test]
+	public void QuoteSchema_quotes_each_part_of_multi_part_schema()
+	{
+		var dialect = SqlServer2012Dialect.Provider;
+		Assert.That(dialect.QuoteSchema("db.dbo", "Table"), Is.EqualTo("\"db\".\"dbo\".\"Table\""));
+		Assert.That(dialect.QuoteSchema("dbo", "Table"), Is.EqualTo("\"dbo\".\"Table\""));
+	}
+
+	[Test]
+	public void Does_expand_in_params_without_replacing_longer_param_names()
+	{
+		var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+		using var db = dbFactory.OpenDbConnection();
+		var results = db.SqlList<int>("SELECT 1 WHERE 1 IN (@Ids) AND @IdsCount = 2",
+			new { Ids = new[] { 1, 2 }, IdsCount = 2 });
+		Assert.That(results, Is.EquivalentTo(new[] { 1 }));
+
+		results = db.SqlList<int>("SELECT 1 WHERE 1 IN (@Ids)", new { Ids = new int?[] { 1, null } });
+		Assert.That(results, Is.EquivalentTo(new[] { 1 }));
+	}
 }

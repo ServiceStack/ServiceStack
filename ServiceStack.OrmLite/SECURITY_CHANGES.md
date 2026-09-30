@@ -77,3 +77,52 @@ This document details security vulnerabilities identified and remediated across 
   - Base `ByteArrayConverter` did not override `ToQuotedString`, causing it to fall back to `value.ToString()` which output `'System.Byte[]'`.
 - **Change**:
   - Implemented `ToQuotedString` in `ByteArrayConverter` to format byte arrays as standard hex literals (`0x...`).
+
+---
+
+## 8. SQL Fragment Verification Bypasses (`OrmLiteUtils`)
+- **Severity**: High
+- **Description**:
+  - `VerifyFragmentRegEx` / `VerifySqlRegEx` only matched symbolic tokens (`--`, `;`, `/*`, `*/`, `@@`) when they were preceded by a non-word character, so fragments like `Id--`, `Id/*x*/` and `Id;TRUNCATE Users` passed `SqlVerifyFragment()`. This allowed commenting out the remainder of a query (e.g. tenant filters) or stacking statements whose keyword isn't on the deny list.
+  - `StripQuotedStrings` removed quoted literals without leaving a separator, concatenating adjacent tokens so keywords were hidden, e.g. `(select'1'from Users)` was verified as `(selectfrom users)`.
+  - Quoted literals were only parsed with ANSI (`''`) escaping. On MySQL (backslash escapes enabled by default) `'\''; DROP TABLE x; -- '` is a closed literal followed by injected SQL, whereas the verifier treated the entire input as one literal.
+- **Change**:
+  - Symbolic tokens are now illegal anywhere in a fragment (a single trailing `;` is still allowed). Removed the nested `([^\w]|^)+` repetitions from the patterns.
+  - Quoted literals are replaced with a space when stripped for verification.
+  - Fragments containing a backslash are verified under both ANSI and MySQL escaping semantics and must be safe under both.
+
+---
+
+## 9. Quoted Identifier Passthrough Bypass (`OrmLiteDialectProviderBase`)
+- **Severity**: Medium
+- **Description**:
+  - `GetQuotedName` returned any name that started and ended with the quote character verbatim, so `"a"; DROP TABLE b; --"` bypassed embedded-quote escaping.
+- **Change**:
+  - Added `IsQuotedName(name, quoteChar)`, which only passes through well-formed quoted identifiers whose embedded quotes are all doubled.
+
+---
+
+## 10. Unescaped / Unquoted Identifiers in Oracle & Firebird (`OracleOrmLiteDialectProvider`, `FirebirdOrmLiteDialectProvider`)
+- **Severity**: Medium
+- **Description**:
+  - Both providers override `GetQuotedName` with a private `Quote()` that emitted names **unquoted** unless `QuoteNames` was set or the name was reserved (or, in Oracle, contained a space), and never escaped embedded `"`.
+- **Change**:
+  - Names that aren't regular identifiers (letters, digits, `_`, `$`, `#` (Oracle) and `.`) are now always quoted, embedded `"` are doubled, and already well-formed quoted names are passed through.
+
+---
+
+## 11. Unescaped Format / Currency Literals (`SqliteExpression`, `MySqlExpression`, dialect `SqlDateFormat` / `SqlCurrency`)
+- **Severity**: Medium
+- **Description**:
+  - `x => x.Date.ToString(format)` was translated into `strftime('{format}', ...)` (SQLite) and `DATE_FORMAT(..., '{format}')` (MySQL) without escaping, so a runtime `format` value could inject SQL. The base and MySQL `SqlDateFormat`, and the MySQL, SQL Server, SQLite and PostgreSQL `SqlCurrency` symbol, had the same issue.
+- **Change**:
+  - All are now emitted with the dialect's `GetQuotedValue()`, which also applies MySQL's backslash escaping.
+
+---
+
+## 12. Regression: Multi-part Schema Quoting (`QuoteSchema`, SQL Server `Sequence`)
+- **Severity**: Low (correctness)
+- **Description**:
+  - `QuoteSchema` and SQL Server's `Sequence()` quoted multi-part schemas (e.g. `db.dbo`) by inserting `"."` and relying on `GetQuotedName` not escaping quotes. After the escaping fix in #3 this produced the single, invalid identifier `"db"".""dbo"`.
+- **Change**:
+  - Added `QuoteSchemaName()`, which quotes each schema part individually (`"db"."dbo"`).

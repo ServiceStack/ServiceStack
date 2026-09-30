@@ -29,7 +29,7 @@ public class MySqlExpression<T>(IOrmLiteDialectProvider dialectProvider) : SqlEx
             var statement = "";
             var arg = args.Count > 0 ? args[0] : null;
             if (arg == null) statement = ToCast(quotedColName.ToString());
-            else statement = $"DATE_FORMAT({quotedColName.ToString()},'{arg.ToString()}')";
+            else statement = $"DATE_FORMAT({quotedColName},{DialectProvider.GetQuotedValue(arg.ToString())})";
             return new PartialSqlString(statement);
         }
         return base.VisitColumnAccessMethod(m);

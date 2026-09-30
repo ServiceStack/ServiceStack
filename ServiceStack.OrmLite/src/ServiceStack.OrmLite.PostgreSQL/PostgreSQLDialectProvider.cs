@@ -967,7 +967,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     public override string SqlCurrency(string fieldOrValue, string currencySymbol) => currencySymbol == "$"
         ? fieldOrValue + "::text::money::text"
-        : "replace(" + fieldOrValue + "::text::money::text,'$','" + currencySymbol + "')";
+        : "replace(" + fieldOrValue + "::text::money::text,'$'," + GetQuotedValue(currencySymbol) + ")";
 
     public override string SqlCast(object fieldOrValue, string castAs) => 
         $"({fieldOrValue})::{castAs}";

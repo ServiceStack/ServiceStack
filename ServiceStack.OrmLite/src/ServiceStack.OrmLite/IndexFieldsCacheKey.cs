@@ -29,10 +29,8 @@ public class IndexFieldsCacheKey
 
     public override bool Equals (object obj)
     {
-        var that = obj as IndexFieldsCacheKey;
-            
-        if (obj == null) return false;
-            
+        if (obj is not IndexFieldsCacheKey that) return false;
+
         return this.ModelDefinition == that.ModelDefinition
                && this.Dialect == that.Dialect
                && this.Fields == that.Fields;

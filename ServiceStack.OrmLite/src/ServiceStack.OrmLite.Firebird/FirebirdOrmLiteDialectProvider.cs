@@ -703,11 +703,11 @@ namespace ServiceStack.OrmLite.Firebird
 
         private string Quote(string name)
         {
-            return QuoteNames
-                ? $"\"{name}\""
-                : RESERVED.Contains(name.ToUpper())
-                    ? $"\"{name}\""
-                    : name;
+            if (name == null || IsQuotedName(name, '"'))
+                return name;
+            return QuoteNames || RESERVED.Contains(name.ToUpper()) || !IsRegularIdentifier(name, "$.")
+                ? "\"" + name.Replace("\"", "\"\"") + "\""
+                : name;
         }
 
         public override string EscapeWildcards(string value)

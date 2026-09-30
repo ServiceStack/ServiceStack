@@ -463,13 +463,50 @@ public static class OrmLiteUtils
 
     public static TimeSpan DefaultRegexTimeout = TimeSpan.FromSeconds(1);
 
-    public static Regex VerifyFragmentRegEx = new Regex("([^\\w]|^)+(--|;--|;|%|/\\*|\\*/|@@|@|char|nchar|varchar|nvarchar|alter|begin|cast|create|cursor|declare|delete|drop|end|exec|execute|fetch|insert|kill|open|select|sys|sysobjects|syscolumns|table|update)([^\\w]|$)+",
+    // Symbolic tokens (comments, statement separators, system vars) are illegal anywhere, e.g. "Id--", "Id;TRUNCATE x"
+    // (a single trailing ';' is allowed). Keyword tokens are only illegal as whole words.
+    private const string IllegalSymbolTokensPattern = "--|;(?!\\s*$)|/\\*|\\*/|@@";
+
+    public static Regex VerifyFragmentRegEx = new Regex(
+        "(" + IllegalSymbolTokensPattern + ")|(?:[^\\w]|^)(%|@|char|nchar|varchar|nvarchar|alter|begin|cast|create|cursor|declare|delete|drop|end|exec|execute|fetch|insert|kill|open|select|sys|sysobjects|syscolumns|table|update)(?:[^\\w]|$)",
         RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase, DefaultRegexTimeout);
 
-    public static Regex VerifySqlRegEx = new Regex("([^\\w]|^)+(--|;--|;|%|/\\*|\\*/|@@|@|char|nchar|varchar|nvarchar|alter|begin|cast|create|cursor|declare|delete|drop|end|exec|execute|fetch|insert|kill|open|table|update)([^\\w]|$)+",
+    public static Regex VerifySqlRegEx = new Regex(
+        "(" + IllegalSymbolTokensPattern + ")|(?:[^\\w]|^)(%|@|char|nchar|varchar|nvarchar|alter|begin|cast|create|cursor|declare|delete|drop|end|exec|execute|fetch|insert|kill|open|table|update)(?:[^\\w]|$)",
         RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.IgnoreCase, DefaultRegexTimeout);
 
     public static Func<string,string> SqlVerifyFragmentFn { get; set; }
+
+    /// <summary>
+    /// Returns the fragments to verify after stripping quoted literals, or null if a literal is unclosed.
+    /// Literals are stripped using both ANSI ('' escapes) and MySQL (\' escapes) semantics, as the fragment
+    /// must be safe regardless of which interpretation the RDBMS uses.
+    /// </summary>
+    internal static string[] GetFragmentsToVerify(string sql)
+    {
+        var ansi = StripAllQuotedStrings(sql, backslashEscapes: false);
+        if (ansi == null)
+            return null;
+        if (sql.IndexOf('\\') == -1)
+            return [ansi];
+        var mysql = StripAllQuotedStrings(sql, backslashEscapes: true);
+        return mysql == null ? null : [ansi, mysql];
+    }
+
+    private static string StripAllQuotedStrings(string sql, bool backslashEscapes)
+    {
+        // Quoted literals are replaced with a space so adjacent tokens aren't concatenated, e.g. select'a'from
+        var s1 = StripQuotedStrings(sql, '\'', backslashEscapes, " ", out var inQuotes1);
+        if (inQuotes1)
+            return null;
+        var s2 = StripQuotedStrings(s1, '"', backslashEscapes, " ", out var inQuotes2);
+        if (inQuotes2)
+            return null;
+        var s3 = StripQuotedStrings(s2, '`', backslashEscapes: false, " ", out var inQuotes3);
+        if (inQuotes3)
+            return null;
+        return s3.ToLower();
+    }
 
     public static bool isUnsafeSql(string sql, Regex verifySql)
     {
@@ -482,25 +519,18 @@ public static class OrmLiteUtils
             return false;
         }
 
-        var s1 = sql.StripQuotedStrings('\'', out var inQuotes1);
-        if (inQuotes1)
-            return true;
-
-        var s2 = s1.StripQuotedStrings('"', out var inQuotes2);
-        if (inQuotes2)
-            return true;
-
-        var fragmentToVerify = s2
-            .StripQuotedStrings('`', out var inQuotes3)
-            .ToLower();
-
-        if (inQuotes3)
+        var fragments = GetFragmentsToVerify(sql);
+        if (fragments == null)
             return true;
 
         try
         {
-            var match = verifySql.Match(fragmentToVerify);
-            return match.Success;
+            foreach (var fragment in fragments)
+            {
+                if (verifySql.IsMatch(fragment))
+                    return true;
+            }
+            return false;
         }
         catch (RegexMatchTimeoutException)
         {
@@ -528,25 +558,17 @@ public static class OrmLiteUtils
         if (sqlFragment == null)
             return null;
 
-        var s1 = sqlFragment.StripQuotedStrings('\'', out var inQuotes1);
-        if (inQuotes1)
+        var fragments = GetFragmentsToVerify(sqlFragment);
+        if (fragments == null)
             throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
 
-        var s2 = s1.StripQuotedStrings('"', out var inQuotes2);
-        if (inQuotes2)
-            throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
-
-        var fragmentToVerify = s2
-            .StripQuotedStrings('`', out var inQuotes3)
-            .ToLower();
-
-        if (inQuotes3)
-            throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
-
-        foreach (var illegalFragment in illegalFragments)
+        foreach (var fragmentToVerify in fragments)
         {
-            if (fragmentToVerify.IndexOf(illegalFragment, StringComparison.Ordinal) >= 0)
-                throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
+            foreach (var illegalFragment in illegalFragments)
+            {
+                if (fragmentToVerify.IndexOf(illegalFragment, StringComparison.Ordinal) >= 0)
+                    throw new ArgumentException("Potential illegal fragment detected: " + sqlFragment);
+            }
         }
 
         return sqlFragment;
@@ -562,7 +584,10 @@ public static class OrmLiteUtils
         return StripQuotedStrings(text, quote, out _);
     }
 
-    public static string StripQuotedStrings(this string text, char quote, out bool inQuotes)
+    public static string StripQuotedStrings(this string text, char quote, out bool inQuotes) =>
+        StripQuotedStrings(text, quote, backslashEscapes: false, replaceWith: null, out inQuotes);
+
+    internal static string StripQuotedStrings(string text, char quote, bool backslashEscapes, string replaceWith, out bool inQuotes)
     {
         if (text == null)
         {
@@ -575,6 +600,12 @@ public static class OrmLiteUtils
         for (var i = 0; i < text.Length; i++)
         {
             var c = text[i];
+            if (inQuotes && backslashEscapes && c == '\\')
+            {
+                // Backslash escaped char within quoted literal (e.g. \' in MySQL)
+                i++;
+                continue;
+            }
             if (c == quote)
             {
                 if (inQuotes && i + 1 < text.Length && text[i + 1] == quote)
@@ -585,6 +616,8 @@ public static class OrmLiteUtils
                 }
 
                 inQuotes = !inQuotes;
+                if (!inQuotes && replaceWith != null)
+                    sb.Append(replaceWith);
                 continue;
             }
 

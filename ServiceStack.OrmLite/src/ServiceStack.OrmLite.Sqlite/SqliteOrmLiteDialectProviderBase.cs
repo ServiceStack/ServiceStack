@@ -451,7 +451,7 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
     public override string SqlConcat(IEnumerable<object> args) => string.Join(" || ", args);
 
-    public override string SqlCurrency(string fieldOrValue, string currencySymbol) => SqlConcat(["'" + currencySymbol + "'", "printf(\"%.2f\", " + fieldOrValue + ")"]);
+    public override string SqlCurrency(string fieldOrValue, string currencySymbol) => SqlConcat([GetQuotedValue(currencySymbol), "printf(\"%.2f\", " + fieldOrValue + ")"]);
 
     public override string SqlBool(bool value) => value ? "1" : "0";
 

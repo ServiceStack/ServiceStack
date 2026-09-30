@@ -1,0 +1,268 @@
+# FUTURE: ServiceStack.OrmLite Roadmap Ideas
+
+Potential features and improvements that would add value to OrmLite as a typed, code-first, low-ceremony ORM.
+Each idea keeps OrmLite's existing design principles:
+
+- **Stateless extension methods** on `IDbConnection` with no context object and no change tracker.
+- **Typed first, SQL-friendly**: typed APIs that compile to predictable SQL, with an easy escape hatch to raw SQL.
+- **Dialect-agnostic**: works across providers, with graceful fallbacks (or clear `NotSupportedException`s) where an RDBMS lacks a feature.
+- **Symmetric sync and async APIs**.
+
+Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
+
+---
+
+## 1. Query Expressiveness
+
+### 1.1 Common Table Expressions (CTEs), including recursive ones (M)
+There is no typed CTE support today, so hierarchical data (org charts, categories, threaded comments) needs raw SQL.
+
+```csharp
+var q = db.From<Category>()
+    .WithRecursive("tree",
+        seed: db.From<Category>().Where(x => x.ParentId == null),
+        recurse: (cte, c) => c.ParentId == cte.Id)
+    .Select<Category>();
+var tree = db.Select<Category>(q);
+```
+- Supported by all maintained dialects (MySQL 8+, SQLite 3.8.3+, Firebird 2.1+).
+- Also gives a clean base for 1.2 and 1.4.
+
+### 1.2 Window Functions (M)
+```csharp
+var q = db.From<Order>()
+    .Select(x => new {
+        x.Id, x.CustomerId, x.Total,
+        Rank = Sql.RowNumber().Over(p => p.PartitionBy(x.CustomerId).OrderByDescending(x.Total)),
+        RunningTotal = Sql.Sum(x.Total).Over(p => p.PartitionBy(x.CustomerId).OrderBy(x.CreatedDate)),
+    });
+```
+- `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`/`LEAD`, `FIRST_VALUE`, and aggregate `OVER (...)`.
+- Enables "top N per group" queries, which are a common request.
+
+### 1.3 Set Operations: `UNION [ALL]`, `INTERSECT`, `EXCEPT` (S)
+```csharp
+var q = db.From<Customer>().Select(x => x.Email)
+    .UnionAll(db.From<Lead>().Select(x => x.Email));
+```
+Parameters from both expressions must be merged and renamed, reusing the existing sub-select param rebinding logic.
+
+### 1.4 `INSERT ... SELECT` and `UPDATE ... FROM` (S/M)
+Set-based data movement without round-tripping rows through .NET:
+```csharp
+db.InsertInto<OrderArchive>(db.From<Order>().Where(x => x.CreatedDate < cutoff));
+db.UpdateFrom<Order, Customer>((o, c) => o.CustomerId == c.Id, o => new Order { Region = /* c.Region */ });
+```
+
+### 1.5 Pessimistic Locking and Table Hints (S)
+```csharp
+var q = db.From<Account>().Where(x => x.Id == id).ForUpdate();          // FOR UPDATE / WITH (UPDLOCK, ROWLOCK)
+var q = db.From<Job>().Where(x => x.Status == "Queued").ForUpdate(skipLocked: true).Take(10);
+```
+`SKIP LOCKED` gives a portable way to build reliable work queues on PostgreSQL, MySQL 8, Oracle and SQL Server (`READPAST`).
+
+### 1.6 Keyset (Seek) Pagination (S)
+Offset paging degrades on large tables. A typed helper would fix that:
+```csharp
+var page = db.Select(db.From<Post>().OrderBy(x => x.CreatedDate).ThenBy(x => x.Id)
+    .SeekAfter(last.CreatedDate, last.Id).Take(50));
+```
+This generates the correct compound predicate (`(a > @a) OR (a = @a AND b > @b)`) from the `ORDER BY` columns.
+
+### 1.7 `DISTINCT ON` / Top-N-Per-Group Helper (S)
+Native on PostgreSQL. Emulated with `ROW_NUMBER()` (see 1.2) elsewhere.
+
+---
+
+## 2. Data Access
+
+### 2.1 `IAsyncEnumerable<T>` Streaming (S)
+`SelectLazy` / `ColumnLazy` exist for sync only. Add:
+```csharp
+await foreach (var row in db.SelectStreamAsync(db.From<Event>().Where(x => x.Day == today), token))
+    ...
+```
+This processes large result sets with bounded memory, without blocking a thread.
+
+### 2.2 `RETURNING` / `OUTPUT` for Mutations (M)
+Return the affected rows (or chosen columns) in one round-trip:
+```csharp
+List<Order> updated = db.UpdateReturning(
+    new Order { Status = "Shipped" }, where: x => x.Status == "Packed", onlyFields: x => x.Status);
+List<long> ids = db.DeleteReturning<Session>(x => x.Expires < now, returning: x => x.Id);
+```
+- PostgreSQL, SQLite 3.35+ and MariaDB use `RETURNING`; SQL Server uses `OUTPUT INSERTED.*/DELETED.*`.
+- Also removes the extra `SELECT` that `Upsert` and `Update` currently run to refresh `RowVersion`.
+
+### 2.3 Large `IN` Lists: Chunking and Array Parameters (M)
+`SelectByIds`, `DeleteByIds`, `Where(x => ids.Contains(x.Id))` and `new { ids }` args create one parameter per value. This fails past provider limits (SQL Server: 2100) and bloats the plan cache. Options:
+- PostgreSQL: `= ANY(@ids)` with a single array parameter.
+- SQL Server: `IN (SELECT value FROM OPENJSON(@ids))` or a table-valued parameter.
+- Others: transparent chunking for `DeleteByIds` / `SelectByIds`, and a `NotSupportedException` with a clear message for expressions.
+- A configurable `OrmLiteConfig.MaxInListParams` threshold.
+
+### 2.4 Bulk Upsert / Merge (M)
+`BulkInsert` exists. Add `BulkUpsert<T>(rows, updateOnly)` that bulk-loads into a temp table (COPY / SqlBulkCopy / multi-row VALUES), then runs one `MERGE` / `ON CONFLICT` / `ON DUPLICATE KEY` statement.
+
+### 2.5 Interpolated-String Safe Raw SQL (S/M)
+Raw SQL is where most injection bugs appear. A C# `InterpolatedStringHandler` can turn holes into parameters automatically:
+```csharp
+var rows = db.SqlList<Order>(Sql.Fmt($"SELECT * FROM Orders WHERE CustomerId = {customerId} AND Total > {min}"));
+q.Where(Sql.Fmt($"{q.Column<Order>(x => x.Total)} > {min}"));   // column refs stay unparameterized
+```
+This uses an explicit `Sql.Fmt(...)` / `SqlFormattable` type instead of adding `FormattableString` overloads, so existing `string` overloads don't change meaning.
+
+---
+
+## 3. Modelling
+
+### 3.1 Global Query Filters: Soft Delete and Multi-Tenancy (M)
+`SqlExpressionSelectFilter` exists but is untyped and applies globally. Add typed, composable filters that apply to `Select`, `Count`, `LoadSelect` and joins, and optionally to `Update` / `Delete`:
+```csharp
+OrmLiteConfig.AddQueryFilter<ISoftDelete>(q => q.Where(x => !x.IsDeleted));
+OrmLiteConfig.AddQueryFilter<ITenant>(q => q.Where(x => x.TenantId == TenantContext.Id));
+db.From<Order>().IgnoreQueryFilters();
+```
+- `[SoftDelete]` would turn `db.Delete<T>(...)` into an `UPDATE ... SET IsDeleted = 1`.
+- This is also a good defence-in-depth control, because tenant filters can't be forgotten in individual queries.
+
+### 3.2 Auditing Columns (S)
+Auto-populate columns tagged with `[CreatedDate]`, `[ModifiedDate]`, `[CreatedBy]` and `[ModifiedBy]` on insert, update and upsert. Values come from a pluggable `OrmLiteConfig.AuditUserResolver`, which is cheaper and more discoverable than hand-written `InsertFilter` / `UpdateFilter` code.
+
+### 3.3 LINQ Queries Into JSON / Complex-Type Columns (L)
+Complex properties are already stored as JSON/JSV text blobs, but querying them needs `Sql.JsonValue("path")` strings. Translate member access directly:
+```csharp
+db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
+```
+- PostgreSQL uses `jsonb` operators, SQL Server uses `JSON_VALUE` / `OPENJSON`, SQLite uses `json_extract`, and MySQL uses `->>`.
+- Includes optional `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes.
+- Requires JSON (not JSV) serialization for the column, so this would be opt-in via `[Json]` / `[PgSqlJsonB]`.
+
+### 3.4 Vector Columns and Similarity Search (M)
+First-class `float[]` / `ReadOnlyMemory<float>` vector columns for AI and RAG apps. Supported natively by pgvector, SQL Server 2025 `VECTOR`, sqlite-vec and MySQL 9 `VECTOR`:
+```csharp
+public class Doc { public int Id { get; set; } [Vector(1536)] public float[] Embedding { get; set; } }
+var nearest = db.Select(db.From<Doc>().OrderBy(x => Sql.CosineDistance(x.Embedding, queryVec)).Take(5));
+```
+- Includes index DDL (`HNSW` / `IVFFLAT`) through attributes.
+- Would pair naturally with ServiceStack's AI features.
+
+### 3.5 Temporal / System-Versioned Tables (M)
+`[SystemVersioned]` DDL support, plus `q.AsOf(timestamp)` / `q.Between(from, to)` for SQL Server temporal tables and MariaDB system-versioned tables. On other dialects this would be emulated with history tables and triggers.
+
+---
+
+## 4. Performance
+
+### 4.1 Source-Generated Mappers and NativeAOT / Trimming Support (L)
+Row mapping, parameter binding and `ModelDefinition` construction are reflection-based. An incremental source generator (`[OrmLiteModel]` or assembly-level opt-in) could emit:
+- The `ModelDefinition` and field accessors (getters and setters without delegate invocation).
+- A typed `IDataReader` → `T` materializer that uses `GetInt32` / `GetString` instead of `object[]` boxing through `GetValues()`.
+- Parameter binders for insert and update.
+
+This would make OrmLite trimming- and NativeAOT-compatible, which is increasingly important for containers, serverless and edge deployments. It would also reduce startup time and GC pressure.
+
+### 4.2 Compiled / Cached Queries (M)
+Expression visiting and SQL generation run on every call. A compiled-query API caches the SQL text once and only re-binds parameters:
+```csharp
+static readonly var ByCustomer = OrmLite.Compile((IDbConnection db, int customerId) =>
+    db.From<Order>().Where(x => x.CustomerId == customerId).OrderByDescending(x => x.Id));
+var orders = db.Select(ByCustomer, 42);
+```
+Prepared-statement reuse (`DbCommand.Prepare()` / `DbBatch`) could be layered on top.
+
+### 4.3 `DbBatch` Support (.NET 6+) (M)
+Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector.
+
+### 4.4 Hot-Path Allocation Work (S each)
+These came out of the code review and are listed here so they can be tracked:
+- **`GetIndexFieldsCache`**: builds a `string` of every column name and takes a global `lock` on every query. It should use a `ConcurrentDictionary` with a non-allocating hash key (column count plus a rolling hash of names). Results are also never cached for multi-table reads (`startPos` / `onlyFields`: `SelectMulti`, `LoadSelect`, joins), so the O(columns × fields) mapping is recomputed on every query.
+- **`CopyParamsTo` / `SetParameters`**: use a `try/catch` as control flow. On SQL Server and PostgreSQL, re-executing a `SqlExpression` throws and catches an exception every time. `CopyParamsTo` can also leave duplicate parameters if the first attempt partially succeeded. Params should be cloned deterministically when they're owned by another command.
+- **`PopulateValues`**: when `reader.GetValues()` throws, the exception and warning log repeat for every row. It should detect the failure once and switch the rest of the reader to per-field reads.
+- **`ConvertInExpressionToSql`**: allocates a `new Regex` per renamed parameter for every sub-select. Should use a single-pass token replacer (like `ReplaceParamToken`).
+- **`FormatFilter`**: does repeated `string.Replace` per `{n}` and also replaces `{n}` inside quoted literals. Should use a single-pass tokenizer that skips literals.
+- **`UpsertAll`**: re-generates the upsert SQL per row, and `PrepareUpsertFields` uses `List.Contains` inside loops. It should prepare once per distinct insert-field set.
+- **`EvaluateExpression` fallback path**: calls `Expression.Lambda(...).Compile()` on every call (`SqlExpression.cs` ~L2579). Should cache it or use `preferInterpretation`.
+
+---
+
+## 5. Schema and Migrations
+
+### 5.1 Schema Diff and Migration Scaffolding (L)
+Compare `ModelDefinition`s against the live schema (columns, types, nullability, indexes, foreign keys) and emit:
+```csharp
+var diff = db.GetSchemaDiff<Order>();      // added/removed/changed columns & indexes
+db.ApplySchemaDiff(diff, allowDestructive: false);
+```
+The existing `Migrator` could also generate a new migration class from the diff. This bridges the gap between `CreateTableIfNotExists` and hand-written migrations.
+
+### 5.2 Database-First Model Generation (M)
+Replace the legacy T4 templates with a `dotnet` tool (or `x` tool command) that generates OrmLite POCOs from an existing database, reusing the dialect catalog queries.
+
+### 5.3 Richer DDL Attributes (S)
+Would cover:
+- Partial and filtered indexes: `[Index(Where = "IsDeleted = 0")]`.
+- Covering indexes: `INCLUDE`.
+- Descending index columns.
+- Generated / stored columns.
+- `CHECK` constraints for enums (`[EnumAsCheck]`).
+- Table and column comments (`[Description]` → `COMMENT ON`).
+
+---
+
+## 6. Observability and Diagnostics
+
+### 6.1 OpenTelemetry `ActivitySource` (S)
+Emit `db.system`, `db.statement` (with an opt-in parameter-redaction policy), `db.operation`, row counts and durations as OTel spans. This would build on the existing `OrmLiteDiagnostics` `DiagnosticListener` events so it works with standard APM tooling without custom listeners.
+
+### 6.2 `db.Explain(q)` (S)
+Returns the provider's query plan (`EXPLAIN [ANALYZE]`, `SET SHOWPLAN_XML`, `EXPLAIN QUERY PLAN`), which helps with index tuning from tests or admin UIs.
+
+### 6.3 Slow Query Log and N+1 Detection (S)
+A configurable threshold that logs the SQL, parameters (redacted) and caller for slow commands. There could also be a debug-mode detector that warns when the same statement shape runs more than N times within one request or connection.
+
+---
+
+## 7. Resilience
+
+### 7.1 Transient-Fault Retry Policies (S/M)
+```csharp
+dbFactory.RetryPolicy = OrmLiteRetry.Exponential(maxRetries: 3)
+    .Handle(SqlServerTransient.IsTransient)   // deadlocks (1205), Azure throttling, failover
+    .Handle(PostgresTransient.IsTransient);   // serialization failures (40001), connection resets
+```
+Retries would only apply outside explicit transactions, or re-run a whole `db.InTransaction(fn)` block. Serializable isolation and cloud databases make this important.
+
+### 7.2 Read/Write Connection Routing (S)
+Named connections exist, but routing is manual. An `OpenReadOnlyDbConnection()` (or `db.ReadReplica()`) convention would pick a replica connection string automatically, falling back to the primary when no replica is configured.
+
+---
+
+## 8. Security
+
+### 8.1 Roslyn Analyzer Package (M)
+A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
+- String concatenation or interpolation passed to `Where(string)`, `OrderBy(string)`, `Unsafe*`, `SqlList(string)` and `ExecuteSql(string)`. The code fix would suggest parameters or `Sql.Fmt` (2.5).
+- Use of `Unsafe*` APIs with non-constant arguments.
+- `SqlVerifyFragment` used as the only defence on user-supplied values that could instead be allow-listed (e.g. `OrderBy` against known field names).
+
+### 8.2 Allow-List Helpers for Dynamic Sorting and Filtering (S)
+The most common reason apps pass user input into `OrderBy(string)` is dynamic sorting. A typed allow-list helper removes the need to rely on fragment deny-lists:
+```csharp
+q.OrderBySafe(request.OrderBy, allowed: [nameof(Order.Id), nameof(Order.Total), nameof(Order.CreatedDate)]);
+```
+It would support `-Field` for descending and resolve names via `ModelDefinition` into properly quoted columns.
+
+### 8.3 Parameter Redaction in Logs (S)
+`GetDebugString` / `DebugCommand` currently log every parameter value. Add `OrmLiteConfig.RedactParam` (for example, redact fields marked `[Secret]` / `[PasswordField]` or matching names like `*password*` / `*token*`) so debug logging is safe to enable in production.
+
+---
+
+## 9. Smaller Correctness Items From the Code Review (Not Yet Fixed)
+
+- `OpenDbConnection*()` doesn't dispose the connection if `Open()` or `configure` throws. The named-connection `OpenDbConnectionAsync` overloads also call the default factory's `DialectProvider.OpenAsync` instead of the named factory's when the connection isn't an `OrmLiteConnection`.
+- `OrmLiteConnection.Dispose()` writes exceptions to `Console.WriteLine` in addition to the logger.
+- `SqlExpression.UnsafeFrom` decides whether to quote the table using `rawFrom.ToLower().IndexOfAny("join", ",")`, so a table named e.g. `Rejoinder` is not quoted.
+- `ToDeleteRowStatement()` with joins emits `DELETE ... WHERE pk IN (SELECT pk FROM same_table JOIN ...)`, which MySQL rejects (error 1093). MySQL needs `DELETE t FROM t JOIN ...` or a derived-table wrapper.
+- The SQL Server `SqlGeography` / `SqlGeometry` / `SqlHierarchyId` converters' `ToQuotedString` wrap `ToString()` output in quotes without escaping. The output is WKT, so this is low risk, but it should use `GetQuotedValue`.
+- Firebird `FbSchema/Schema.cs` catalog queries interpolate `'{tableName}'` / `'{name}'` without `.SqlParam()`.

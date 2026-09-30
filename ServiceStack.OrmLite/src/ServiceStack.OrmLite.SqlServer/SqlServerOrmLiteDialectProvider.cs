@@ -507,10 +507,7 @@ namespace ServiceStack.OrmLite.SqlServer
             if (schema == null)
                 return GetQuotedName(sequence);
 
-            var escapedSchema = NamingStrategy.GetSchemaName(schema)
-                .Replace(".", "\".\"");
-
-            return GetQuotedName(escapedSchema)
+            return QuoteSchemaName(NamingStrategy.GetSchemaName(schema))
                    + "."
                    + GetQuotedName(sequence);
         }
@@ -813,7 +810,7 @@ namespace ServiceStack.OrmLite.SqlServer
         }
 
         public override string SqlCurrency(string fieldOrValue, string currencySymbol) => 
-            SqlConcat(new[] { "'" + currencySymbol + "'", $"CONVERT(VARCHAR, CONVERT(MONEY, {fieldOrValue}), 1)" });
+            SqlConcat(new[] { GetQuotedValue(currencySymbol), $"CONVERT(VARCHAR, CONVERT(MONEY, {fieldOrValue}), 1)" });
 
         public override string SqlBool(bool value) => value ? "1" : "0";
 

@@ -595,7 +595,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 	}
 
 	public override string SqlCurrency(string fieldOrValue, string currencySymbol) =>
-		SqlConcat(new[] {$"'{currencySymbol}'", $"cast({fieldOrValue} as decimal(15,2))"});
+		SqlConcat(new[] {GetQuotedValue(currencySymbol), $"cast({fieldOrValue} as decimal(15,2))"});
 
 	public override string SqlCast(object fieldOrValue, string castAs) => 
 		castAs == Sql.VARCHAR
@@ -603,7 +603,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 			: $"CAST({fieldOrValue} AS {castAs})";
 
 	public override string SqlBool(bool value) => value ? "1" : "0";
-	public override string SqlDateFormat(string quotedColumn, string format) => $"DATE_FORMAT({quotedColumn}, '{format}')";
+	public override string SqlDateFormat(string quotedColumn, string format) => $"DATE_FORMAT({quotedColumn}, {GetQuotedValue(format)})";
 
 	public override void EnableForeignKeysCheck(IDbCommand cmd) => cmd.ExecNonQuery("SET FOREIGN_KEY_CHECKS=1;");
 	public override Task EnableForeignKeysCheckAsync(IDbCommand cmd, CancellationToken token = default) => 

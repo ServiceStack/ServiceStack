@@ -138,6 +138,75 @@ public static class OrmLiteReadCommandExtensions
         return dbCmd;
     }
 
+    /// <summary>
+    /// Adds a db param for each value and replaces the whole {ParamString}{propName} placeholder token in sql
+    /// with the comma-delimited param list, e.g. @ids => @v0,@v1 (without matching longer names like @idsCount)
+    /// </summary>
+    private static string AddInParams(this IDbCommand dbCmd, IOrmLiteDialectProvider dialectProvider,
+        string sql, string propName, IEnumerable inValues, ref int paramIndex)
+    {
+        var sb = StringBuilderCache.Allocate();
+        foreach (var item in inValues)
+        {
+            var p = dbCmd.CreateParameter();
+            p.ParameterName = "v" + paramIndex++;
+
+            if (sb.Length > 0)
+                sb.Append(',');
+            sb.Append(dialectProvider.ParamString + p.ParameterName);
+
+            p.Direction = ParameterDirection.Input;
+            if (item != null)
+            {
+                dialectProvider.InitDbParam(p, item.GetType());
+                dialectProvider.SetParamValue(p, item, item.GetType());
+            }
+            else
+            {
+                p.Value = DBNull.Value;
+            }
+
+            dbCmd.Parameters.Add(p);
+        }
+
+        var sqlIn = StringBuilderCache.ReturnAndFree(sb);
+        if (string.IsNullOrEmpty(sqlIn))
+            sqlIn = "NULL";
+        if (sql == null)
+            return null;
+
+        sql = ReplaceParamToken(sql, dialectProvider.ParamString + propName, sqlIn);
+        if (dialectProvider.ParamString != "@")
+            sql = ReplaceParamToken(sql, "@" + propName, sqlIn);
+        return sql;
+    }
+
+    /// <summary>
+    /// Replace all occurrences of a param token not followed by an identifier char, i.e. @id but not @idx
+    /// </summary>
+    internal static string ReplaceParamToken(string sql, string token, string replaceWith)
+    {
+        var pos = sql.IndexOf(token, StringComparison.Ordinal);
+        if (pos < 0)
+            return sql;
+
+        var sb = StringBuilderCache.Allocate();
+        var lastPos = 0;
+        while (pos >= 0)
+        {
+            var endPos = pos + token.Length;
+            var isWholeToken = endPos >= sql.Length || !(char.IsLetterOrDigit(sql[endPos]) || sql[endPos] == '_');
+            if (isWholeToken)
+            {
+                sb.Append(sql, lastPos, pos - lastPos).Append(replaceWith);
+                lastPos = endPos;
+            }
+            pos = sql.IndexOf(token, endPos, StringComparison.Ordinal);
+        }
+        sb.Append(sql, lastPos, sql.Length - lastPos);
+        return StringBuilderCache.ReturnAndFree(sb);
+    }
+
     private static IEnumerable GetMultiValues(object value)
     {
         if (value is SqlInValues inValues)
@@ -170,31 +239,7 @@ public static class OrmLiteReadCommandExtensions
             var inValues = sql != null ? GetMultiValues(value) : null;
             if (inValues != null)
             {
-                var propType = value?.GetType() ?? typeof(object);
-                var sb = StringBuilderCache.Allocate();
-                foreach (var item in inValues)
-                {
-                    var p = dbCmd.CreateParameter();
-                    p.ParameterName = "v" + paramIndex++;
-
-                    if (sb.Length > 0)
-                        sb.Append(',');
-                    sb.Append(dialectProvider.ParamString + p.ParameterName);
-
-                    p.Direction = ParameterDirection.Input;
-                    dialectProvider.InitDbParam(p, item.GetType());
-
-                    dialectProvider.SetParamValue(p, item, item.GetType());
-
-                    dbCmd.Parameters.Add(p);
-                }
-
-                var sqlIn = StringBuilderCache.ReturnAndFree(sb);
-                if (string.IsNullOrEmpty(sqlIn))
-                    sqlIn = "NULL";
-                sqlCopy = sqlCopy?.Replace(dialectProvider.ParamString + propName, sqlIn);
-                if (dialectProvider.ParamString != "@")
-                    sqlCopy = sqlCopy?.Replace("@" + propName, sqlIn);
+                sqlCopy = dbCmd.AddInParams(dialectProvider, sqlCopy, propName, inValues, ref paramIndex);
             }
             else
             {
@@ -241,30 +286,7 @@ public static class OrmLiteReadCommandExtensions
             var inValues = GetMultiValues(value);
             if (inValues != null)
             {
-                var sb = StringBuilderCache.Allocate();
-                foreach (var item in inValues)
-                {
-                    var p = dbCmd.CreateParameter();
-                    p.ParameterName = "v" + paramIndex++;
-
-                    if (sb.Length > 0)
-                        sb.Append(',');
-                    sb.Append(dialectProvider.ParamString + p.ParameterName);
-
-                    p.Direction = ParameterDirection.Input;
-                    dialectProvider.InitDbParam(p, item.GetType());
-
-                    dialectProvider.SetParamValue(p, item, item.GetType());
-
-                    dbCmd.Parameters.Add(p);
-                }
-
-                var sqlIn = StringBuilderCache.ReturnAndFree(sb);
-                if (string.IsNullOrEmpty(sqlIn))
-                    sqlIn = "NULL";
-                sqlCopy = sqlCopy?.Replace(dialectProvider.ParamString + propName, sqlIn);
-                if (dialectProvider.ParamString != "@")
-                    sqlCopy = sqlCopy?.Replace("@" + propName, sqlIn);
+                sqlCopy = dbCmd.AddInParams(dialectProvider, sqlCopy, propName, inValues, ref paramIndex);
             }
             else
             {
