@@ -218,7 +218,7 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
         Assert.That(db.SqlScalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {typeof(Book)}")), Is.EqualTo(8));
 
         // Queries with joins use prefixTable: true to qualify columns with their table
-        var (Book, BookReview) = (db.TableRef<Book>(), db.TableRef<BookReview>());
+        var (Book, BookReview) = db.TableRefs<Book, BookReview>();
         var (Id, Title) = db.ColumnRefs<Book>(x => new { x.Id, x.Title }, prefixTable: true);
         var (BookId, Rating) = db.ColumnRefs<BookReview>(x => new { x.BookId, x.Rating }, prefixTable: true);
         var reviewed = db.SqlColumn<string>(Sql.Fmt(
@@ -233,6 +233,23 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
         var byName = new TableRef(nameof(Book));
         Assert.That(db.SqlScalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {byName}")), Is.EqualTo(8));
         Assert.Throws<ArgumentException>(() => Sql.Fmt($"SELECT * FROM {new TableRef()}").ToSql(DialectProvider, out _));
+    }
+
+    [Test]
+    public void Reference_multiple_tables_with_TableRefs()
+    {
+        using var db = OpenDbConnection();
+
+        // TableRefs of up to 6 tables deconstruct into variables named after each table
+        var (Book, BookReview, Subject) = db.TableRefs<Book, BookReview, Subject>();
+        var sql = Sql.Fmt($"SELECT * FROM {Book}, {BookReview}, {Subject}").ToSql(DialectProvider, out var dbParams);
+        Assert.That(sql, Is.EqualTo($"SELECT * FROM {DialectProvider.GetQuotedTableName(typeof(Book))}, " +
+            $"{DialectProvider.GetQuotedTableName(typeof(BookReview))}, {DialectProvider.GetQuotedTableName(typeof(Subject))}"));
+        Assert.That(dbParams, Is.Empty);
+
+        var (t1, t2, t3, t4, t5, t6) = db.TableRefs<Book, BookReview, Subject, SalesOrder, WikiPage, StickyNote>();
+        Assert.That(new[] { t1, t2, t3, t4, t5, t6 }.Map(x => x.ModelDef.ModelType), Is.EqualTo(new[] {
+            typeof(Book), typeof(BookReview), typeof(Subject), typeof(SalesOrder), typeof(WikiPage), typeof(StickyNote) }));
     }
 
     static int CountRows<T>(System.Data.IDbConnection db) =>

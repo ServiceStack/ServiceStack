@@ -28,6 +28,76 @@ public static class OrmLiteSchemaApi
         new TableRef(typeof(T).GetModelDefinition());
 
     /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2) = db.TableRefs&lt;Table1, Table2&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef) TableRefs<T1, T2>(this IDbConnection dbConn) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2) = db.TableRefs&lt;Table1, Table2&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef) TableRefs<T1, T2>(this IOrmLiteDialectProvider dialect) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3) = db.TableRefs&lt;Table1, Table2, Table3&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef) TableRefs<T1, T2, T3>(this IDbConnection dbConn) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3) = db.TableRefs&lt;Table1, Table2, Table3&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef) TableRefs<T1, T2, T3>(this IOrmLiteDialectProvider dialect) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3, Table4) = db.TableRefs&lt;Table1, Table2, Table3, Table4&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef, TableRef) TableRefs<T1, T2, T3, T4>(this IDbConnection dbConn) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()), new TableRef(typeof(T4).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3, Table4) = db.TableRefs&lt;Table1, Table2, Table3, Table4&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef, TableRef) TableRefs<T1, T2, T3, T4>(this IOrmLiteDialectProvider dialect) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()), new TableRef(typeof(T4).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3, Table4, Table5) = db.TableRefs&lt;Table1, Table2, Table3, Table4, Table5&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef, TableRef, TableRef) TableRefs<T1, T2, T3, T4, T5>(this IDbConnection dbConn) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()), new TableRef(typeof(T4).GetModelDefinition()), new TableRef(typeof(T5).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3, Table4, Table5) = db.TableRefs&lt;Table1, Table2, Table3, Table4, Table5&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef, TableRef, TableRef) TableRefs<T1, T2, T3, T4, T5>(this IOrmLiteDialectProvider dialect) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()), new TableRef(typeof(T4).GetModelDefinition()), new TableRef(typeof(T5).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3, Table4, Table5, Table6) = db.TableRefs&lt;Table1, Table2, Table3, Table4, Table5, Table6&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef, TableRef, TableRef, TableRef) TableRefs<T1, T2, T3, T4, T5, T6>(this IDbConnection dbConn) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()), new TableRef(typeof(T4).GetModelDefinition()), new TableRef(typeof(T5).GetModelDefinition()), new TableRef(typeof(T6).GetModelDefinition()));
+
+    /// <summary>
+    /// Gets TableRefs for the specified types that can be deconstructed into variables, e.g:
+    /// <para>var (Table1, Table2, Table3, Table4, Table5, Table6) = db.TableRefs&lt;Table1, Table2, Table3, Table4, Table5, Table6&gt;();</para>
+    /// </summary>
+    public static (TableRef, TableRef, TableRef, TableRef, TableRef, TableRef) TableRefs<T1, T2, T3, T4, T5, T6>(this IOrmLiteDialectProvider dialect) =>
+        (new TableRef(typeof(T1).GetModelDefinition()), new TableRef(typeof(T2).GetModelDefinition()), new TableRef(typeof(T3).GetModelDefinition()), new TableRef(typeof(T4).GetModelDefinition()), new TableRef(typeof(T5).GetModelDefinition()), new TableRef(typeof(T6).GetModelDefinition()));
+
+    /// <summary>
     /// Gets a TableRef for the specified type.
     /// </summary>
     public static TableRef TableRef(this IOrmLiteDialectProvider dialect, Type type) => 
