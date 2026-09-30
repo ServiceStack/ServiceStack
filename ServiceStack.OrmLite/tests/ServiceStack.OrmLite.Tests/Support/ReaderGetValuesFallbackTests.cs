@@ -22,7 +22,7 @@ public class ReaderGetValuesFallbackTests(DialectContext context) : OrmLiteProvi
     /// <summary>
     /// A reader over a DataTable whose GetValues() throws, like some ADO.NET providers do for certain column types
     /// </summary>
-    class ThrowingGetValuesReader(DataTable table) : DbDataReader
+    class ThrowingGetValuesReader(DataTable table, bool throws = true) : DbDataReader
     {
         readonly DataTableReader reader = table.CreateDataReader();
         public int GetValuesCalls { get; private set; }
@@ -30,7 +30,9 @@ public class ReaderGetValuesFallbackTests(DialectContext context) : OrmLiteProvi
         public override int GetValues(object[] values)
         {
             GetValuesCalls++;
-            throw new NotSupportedException("GetValues() isn't supported");
+            if (throws)
+                throw new NotSupportedException("GetValues() isn't supported");
+            return reader.GetValues(values);
         }
 
         public override int Depth => reader.Depth;
@@ -67,10 +69,10 @@ public class ReaderGetValuesFallbackTests(DialectContext context) : OrmLiteProvi
         public override bool Read() => reader.Read();
     }
 
-    // SQLite's provider disables GetValues() for every provider in the process, enable it for these tests
+    // Some dialects like SQLite read each field individually, use GetValues() in these tests
     bool hold;
-    [SetUp] public void SetUp() => (hold, OrmLiteConfig.DeoptimizeReader) = (OrmLiteConfig.DeoptimizeReader, false);
-    [TearDown] public void TearDown() => OrmLiteConfig.DeoptimizeReader = hold;
+    [SetUp] public void SetUp() => (hold, DialectProvider.DeoptimizeReader) = (DialectProvider.DeoptimizeReader, false);
+    [TearDown] public void TearDown() => DialectProvider.DeoptimizeReader = hold;
 
     static DataTable CreateItems(int count)
     {
@@ -105,5 +107,40 @@ public class ReaderGetValuesFallbackTests(DialectContext context) : OrmLiteProvi
         Assert.That(items.Count, Is.EqualTo(10));
         Assert.That(items[9], Is.EqualTo((10, "Item 10")));
         Assert.That(reader.GetValuesCalls, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Deoptimizing_a_dialect_only_changes_that_dialect()
+    {
+        var holdGlobal = OrmLiteConfig.DeoptimizeReader;
+        try
+        {
+            OrmLiteConfig.DeoptimizeReader = false;
+
+            // SQLite reads each field individually, without changing the other dialects
+            var sqlite = new ServiceStack.OrmLite.Sqlite.SqliteOrmLiteDialectProvider();
+            Assert.That(sqlite.DeoptimizeReader);
+            Assert.That(OrmLiteConfig.DeoptimizeReader, Is.False);
+
+            using var sqliteReader = new ThrowingGetValuesReader(CreateItems(10), throws: false);
+            Assert.That(sqliteReader.ConvertToList<Item>(sqlite).Count, Is.EqualTo(10));
+            Assert.That(sqliteReader.GetValuesCalls, Is.EqualTo(0));
+
+            // Other dialects still read each row with a single GetValues() call
+            using var reader = new ThrowingGetValuesReader(CreateItems(10), throws: false);
+            var items = reader.ConvertToList<Item>(PostgreSqlDialect.Provider);
+            Assert.That(items[9].Name, Is.EqualTo("Item 10"));
+            Assert.That(reader.GetValuesCalls, Is.EqualTo(10));
+
+            // The global setting still deoptimizes every dialect
+            OrmLiteConfig.DeoptimizeReader = true;
+            using var deoptimized = new ThrowingGetValuesReader(CreateItems(10), throws: false);
+            Assert.That(deoptimized.ConvertToList<Item>(PostgreSqlDialect.Provider).Count, Is.EqualTo(10));
+            Assert.That(deoptimized.GetValuesCalls, Is.EqualTo(0));
+        }
+        finally
+        {
+            OrmLiteConfig.DeoptimizeReader = holdGlobal;
+        }
     }
 }

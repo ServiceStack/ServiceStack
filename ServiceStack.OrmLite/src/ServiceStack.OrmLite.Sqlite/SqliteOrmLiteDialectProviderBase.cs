@@ -22,7 +22,8 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
         base.InitColumnTypeMap();
 
-        OrmLiteConfig.DeoptimizeReader = true;
+        // Only for SQLite, GetValues() changes the behavior of System.Data.SQLite's GetGuid()
+        DeoptimizeReader = true;
         base.RegisterConverter<DateTime>(new SqliteCoreDateTimeConverter());
         //Old behavior using native sqlite3.dll
         //base.RegisterConverter<DateTime>(new SqliteNativeDateTimeConverter());

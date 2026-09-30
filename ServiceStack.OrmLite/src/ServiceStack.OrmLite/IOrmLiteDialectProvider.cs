@@ -125,6 +125,12 @@ public interface IOrmLiteDialectProvider
     bool HasInsertReturnValues(ModelDefinition modelDef);
 
     /// <summary>
+    /// Read each field of a row individually instead of with a single IDataReader.GetValues() call, for ADO.NET
+    /// providers whose GetValues() changes how fields are read, e.g. System.Data.SQLite's GetGuid()
+    /// </summary>
+    bool DeoptimizeReader { get; set; }
+
+    /// <summary>
     /// Table hint that locks the rows selected from a table for SqlExpression.ForUpdate(), e.g. WITH (UPDLOCK, ROWLOCK)
     /// in SQL Server, or null if the RDBMS uses a lock clause instead
     /// </summary>

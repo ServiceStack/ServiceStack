@@ -89,11 +89,6 @@ Prepared-statement reuse (`DbCommand.Prepare()` / `DbBatch`) could be layered on
 Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector. The upsert SQL, which `UpsertAll` currently
 generates for each row, would then be prepared once for each distinct set of insert fields.
 
-### 4.3 Per-Provider Reader Optimisation (S)
-`SqliteOrmLiteDialectProviderBase` sets the global `OrmLiteConfig.DeoptimizeReader = true` when it's created, which
-disables the single `GetValues()` call per row for every provider in the process, e.g. an app using SQLite and
-PostgreSQL reads PostgreSQL rows one field at a time. It should be a per-dialect setting.
-
 ---
 
 ## 5. Schema and Migrations

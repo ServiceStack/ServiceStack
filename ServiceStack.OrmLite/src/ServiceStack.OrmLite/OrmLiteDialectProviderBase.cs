@@ -1698,6 +1698,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         return StringBuilderCache.ReturnAndFree(sql);
     }
 
+    public bool DeoptimizeReader { get; set; }
+
     public virtual bool HasInsertReturnValues(ModelDefinition modelDef) =>
         modelDef.FieldDefinitions.Any(x => x.ReturnOnInsert);
 

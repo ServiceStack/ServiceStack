@@ -392,7 +392,7 @@ public static class OrmLiteWriteCommandExtensions
 
     internal static object[] PopulateValues(this IDataReader reader, object[] values, IOrmLiteDialectProvider dialectProvider)
     {
-        if (!OrmLiteConfig.DeoptimizeReader)
+        if (!OrmLiteConfig.DeoptimizeReader && !dialectProvider.DeoptimizeReader)
         {
             values ??= new object[reader.FieldCount];
 

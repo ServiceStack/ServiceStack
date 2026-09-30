@@ -253,6 +253,10 @@ public static class OrmLiteConfig
 
     public static bool IsCaseInsensitive { get; set; }
 
+    /// <summary>
+    /// Read each field of a row individually for every dialect, use IOrmLiteDialectProvider.DeoptimizeReader to only
+    /// change a specific dialect
+    /// </summary>
     public static bool DeoptimizeReader { get; set; }
 
     public static bool SkipForeignKeys { get; set; }
