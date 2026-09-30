@@ -142,6 +142,8 @@ namespace ServiceStack.OrmLite
             to.withClause = withClause;
             to.forUpdate = forUpdate;
             to.forUpdateSkipLocked = forUpdateSkipLocked;
+            to.topPerGroupPartitionBy = topPerGroupPartitionBy;
+            to.topPerGroupTake = topPerGroupTake;
 
             to.underlyingExpression = underlyingExpression;
             to.SqlFilter = SqlFilter;
@@ -226,6 +228,8 @@ namespace ServiceStack.OrmLite
 
             if (withClause != null)
                 sb.AppendLine(withClause);
+            if (topPerGroupPartitionBy != null)
+                sb.Append("TOP PER GROUP:").Append(topPerGroupPartitionBy).Append(',').Append(topPerGroupTake).AppendLine();
             DumpSetOperations(sb, includeParams);
 
             if (includeParams)
@@ -669,7 +673,7 @@ namespace ServiceStack.OrmLite
         {
             if (sqlFilter == null)
                 return null;
-            return sqlFilter.Build(arg => {
+            return sqlFilter.Build(DialectProvider, arg => {
                 if (arg is SqlInValues inValues)
                     return inValues.Count > 0 ? CreateInParamSql(inValues.GetValues()) : SqlInValues.EmptyIn;
                 if (OrmLiteReadCommandExtensions.GetMultiValues(arg) is { } values)
@@ -1623,7 +1627,8 @@ namespace ServiceStack.OrmLite
                 sql = HasSetOperations
                     ? ToSetOperationsSelectStatement(forType)
                     : DialectProvider
-                    .ToSelectStatement(forType, modelDef, SelectExpression, BodyExpression, OrderByExpression, offset: Offset, rows: Rows,Tags);
+                    .ToSelectStatement(forType, modelDef, SelectExpression,
+                        HasTopPerGroup ? GetTopPerGroupBodyExpression() : BodyExpression, OrderByExpression, offset: Offset, rows: Rows,Tags);
             }
             sql = PrefixWithClause(sql);
 
@@ -1649,7 +1654,7 @@ namespace ServiceStack.OrmLite
 
             var sql = HasSetOperations
                 ? ToSetOperationsCountStatement()
-                : "SELECT COUNT(*)" + BodyExpression;
+                : "SELECT COUNT(*)" + (HasTopPerGroup ? GetTopPerGroupBodyExpression() : BodyExpression);
             sql = PrefixWithClause(sql);
 
             return SqlFilter != null
@@ -2383,6 +2388,10 @@ namespace ServiceStack.OrmLite
                     return new PartialSqlString(expr + " AS " + member.Name);    // new { BuyerName = Sql.TableAlias(b.Name, "buyer") }
                 }
                 
+                // Window function aliases are quoted as they're often reserved words, e.g. new { Rank = Sql.Rank(w => ...) }
+                if (IsWindowFunctionCall(methodCallExpr))
+                    return new PartialSqlString(expr + " AS " + DialectProvider.GetQuotedName(member.Name));
+
                 if (mi.Name != nameof(Sql.Desc) && mi.Name != nameof(Sql.Asc) && mi.Name != nameof(Sql.As) && mi.Name != nameof(Sql.AllFields))
                     return new PartialSqlString(expr + " AS " + member.Name);    // new { Alias = Sql.Count("*") }
             }
@@ -2644,7 +2653,10 @@ namespace ServiceStack.OrmLite
             {
                 var hold = inSqlMethodCall;
                 inSqlMethodCall = true;
-                var ret = VisitSqlMethodCall(m);
+                // Window functions are handled before VisitSqlMethodCall() overrides visit their window lambda
+                var ret = IsWindowFunctionCall(m)
+                    ? VisitWindowFunctionCall(m)
+                    : VisitSqlMethodCall(m);
                 inSqlMethodCall = hold;
                 return ret;
             }

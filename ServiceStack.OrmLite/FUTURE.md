@@ -20,27 +20,12 @@ Recursive CTEs are supported with `q.WithRecursive(seed, recurse)`. Remaining CT
 - A depth column and max depth for recursive queries, e.g. to limit how many levels are returned
 - Cycle protection for data with loops, e.g. PostgreSQL 14+ `CYCLE` or tracking visited ids
 
-### 1.2 Window Functions (M)
-```csharp
-var q = db.From<Order>()
-    .Select(x => new {
-        x.Id, x.CustomerId, x.Total,
-        Rank = Sql.RowNumber().Over(p => p.PartitionBy(x.CustomerId).OrderByDescending(x.Total)),
-        RunningTotal = Sql.Sum(x.Total).Over(p => p.PartitionBy(x.CustomerId).OrderBy(x.CreatedDate)),
-    });
-```
-- `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`/`LEAD`, `FIRST_VALUE`, and aggregate `OVER (...)`.
-- Enables "top N per group" queries, which are a common request.
-
-### 1.3 `UPDATE ... FROM` (S/M)
+### 1.2 `UPDATE ... FROM` (S/M)
 `INSERT ... SELECT` is already supported with `db.InsertIntoSelect<T>(q)`. Add the equivalent for updating rows from
 a joined table without round-tripping rows through .NET:
 ```csharp
 db.UpdateFrom<Order, Customer>((o, c) => o.CustomerId == c.Id, o => new Order { Region = /* c.Region */ });
 ```
-
-### 1.4 `DISTINCT ON` / Top-N-Per-Group Helper (S)
-Native on PostgreSQL. Emulated with `ROW_NUMBER()` (see 1.2) elsewhere.
 
 ---
 

@@ -71,6 +71,8 @@ namespace ServiceStack.OrmLite
                 throw new NotSupportedException("ForUpdate() can't be used with set operations like Union()");
             if (HasCommonTableExpression)
                 throw new NotSupportedException("ForUpdate() can't be used with common table expressions like WithRecursive()");
+            if (HasTopPerGroup)
+                throw new NotSupportedException("ForUpdate() can't be used with TopPerGroup()");
         }
     }
 }
