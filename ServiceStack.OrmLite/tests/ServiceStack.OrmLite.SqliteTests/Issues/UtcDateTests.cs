@@ -162,14 +162,15 @@ namespace ServiceStack.OrmLite.Tests.Issues
                 db.CreateTable<User>(true);
 
                 var utcDate = DateTime.UtcNow;
-                var localDate = utcDate.ToLocalTime();
 
                 db.Insert(new User { Id = 1, Date = utcDate });
 
                 var actual = db.SingleById<User>(1);
 
+                // SqliteCoreDateTimeConverter stores the clock time of UTC dates as-is in the default DateStyle,
+                // i.e. they're not converted to the local time zone
                 Assert.That(actual.Date.Kind, Is.EqualTo(DateTimeKind.Local).Or.EqualTo(DateTimeKind.Unspecified));
-                Assert.That(actual.Date, Is.EqualTo(localDate));
+                Assert.That(actual.Date, Is.EqualTo(utcDate));
             }
         }
 

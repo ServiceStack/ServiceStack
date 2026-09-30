@@ -505,7 +505,7 @@ public partial class OrmLiteSelectTests(DialectContext context) : OrmLiteProvide
     }
 
     [Test]
-    [IgnoreDialect(Dialect.MySql, "Does not support LIKE escape sequences")]
+    [IgnoreDialect(Dialect.AnyMySql, "Does not support LIKE escape sequences")]
     public void Does_support_LIKE_Escape_Char()
     {
         using var db = OpenDbConnection();

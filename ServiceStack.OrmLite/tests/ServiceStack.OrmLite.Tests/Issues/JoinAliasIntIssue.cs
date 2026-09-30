@@ -75,7 +75,7 @@ public class JoinAliasIntIssue(DialectContext context) : OrmLiteProvidersTestBas
     }
 
     [Test]
-    [IgnoreDialect(Dialect.MySql,"Needs review - MONOREPO")]
+    [IgnoreDialect(Dialect.AnyMySql,"Needs review - MONOREPO")]
     public void Can_create_query_with_int_TableAlias()
     {
         using var db = OpenDbConnection();

@@ -20,6 +20,7 @@ public class MySqlConnectorDialectProvider : MySqlDialectProviderBase<MySqlConne
     public MySqlConnectorDialectProvider()
     {
         base.RegisterConverter<DateTime>(new MySqlConnectorDateTimeConverter());
+        base.RegisterConverter<DateTimeOffset>(new MySqlConnectorDateTimeOffsetConverter());
     }
 
     public override IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options)
@@ -82,9 +83,9 @@ public class MySqlConnectorDialectProvider : MySqlDialectProviderBase<MySqlConne
             LineTerminator = Environment.NewLine,
         };
         
-        var columns = CsvSerializer.PropertiesFor<T>()
-            .Select(x => dialect.GetQuotedColumnName(modelDef.GetFieldDefinition(x.PropertyName)));
+        var (columns, expressions) = GetBulkLoadColumns<T>(dialect);
         bulkLoader.Columns.AddRange(columns);
+        bulkLoader.Expressions.AddRange(expressions);
         return bulkLoader;
     }
 }

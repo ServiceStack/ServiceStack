@@ -187,7 +187,7 @@ public class OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) :
         public string ThreadName { get; set; }
     }
 
-    [Alias("AspNetUsers")]
+    [Alias("FkAliasUsers")] // mixed-case alias, not AspNetUsers which may exist in shared test DBs
     public class AppUser
     {
         [Alias("Id")]
@@ -202,12 +202,12 @@ public class OrmLiteCreateTableWithNamingStrategyTests(DialectContext context) :
             using var db = OpenDbConnection();
             db.DropTable<Thread>();
             db.DropTable<AppUser>();
-            Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
+            Assert.That(db.GetLastSql(), Does.Contain("FkAliasUsers"));
             
             db.CreateTable<AppUser>();
-            Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
+            Assert.That(db.GetLastSql(), Does.Contain("FkAliasUsers"));
             db.CreateTable<Thread>();
-            Assert.That(db.GetLastSql(), Does.Contain("AspNetUsers"));
+            Assert.That(db.GetLastSql(), Does.Contain("FkAliasUsers"));
             Assert.That(db.GetLastSql().Replace('`','"'), Does.Contain("(\"Id\")"));
         }
     }

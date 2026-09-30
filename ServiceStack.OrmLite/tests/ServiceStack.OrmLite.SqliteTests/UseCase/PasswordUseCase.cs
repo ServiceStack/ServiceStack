@@ -9,6 +9,7 @@ namespace ServiceStack.OrmLite.Tests.UseCase
     using Sqlite;
 
     [TestFixture]
+    [NUnit.Framework.Ignore("System.Data.SQLite 1.0.113+ requires the commercial SQLite Encryption Extension (SEE) for passwords")]
     public class PasswordUseCase
     {
         [OneTimeSetUp]
@@ -16,6 +17,13 @@ namespace ServiceStack.OrmLite.Tests.UseCase
         {
             //Inject your database provider here
             //OrmLiteConfig.DialectProvider = new SqliteOrmLiteDialectProvider();
+        }
+
+        [OneTimeTearDown]
+        public void TestFixtureTearDown()
+        {
+            // Configure(password:) sets a global password, reset it so other tests use unencrypted connections
+            SqliteOrmLiteDialectProviderBase.Password = null;
         }
 
         public class User
@@ -38,9 +46,6 @@ namespace ServiceStack.OrmLite.Tests.UseCase
         }
 
         [Test]
-#if NETCORE
-        [NUnit.Framework.Ignore("Microsoft.Data.Sqlite provider does not support `password` keyword")]
-#endif
         public void Simple_CRUD_example()
         {
             var path = Config.SqliteFileDb;

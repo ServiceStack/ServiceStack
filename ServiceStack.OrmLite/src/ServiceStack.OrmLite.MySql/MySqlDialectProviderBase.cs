@@ -385,6 +385,36 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 		return null;
 	}
 
+	/// <summary>
+	/// Returns the MySqlBulkLoader columns and SET expressions for loading CSV serialized rows of T.
+	/// Guids are serialized in CSVs without dashes, so they're loaded into a variable and converted into the
+	/// 'D' format stored in CHAR(36) columns, which MySqlConnector requires when reading them back.
+	/// Not used by MySql.Data which treats @variables as params unless 'Allow User Variables=true'.
+	/// </summary>
+	internal static (List<string> Columns, List<string> Expressions) GetBulkLoadColumns<T>(IOrmLiteDialectProvider dialect)
+	{
+		var modelDef = ModelDefinition<T>.Definition;
+		var columns = new List<string>();
+		var expressions = new List<string>();
+		foreach (var prop in CsvSerializer.PropertiesFor<T>())
+		{
+			var fieldDef = modelDef.GetFieldDefinition(prop.PropertyName);
+			var column = dialect.GetQuotedColumnName(fieldDef);
+			var fieldType = Nullable.GetUnderlyingType(fieldDef.ColumnType) ?? fieldDef.ColumnType;
+			if (fieldType == typeof(Guid) && dialect.GetConverterBestMatch(fieldDef) is MySqlGuidConverter)
+			{
+				var variable = "@guid" + expressions.Count;
+				columns.Add(variable);
+				expressions.Add($"{column} = INSERT(INSERT(INSERT(INSERT(NULLIF({variable},''),9,0,'-'),14,0,'-'),19,0,'-'),24,0,'-')");
+			}
+			else
+			{
+				columns.Add(column);
+			}
+		}
+		return (columns, expressions);
+	}
+
 	public override string GetQuotedValue(string paramValue)
 	{
 		return "'" + paramValue.Replace("\\", "\\\\").Replace("'", @"\'") + "'";

@@ -8,7 +8,7 @@ using ServiceStack.Logging;
 namespace ServiceStack.OrmLite.Tests;
 
 [TestFixtureOrmLite]
-[IgnoreDialect(Dialect.MySql,"Not supported")]
+[IgnoreDialect(Dialect.AnyMySql,"Not supported")]
 public class ReturnOnInsertTests(DialectContext context) : OrmLiteProvidersTestBase(context)
 {
     [OneTimeSetUp]
