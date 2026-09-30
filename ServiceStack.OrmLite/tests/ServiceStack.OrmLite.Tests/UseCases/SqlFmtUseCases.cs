@@ -8,7 +8,8 @@ namespace ServiceStack.OrmLite.Tests.UseCases;
 
 /// <summary>
 /// Sql.Fmt($"...") turns interpolated values into db params, making raw SQL as safe as typed queries.
-/// Collections are expanded into IN lists, Sql.Raw(...) embeds trusted SQL like column names verbatim.
+/// Collections are expanded into IN lists, tables referenced with typeof(Table), ModelDefinitions or db.TableRef&lt;Table&gt;()
+/// are embedded as quoted table names and Sql.Raw(...) embeds other trusted SQL like column names verbatim.
 /// </summary>
 [TestFixtureOrmLite]
 public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(context)
@@ -79,19 +80,44 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
     }
 
     [Test]
-    public void Reference_quoted_columns_with_Sql_Raw()
+    public void Reference_columns_with_ColumnRef()
     {
         using var db = OpenDbConnection();
         Bookstore.Seed(db);
 
-        // q.Column<T>() returns the dialect-quoted column name, Sql.Raw() embeds it instead of sending it as a param
-        var q = db.From<Book>();
-        var price = Sql.Raw(q.Column<Book>(x => x.Price));
+        // db.ColumnRef<T>() is the dialect-quoted column name, embedded in the SQL instead of being sent as a param.
+        // Naming table and column refs after the table and column keeps the SQL readable.
+        var Price = db.ColumnRef<Book>(x => x.Price);
         var min = 15m;
-        q.Where(Sql.Fmt($"{price} >= {min}"));
+        var q = db.From<Book>().Where(Sql.Fmt($"{Price} >= {min}"));
 
         Assert.That(db.Select(q).Map(x => x.Title),
             Is.EquivalentTo(new[] { "The Silmarillion", "SPQR", "The Guns of August" }));
+
+        // The same as embedding q.Column<T>() with Sql.Raw()
+        Assert.That(Price.Text, Is.EqualTo(Sql.Raw(q.Column<Book>(x => x.Price)).Text));
+    }
+
+    [Test]
+    public void Reference_multiple_columns_with_ColumnRefs()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        var Book = db.TableRef<Book>();
+        var (Title, Author, Year) = db.ColumnRefs<Book>(x => new { x.Title, x.Author, x.Year });
+        var author = "J.R.R. Tolkien";
+
+        var titles = db.SqlColumn<string>(Sql.Fmt($"SELECT {Title} FROM {Book} WHERE {Author} = {author} ORDER BY {Year}"));
+        Assert.That(titles, Is.EqualTo(new[] { "The Hobbit", "The Silmarillion" }));
+
+        // Deconstructing into a different number of variables than columns throws
+        Assert.Throws<ArgumentException>(() => {
+            var (_, _) = db.ColumnRefs<Book>(x => new { x.Title, x.Author, x.Year });
+        });
+        // Only columns of the table can be referenced
+        Assert.Throws<ArgumentException>(() => db.ColumnRefs<Book>(x => new { x.Title, Upper = x.Title.ToUpper() }));
+        Assert.Throws<ArgumentException>(() => db.ColumnRef<Book>(x => x.Title.Length));
     }
 
     [Test]
@@ -103,11 +129,11 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
         // Genres with at least 2 books, one of which was published since 1980
         var minBooks = 2;
         var minYear = 1980;
-        var q = db.From<Book>();
-        var year = Sql.Raw(q.Column<Book>(x => x.Year));
-        q.GroupBy(x => x.Genre)
-         .Having(Sql.Fmt($"COUNT(*) >= {minBooks} AND MAX({year}) >= {minYear}"))
-         .Select(x => x.Genre);
+        var Year = db.ColumnRef<Book>(x => x.Year);
+        var q = db.From<Book>()
+            .GroupBy(x => x.Genre)
+            .Having(Sql.Fmt($"COUNT(*) >= {minBooks} AND MAX({Year}) >= {minYear}"))
+            .Select(x => x.Genre);
 
         Assert.That(db.Column<Genre>(q), Is.EquivalentTo(new[] { Genre.Fiction, Genre.History, Genre.Science }));
     }
@@ -117,24 +143,24 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
     {
         using var db = OpenDbConnection();
         Bookstore.Seed(db);
-        var book = db.GetQuotedTableName<Book>(); // dialect-quoted table name
-        var title = db.GetDialectProvider().Column<Book>(x => x.Title);
+        var Book = db.TableRef<Book>();
+        var (Title, Author, Available) = db.ColumnRefs<Book>(x => new { x.Title, x.Author, x.Available });
         var author = "J.R.R. Tolkien";
 
         // Complete SELECT statements into POCOs, columns or scalar values
-        var tolkien = db.SqlList<Book>(Sql.Fmt($"SELECT * FROM {Sql.Raw(book)} WHERE Author = {author}"));
+        var tolkien = db.SqlList<Book>(Sql.Fmt($"SELECT * FROM {Book} WHERE {Author} = {author}"));
         Assert.That(tolkien.Count, Is.EqualTo(2));
 
-        var titles = db.SqlColumn<string>(Sql.Fmt($"SELECT {Sql.Raw(title)} FROM {Sql.Raw(book)} WHERE Author = {author}"));
+        var titles = db.SqlColumn<string>(Sql.Fmt($"SELECT {Title} FROM {Book} WHERE {Author} = {author}"));
         Assert.That(titles, Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion" }));
 
-        var count = db.SqlScalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {Sql.Raw(book)} WHERE Author = {author}"));
+        var count = db.SqlScalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {Book} WHERE {Author} = {author}"));
         Assert.That(count, Is.EqualTo(2));
 
         // WHERE-clause shorthand APIs
-        Assert.That(db.Single<Book>(Sql.Fmt($"Title = {"Dune"}")).Author, Is.EqualTo("Frank Herbert"));
-        Assert.That(db.Exists<Book>(Sql.Fmt($"Author = {author}")));
-        Assert.That(db.Scalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {Sql.Raw(book)} WHERE Available = {true}")), Is.EqualTo(6));
+        Assert.That(db.Single<Book>(Sql.Fmt($"{Title} = {"Dune"}")).Author, Is.EqualTo("Frank Herbert"));
+        Assert.That(db.Exists<Book>(Sql.Fmt($"{Author} = {author}")));
+        Assert.That(db.Scalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {Book} WHERE {Available} = {true}")), Is.EqualTo(6));
     }
 
     [Test]
@@ -142,15 +168,16 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
     {
         using var db = OpenDbConnection();
         Bookstore.Seed(db);
-        var book = Sql.Raw(db.GetQuotedTableName<Book>());
+        var Book = db.TableRef<Book>();
+        var (Id, Price, Author) = db.ColumnRefs<Book>(x => new { x.Id, x.Price, x.Author });
         var author = "J.R.R. Tolkien";
 
-        var updated = db.ExecuteSql(Sql.Fmt($"UPDATE {book} SET Price = Price * {0.9m} WHERE Author = {author}"));
+        var updated = db.ExecuteSql(Sql.Fmt($"UPDATE {Book} SET {Price} = {Price} * {0.9m} WHERE {Author} = {author}"));
         Assert.That(updated, Is.EqualTo(2));
         Assert.That(db.Single<Book>(x => x.Title == "The Hobbit").Price, Is.EqualTo(11.691m).Within(0.001m));
 
         var ids = db.Column<int>(db.From<Book>().Where(x => !x.Available).Select(x => x.Id));
-        var deleted = db.ExecuteSql(Sql.Fmt($"DELETE FROM {book} WHERE Id IN ({ids})"));
+        var deleted = db.ExecuteSql(Sql.Fmt($"DELETE FROM {Book} WHERE {Id} IN ({ids})"));
         Assert.That(deleted, Is.EqualTo(2));
     }
 
@@ -159,24 +186,57 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
     {
         using var db = await OpenDbConnectionAsync();
         Bookstore.Seed(db);
-        var book = Sql.Raw(db.GetQuotedTableName<Book>());
-        var genre = Genre.Science;
+        var Book = db.TableRef<Book>();
+        var (Title, Genre, Price, Year, Available) =
+            db.ColumnRefs<Book>(x => new { x.Title, x.Genre, x.Price, x.Year, x.Available });
+        var genre = UseCases.Genre.Science;
 
-        var science = await db.SelectAsync<Book>(Sql.Fmt($"Genre = {genre}"));
+        var science = await db.SelectAsync<Book>(Sql.Fmt($"{Genre} = {genre}"));
         Assert.That(science.Count, Is.EqualTo(2));
 
-        var first = await db.SingleAsync<Book>(Sql.Fmt($"Title = {"Cosmos"}"));
+        var first = await db.SingleAsync<Book>(Sql.Fmt($"{Title} = {"Cosmos"}"));
         Assert.That(first.Author, Is.EqualTo("Carl Sagan"));
 
-        var max = await db.ScalarAsync<decimal>(Sql.Fmt($"SELECT MAX(Price) FROM {book} WHERE Genre = {genre}"));
+        var max = await db.ScalarAsync<decimal>(Sql.Fmt($"SELECT MAX({Price}) FROM {Book} WHERE {Genre} = {genre}"));
         Assert.That(max, Is.EqualTo(14.00m));
 
-        var titles = await db.SqlColumnAsync<string>(Sql.Fmt($"SELECT Title FROM {book} WHERE Year < {1950}"));
+        var titles = await db.SqlColumnAsync<string>(Sql.Fmt($"SELECT {Title} FROM {Book} WHERE {Year} < {1950}"));
         Assert.That(titles, Is.EqualTo(new[] { "The Hobbit" }));
 
-        var rows = await db.ExecuteSqlAsync(Sql.Fmt($"UPDATE {book} SET Available = {false} WHERE Genre = {genre}"));
+        var rows = await db.ExecuteSqlAsync(Sql.Fmt($"UPDATE {Book} SET {Available} = {false} WHERE {Genre} = {genre}"));
         Assert.That(rows, Is.EqualTo(2));
     }
+
+    [Test]
+    public void Reference_tables_in_raw_SQL()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        // Types, ModelDefinitions and TableRefs are embedded as the dialect's quoted table name, incl. its schema,
+        // [Alias] and naming strategy, instead of being sent as params
+        Assert.That(db.SqlScalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {typeof(Book)}")), Is.EqualTo(8));
+
+        // Queries with joins use prefixTable: true to qualify columns with their table
+        var (Book, BookReview) = (db.TableRef<Book>(), db.TableRef<BookReview>());
+        var (Id, Title) = db.ColumnRefs<Book>(x => new { x.Id, x.Title }, prefixTable: true);
+        var (BookId, Rating) = db.ColumnRefs<BookReview>(x => new { x.BookId, x.Rating }, prefixTable: true);
+        var reviewed = db.SqlColumn<string>(Sql.Fmt(
+            $"SELECT DISTINCT {Title} FROM {Book} JOIN {BookReview} ON {Id} = {BookId} WHERE {Rating} >= {4}"));
+        Assert.That(reviewed, Is.EquivalentTo(new[] { "The Hobbit", "Dune" }));
+
+        // e.g. in generic code
+        Assert.That(CountRows<Book>(db), Is.EqualTo(8));
+        Assert.That(CountRows<BookReview>(db), Is.EqualTo(5));
+
+        // TableRefs can also reference a table by name, which is quoted using the naming strategy
+        var byName = new TableRef(nameof(Book));
+        Assert.That(db.SqlScalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {byName}")), Is.EqualTo(8));
+        Assert.Throws<ArgumentException>(() => Sql.Fmt($"SELECT * FROM {new TableRef()}").ToSql(DialectProvider, out _));
+    }
+
+    static int CountRows<T>(System.Data.IDbConnection db) =>
+        db.SqlScalar<int>(Sql.Fmt($"SELECT COUNT(*) FROM {ModelDefinition<T>.Definition}"));
 
     [Test]
     public void Literal_braces_and_format_specifiers()

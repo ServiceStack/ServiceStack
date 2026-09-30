@@ -10,6 +10,30 @@ namespace ServiceStack.OrmLite;
 public static class OrmLiteSchemaApi
 {
     /// <summary>
+    /// Gets a TableRef for the specified type.
+    /// </summary>
+    public static TableRef TableRef<T>(this IDbConnection dbConn) => 
+        new TableRef(typeof(T).GetModelDefinition());
+
+    /// <summary>
+    /// Gets a TableRef for the specified type.
+    /// </summary>
+    public static TableRef TableRef(this IDbConnection dbConn, Type type) => 
+        new TableRef(type.GetModelDefinition());
+
+    /// <summary>
+    /// Gets a TableRef for the specified type.
+    /// </summary>
+    public static TableRef TableRef<T>(this IOrmLiteDialectProvider dialect) => 
+        new TableRef(typeof(T).GetModelDefinition());
+
+    /// <summary>
+    /// Gets a TableRef for the specified type.
+    /// </summary>
+    public static TableRef TableRef(this IOrmLiteDialectProvider dialect, Type type) => 
+        new TableRef(type.GetModelDefinition());
+
+    /// <summary>
     /// Checks whether a Table Exists. E.g:
     /// <para>db.TableExists("Person")</para>
     /// </summary>
