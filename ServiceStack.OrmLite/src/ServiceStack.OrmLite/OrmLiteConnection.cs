@@ -36,6 +36,11 @@ public class OrmLiteConnection
     public Guid ConnectionId { get; set; }
     public object? WriteLock { get; set; }
 
+    /// <summary>
+    /// Mandatory filters applied to queries on this connection, see db.EnsureFilter()
+    /// </summary>
+    public OrmLiteConnectionFilters Filters { get; internal set; } = OrmLiteConnectionFilters.Empty;
+
     public OrmLiteConnection(OrmLiteConnectionFactory factory)
     {
         this.Factory = factory;
@@ -54,10 +59,33 @@ public class OrmLiteConnection
 
     public IDbConnection DbConnection => dbConnection ??= ConnectionString.ToDbConnection(Factory.DialectProvider);
 
+    /// <summary>
+    /// The number of times a shared connection, e.g. SQLite :memory:, is open
+    /// </summary>
+    private int sharedOpens;
+
+    /// <summary>
+    /// Open a shared connection which is returned for every open, e.g. SQLite :memory:
+    /// </summary>
+    internal OrmLiteConnection OpenShared()
+    {
+        Interlocked.Increment(ref sharedOpens);
+        return this;
+    }
+
     public void Dispose()
     {
         Factory.OnDispose?.Invoke(this);
-        if (!Factory.AutoDisposeConnection) return;
+        if (!Factory.AutoDisposeConnection)
+        {
+            // Filters of a shared connection are scoped to its outermost open so they aren't used by the next open
+            if (Interlocked.Decrement(ref sharedOpens) <= 0)
+            {
+                Interlocked.Exchange(ref sharedOpens, 0);
+                Filters = OrmLiteConnectionFilters.Empty;
+            }
+            return;
+        }
 
         if (dbConnection == null)
         {

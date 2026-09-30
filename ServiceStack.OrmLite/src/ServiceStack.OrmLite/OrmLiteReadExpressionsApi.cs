@@ -55,19 +55,19 @@ public static class OrmLiteReadExpressionsApi
     /// </summary>
     public static SqlExpression<T> From<T>(this IDbConnection dbConn)
     {
-        return dbConn.GetExecFilter().SqlExpression<T>(dbConn);
+        return dbConn.GetExecFilter().SqlExpression<T>(dbConn).WithFilters(dbConn);
     }
 
     public static SqlExpression<T> From<T>(this IDbConnection dbConn, Action<SqlExpression<T>> options)
     {
-        var q = dbConn.GetExecFilter().SqlExpression<T>(dbConn);
+        var q = dbConn.GetExecFilter().SqlExpression<T>(dbConn).WithFilters(dbConn);
         options(q);
         return q;
     }
 
     public static SqlExpression<T> From<T, JoinWith>(this IDbConnection dbConn, Expression<Func<T, JoinWith, bool>> joinExpr=null)
     {
-        var sql = dbConn.GetExecFilter().SqlExpression<T>(dbConn);
+        var sql = dbConn.GetExecFilter().SqlExpression<T>(dbConn).WithFilters(dbConn);
         sql.Join<T,JoinWith>(joinExpr);
         return sql;
     }
@@ -77,7 +77,7 @@ public static class OrmLiteReadExpressionsApi
     /// </summary>
     public static SqlExpression<T> From<T>(this IDbConnection dbConn, string fromExpression)
     {
-        var expr = dbConn.GetExecFilter().SqlExpression<T>(dbConn);
+        var expr = dbConn.GetExecFilter().SqlExpression<T>(dbConn).WithFilters(dbConn);
         expr.From(fromExpression);
         return expr;
     }
@@ -89,7 +89,7 @@ public static class OrmLiteReadExpressionsApi
             expr.From(tableOptions.Expression);
         if (!string.IsNullOrEmpty(tableOptions.Alias))
             expr.SetTableAlias(tableOptions.Alias);
-        return expr;
+        return expr.WithFilters(dbConn);
     }
 
     public static SqlExpression<T> TagWith<T>(this SqlExpression<T> expression,string tag)

@@ -54,6 +54,8 @@ namespace ServiceStack.OrmLite
         protected bool skipParameterizationForThisExpression = false;
         protected bool isSelectExpression = false;
         private bool hasEnsureConditions = false;
+        private string ensureExpression; // the Ensure() conditions, kept when WHERE conditions are cleared
+        private List<KeyValuePair<LambdaExpression, string>> connectionFilters; // filters from the connection and their SQL
         private bool inSqlMethodCall = false;
         
         public DialectSql sql { get; }
@@ -134,6 +136,8 @@ namespace ServiceStack.OrmLite
             to.skipParameterizationForThisExpression = skipParameterizationForThisExpression;
             to.UseSelectPropertiesAsAliases = UseSelectPropertiesAsAliases;
             to.hasEnsureConditions = hasEnsureConditions;
+            to.ensureExpression = ensureExpression;
+            to.connectionFilters = connectionFilters != null ? [..connectionFilters] : null;
 
             to.Params = new List<IDbDataParameter>(Params);
             to.setOperations = setOperations != null ? new List<SetOperation>(setOperations) : null;
@@ -560,6 +564,7 @@ namespace ServiceStack.OrmLite
         {
             PrefixFieldWithTableName = tableAlias != null;
             TableAlias = tableAlias;
+            RefreshConnectionFilters();
             return this;
         }
 
@@ -585,7 +590,10 @@ namespace ServiceStack.OrmLite
         {
             underlyingExpression = null; //Where() clears the expression
 
-            whereExpression = null;
+            // Ensure() conditions are mandatory, so only the other conditions are cleared
+            whereExpression = hasEnsureConditions
+                ? "WHERE " + ensureExpression + " AND " + TrueLiteral
+                : null;
             return this;
         }
 
@@ -843,8 +851,52 @@ namespace ServiceStack.OrmLite
                 }
             }
 
+            ensureExpression = hasEnsureConditions ? condition + " AND " + ensureExpression : condition;
             hasEnsureConditions = true;
             return this;
+        }
+
+        /// <summary>
+        /// Adds a mandatory filter from the connection with Ensure(), with columns prefixed by the table, so it stays
+        /// unambiguous when tables are joined later
+        /// </summary>
+        internal SqlExpression<T> EnsureConnectionFilter(Expression<Func<T, bool>> filter)
+        {
+            var sql = ToConnectionFilterSql(filter);
+            (connectionFilters ??= []).Add(new(filter, sql));
+            return Ensure(sql);
+        }
+
+        private string ToConnectionFilterSql(LambdaExpression filter)
+        {
+            var hold = PrefixFieldWithTableName;
+            PrefixFieldWithTableName = true;
+            try
+            {
+                Reset();
+                return WhereExpressionToString(Visit(filter));
+            }
+            finally
+            {
+                PrefixFieldWithTableName = hold;
+            }
+        }
+
+        /// <summary>
+        /// Regenerates the connection filters' SQL, e.g. after the table alias changed
+        /// </summary>
+        private void RefreshConnectionFilters()
+        {
+            if (connectionFilters == null)
+                return;
+            for (var i = 0; i < connectionFilters.Count; i++)
+            {
+                var (filter, oldSql) = (connectionFilters[i].Key, connectionFilters[i].Value);
+                var newSql = ToConnectionFilterSql(filter);
+                whereExpression = whereExpression?.Replace(oldSql, newSql);
+                ensureExpression = ensureExpression?.Replace(oldSql, newSql);
+                connectionFilters[i] = new(filter, newSql);
+            }
         }
 
         private string ListExpression(Expression expr, string strExpr)

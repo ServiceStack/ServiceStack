@@ -74,7 +74,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
 
         var connection = AutoDisposeConnection
             ? DialectProvider.CreateOrmLiteConnection(this)
-            : OrmLiteConnection;
+            : OrmLiteConnection.OpenShared();
 
         return connection;
     }
@@ -94,7 +94,7 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
 
         IDbConnection connection = factory.AutoDisposeConnection
             ? factory.DialectProvider.CreateOrmLiteConnection(factory, namedConnection)
-            : factory.OrmLiteConnection;
+            : factory.OrmLiteConnection.OpenShared();
         return connection;
     }
 

@@ -1,0 +1,185 @@
+# Connection Filters: Mandatory Query Filters and Write Rules
+
+Plan for connection-scoped mandatory filters (e.g. multi-tenancy, soft deletes) and write rules (e.g. auditing),
+registered on a database connection and applied to every typed API OrmLite constructs SQL for.
+
+## Goals
+
+- **Request-scoped without globals**: filters and rules live on the `OrmLiteConnection`, which in ServiceStack is
+  opened per request, instead of static delegates like `OrmLiteConfig.InsertFilter` that need to resolve the current
+  request.
+- **Mandatory**: filters are applied with `Ensure()` semantics, so conditions added later (typed, `Sql.Fmt()` or
+  user-supplied, e.g. AutoQuery) can narrow results but never widen them.
+- **Complete for typed APIs**: every API where OrmLite constructs the SQL applies the filters and rules, so a filtered
+  connection doesn't silently leak through APIs like `SingleById()`. Raw SQL isn't parsed or changed.
+- **Explicit opt-out**: `db.WithoutFilters()` returns the same connection without filters or rules.
+
+## API
+
+### Registering filters and rules
+
+```csharp
+// Mandatory filters: reads, updates and deletes only see matching rows
+db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);  // every table implementing IHasTenantId
+db.EnsureFilter<Order>(x => !x.IsDeleted);                   // only the Order table
+
+// Mandatory values: set on insert when unset, throws when set to a different value or changed by an update
+db.EnsureValue<IHasTenantId>(x => x.TenantId, tenantId);
+
+// Write rules: always set the column on inserts / updates
+db.OnInsert<IAudit>(x => x.CreatedBy, userId);
+db.OnInsert<IAudit>(x => x.CreatedDate, () => DateTime.UtcNow);
+db.OnUpdate<IAudit>(x => x.ModifiedBy, userId);
+db.OnUpdate<IAudit>(x => x.ModifiedDate, () => DateTime.UtcNow);
+
+// The same connection and transaction without any filters or rules, e.g. for admin tasks
+var adminDb = db.WithoutFilters();
+```
+
+- The type argument is a table type or an interface. Interface filters and rules apply to every table implementing the
+  interface, with the expression rebound to the table's property of the same name, e.g. `IHasTenantId.TenantId` to
+  `Order.TenantId`, so column aliases and naming strategies apply.
+- Multiple filters and rules combine, e.g. a tenant filter and a soft delete filter.
+- Values are either fixed (`userId`) or a function (`() => DateTime.UtcNow`) evaluated for each statement, or each
+  row for object writes. Captured values in filter expressions are sent as params.
+- Registering on a connection that isn't an `OrmLiteConnection` throws, so a filter is never silently ignored.
+
+### App-defined openers
+
+Apps wrap their rules in an extension method so they're defined once:
+
+```csharp
+public static IDbConnection OpenForTenant(this IDbConnectionFactory dbFactory, int tenantId, string userId)
+{
+    var db = dbFactory.OpenDbConnection();
+    db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
+    db.EnsureValue<IHasTenantId>(x => x.TenantId, tenantId);
+    db.OnInsert<IAudit>(x => x.CreatedBy, userId);
+    db.OnUpdate<IAudit>(x => x.ModifiedBy, userId);
+    return db;
+}
+```
+
+### ServiceStack integration
+
+ServiceStack opens connections for requests with `AppHost.GetDbConnection(IRequest)`, used by `Service.Db`, AutoQuery,
+AutoCrud and other features. Overriding it applies the filters and rules everywhere the framework opens a connection
+for a request, which is the recommended approach in ServiceStack apps and should lead the docs:
+
+```csharp
+public override IDbConnection GetDbConnection(IRequest? req = null)
+{
+    var db = base.GetDbConnection(req);
+    if (req?.GetSession() is { } session && session.IsAuthenticated)
+    {
+        var tenantId = session.GetTenantId(); // app-specific
+        db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
+        db.EnsureValue<IHasTenantId>(x => x.TenantId, tenantId);
+        db.OnInsert<IAudit>(x => x.CreatedBy, session.UserAuthId);
+        db.OnUpdate<IAudit>(x => x.ModifiedBy, session.UserAuthId);
+    }
+    return db;
+}
+```
+
+## Where filters are applied
+
+Filters are added to the SQL OrmLite constructs for a filtered table:
+
+| API | How the filter is applied |
+|-|-|
+| `db.From<T>()`, incl. sub queries, set operations and `SeekAfter()` | `Ensure()` condition when the query is created |
+| Typed lambda and anonymous-object APIs: `Select`, `Single`, `Count`, `Exists`, `Scalar`, `Column`, `Dictionary`, `Lookup`, `Where(anon)`, `SelectNonDefaults`, and their async / lazy variants | `Ensure()` condition on the query they build |
+| WHERE-clause shorthand APIs with SQL fragments, e.g. `db.Select<T>(Sql.Fmt($"..."))`, `db.Select<T>("Age > @age", ...)` | `WHERE {filter} AND ({fragment})` |
+| By-id APIs: `SingleById`, `SelectByIds`, `LoadSingleById`, `DeleteById`, `DeleteByIds`, `ExistsById` | `AND {filter}` added to their `WHERE Id = @id` |
+| Joined tables, e.g. `.Join<Customer>()`, `.LeftJoin<Customer>()` | Added to the join's `ON` clause, so `LEFT JOIN` keeps its meaning |
+| `WithRecursive()` | Applied to the seed query and the recursive step, so recursion can't walk into filtered out rows |
+| `LoadSelect()`, `LoadSingleById()` and `[Reference]` loading | Applied to the child table queries |
+| `TopPerGroup()` | Applied inside the ranked sub query, before rows are ranked |
+| Updates and deletes: `Update(obj)`, `UpdateAll`, `UpdateOnly` (all forms), `UpdateAdd`, `UpdateFrom`, `Delete(obj)`, `Delete(x => ...)`, `Delete(q)`, `DeleteAll`, `UpdateOnlyReturning`, `DeleteReturning` | `AND {filter}` added to their `WHERE`, so rows that don't match aren't changed |
+| `Save`, `Upsert` | The existence check, and the update of an existing row, are filtered |
+| Raw SQL: complete statements in `SqlList`, `SqlColumn`, `SqlScalar`, `ExecuteSql`, `Select<T>(fullSql)` | **Not applied**: OrmLite doesn't parse user SQL, which is the app's responsibility |
+
+Notes:
+
+- Updating a row that the filter excludes affects 0 rows, the same as a row that doesn't exist, so `Update(obj)`
+  returns 0 and `[RowVersion]` updates throw `OptimisticConcurrencyException`.
+- `Where()`, which clears the WHERE conditions, keeps ensured conditions.
+- Filters only apply to queries created from the filtered connection. A `SqlExpression` created from another connection
+  or `OrmLiteConfig.DialectProvider.SqlExpression<T>()` isn't filtered, which the docs should call out.
+
+## Where write rules are applied
+
+| Rule | APIs |
+|-|-|
+| `OnInsert` | `Insert`, `InsertAll`, `Save` / `SaveAll` (new rows), `Upsert` / `UpsertAll` (insert part), `InsertIntoSelect`, `BulkInsert`, `InsertOnly` |
+| `OnUpdate` | `Update(obj)`, `UpdateAll`, `Save` / `SaveAll` (existing rows), `Upsert` / `UpsertAll` (update part), `UpdateOnly` (all forms), `UpdateAdd`, `UpdateNonDefaults`, `UpdateFrom` |
+| `EnsureValue` | Inserts: sets the value when it's the default, throws when it's different. Updates: throws when an update sets it to a different value, incl. expression updates like `UpdateOnly(() => new T { TenantId = ... })` |
+
+- **Object writes** (`Insert(obj)`, `Update(obj)`, ...) use the rule's value for the column's param instead of the
+  object's property. Following the write-back convention, `Insert` / `Update` don't modify the object, while `Save`
+  and `Upsert`, which keep objects in sync with their rows, also set the object's property.
+- **Expression writes** (`UpdateOnly`, `UpdateAdd`, `UpdateFrom`, `InsertIntoSelect`) add the column to the `SET` or
+  `INSERT` column list, replacing a value for the same column in the expression.
+- **Upserts** are one statement that inserts or updates, so `OnInsert` columns are only in the insert part, e.g.
+  `CreatedDate` is never overwritten when the row already exists, and `OnUpdate` columns are in the update part.
+- A rule's value always wins over a value from the app, so audit columns can be trusted, while `EnsureValue` throws
+  instead of silently changing the value.
+
+## `WithoutFilters()`
+
+- Returns a lightweight `OrmLiteConnection` over the same underlying connection and transaction, with no filters or
+  rules, so admin tasks can run in the current transaction.
+- Disposing it doesn't close the underlying connection.
+- Filters and rules can't be removed from a connection otherwise, and there's no per-query bypass like
+  `q.IgnoreFilters()`, so one line can't remove a mandatory filter from a query.
+
+## Shared connections
+
+SQLite `:memory:` databases only exist while their connection is open, so `OpenDbConnection()` returns the same shared
+`OrmLiteConnection` every time. Filters and rules on a shared connection are scoped to its outermost open: nested opens,
+which are the same connection, use them, and they're cleared when the outermost open is disposed so they never apply
+to the next request or test.
+
+## Implementation
+
+- **Storage**: `OrmLiteConnection.Filters`, an immutable set of filters and rules replaced on each registration, with
+  a per-connection cache from table type to its matching filters and rules. Commands reach it through
+  `OrmLiteCommand.OrmLiteConnection`.
+- **Rebinding interface expressions**: an `ExpressionVisitor` that replaces the interface parameter with a parameter of
+  the table type and rebinds member access to the table's property of the same name, cached per table type.
+- **Filtered query creation**: one internal entry point, e.g. `dbCmd.CreateQuery<T>()` / `dbConn.CreateQuery<T>()`,
+  that creates the dialect's `SqlExpression<T>` and applies the connection's filters. `db.From<T>()`
+  (`OrmLiteExecFilter.SqlExpression<T>()`) and the ~65 internal `DialectProvider.SqlExpression<T>()` call sites in the
+  read, write, returning, load and legacy APIs are changed to use it.
+- **Joins**: `SqlExpression` needs a reference to the connection's filters so `Join<TJoin>()` can add the joined table's
+  filter to its `ON` clause, and `WithRecursive()` to its recursive step.
+- **By-id and object writes**: render the table's filter condition with its params from a filtered `SqlExpression<T>`
+  and append it to the statement's `WHERE` clause.
+- **Write rules**: applied where insert / update statements and their params are prepared
+  (`PrepareParameterizedInsertStatement`, `SetParameterValues`, `PrepareParameterizedUpdateStatement`, `InitUpdateOnly`,
+  the upsert statements and `ToUpdateFromStatement`), plus `BulkInsert` and `InsertIntoSelect`.
+
+## Stages
+
+Each stage includes reference tests in `UseCases/` verified on SQLite, PostgreSQL, SQL Server, MySql and
+MySqlConnector, and a full test suite run.
+
+1. ✅ **Filters on queries**: connection storage, `EnsureFilter<T>()`, interface rebinding, `db.From<T>()`, sub queries
+   and set operations, filters prefixed with their table (or alias) so later joins stay unambiguous, `Where()` keeps
+   ensured conditions when clearing WHERE conditions, and filters scoped to the outermost open of shared connections.
+2. **All typed reads**: lambda / anonymous-object APIs, WHERE-clause shorthand APIs, by-id APIs, async and lazy
+   variants, joins (`ON` clause), `WithRecursive()`, `TopPerGroup()`, `LoadSelect()` and references.
+3. **Updates and deletes**: filters on every update and delete API, incl. `Save`, `Upsert`, `UpdateFrom` and the
+   returning APIs.
+4. **Write rules**: `EnsureValue`, `OnInsert` and `OnUpdate` for object writes, expression writes and upserts, then
+   `BulkInsert` and `InsertIntoSelect`.
+5. **`WithoutFilters()`** and the reference docs: a new page leading with the `GetDbConnection()` pattern, multi-tenancy
+   and auditing examples, the table of covered APIs and the raw SQL caveat, plus release notes.
+
+## Open questions
+
+- Should `Update(obj)` of a row excluded by a filter throw instead of returning 0, e.g. an opt-in strict mode?
+- Should `EnsureFilter` also be able to use a function for values that change during a connection's lifetime, or are
+  captured values enough since connections are short-lived?
+- Legacy APIs (`Legacy/`): apply filters for consistency, or leave them unfiltered and document it?
