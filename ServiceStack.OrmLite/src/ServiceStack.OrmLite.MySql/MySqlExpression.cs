@@ -10,6 +10,20 @@ public class MySqlExpression<T>(IOrmLiteDialectProvider dialectProvider) : SqlEx
         return $"cast({quotedColName} as char(1000))";
     }
 
+    // UPDATE t INNER JOIN c ON ... SET t.a = c.A WHERE ...
+    protected override string ToUpdateFromStatement(List<KeyValuePair<FieldDefinition, string>> values)
+    {
+        var target = TableAlias != null ? DialectProvider.GetQuotedName(TableAlias) : DialectProvider.GetQuotedTableName(modelDef);
+        var tables = FromExpression.Trim();
+        if (tables.StartsWith("FROM ", StringComparison.OrdinalIgnoreCase))
+            tables = tables.Substring("FROM ".Length);
+        var set = new System.Text.StringBuilder();
+        foreach (var entry in values)
+            set.Append(set.Length > 0 ? ", " : "").Append(target).Append('.')
+                .Append(DialectProvider.GetQuotedColumnName(entry.Key)).Append(" = ").Append(entry.Value);
+        return $"UPDATE {tables}\nSET {set}\n{WhereExpression}".TrimEnd();
+    }
+
     public override string ToDeleteRowStatement()
     {
         return base.tableDefs.Count > 1

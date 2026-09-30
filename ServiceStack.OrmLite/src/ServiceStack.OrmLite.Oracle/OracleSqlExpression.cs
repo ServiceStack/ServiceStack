@@ -9,6 +9,9 @@ namespace ServiceStack.OrmLite.Oracle
         public OracleSqlExpression(IOrmLiteDialectProvider dialectProvider)
             : base(dialectProvider) {}
 
+        protected override string ToUpdateFromStatement(System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<FieldDefinition, string>> values) =>
+            throw new System.NotSupportedException("Oracle does not support UPDATE ... FROM, use UpdateOnly() instead");
+
         // Oracle doesn't use the RECURSIVE keyword
         protected override string WithRecursiveKeyword => "WITH";
 

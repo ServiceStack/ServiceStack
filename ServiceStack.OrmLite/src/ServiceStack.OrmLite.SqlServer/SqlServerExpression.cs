@@ -12,6 +12,16 @@ namespace ServiceStack.OrmLite.SqlServer
         // SQL Server doesn't use the RECURSIVE keyword
         protected override string WithRecursiveKeyword => "WITH";
 
+        // UPDATE t SET a = c.A FROM t INNER JOIN c ON ... WHERE ...
+        protected override string ToUpdateFromStatement(System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<FieldDefinition, string>> values)
+        {
+            var target = TableAlias != null ? DialectProvider.GetQuotedName(TableAlias) : DialectProvider.GetQuotedTableName(modelDef);
+            var set = new System.Text.StringBuilder();
+            foreach (var entry in values)
+                set.Append(set.Length > 0 ? ", " : "").Append(DialectProvider.GetQuotedColumnName(entry.Key)).Append(" = ").Append(entry.Value);
+            return $"UPDATE {target} SET {set}{FromExpression}\n{WhereExpression}".TrimEnd();
+        }
+
         public override void PrepareUpdateStatement(IDbCommand dbCmd, T item, bool excludeDefaults = false)
         {
             SqlServerExpressionUtils.PrepareSqlServerUpdateStatement(dbCmd, this, item, excludeDefaults);

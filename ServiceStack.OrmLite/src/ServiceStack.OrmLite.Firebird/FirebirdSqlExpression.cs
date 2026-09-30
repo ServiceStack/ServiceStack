@@ -8,6 +8,9 @@ namespace ServiceStack.OrmLite.Firebird
         public FirebirdSqlExpression(IOrmLiteDialectProvider dialectProvider) 
             : base(dialectProvider) {}
 
+        protected override string ToUpdateFromStatement(System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<FieldDefinition, string>> values) =>
+            throw new System.NotSupportedException("Firebird does not support UPDATE ... FROM, use UpdateOnly() instead");
+
         protected override string GetSetOperator(string op) => op is "INTERSECT" or "EXCEPT"
             ? throw new System.NotSupportedException($"Firebird does not support {op}")
             : op;

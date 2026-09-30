@@ -20,13 +20,6 @@ Recursive CTEs are supported with `q.WithRecursive(seed, recurse)`. Remaining CT
 - A depth column and max depth for recursive queries, e.g. to limit how many levels are returned
 - Cycle protection for data with loops, e.g. PostgreSQL 14+ `CYCLE` or tracking visited ids
 
-### 1.2 `UPDATE ... FROM` (S/M)
-`INSERT ... SELECT` is already supported with `db.InsertIntoSelect<T>(q)`. Add the equivalent for updating rows from
-a joined table without round-tripping rows through .NET:
-```csharp
-db.UpdateFrom<Order, Customer>((o, c) => o.CustomerId == c.Id, o => new Order { Region = /* c.Region */ });
-```
-
 ---
 
 ## 2. Data Access
@@ -38,11 +31,6 @@ read back for wide tables.
 
 ### 2.2 Bulk Upsert / Merge (M)
 `BulkInsert` exists. Add `BulkUpsert<T>(rows, updateOnly)` that bulk-loads into a temp table (COPY / SqlBulkCopy / multi-row VALUES), then runs one `MERGE` / `ON CONFLICT` / `ON DUPLICATE KEY` statement.
-
-### 2.3 Large Collection Params in Raw SQL (S)
-Large lists are handled automatically in `SelectByIds`, `DeleteByIds` and `Contains()` expressions, but collection args in raw SQL,
-e.g. `db.Select<T>("Id IN (@ids)", new { ids })` or `Sql.Fmt($"Id IN ({ids})")`, still add a param per value. On PostgreSQL and
-SQL Server 2016+ these could be sent as a single array or JSON param when the SQL can be safely rewritten.
 
 ---
 
@@ -117,15 +105,8 @@ Would cover:
 
 ## 6. Observability and Diagnostics
 
-### 6.1 OpenTelemetry `ActivitySource` (S)
-Emit `db.system`, `db.statement` (with an opt-in parameter-redaction policy), `db.operation`, row counts and durations as OTel spans. This would build on the existing `OrmLiteDiagnostics` `DiagnosticListener` events so it works with standard APM tooling without custom listeners.
-Lower value than it looks: OrmLite's diagnostic events already appear in ServiceStack's Profiling UI with trace ids, and ADO.NET providers like Npgsql and SqlClient emit their own database spans.
-
-### 6.2 `db.Explain(q)` (S)
+### 6.1 `db.Explain(q)` (S)
 Returns the provider's query plan (`EXPLAIN [ANALYZE]`, `SET SHOWPLAN_XML`, `EXPLAIN QUERY PLAN`), which helps with index tuning from tests or admin UIs.
-
-### 6.3 Slow Query Log and N+1 Detection (S)
-A configurable threshold that logs the SQL, parameters (redacted) and caller for slow commands. There could also be a debug-mode detector that warns when the same statement shape runs more than N times within one request or connection.
 
 ---
 
@@ -152,16 +133,6 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 - Use of `Unsafe*` APIs with non-constant arguments.
 - `SqlVerifyFragment` used as the only defence on user-supplied values that could instead be allow-listed, e.g. suggesting `OrderBySafe()` for user-supplied `OrderBy` values.
 
-### 8.2 Allow-List Helpers for Dynamic Filtering (S)
-`OrderBySafe()` covers dynamic sorting. An equivalent helper for user-supplied filters, e.g. `?field=value` pairs, would resolve
-field names to quoted columns and only accept allowed fields and operators:
-```csharp
-q.WhereSafe(request.Filters, allowed: [nameof(Order.Status), nameof(Order.Total)]);
-```
-
-### 8.3 Parameter Redaction in Logs (S)
-`GetDebugString` / `DebugCommand` currently log every parameter value. Add `OrmLiteConfig.RedactParam` (for example, redact fields marked `[Secret]` / `[PasswordField]` or matching names like `*password*` / `*token*`) so debug logging is safe to enable in production.
-
 ---
 
 ## Considered and Not Planned
@@ -172,3 +143,12 @@ q.WhereSafe(request.Filters, allowed: [nameof(Order.Status), nameof(Order.Total)
   typed queries with `OrmLiteConfig.SqlExpressionSelectFilter` and `LoadReferenceSelectFilter`. ServiceStack apps
   typically handle multi-tenancy with a database per tenant or with AutoQuery / AutoCrud filters rather than
   ORM-level tenant filters.
+- **OpenTelemetry `ActivitySource` spans:** OrmLite's diagnostic events already appear in ServiceStack's Profiling UI
+  with trace ids, and ADO.NET providers like Npgsql and SqlClient emit their own database spans.
+- **Sending large collections in raw SQL as a single array or JSON param:** it requires rewriting user-written SQL,
+  which is risky to get right for every dialect. Typed APIs like `SelectByIds` and `Contains()` already handle large
+  lists.
+- **Allow-list helpers for user-supplied filters (`WhereSafe`):** AutoQuery already resolves and restricts
+  user-supplied filters, `OrderBySafe()` covers dynamic sorting, and `ColumnRef` / `Sql.Fmt()` cover hand-written
+  dynamic queries.
+- **Slow query log, N+1 detection and parameter redaction in logs:** reconsider if users ask for them.
