@@ -53,15 +53,10 @@ Native on PostgreSQL. Emulated with `ROW_NUMBER()` (see 1.2) elsewhere.
 
 ## 2. Data Access
 
-### 2.1 `RETURNING` / `OUTPUT` for Mutations (M)
-Return the affected rows (or chosen columns) in one round-trip:
-```csharp
-List<Order> updated = db.UpdateReturning(
-    new Order { Status = "Shipped" }, where: x => x.Status == "Packed", onlyFields: x => x.Status);
-List<long> ids = db.DeleteReturning<Session>(x => x.Expires < now, returning: x => x.Id);
-```
-- PostgreSQL, SQLite 3.35+ and MariaDB use `RETURNING`; SQL Server uses `OUTPUT INSERTED.*/DELETED.*`.
-- Also removes the extra `SELECT` that `Upsert` and `Update` currently run to refresh `RowVersion`.
+### 2.1 Returning Only Selected Columns (S)
+`UpdateOnlyReturning()`, `DeleteReturning()` and `Upsert` use `RETURNING` / `OUTPUT` to return all columns of the
+affected rows. Allow returning only selected columns, e.g. `returning: x => new { x.Id, x.Status }`, to reduce the data
+read back for wide tables.
 
 ### 2.2 Bulk Upsert / Merge (M)
 `BulkInsert` exists. Add `BulkUpsert<T>(rows, updateOnly)` that bulk-loads into a temp table (COPY / SqlBulkCopy / multi-row VALUES), then runs one `MERGE` / `ON CONFLICT` / `ON DUPLICATE KEY` statement.

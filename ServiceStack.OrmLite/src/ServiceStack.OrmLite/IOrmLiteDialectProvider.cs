@@ -41,6 +41,12 @@ public interface IOrmLiteDialectProvider
     /// executed in batches and Contains() expressions use an alternative strategy
     /// </summary>
     int MaxInListParams { get; set; }
+
+    /// <summary>
+    /// Converts an UPDATE or DELETE statement into one that also returns all columns of the affected rows,
+    /// e.g. with RETURNING or OUTPUT. Throws NotSupportedException if the RDBMS doesn't support it.
+    /// </summary>
+    string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete);
     
     /// <summary>
     /// Configure Provider with connection string options 

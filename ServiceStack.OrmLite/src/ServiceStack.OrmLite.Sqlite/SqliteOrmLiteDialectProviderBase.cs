@@ -180,6 +180,9 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
     public override bool SupportsUpsert => true;
 
+    public override string ToUpsertReturningStatement(string sql, ModelDefinition modelDef) =>
+        ToReturningStatement(sql, modelDef, isDelete: false);
+
     public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
         ICollection<string>? insertFields = null, ICollection<string>? updateOnly = null)
     {
@@ -454,6 +457,10 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override string SqlCurrency(string fieldOrValue, string currencySymbol) => SqlConcat([GetQuotedValue(currencySymbol), "printf(\"%.2f\", " + fieldOrValue + ")"]);
 
     public override string SqlBool(bool value) => value ? "1" : "0";
+
+    // Requires SQLite 3.35+
+    public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete) =>
+        sql.TrimEnd().TrimEnd(';') + " RETURNING " + GetColumnNames(modelDef);
 
     public override string SqlRandom => "random()";
 

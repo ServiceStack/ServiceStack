@@ -37,6 +37,9 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public int MaxInListParams { get; set; } = 1000;
 
+    public virtual string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete) =>
+        throw new NotSupportedException($"{GetType().Name} doesn't support returning rows from UPDATE and DELETE statements");
+
     #region ADO.NET supported types
     /* ADO.NET UNDERSTOOD DATA TYPES:
         COUNTER	DbType.Int64
@@ -1040,6 +1043,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     }
 
     public virtual bool SupportsUpsert => false;
+
+    public virtual string ToUpsertReturningStatement(string sql, ModelDefinition modelDef) => null;
 
     public virtual void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
         ICollection<string> insertFields = null, ICollection<string> updateOnly = null) =>

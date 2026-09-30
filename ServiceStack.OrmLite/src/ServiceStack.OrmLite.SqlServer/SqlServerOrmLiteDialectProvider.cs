@@ -617,6 +617,19 @@ namespace ServiceStack.OrmLite.SqlServer
 
         public override bool SupportsUpsert => true;
 
+        // MERGE ... OUTPUT INSERTED.* returns the row as it is after the insert or update
+        public override string ToUpsertReturningStatement(string sql, ModelDefinition modelDef)
+        {
+            var sb = StringBuilderCache.Allocate();
+            foreach (var fieldDef in modelDef.FieldDefinitions)
+            {
+                if (fieldDef.CustomSelect != null)
+                    continue;
+                sb.Append(sb.Length == 0 ? "OUTPUT " : ", ").Append("INSERTED.").Append(GetQuotedColumnName(fieldDef));
+            }
+            return sql.TrimEnd().TrimEnd(';') + " " + StringBuilderCache.ReturnAndFree(sb) + ";";
+        }
+
         public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
             ICollection<string> insertFields = null, ICollection<string> updateOnly = null)
         {
@@ -813,6 +826,64 @@ namespace ServiceStack.OrmLite.SqlServer
             SqlConcat(new[] { GetQuotedValue(currencySymbol), $"CONVERT(VARCHAR, CONVERT(MONEY, {fieldOrValue}), 1)" });
 
         public override string SqlBool(bool value) => value ? "1" : "0";
+
+        /// <summary>
+        /// Adds an OUTPUT clause before the statement's WHERE clause, e.g:
+        /// UPDATE "Table" SET ... OUTPUT INSERTED."Id", ... WHERE ...
+        /// Note: SQL Server doesn't allow OUTPUT without INTO on tables with enabled triggers
+        /// </summary>
+        public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete)
+        {
+            var prefix = isDelete ? "DELETED" : "INSERTED";
+            var sb = StringBuilderCache.Allocate();
+            foreach (var fieldDef in modelDef.FieldDefinitions)
+            {
+                if (fieldDef.CustomSelect != null)
+                    continue;
+                sb.Append(sb.Length == 0 ? "OUTPUT " : ", ").Append(prefix).Append('.').Append(GetQuotedColumnName(fieldDef));
+            }
+            var output = StringBuilderCache.ReturnAndFree(sb);
+
+            sql = sql.TrimEnd().TrimEnd(';');
+
+            // DELETE with joins, e.g. DELETE "Table" FROM "Table" INNER JOIN ... needs OUTPUT before FROM
+            var isDeleteWithJoin = isDelete && !sql.TrimStart().StartsWith("DELETE FROM", StringComparison.OrdinalIgnoreCase);
+            var index = IndexOfTopLevelKeyword(sql, isDeleteWithJoin ? "FROM" : "WHERE");
+            return index < 0
+                ? sql + " " + output
+                : sql.Substring(0, index) + output + " " + sql.Substring(index);
+        }
+
+        /// <summary>
+        /// Index of the first keyword outside of quotes and parentheses, or -1
+        /// </summary>
+        private static int IndexOfTopLevelKeyword(string sql, string keyword)
+        {
+            var depth = 0;
+            char quote = default;
+            for (var i = 0; i < sql.Length; i++)
+            {
+                var c = sql[i];
+                if (quote != default)
+                {
+                    if (c == quote) quote = default;
+                    continue;
+                }
+                switch (c)
+                {
+                    case '\'': case '"': quote = c; continue;
+                    case '[': quote = ']'; continue;
+                    case '(': depth++; continue;
+                    case ')': depth--; continue;
+                }
+                if (depth == 0 
+                    && string.Compare(sql, i, keyword, 0, keyword.Length, StringComparison.OrdinalIgnoreCase) == 0
+                    && (i == 0 || !char.IsLetterOrDigit(sql[i - 1]))
+                    && (i + keyword.Length >= sql.Length || !char.IsLetterOrDigit(sql[i + keyword.Length])))
+                    return i;
+            }
+            return -1;
+        }
 
         public override string SqlLimit(int? offset = null, int? rows = null) => rows == null && offset == null
             ? ""

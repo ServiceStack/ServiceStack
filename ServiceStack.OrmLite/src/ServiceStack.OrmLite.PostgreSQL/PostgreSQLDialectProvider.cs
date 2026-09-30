@@ -285,6 +285,9 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             : null;
     }
 
+    public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete) =>
+        sql.TrimEnd().TrimEnd(';') + " RETURNING " + GetColumnNames(modelDef);
+
     public override bool IsFullSelectStatement(string sql)
     {
         sql = sql?.TrimStart();
@@ -528,6 +531,9 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
     }
 
     public override bool SupportsUpsert => true;
+
+    public override string ToUpsertReturningStatement(string sql, ModelDefinition modelDef) =>
+        ToReturningStatement(sql, modelDef, isDelete: false);
 
     public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
         ICollection<string> insertFields = null, ICollection<string> updateOnly = null)

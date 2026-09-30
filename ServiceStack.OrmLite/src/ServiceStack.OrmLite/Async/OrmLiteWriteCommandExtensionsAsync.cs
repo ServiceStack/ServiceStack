@@ -564,11 +564,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             var newId = await dbCmd.InsertAsync(obj, commandFilter: null, selectIdentity: true,
                 enableIdentityInsert: false, token: token).ConfigAwait();
             primaryKey.SetValue(obj, dialect.FromDbValue(newId, primaryKey.FieldType));
-            if (modelDef.RowVersion != null)
-            {
-                var rowVersion = await dbCmd.GetRowVersionAsync(modelDef, primaryKey.GetValue(obj), token).ConfigAwait();
-                modelDef.RowVersion.SetValue(obj, rowVersion);
-            }
+            await dbCmd.ReadBackUpsertFieldsAsync(obj, modelDef,
+                OrmLiteWriteCommandExtensions.GetUpsertFieldsAfterInsert(dialect, modelDef), primaryKey.GetValue(obj), token).ConfigAwait();
             return;
         }
 
@@ -579,6 +576,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             return;
         }
 
+        var readBackFields = OrmLiteWriteCommandExtensions.GetUpsertReadBackFields(modelDef);
+        var didReadBack = false;
         var enableIdentityInsert = primaryKey.AutoIncrement;
         try
         {
@@ -588,7 +587,24 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             upsertProvider.PrepareParameterizedUpsertStatement<T>(dbCmd,
                 dialectProvider.GetNonDefaultValueInsertFields<T>(obj), canonicalUpdateOnly);
             dialectProvider.SetParameterValues<T>(dbCmd, obj);
-            await dbCmd.ExecNonQueryAsync(token).ConfigAwait();
+
+            // Return the upserted row in the same statement when supported, e.g. RETURNING or OUTPUT
+            var returningSql = readBackFields.Count > 0
+                ? upsertProvider.ToUpsertReturningStatement(dbCmd.CommandText, modelDef)
+                : null;
+            if (returningSql != null)
+            {
+                var row = await dbCmd.ConvertToAsync<T>(returningSql, token).ConfigAwait();
+                if (row != null) // no row is returned when an existing row isn't updated, e.g. DO NOTHING
+                {
+                    OrmLiteWriteCommandExtensions.CopyFields(row, obj, readBackFields);
+                    didReadBack = true;
+                }
+            }
+            else
+            {
+                await dbCmd.ExecNonQueryAsync(token).ConfigAwait();
+            }
         }
         finally
         {
@@ -596,12 +612,28 @@ internal static class OrmLiteWriteCommandExtensionsAsync
                 await dialectProvider.DisableIdentityInsertAsync<T>(dbCmd, token).ConfigAwait();
         }
 
-        id = primaryKey.GetValue(obj);
-        if (modelDef.RowVersion != null)
+        if (!didReadBack)
+            await dbCmd.ReadBackUpsertFieldsAsync(obj, modelDef, readBackFields, primaryKey.GetValue(obj), token).ConfigAwait();
+    }
+
+    /// <summary>
+    /// Reads back fields with a separate query, only the row version if it's the only field
+    /// </summary>
+    private static async Task ReadBackUpsertFieldsAsync<T>(this IDbCommand dbCmd, T obj, ModelDefinition modelDef,
+        List<FieldDefinition> fields, object id, CancellationToken token)
+    {
+        if (fields.Count == 0)
+            return;
+
+        if (fields.Count == 1 && fields[0].IsRowVersion)
         {
-            var rowVersion = await dbCmd.GetRowVersionAsync(modelDef, id, token).ConfigAwait();
-            modelDef.RowVersion.SetValue(obj, rowVersion);
+            fields[0].SetValue(obj, await dbCmd.GetRowVersionAsync(modelDef, id, token).ConfigAwait());
+            return;
         }
+
+        var row = await dbCmd.SingleByIdAsync<T>(id, token).ConfigAwait();
+        if (row != null)
+            OrmLiteWriteCommandExtensions.CopyFields(row, obj, fields);
     }
 
     internal static async Task UpsertAllAsync<T>(this IDbCommand dbCmd, IEnumerable<T> objs,
@@ -650,13 +682,12 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         {
             await dbCmd.InsertAsync(obj, commandFilter: null, selectIdentity: false,
                 enableIdentityInsert: primaryKey.AutoIncrement, token: token).ConfigAwait();
+            await dbCmd.ReadBackUpsertFieldsAsync(obj, modelDef,
+                OrmLiteWriteCommandExtensions.GetUpsertFieldsAfterInsert(dbCmd.GetDialectProvider(), modelDef), id, token).ConfigAwait();
+            return;
         }
 
-        if (modelDef.RowVersion != null)
-        {
-            var rowVersion = await dbCmd.GetRowVersionAsync(modelDef, primaryKey.GetValue(obj), token).ConfigAwait();
-            modelDef.RowVersion.SetValue(obj, rowVersion);
-        }
+        await dbCmd.ReadBackUpsertFieldsAsync(obj, modelDef, OrmLiteWriteCommandExtensions.GetUpsertReadBackFields(modelDef), id, token).ConfigAwait();
     }
 
     internal static async Task<bool> SaveAsync<T>(this IDbCommand dbCmd, T obj, CancellationToken token)
