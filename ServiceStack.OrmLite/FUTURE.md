@@ -220,17 +220,6 @@ q.WhereSafe(request.Filters, allowed: [nameof(Order.Status), nameof(Order.Total)
 
 ---
 
-## 9. Smaller Correctness Items From the Code Review (Not Yet Fixed)
-
-- `OpenDbConnection*()` doesn't dispose the connection if `Open()` or `configure` throws. The named-connection `OpenDbConnectionAsync` overloads also call the default factory's `DialectProvider.OpenAsync` instead of the named factory's when the connection isn't an `OrmLiteConnection`.
-- `OrmLiteConnection.Dispose()` writes exceptions to `Console.WriteLine` in addition to the logger.
-- `SqlExpression.UnsafeFrom` decides whether to quote the table using `rawFrom.ToLower().IndexOfAny("join", ",")`, so a table named e.g. `Rejoinder` is not quoted.
-- `ToDeleteRowStatement()` with joins emits `DELETE ... WHERE pk IN (SELECT pk FROM same_table JOIN ...)`, which MySQL rejects (error 1093). MySQL needs `DELETE t FROM t JOIN ...` or a derived-table wrapper.
-- The SQL Server `SqlGeography` / `SqlGeometry` / `SqlHierarchyId` converters' `ToQuotedString` wrap `ToString()` output in quotes without escaping. The output is WKT, so this is low risk, but it should use `GetQuotedValue`.
-- Firebird `FbSchema/Schema.cs` catalog queries interpolate `'{tableName}'` / `'{name}'` without `.SqlParam()`.
-
----
-
 ## Considered and Not Planned
 
 - **Typed global query filters (soft delete / multi-tenancy):** complete coverage means changing nearly every read and

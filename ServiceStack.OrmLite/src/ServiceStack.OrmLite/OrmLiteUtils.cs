@@ -692,6 +692,25 @@ public static class OrmLiteUtils
         return sqlFragment;
     }
 
+    /// <summary>
+    /// Whether text contains word (case-insensitive) as a whole word, i.e. not surrounded by letters, digits or '_'
+    /// </summary>
+    internal static bool ContainsWord(this string text, string word)
+    {
+        if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(word))
+            return false;
+        static bool IsWordChar(char c) => char.IsLetterOrDigit(c) || c == '_';
+        var index = text.IndexOf(word, StringComparison.OrdinalIgnoreCase);
+        while (index >= 0)
+        {
+            var end = index + word.Length;
+            if ((index == 0 || !IsWordChar(text[index - 1])) && (end == text.Length || !IsWordChar(text[end])))
+                return true;
+            index = text.IndexOf(word, index + 1, StringComparison.OrdinalIgnoreCase);
+        }
+        return false;
+    }
+
     public static string SqlParam(this string paramValue)
     {
         return paramValue.Replace("'", "''");

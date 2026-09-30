@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using System.Data;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
@@ -116,5 +118,30 @@ public class OrmLiteConnectionFactoryTests(DialectContext context) : OrmLiteProv
         using var dbFile = factory.OpenDbConnectionString(dbFilePath);
         Assert.That(dbFile.State, Is.EqualTo(ConnectionState.Open));
         Assert.That(dbFile.ConnectionString, Is.EqualTo(dbFilePath));
+    }
+
+    [Test]
+    public async Task Disposes_connection_if_opening_it_fails()
+    {
+        var disposed = 0;
+        var factory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) { OnDispose = _ => disposed++ };
+
+        Assert.Throws<NotSupportedException>(() => factory.OpenDbConnection(_ => throw new NotSupportedException()));
+        Assert.ThrowsAsync<NotSupportedException>(async () => 
+            await factory.OpenDbConnectionAsync(_ => throw new NotSupportedException()));
+        Assert.That(disposed, Is.EqualTo(2));
+
+        factory.RegisterConnection(nameof(Disposes_connection_if_opening_it_fails), ":memory:", SqliteDialect.Provider);
+        OrmLiteConnectionFactory.NamedConnections[nameof(Disposes_connection_if_opening_it_fails)].OnDispose = _ => disposed++;
+
+        Assert.Throws<NotSupportedException>(() => 
+            factory.OpenDbConnection(nameof(Disposes_connection_if_opening_it_fails), _ => throw new NotSupportedException()));
+        Assert.ThrowsAsync<NotSupportedException>(async () => 
+            await factory.OpenDbConnectionAsync(nameof(Disposes_connection_if_opening_it_fails), _ => throw new NotSupportedException()));
+        Assert.That(disposed, Is.EqualTo(4));
+
+        // Connections are still usable afterwards
+        using var db = await factory.OpenDbConnectionAsync();
+        Assert.That(db.State, Is.EqualTo(ConnectionState.Open));
     }
 }

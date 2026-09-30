@@ -553,7 +553,8 @@ namespace ServiceStack.OrmLite
             }
             else
             {
-                var singleTable = rawFrom.ToLower().IndexOfAny("join", ",") == -1;
+                // Only quote single table names, i.e. not "A JOIN B" or "A, B" (but table names can contain "join", e.g. Rejoinder)
+                var singleTable = rawFrom.IndexOf(',') == -1 && !rawFrom.ContainsWord("join");
                 FromExpression = singleTable
                     ? " \nFROM " + DialectProvider.QuoteTable(rawFrom)
                     : " \nFROM " + rawFrom;

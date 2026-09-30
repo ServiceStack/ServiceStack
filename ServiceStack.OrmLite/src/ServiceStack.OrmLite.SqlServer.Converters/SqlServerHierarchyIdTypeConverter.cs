@@ -26,7 +26,7 @@ namespace ServiceStack.OrmLite.SqlServer.Converters
                     if (!hierarchyId.IsNull)
                         str = hierarchyId.ToString();
                 }
-                str = (str == null) ? "null" : $"'{str}'";
+                str = (str == null) ? "null" : "'" + str.Replace("'", "''") + "'";
                 return $"CAST({str} AS {ColumnDefinition})";
             }
 

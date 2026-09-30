@@ -26,7 +26,7 @@ namespace ServiceStack.OrmLite.SqlServer.Converters
                     if (!geo.IsNull)
                         str = geo.ToString();
                 }
-                str = (str == null) ? "null" : $"'{str}'";
+                str = (str == null) ? "null" : "'" + str.Replace("'", "''") + "'";
                 return $"CAST({str} AS {ColumnDefinition})";
             }
 

@@ -33,7 +33,7 @@ namespace ServiceStack.OrmLite.Firebird
 		{
 
 			string sql = sqlTables +
-			             $"    AND a.rdb$relation_name ='{name}' ";
+			             $"    AND a.rdb$relation_name ='{name.SqlParam()}' ";
 
             var query = Connection.Select<Table>(sql);
             return query.FirstOrDefault();
@@ -43,15 +43,15 @@ namespace ServiceStack.OrmLite.Firebird
 		{
 
 			string sql = string.Format(sqlColumns.ToString(),
-									   string.IsNullOrEmpty(tableName) ? "idx.rdb$relation_name" : $"'{tableName}'",
-									   string.IsNullOrEmpty(tableName) ? "r.rdb$relation_name" : $"'{tableName}'");
+									   string.IsNullOrEmpty(tableName) ? "idx.rdb$relation_name" : $"'{tableName.SqlParam()}'",
+									   string.IsNullOrEmpty(tableName) ? "r.rdb$relation_name" : $"'{tableName.SqlParam()}'");
 
             List<Column> columns =Connection.Select<Column>(sql);
 
             List<Generador> gens = Connection.Select<Generador>(sqlGenerator.ToString());
 
             sql = string.Format(sqlFieldGenerator.ToString(),
-                                string.IsNullOrEmpty(tableName) ? "TRIGGERS.RDB$RELATION_NAME" : $"'{tableName}'");
+                                string.IsNullOrEmpty(tableName) ? "TRIGGERS.RDB$RELATION_NAME" : $"'{tableName.SqlParam()}'");
 
             List<FieldGenerator> fg = Connection.Select<FieldGenerator>(sql);
 
@@ -85,7 +85,7 @@ namespace ServiceStack.OrmLite.Firebird
 		public Procedure GetProcedure(string name)
 		{
 			string sql= sqlProcedures.ToString() +
-			            $"WHERE  b.rdb$procedure_name ='{name}'";
+			            $"WHERE  b.rdb$procedure_name ='{name.SqlParam()}'";
 
             var query = Connection.Select<Procedure>(sql);
             return query.FirstOrDefault();
@@ -102,7 +102,7 @@ namespace ServiceStack.OrmLite.Firebird
 		{
 
 			string sql = string.Format(sqlParameters.ToString(),
-									   string.IsNullOrEmpty(procedureName) ? "a.rdb$procedure_name" : $"'{procedureName}'");
+									   string.IsNullOrEmpty(procedureName) ? "a.rdb$procedure_name" : $"'{procedureName.SqlParam()}'");
 
             return Connection.Select<Parameter>(sql);
         }

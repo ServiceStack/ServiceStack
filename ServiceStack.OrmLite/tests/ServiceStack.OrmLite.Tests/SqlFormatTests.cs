@@ -180,4 +180,14 @@ public class SqlFormatTests
 		results = db.SqlList<int>("SELECT 1 WHERE 1 IN (@Ids)", new { Ids = new int?[] { 1, null } });
 		Assert.That(results, Is.EquivalentTo(new[] { 1 }));
 	}
+
+	[Test]
+	public void From_quotes_single_table_names_containing_join()
+	{
+		var q = SqliteDialect.Provider.SqlExpression<Shared.Person>().From("Rejoinder");
+		Assert.That(q.FromExpression, Does.Contain("\"Rejoinder\""));
+
+		q = SqliteDialect.Provider.SqlExpression<Shared.Person>().UnsafeFrom("A JOIN B ON A.Id = B.AId");
+		Assert.That(q.FromExpression, Does.Contain("FROM A JOIN B"));
+	}
 }

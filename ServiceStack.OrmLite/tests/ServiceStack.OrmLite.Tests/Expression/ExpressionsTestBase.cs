@@ -84,7 +84,7 @@ public abstract class ExpressionsTestBase(DialectContext context) : OrmLiteProvi
 
                 o = new TestType
                 {
-                    BoolColumn = random.Next() % 2 == 0,
+                    BoolColumn = i % 2 == 0, // alternate so tests always have multiple true and false rows
                     IntColumn = intVal,
                     StringColumn = Guid.NewGuid().ToString()
                 };
