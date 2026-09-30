@@ -136,6 +136,8 @@ namespace ServiceStack.OrmLite
             to.hasEnsureConditions = hasEnsureConditions;
 
             to.Params = new List<IDbDataParameter>(Params);
+            to.setOperations = setOperations != null ? new List<SetOperation>(setOperations) : null;
+            to.setOperationParams = setOperationParams != null ? new List<IDbDataParameter>(setOperationParams) : null;
 
             to.underlyingExpression = underlyingExpression;
             to.SqlFilter = SqlFilter;
@@ -216,13 +218,17 @@ namespace ServiceStack.OrmLite
             sb.Append(hasEnsureConditions ? "1" : "0");
             sb.AppendLine();
 
+            DumpSetOperations(sb, includeParams);
+
             if (includeParams)
             {
-                sb.Append("PARAMS:").Append(Params.Count).AppendLine();
+                sb.Append("PARAMS:").Append(Params.Count - (setOperationParams?.Count ?? 0)).AppendLine();
                 if (Params.Count > 0)
                 {
                     foreach (var p in Params)
                     {
+                        if (setOperationParams?.Contains(p) == true)
+                            continue; // included in the set operation dumps
                         sb.Append(p.ParameterName).Append('=');
                         sb.AppendLine(p.Value.ConvertTo<string>());
                     }
@@ -1597,7 +1603,9 @@ namespace ServiceStack.OrmLite
             SelectFilter?.Invoke(this);
             OrmLiteConfig.SqlExpressionSelectFilter?.Invoke(GetUntyped());
 
-            var sql = DialectProvider
+            var sql = HasSetOperations
+                ? ToSetOperationsSelectStatement(forType)
+                : DialectProvider
                 .ToSelectStatement(forType, modelDef, SelectExpression, BodyExpression, OrderByExpression, offset: Offset, rows: Rows,Tags);
 
             return SqlFilter != null
@@ -1620,7 +1628,9 @@ namespace ServiceStack.OrmLite
             SelectFilter?.Invoke(this);
             OrmLiteConfig.SqlExpressionSelectFilter?.Invoke(GetUntyped());
 
-            var sql = "SELECT COUNT(*)" + BodyExpression;
+            var sql = HasSetOperations
+                ? ToSetOperationsCountStatement()
+                : "SELECT COUNT(*)" + BodyExpression;
 
             return SqlFilter != null
                 ? SqlFilter(sql)
@@ -3497,36 +3507,7 @@ namespace ServiceStack.OrmLite
             if (argValue is ISqlExpression exprArg)
             {
                 var subSelect = exprArg.ToSelectStatement(QueryType.Select);
-                var renameParams = new List<Tuple<string,string>>();
-                foreach (var p in exprArg.Params)
-                {
-                    var oldName = p.ParameterName;
-                    var newName = DialectProvider.GetParam(Params.Count.ToString());
-                    if (oldName != newName)
-                    {
-                        var pClone = DialectProvider.CreateParam().PopulateWith(p);
-                        renameParams.Add(Tuple.Create(oldName, newName));
-                        pClone.ParameterName = newName;
-                        Params.Add(pClone);
-                    }
-                    else
-                    {
-                        Params.Add(p);
-                    }
-                }
-
-                // regex replace doesn't work when param is at end of string "AND a = :0"
-                var lastChar = subSelect[subSelect.Length - 1];
-                if (!(char.IsWhiteSpace(lastChar) || lastChar == ')'))
-                    subSelect += " ";
-                
-                for (var i = renameParams.Count - 1; i >= 0; i--)
-                {
-                    //Replace complete db params [@1] and not partial tokens [@1]0
-                    var paramsRegex = new Regex(renameParams[i].Item1 + "([^\\d])");
-                    subSelect = paramsRegex.Replace(subSelect, renameParams[i].Item2 + "$1");
-                }
-                
+                subSelect = AddRenamedParams(exprArg.Params, subSelect);
                 return CreateInSubQuerySql(quotedColName, subSelect);
             }
 
@@ -3684,6 +3665,18 @@ namespace ServiceStack.OrmLite
         string ToSelectStatement(QueryType forType);
         string SelectInto<TModel>();
         string SelectInto<TModel>(QueryType forType);
+
+        /// <summary>
+        /// The SELECT statement used when this query is combined with another query in a set operation, e.g. UNION,
+        /// i.e. without an ORDER BY (invalid in set operation operands). Queries with their own limits, e.g. Take(10),
+        /// or set operations are wrapped in a derived table with the specified alias.
+        /// </summary>
+        string ToSetOperandStatement(string alias);
+
+        /// <summary>
+        /// Dump internal state of this query into a string, e.g. for computing a unique hash
+        /// </summary>
+        string Dump(bool includeParams);
     }
 
     public enum QueryType

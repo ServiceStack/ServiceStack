@@ -9,6 +9,9 @@ namespace ServiceStack.OrmLite.Oracle
         public OracleSqlExpression(IOrmLiteDialectProvider dialectProvider)
             : base(dialectProvider) {}
 
+        // Oracle uses MINUS for EXCEPT
+        protected override string GetSetOperator(string op) => op == "EXCEPT" ? "MINUS" : op;
+
         protected override object VisitColumnAccessMethod(MethodCallExpression m)
         {
             if (m.Method.Name == "Substring")

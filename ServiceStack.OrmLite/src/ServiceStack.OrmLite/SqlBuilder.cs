@@ -237,6 +237,10 @@ namespace ServiceStack.OrmLite
 
             public string SelectInto<T>() => RawSql;
             public string SelectInto<T>(QueryType queryType) => RawSql;
+
+            // Raw SQL templates are used as-is
+            public string ToSetOperandStatement(string alias) => RawSql;
+            public string Dump(bool includeParams) => RawSql;
         }
 
         public Template AddTemplate(string sql, object parameters = null)

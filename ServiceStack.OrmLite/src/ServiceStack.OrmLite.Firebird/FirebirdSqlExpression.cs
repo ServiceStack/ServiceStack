@@ -8,6 +8,10 @@ namespace ServiceStack.OrmLite.Firebird
         public FirebirdSqlExpression(IOrmLiteDialectProvider dialectProvider) 
             : base(dialectProvider) {}
 
+        protected override string GetSetOperator(string op) => op is "INTERSECT" or "EXCEPT"
+            ? throw new System.NotSupportedException($"Firebird does not support {op}")
+            : op;
+
         protected override object VisitColumnAccessMethod(MethodCallExpression m)
         {
             var args = this.VisitExpressionList(m.Arguments);

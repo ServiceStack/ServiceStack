@@ -596,6 +596,10 @@ public class JoinSqlBuilder<TNewPoco, TBasePoco> : ISqlExpression
 
     public List<IDbDataParameter> Params { get; private set; }
 
+    public string ToSetOperandStatement(string alias) => ToSelectStatement(QueryType.Select);
+
+    public string Dump(bool includeParams) => ToSelectStatement(QueryType.Select);
+
     public string ToSelectStatement() => ToSelectStatement(QueryType.Select);
     public string ToSelectStatement(QueryType forType)
     {

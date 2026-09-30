@@ -83,7 +83,7 @@ public class OrderBySafeUseCases(DialectContext context) : OrmLiteProvidersTestB
 
         var rows = db.Select<(string Title, string Reviewer, int Rating)>(q);
         Assert.That(rows.Map(x => x.Rating), Is.EqualTo(new[] { 5, 5, 4, 3, 2 }));
-        Assert.That(rows.Map(x => x.Reviewer), Is.EqualTo(new[] { "alice", "alice", "bob", "carol", "bob" }));
+        Assert.That(rows.Map(x => x.Reviewer), Is.EqualTo(new[] { "Alice", "Alice", "Bob", "Carol", "Bob" }));
     }
 
     [Test]

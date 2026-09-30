@@ -626,6 +626,10 @@ namespace ServiceStack.OrmLite
             return q.ToSelectStatement(forType);
         }
 
+        public string ToSetOperandStatement(string alias) => q.ToSetOperandStatement(alias);
+
+        public string Dump(bool includeParams) => q.Dump(includeParams);
+
         public string ToCountStatement()
         {
             return q.ToCountStatement();

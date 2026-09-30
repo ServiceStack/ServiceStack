@@ -111,14 +111,14 @@ public class QueryInternalsTests(DialectContext context) : OrmLiteProvidersTestB
 
         var q = db.From<Book>()
             .Join<BookReview>((b, r) => b.Id == r.BookId)
-            .Where<BookReview>(r => r.Reviewer == "alice")
+            .Where<BookReview>(r => r.Reviewer == "Alice")
             .OrderBy(x => x.Title);
 
         for (var i = 0; i < 2; i++)
         {
             var results = db.SelectMulti<Book, BookReview>(q);
             Assert.That(results.Map(x => x.Item1.Title), Is.EqualTo(new[] { "Dune", "The Hobbit" }));
-            Assert.That(results.All(x => x.Item2.Reviewer == "alice" && x.Item2.BookId == x.Item1.Id));
+            Assert.That(results.All(x => x.Item2.Reviewer == "Alice" && x.Item2.BookId == x.Item1.Id));
         }
     }
 
@@ -160,5 +160,108 @@ public class QueryInternalsTests(DialectContext context) : OrmLiteProvidersTestB
         var guids = Enumerable.Range(0, dialect.MaxInListParams + 1).Map(_ => Guid.NewGuid());
         q = dialect.SqlExpression<Book>().Where(x => guids.Contains(Guid.Empty));
         Assert.That((string)q.Params.Last().Value, Does.StartWith($"[\"{guids[0]:D}\""));
+    }
+
+    [Test]
+    public void Can_page_set_operations_without_an_explicit_order()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        var q = db.From<Book>().Select(x => x.Title)
+            .UnionAll(db.From<BookReview>().Select(x => x.Reviewer))
+            .Skip(10).Take(5);
+
+        Assert.That(db.Column<string>(q).Count, Is.EqualTo(3)); // 13 rows, skip 10
+    }
+
+    [Test]
+    public void Set_operations_use_dialect_specific_SQL()
+    {
+        var oracle = OracleDialect.Provider.SqlExpression<Book>().Select(x => x.Id)
+            .Except(OracleDialect.Provider.SqlExpression<BookReview>().Select(x => x.BookId));
+        Assert.That(oracle.ToSelectStatement(), Does.Contain("\nMINUS\n"));
+
+        Assert.Throws<NotSupportedException>(() => FirebirdDialect.Provider.SqlExpression<Book>()
+            .Intersect(FirebirdDialect.Provider.SqlExpression<BookReview>()));
+    }
+
+    [Test]
+    public void Set_operations_rename_params_of_combined_queries()
+    {
+        var dialect = SqliteDialect.Provider;
+        var q = dialect.SqlExpression<Book>().Where(x => x.Year > 1950 && x.Price < 10m).Select(x => x.Title)
+            .Union(dialect.SqlExpression<Book>().Where(x => x.Year < 1940 && x.Price > 5m).Select(x => x.Title));
+
+        var sql = q.ToSelectStatement();
+        Assert.That(sql, Does.Contain("@0").And.Contain("@1").And.Contain("@2").And.Contain("@3"));
+        Assert.That(q.Params.Map(x => x.Value), Is.EqualTo(new object[] { 1950, 10m, 1940, 5m }));
+
+        // Regenerating the SQL doesn't add the params again
+        Assert.That(q.ToSelectStatement(), Is.EqualTo(sql));
+        Assert.That(q.Params.Count, Is.EqualTo(4));
+        Assert.Throws<ArgumentException>(() => q.Union(q));
+
+        // Param-like text in string literals isn't renamed
+        q = dialect.SqlExpression<Book>().Where("Year > {0}", 1900).Select(x => x.Title)
+            .Union(dialect.SqlExpression<Book>().Where("Title <> '@0' AND Year > {0}", 1900).Select(x => x.Title));
+        sql = q.ToSelectStatement();
+        Assert.That(sql, Does.Contain("<> '@0' AND Year > @1"));
+    }
+
+    [Test]
+    public void Set_operations_rename_params_that_are_prefixes_of_other_params()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        // 12+ params in each query, so renaming @1 must not affect @10, @11
+        var ids = db.Column<int>(db.From<Book>().Select(x => x.Id)).ToArray();
+        var decoys = Enumerable.Range(1000, 12).ToArray();
+        var first = ids.Take(3).Concat(decoys).ToArray();
+        var second = ids.Skip(5).Concat(decoys).ToArray();
+
+        var q = db.From<Book>().Where(x => first.Contains(x.Id)).Select(x => x.Id)
+            .Union(db.From<Book>().Where(x => second.Contains(x.Id)).Select(x => x.Id));
+
+        Assert.That(q.Params.Count, Is.EqualTo(first.Length));
+        Assert.That(db.Column<int>(q), Is.EquivalentTo(ids.Take(3).Concat(ids.Skip(5))));
+        Assert.That(q.Params.Count, Is.EqualTo(first.Length + second.Length));
+    }
+
+    [Test]
+    public void Sql_In_sub_queries_with_named_params()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        // Named params referenced with '@' in the sub query, which the outer query's params mustn't clash with
+        var fiveStars = db.From<BookReview>().Select(r => r.BookId);
+        fiveStars.Params.Add(fiveStars.CreateParam("rating", 5));
+        fiveStars.Where("Rating = @rating");
+
+        var q = db.From<Book>().Where(x => x.Year > 1900 && Sql.In(x.Id, fiveStars)).Select(x => x.Title);
+        Assert.That(db.Column<string>(q), Is.EquivalentTo(new[] { "The Hobbit", "Dune" }));
+
+        // Names that are prefixes of other names, e.g. @min and @minRating
+        var highlyRated = db.From<BookReview>().Select(r => r.BookId);
+        highlyRated.Params.Add(highlyRated.CreateParam("min", 2));
+        highlyRated.Params.Add(highlyRated.CreateParam("minRating", 4));
+        highlyRated.Where("Rating >= @min AND Rating >= @minRating");
+
+        q = db.From<Book>().Where(x => x.Year > 1900 && Sql.In(x.Id, highlyRated)).Select(x => x.Title);
+        Assert.That(db.Column<string>(q), Is.EquivalentTo(new[] { "The Hobbit", "Dune" }));
+
+        // Same params added in the reverse order
+        highlyRated = db.From<BookReview>().Select(r => r.BookId);
+        highlyRated.Params.Add(highlyRated.CreateParam("minRating", 4));
+        highlyRated.Params.Add(highlyRated.CreateParam("min", 2));
+        highlyRated.Where("Rating >= @min AND Rating >= @minRating");
+
+        q = db.From<Book>().Where(x => x.Year > 1900 && Sql.In(x.Id, highlyRated)).Select(x => x.Title);
+        Assert.That(db.Column<string>(q), Is.EquivalentTo(new[] { "The Hobbit", "Dune" }));
+
+        // Sub queries are unchanged
+        Assert.That(db.Column<int>(fiveStars).Count, Is.EqualTo(2));
     }
 }

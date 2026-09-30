@@ -26,7 +26,7 @@ var q = db.From<Category>()
 var tree = db.Select<Category>(q);
 ```
 - Supported by all maintained dialects (MySQL 8+, SQLite 3.8.3+, Firebird 2.1+).
-- Also gives a clean base for 1.2 and 1.4.
+- Also gives a clean base for 1.2 and 1.3.
 
 ### 1.2 Window Functions (M)
 ```csharp
@@ -40,28 +40,21 @@ var q = db.From<Order>()
 - `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `LAG`/`LEAD`, `FIRST_VALUE`, and aggregate `OVER (...)`.
 - Enables "top N per group" queries, which are a common request.
 
-### 1.3 Set Operations: `UNION [ALL]`, `INTERSECT`, `EXCEPT` (S)
-```csharp
-var q = db.From<Customer>().Select(x => x.Email)
-    .UnionAll(db.From<Lead>().Select(x => x.Email));
-```
-Parameters from both expressions must be merged and renamed, reusing the existing sub-select param rebinding logic.
-
-### 1.4 `INSERT ... SELECT` and `UPDATE ... FROM` (S/M)
+### 1.3 `INSERT ... SELECT` and `UPDATE ... FROM` (S/M)
 Set-based data movement without round-tripping rows through .NET:
 ```csharp
 db.InsertInto<OrderArchive>(db.From<Order>().Where(x => x.CreatedDate < cutoff));
 db.UpdateFrom<Order, Customer>((o, c) => o.CustomerId == c.Id, o => new Order { Region = /* c.Region */ });
 ```
 
-### 1.5 Pessimistic Locking and Table Hints (S)
+### 1.4 Pessimistic Locking and Table Hints (S)
 ```csharp
 var q = db.From<Account>().Where(x => x.Id == id).ForUpdate();          // FOR UPDATE / WITH (UPDLOCK, ROWLOCK)
 var q = db.From<Job>().Where(x => x.Status == "Queued").ForUpdate(skipLocked: true).Take(10);
 ```
 `SKIP LOCKED` gives a portable way to build reliable work queues on PostgreSQL, MySQL 8, Oracle and SQL Server (`READPAST`).
 
-### 1.6 Keyset (Seek) Pagination (S)
+### 1.5 Keyset (Seek) Pagination (S)
 Offset paging degrades on large tables. A typed helper would fix that:
 ```csharp
 var page = db.Select(db.From<Post>().OrderBy(x => x.CreatedDate).ThenBy(x => x.Id)
@@ -69,7 +62,7 @@ var page = db.Select(db.From<Post>().OrderBy(x => x.CreatedDate).ThenBy(x => x.I
 ```
 This generates the correct compound predicate (`(a > @a) OR (a = @a AND b > @b)`) from the `ORDER BY` columns.
 
-### 1.7 `DISTINCT ON` / Top-N-Per-Group Helper (S)
+### 1.6 `DISTINCT ON` / Top-N-Per-Group Helper (S)
 Native on PostgreSQL. Emulated with `ROW_NUMBER()` (see 1.2) elsewhere.
 
 ---

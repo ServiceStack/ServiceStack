@@ -287,7 +287,8 @@ namespace ServiceStack.OrmLite
         public string SelectInto<TModel>() => SelectInto<TModel>(QueryType.Select);
         public string SelectInto<TModel>(QueryType queryType)
         {
-            if ((CustomSelect && OnlyFields == null) || (typeof(TModel) == typeof(T) && !PrefixFieldWithTableName))
+            if (HasSetOperations // columns are defined by the combined queries
+                || (CustomSelect && OnlyFields == null) || (typeof(TModel) == typeof(T) && !PrefixFieldWithTableName))
             {
                 return ToSelectStatement(queryType);
             }

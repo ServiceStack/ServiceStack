@@ -64,11 +64,11 @@ public static class Bookstore
         var books = db.Select<Book>();
         int IdOf(string title) => books.First(x => x.Title == title).Id;
         db.InsertAll(new List<BookReview> {
-            new() { BookId = IdOf("The Hobbit"), Reviewer = "alice", Rating = 5 },
-            new() { BookId = IdOf("The Hobbit"), Reviewer = "bob",   Rating = 4 },
-            new() { BookId = IdOf("Dune"),       Reviewer = "alice", Rating = 5 },
-            new() { BookId = IdOf("Cosmos"),     Reviewer = "carol", Rating = 3 },
-            new() { BookId = IdOf("SPQR"),       Reviewer = "bob",   Rating = 2 },
+            new() { BookId = IdOf("The Hobbit"), Reviewer = "Alice", Rating = 5 },
+            new() { BookId = IdOf("The Hobbit"), Reviewer = "Bob",   Rating = 4 },
+            new() { BookId = IdOf("Dune"),       Reviewer = "Alice", Rating = 5 },
+            new() { BookId = IdOf("Cosmos"),     Reviewer = "Carol", Rating = 3 },
+            new() { BookId = IdOf("SPQR"),       Reviewer = "Bob",   Rating = 2 },
         });
     }
 
