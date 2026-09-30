@@ -95,7 +95,8 @@ public class AiChatWebAssetTests
     }
 
     [TestCase("/chat/ui/index.mjs")]
-    [TestCase("/chat/ext/pdf/pages.mjs")]
+    // pdf/pages.mjs isn't used as the pdf extension is disabled when the typst CLI isn't installed, e.g. in CI
+    [TestCase("/chat/ext/core_tools/pages.mjs")]
     public async Task Assets_revalidate_with_weak_strong_list_and_star_etags(string path)
     {
         using var original = await client.GetAsync(path);
