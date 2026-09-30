@@ -84,10 +84,10 @@ The C# project does not maintain a hand-edited fork of `ai.mjs`. `ChatFeatureRou
 applies deployment-specific transformations while serving synchronized files:
 
 - it changes `const base = ''` in `ai.mjs` to the configured `ChatFeature.RoutePrefix`;
-- it adjusts the root navigation behavior in `index.mjs` for a prefixed mount.
+- shared `index.mjs` now resolves startup navigation through `ai.resolvePath()`, so it needs no source rewrite.
 
 URLs persisted by the application remain prefix-free; `RoutePrefix` is a deployment concern. If upstream
-changes remove the exact source strings used by these transformations, the C# host logs a warning. Review
+changes remove the exact source string used by the `ai.mjs` transformation, the C# host logs a warning. Review
 these transforms whenever changing UI routing, `ai.base`, or SPA initialization.
 
 ## Backend parity rule
@@ -321,3 +321,7 @@ Before finishing:
   applicable.
 - Update this context file or the deeper reference docs when adding a new architectural difference or
   Markdown document.
+
+UI assets revalidate with content ETags and `Cache-Control: no-cache`. Buffered text/JSON responses
+negotiate gzip or deflate; file downloads and SSE retain their streaming paths. Core module preloads
+use the resolved, prefix-aware import map. CodeMirror is loaded by the shared UI on demand.

@@ -22,7 +22,7 @@ export default {
           <input class="min-w-0 w-full bg-transparent border-0 outline-none text-sm text-inherit focus:text-gray-700 dark:focus:text-gray-200" ref="search" v-model="query" aria-label="Search projects" placeholder="Search projects" />
         </div>
         <p v-if="busy" class="text-xs px-3 py-2 text-gray-500 dark:text-gray-400">Projects can't change while this chat has an active run.</p>
-        <p v-else-if="thread" class="text-xs px-3 pt-2 text-gray-500 dark:text-gray-400">Moving this chat changes the workspace for future messages.</p>
+        <p v-else-if="thread" class="text-xs px-3 pt-2 text-gray-500 dark:text-gray-400">changes the workspace for future messages</p>
         <div class="max-h-[188px] overflow-y-auto py-[5px] [scrollbar-width:thin]">
           <button v-for="p in filtered" :key="p.id" type="button" class="flex items-center gap-2.5 w-full text-left py-2 px-2.5 rounded-xl text-sm cursor-pointer [&_svg]:shrink-0 [&_svg]:opacity-70 disabled:opacity-45 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2 hover:bg-gray-100 dark:hover:bg-gray-800" :disabled="busy" :aria-pressed="p.id === projectId" @click="select(p.id)">
             <ProjectFolderIcon /><span class="truncate flex-1">{{p.name}}</span>

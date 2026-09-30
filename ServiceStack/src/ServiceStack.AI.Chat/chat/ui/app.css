@@ -261,6 +261,7 @@
     --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     --default-font-family: var(--font-sans);
     --default-mono-font-family: var(--font-mono);
+    --default-ring-color: hsl(var(--ring));
     --color-nord-100: #eceff4;
     --color-nord-200: #e5e9f0;
     --color-nord-300: #d8dee9;
@@ -832,6 +833,9 @@
   .mr-48 {
     margin-right: calc(var(--spacing) * 48);
   }
+  .-mb-4 {
+    margin-bottom: calc(var(--spacing) * -4);
+  }
   .-mb-px {
     margin-bottom: -1px;
   }
@@ -1247,6 +1251,9 @@
   .min-h-\[2\.5rem\] {
     min-height: 2.5rem;
   }
+  .min-h-\[49px\] {
+    min-height: 49px;
+  }
   .min-h-\[50px\] {
     min-height: 50px;
   }
@@ -1555,6 +1562,9 @@
   }
   .min-w-\[24px\] {
     min-width: 24px;
+  }
+  .min-w-\[88px\] {
+    min-width: 88px;
   }
   .min-w-\[120px\] {
     min-width: 120px;
@@ -4082,6 +4092,12 @@
   .pl-5 {
     padding-left: calc(var(--spacing) * 5);
   }
+  .pl-6 {
+    padding-left: calc(var(--spacing) * 6);
+  }
+  .pl-7 {
+    padding-left: calc(var(--spacing) * 7);
+  }
   .pl-8 {
     padding-left: calc(var(--spacing) * 8);
   }
@@ -4565,6 +4581,9 @@
   .text-orange-600 {
     color: var(--color-orange-600);
   }
+  .text-orange-700 {
+    color: var(--color-orange-700);
+  }
   .text-orange-800 {
     color: var(--color-orange-800);
   }
@@ -4675,6 +4694,9 @@
     @supports (color: color-mix(in lab, red, red)) {
       color: color-mix(in oklab, var(--color-sky-900) 60%, transparent);
     }
+  }
+  .text-slate-300 {
+    color: var(--color-slate-300);
   }
   .text-slate-400 {
     color: var(--color-slate-400);

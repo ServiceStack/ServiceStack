@@ -146,17 +146,6 @@ public class CoreToolsExtension() : ChatExtension("core_tools")
         // JSON -> typed classes / UI schema, used by the /code json tab and the pdf designer
         ctx.AddPost("schema", GenerateUiSchemaAsync);
 
-        ctx.AddIndexFooter($"""
-
-            <link rel="stylesheet" href="{ctx.ExtPrefix}/codemirror/codemirror.css">
-            <link rel="stylesheet" href="{ctx.ExtPrefix}/codemirror/theme/mocha.css">
-            <script src="{ctx.ExtPrefix}/codemirror/codemirror.js"></script>
-            <script src="{ctx.ExtPrefix}/codemirror/mode/clike/clike.js"></script>
-            <script src="{ctx.ExtPrefix}/codemirror/mode/javascript/javascript.js"></script>
-            <script src="{ctx.ExtPrefix}/codemirror/mode/python/python.js"></script>
-            <script src="{ctx.ExtPrefix}/codemirror/addon/edit/matchbrackets.js"></script>
-            <script src="{ctx.ExtPrefix}/codemirror/addon/selection/active-line.js"></script>
-            """);
     }
 
     // ── JSON -> JSON Schema generation ──

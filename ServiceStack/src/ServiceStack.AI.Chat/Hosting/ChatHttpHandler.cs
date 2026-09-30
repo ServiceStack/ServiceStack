@@ -31,7 +31,7 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
         {
             await feature.OnRequestAsync(req).ConfigAwait();
 
-            var match = feature.Routes.Match(req.Verb, path);
+            var match = feature.Routes.Match(req.Verb == HttpMethods.Head ? HttpMethods.Get : req.Verb, path);
             if (match != null)
             {
                 // Single authorization gate for every route dispatched here. Routes are protected by
@@ -41,7 +41,7 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                 if (!match.Value.Route.AllowAnon && !feature.ChatAuth.CheckAuth(req).IsAuthenticated)
                 {
                     feature.Log.LogDebug("Denied anonymous {Method} {Path}", req.Verb, path);
-                    await WriteResultAsync(res, ChatResult.Unauthorized(feature.ErrorAuthRequired())).ConfigAwait();
+                    await WriteResultAsync(res, ChatResult.Unauthorized(feature.ErrorAuthRequired()), req).ConfigAwait();
                     return;
                 }
 
@@ -53,23 +53,23 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    await WriteResultAsync(res, ChatResult.Unauthorized(feature.ErrorAuthRequired())).ConfigAwait();
+                    await WriteResultAsync(res, ChatResult.Unauthorized(feature.ErrorAuthRequired()), req).ConfigAwait();
                     return;
                 }
                 catch (HttpError e) when (e.Status is >= 400 and < 500)
                 {
                     // Client errors (400 invalid input, 404, 409 conflict) keep their status and message
                     await WriteResultAsync(res, ChatResult.Json(
-                        ChatJson.CreateErrorResponse(e.Message, e.ErrorCode), e.Status)).ConfigAwait();
+                        ChatJson.CreateErrorResponse(e.Message, e.ErrorCode), e.Status), req).ConfigAwait();
                     return;
                 }
                 catch (Exception e)
                 {
                     feature.Log.LogError(e, "Error handling {Method} {Path}: {Message}", req.Verb, path, e.Message);
-                    await WriteResultAsync(res, ChatResult.Json(ChatJson.ToErrorResponse(e), 500)).ConfigAwait();
+                    await WriteResultAsync(res, ChatResult.Json(ChatJson.ToErrorResponse(e), 500), req).ConfigAwait();
                     return;
                 }
-                await WriteResultAsync(res, result).ConfigAwait();
+                await WriteResultAsync(res, result, req).ConfigAwait();
                 return;
             }
 
@@ -79,13 +79,13 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
             if (path.StartsWith("/ext/", StringComparison.OrdinalIgnoreCase))
             {
                 await WriteResultAsync(res, ChatResult.Json(
-                    ChatJson.CreateErrorResponse($"{req.Verb} {path} not found", "NotFound"), 404)).ConfigAwait();
+                    ChatJson.CreateErrorResponse($"{req.Verb} {path} not found", "NotFound"), 404), req).ConfigAwait();
                 return;
             }
 
             // SPA fallback: any unmatched route serves index.html (Python: add_route("*", "/{tail:.*}", index_handler))
             var indexResult = await feature.IndexHandlerAsync(req).ConfigAwait();
-            await WriteResultAsync(res, indexResult).ConfigAwait();
+            await WriteResultAsync(res, indexResult, req).ConfigAwait();
         }
         finally
         {
@@ -93,8 +93,16 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
         }
     }
 
-    public static async Task WriteResultAsync(IResponse res, object? result)
+    public static async Task WriteResultAsync(IResponse res, object? result, IRequest? request = null)
     {
+        // Only buffered results participate in compression; files and SSE retain their own streams.
+        result = result switch
+        {
+            null or ChatResult or ChatFileResult or ChatStreamResult => result,
+            JsonNode node => ChatResult.Json(node),
+            string text => new ChatResult { Text = text, ContentType = MimeTypes.PlainText },
+            _ => new ChatResult { Text = ChatJson.Serialize(result), ContentType = MimeTypes.Json },
+        };
         switch (result)
         {
             case null:
@@ -102,6 +110,7 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                 break;
 
             case ChatResult raw:
+                raw = ChatWebAssets.PrepareResponse(request, raw);
                 res.StatusCode = raw.Status;
                 res.ContentType = raw.ContentType ?? MimeTypes.Json;
                 if (raw.Headers != null)
@@ -109,6 +118,8 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                     foreach (var entry in raw.Headers)
                         res.AddHeader(entry.Key, entry.Value);
                 }
+                if (request?.Verb == HttpMethods.Head || raw.Status is 204 or 304)
+                    break;
                 if (raw.Body != null)
                 {
                     await res.OutputStream.WriteAsync(raw.Body).ConfigAwait();
@@ -126,6 +137,11 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                     foreach (var entry in file.Headers)
                         res.AddHeader(entry.Key, entry.Value);
                 }
+                if (request?.Verb == HttpMethods.Head)
+                {
+                    res.AddHeader(HttpHeaders.ContentLength, new FileInfo(file.FilePath).Length.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                    break;
+                }
                 await using (var fs = File.OpenRead(file.FilePath))
                 {
                     await fs.CopyToAsync(res.OutputStream).ConfigAwait();
@@ -133,23 +149,10 @@ public class ChatHttpHandler(ChatFeature feature, string pathInfo) : HttpAsyncTa
                 break;
 
             case ChatStreamResult stream:
-                await stream.Write(res).ConfigAwait();
+                if (request?.Verb != HttpMethods.Head)
+                    await stream.Write(res).ConfigAwait();
                 break;
 
-            case JsonNode node:
-                res.ContentType = MimeTypes.Json;
-                await res.WriteAsync(node.ToJsonString(ChatJson.Options)).ConfigAwait();
-                break;
-
-            case string text:
-                res.ContentType = MimeTypes.PlainText;
-                await res.WriteAsync(text).ConfigAwait();
-                break;
-
-            default:
-                res.ContentType = MimeTypes.Json;
-                await res.WriteAsync(ChatJson.Serialize(result)).ConfigAwait();
-                break;
         }
     }
 }

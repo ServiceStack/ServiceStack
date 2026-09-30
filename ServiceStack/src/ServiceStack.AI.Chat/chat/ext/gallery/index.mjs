@@ -525,6 +525,6 @@ export default {
             }
         })
 
-        ctx.routes.push({ path: '/gallery', component: GalleryPage, meta: { title: `Gallery` } })
+        ctx.routes.push({ path: '/gallery', component: GalleryPage, meta: { title: `Gallery`, header: false } })
     }
 }

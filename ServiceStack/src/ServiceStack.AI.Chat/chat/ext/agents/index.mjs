@@ -1886,6 +1886,6 @@ export default {
     },
 
     async load(ctx) {
-        ctx.agents.load()
+        await ctx.agents.load()
     }
 }

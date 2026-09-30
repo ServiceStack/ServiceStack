@@ -330,29 +330,19 @@ public partial class ChatFeature
 
     // ── Static UI files + SPA index (port of ui_static/index_handler) ──
 
-    public Task<object?> ServeEmbeddedFileAsync(ChatRequestContext ctx, string baseDir, string path)
+    public async Task<object?> ServeEmbeddedFileAsync(ChatRequestContext ctx, string baseDir, string path)
     {
-        if (string.IsNullOrEmpty(path) || path.Contains(".."))
-            return Task.FromResult<object?>(ChatResult.NotFound());
+        if (string.IsNullOrEmpty(path) || path.Contains("..") || path.StartsWith('/') || path.Contains('\\') || path.Contains(':'))
+            return ChatResult.NotFound();
 
         var file = HostContext.VirtualFileSources.GetFile($"{baseDir}/{path}");
         if (file == null)
-            return Task.FromResult<object?>(ChatResult.NotFound());
+            return ChatResult.NotFound();
 
-        if (RoutePrefix.Length > 0 && baseDir == "chat/ui" && TransformUiFile(path, file.ReadAllText()) is { } transformed)
-        {
-            return Task.FromResult<object?>(new ChatResult
-            {
-                Text = transformed,
-                ContentType = MimeTypes.GetMimeType(path),
-            });
-        }
-
-        return Task.FromResult<object?>(new ChatResult
-        {
-            Body = file.ReadAllBytes(),
-            ContentType = MimeTypes.GetMimeType(file.Name),
-        });
+        var body = baseDir == "chat/ui" && path == "ai.mjs" && RoutePrefix.Length > 0
+            ? System.Text.Encoding.UTF8.GetBytes(TransformUiFile(path, await file.ReadAllTextAsync().ConfigAwait())!)
+            : await file.ReadAllBytesAsync().ConfigAwait();
+        return ChatWebAssets.AssetResult(ctx.Request, body, MimeTypes.GetMimeType(file.Name));
     }
 
     /// <summary>
@@ -364,15 +354,6 @@ public partial class ChatFeature
     string? TransformUiFile(string path, string contents) => path switch
     {
         "ai.mjs" => ReplaceUiSource(path, contents, "const base = ''", $"const base = '{RoutePrefix}'"),
-
-        // index.mjs prefixes every route with ai.base but navigates to the bare site root, which
-        // matches no route when mounted under a prefix (a blank page at "/" instead of the SignIn)
-        "index.mjs" => ReplaceUiSource(path,
-            ReplaceUiSource(path, contents,
-                "location.pathname === '/'",
-                "(location.pathname === ai.base || location.pathname === ai.base + '/')"),
-            "ctx.router.push({ path: '/' })",
-            "ctx.router.push({ path: ai.base + '/' })"),
 
         _ => null,
     };
@@ -448,6 +429,12 @@ public partial class ChatFeature
         var importMaps = new JsonObject { ["imports"] = imports };
         html = html.Replace("<script type=\"importmap\"></script>",
             "<script type=\"importmap\">\n" + importMaps.ToJsonString(ChatJson.Indented) + "\n</script>");
+
+        // Use the resolved import map, so debug Vue and prefixed deployments preload the right URLs.
+        var preloads = string.Join("\n", new[] { "vue", "vue-router", "@servicestack/client", "@servicestack/vue" }
+            .Where(name => imports.ContainsKey(name))
+            .Select(name => $"<link rel=\"modulepreload\" href=\"{System.Net.WebUtility.HtmlEncode(imports[name]!.GetValue<string>())}\">"));
+        html = html.Replace("<!-- modulepreloads -->", preloads);
 
         return Task.FromResult<object?>(ChatResult.Html(html));
     }

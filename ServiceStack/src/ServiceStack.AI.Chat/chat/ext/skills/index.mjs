@@ -844,8 +844,8 @@ export default {
             }
         })
 
-        ctx.routes.push({ path: '/skills', component: SkillPage, meta: { title: 'Manage Skills' } })
-        ctx.routes.push({ path: '/skills/store', component: SkillStore, meta: { title: 'Skill Store' } })
+        ctx.routes.push({ path: '/skills', component: SkillPage, meta: { title: 'Manage Skills', header: false } })
+        ctx.routes.push({ path: '/skills/store', component: SkillStore, meta: { title: 'Skill Store', header: false } })
 
         ctx.setTopIcons({
             skills: {

@@ -942,8 +942,8 @@ export default {
 
     async load(ctx) {
         const [api, apiTools] = await Promise.all([
-            await ext.getJson('/'),
-            await ext.getJson('/server')
+            ext.getJson('/'),
+            ext.getJson('/server')
         ])
         if (api.response) {
             ctx.setState({ tool: api.response })

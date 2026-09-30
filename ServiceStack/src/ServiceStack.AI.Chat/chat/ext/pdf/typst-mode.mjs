@@ -1,6 +1,6 @@
 /**
  * Minimal CodeMirror 5 mode for typst (https://typst.app) markup + code expressions.
- * Registered lazily so it works with the CodeMirror global core_tools injects into the page.
+ * Registered lazily after the shared editor loader creates the CodeMirror global.
  *
  * typst alternates between markup and code, and the two nest arbitrarily:
  *

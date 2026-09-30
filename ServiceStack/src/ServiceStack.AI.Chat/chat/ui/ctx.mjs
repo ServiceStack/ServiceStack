@@ -143,6 +143,7 @@ export class AppContext {
             styles: theme.styles,
             profile: localStorage.getItem('llms.profile') || 'default',
             message: null,
+            startupReady: false,
         })
         this.events = new EventBus()
         this.modalComponents = {}
@@ -215,6 +216,8 @@ export class AppContext {
         let isRefreshing = false
         watch(() => ai.auth, async (newAuth, oldAuth) => {
             if (newAuth !== oldAuth) {
+                // Initial sign-in is already part of init(); don't fetch bootstrap data twice.
+                if (!this.installedModules) return
                 if (isRefreshing) return
                 isRefreshing = true
                 try {

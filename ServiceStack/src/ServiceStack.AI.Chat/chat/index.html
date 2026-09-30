@@ -1,6 +1,26 @@
-<html>
+<!doctype html>
+<html lang="en">
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        let colorScheme = location.search === "?dark"
+            ? "dark"
+            : location.search === "?light"
+                ? "light"
+                : localStorage.getItem('color-scheme')
+        let darkMode = colorScheme != null
+            ? colorScheme === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches
+        let html = document.documentElement
+        html.classList.toggle('dark', darkMode)
+        html.style.setProperty('color-scheme', darkMode ? 'dark' : null)
+        if (localStorage.getItem('color-scheme') === null) {
+            localStorage.setItem('color-scheme', darkMode ? 'dark' : 'light')
+        }
+    </script>
+
     <title>llms.py</title>
     <link rel="stylesheet" href="/ui/app.css">
     <link rel="stylesheet" href="/ui/typography.css">
@@ -24,33 +44,78 @@
         }
     </style>
     <script type="importmap"></script>
+    <!-- modulepreloads -->
+    <link rel="modulepreload" href="/ui/index.mjs">
+    <style>
+        body { margin: 0; background: #fff; color: #111827; }
+        html.dark body { background: #111827; color: #f3f4f6; }
+        #startup-status { min-height: 100vh; display: flex; align-items: center; justify-content: center; font: 16px system-ui, sans-serif; }
+    </style>
 
+  <style>
+    .llms-loading-orbit { transform-origin: 48px 48px; animation: llms-loading-orbit 2.4s linear infinite; }
+    .llms-loading-dot { animation: llms-loading-breathe 1.5s ease-in-out infinite; }
+    .llms-loading-dot:nth-child(2) { animation-delay: .15s; }
+    .llms-loading-dot:nth-child(3) { animation-delay: .3s; }
+    @keyframes llms-loading-orbit { to { transform: rotate(360deg); } }
+    @keyframes llms-loading-breathe {
+      0%, 70%, 100% { opacity: .4; transform: translateY(0); }
+      35% { opacity: 1; transform: translateY(-2px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .llms-loading-orbit, .llms-loading-dot { animation: none; }
+    }
+  </style>
 </head>
 
 <body>
-    <div id="app"></div>
+    <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
+        style="position:absolute;width:0;height:0;overflow:hidden">
+      <defs>
+    <linearGradient id="llms-loading-gradient" x1="8" y1="8" x2="88" y2="88" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22d3ee"/>
+      <stop offset=".5" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#6366f1"/>
+    </linearGradient>
+        <symbol id="llms-loading-sprite" viewBox="0 0 96 96">
+  <circle cx="48" cy="48" r="32" fill="#818cf8" fill-opacity=".07"/>
+  <circle cx="48" cy="48" r="41" stroke="#818cf8" stroke-opacity=".15" stroke-width="2"/>
+  <circle class="llms-loading-orbit" cx="48" cy="48" r="41" stroke="url(#llms-loading-gradient)" stroke-width="2.5"
+    stroke-linecap="round" stroke-dasharray="65 193"/>
+  <path d="M35 32h26a7 7 0 0 1 7 7v14a7 7 0 0 1-7 7H43l-10 7v-9a7 7 0 0 1-5-7V39a7 7 0 0 1 7-7Z"
+    stroke="#818cf8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#818cf8">
+    <circle class="llms-loading-dot" cx="39" cy="46" r="2.5"/>
+    <circle class="llms-loading-dot" cx="48" cy="46" r="2.5"/>
+    <circle class="llms-loading-dot" cx="57" cy="46" r="2.5"/>
+  </g>
+        </symbol>
+      </defs>
+    </svg>
 
-    <script>
-        let colorScheme = location.search === "?dark"
-            ? "dark"
-            : location.search === "?light"
-                ? "light"
-                : localStorage.getItem('color-scheme')
-        let darkMode = colorScheme != null
-            ? colorScheme === 'dark'
-            : window.matchMedia('(prefers-color-scheme: dark)').matches
-        let html = document.documentElement
-        html.classList.toggle('dark', darkMode)
-        html.style.setProperty('color-scheme', darkMode ? 'dark' : null)
-        if (localStorage.getItem('color-scheme') === null) {
-            localStorage.setItem('color-scheme', darkMode ? 'dark' : 'light')
-        }    
-    </script>
+    <div id="app">
+        <div id="startup-status" role="status" aria-live="polite" aria-label="Loading llms.py">
+            <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true" focusable="false">
+                <use href="#llms-loading-sprite" />
+            </svg>
+        </div>
+    </div>
+
     <script type="module">
-        import { createContext } from '/ui/index.mjs'
-
-        const context = await createContext()
-        context.app.mount('#app')
+        try {
+            const { createContext } = await import('/ui/index.mjs')
+            const context = await createContext({ deferExtensions: true })
+            context.app.mount('#app')
+            performance.mark('llms:core-mounted')
+            await context.start()
+        } catch (error) {
+            console.error('Application startup failed:', error)
+            const status = document.createElement('div')
+            status.id = 'startup-status'
+            status.role = 'alert'
+            status.textContent = 'Unable to start llms.py. Please reload the page.'
+            document.getElementById('app').replaceChildren(status)
+        }
     </script>
 
 </body>

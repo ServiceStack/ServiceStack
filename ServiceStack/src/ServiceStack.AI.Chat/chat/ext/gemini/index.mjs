@@ -4,17 +4,31 @@ import {
     initMetadata, loadFacets, CoverageStrip, BulkEditDialog, MetadataDialog, MetaChip,
     DOC_FIELDS, META_LIST_FIELDS, FACET_FIELDS, LIST_FIELDS
 } from './metadata.mjs'
-import { initSources, SourcesPanel, RunReport, TrustedFolders } from './sources.mjs'
 import {
     initExplorer, Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState,
     CheckBox, SelectionBar, ConfirmDialog
 } from './explorer.mjs'
-import { initImport, ImportPanel } from './import.mjs'
-import { initAssistants, AssistantsPanel } from './assistants.mjs'
-import { initSearches, SearchesPanel } from './searches.mjs'
+
+import { lazyComponent } from '/ui/lazy.mjs'
 
 let ext = null
 let ctx = null
+
+// Load the file-store workspace once; all of its panels then render synchronously.
+const FileStoreDetails = lazyComponent(async () => {
+    const [sources, imports, assistants, searches] = await Promise.all([
+        import('./sources.mjs'), import('./import.mjs'), import('./assistants.mjs'), import('./searches.mjs'),
+    ])
+    sources.initSources(ext)
+    imports.initImport(ext)
+    assistants.initAssistants(ext, ctx, { GeminiModelSelector })
+    searches.initSearches(ext, ctx)
+    Object.assign(FileStoreDetailsView.components, {
+        SourcesPanel: sources.SourcesPanel, RunReport: sources.RunReport, TrustedFolders: sources.TrustedFolders,
+        ImportPanel: imports.ImportPanel, AssistantsPanel: assistants.AssistantsPanel, SearchesPanel: searches.SearchesPanel,
+    })
+    return FileStoreDetailsView
+})
 
 async function loadFilestores() {
     const api = await ext.getJson("/filestores")
@@ -893,10 +907,10 @@ const DeleteStoreDialog = {
     },
 }
 
-const FileStoreDetails = {
+const FileStoreDetailsView = {
     components: {
         SyncReport, GeminiModelSelector, CoverageStrip, SelectionBar, BulkEditDialog, MetadataDialog,
-        MetaChip, ConfirmDialog, SourcesPanel, ImportPanel, AssistantsPanel, SearchesPanel, RunReport, TrustedFolders,
+        MetaChip, ConfirmDialog,
         Popover, Breadcrumb, FilterChips, CategoryTree, FacetPicker, Modal, SyncState, CheckBox,
         DeleteStoreDialog
     },
@@ -2704,10 +2718,6 @@ export default {
         ext = context.scope('gemini')
         ctx = context
         initMetadata(ext, ctx)
-        initSources(ext)
-        initImport(ext)
-        initAssistants(ext, ctx, { GeminiModelSelector })
-        initSearches(ext, ctx)
         initExplorer(ext)
 
         ctx.setLeftIcons({

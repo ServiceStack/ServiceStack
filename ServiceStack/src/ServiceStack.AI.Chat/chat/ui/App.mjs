@@ -130,9 +130,6 @@ export default {
         onMounted(() => {
             checkMobile()
             window.addEventListener('resize', checkMobile)
-            if (route.query.open) {
-                modal.value = ctx.openModal(route.query.open)
-            }
         })
 
         onUnmounted(() => {
@@ -143,9 +140,8 @@ export default {
             ctx.closeModal(route.query.open)
         }
 
-        watch(() => route.query.open, (newVal) => {
-            modal.value = ctx.modalComponents[newVal]
-            console.log('open', newVal, modal.value)
+        watch([() => ctx.state.startupReady, () => route.query.open], ([ready, name]) => {
+            if (ready) modal.value = name ? ctx.openModal(name) : undefined
         })
 
         watch(() => ctx.state.selectedModel, (newVal) => {
@@ -185,7 +181,7 @@ export default {
     },
     template: `
         <div class="flex h-screen" :class="$styles.app">
-            <div class="flex w-full h-full" :class="$styles.appInner">
+            <div v-if="$state.startupReady" class="flex w-full h-full" :class="$styles.appInner">
                 <!-- Mobile Overlay -->
                 <div v-if="isMobile && $ctx.layoutVisible('left') && $ai.hasAccess"
                     @click="$ctx.toggleLayout('left')"
@@ -209,7 +205,7 @@ export default {
                 <!-- Main Area -->
                 <div id="main" :class="$ctx.cls('main', 'flex-1 min-w-0 flex flex-col')">
                     <div id="main-inner" :class="$ctx.cls('main-inner', 'flex flex-col h-full w-full overflow-hidden')">
-                        <div v-if="$ai.hasAccess" id="header" :class="$ctx.cls('header', 'py-1 pr-1 flex items-center justify-between shrink-0')">
+                        <div v-if="$ai.hasAccess && $route.meta.header !== false && $ctx.layoutVisible('header')" id="header" :class="$ctx.cls('header', 'py-1 pr-1 flex items-center justify-between shrink-0')">
                             <div class="flex items-center gap-2">
                                 <component v-for="(c, id) in $ctx.visibleComponents($ctx.leftTop)" :is="c.component" />
                                 <!--ThemeSelector /-->
@@ -219,7 +215,7 @@ export default {
                                 <Avatar />
                             </div>
                         </div>
-                        <TopPanel v-if="$ai.hasAccess" id="top-panel" :class="$ctx.cls('top-panel', 'shrink-0')" />
+                        <TopPanel v-if="$ai.hasAccess && $route.meta.header !== false && $ctx.layoutVisible('header')" id="top-panel" :class="$ctx.cls('top-panel', 'shrink-0')" />
                         <div id="page" :class="$ctx.cls('page', 'flex-1 overflow-y-auto min-h-0 flex flex-col')">
                             <RouterView class="h-full" />
                         </div>
@@ -257,6 +253,11 @@ export default {
                         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
                     }
                 </component>
+            </div>
+            <div v-else role="status" aria-live="polite" aria-label="Loading llms.py" class="flex w-full h-full items-center justify-center" :class="$styles.appInner">
+                <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96" fill="none" aria-hidden="true" focusable="false">
+                <use href="#llms-loading-sprite" />
+            </svg>
             </div>
         </div>
     `,
