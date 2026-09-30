@@ -206,11 +206,11 @@ public class RedisSentinel : IRedisSentinel
                 }
 
                 if (Log.IsDebugEnabled)
-                    Log.Debug("All active Sentinels Found: " + string.Join(", ", activeSentinelHosts));
+                    Log.Debug("All active Sentinels Found: " + activeSentinelHosts.ToSafeHostsString());
             }
             catch (Exception ex)
             {
-                Log.Error("Could not get active Sentinels from: {0}".Fmt(sentinelHost), ex);
+                Log.Error("Could not get active Sentinels from: {0}".Fmt(sentinelHost.ToSafeHostString()), ex);
             }
         }
         return activeSentinelHosts;
@@ -392,7 +392,7 @@ public class RedisSentinel : IRedisSentinel
                     sentinelIndex = 0;
                     
                 if (Log.IsDebugEnabled)
-                    Log.Debug($"Attempt to connect to next sentinel '{SentinelEndpoints[sentinelIndex]}'...");
+                    Log.Debug($"Attempt to connect to next sentinel '{SentinelEndpoints[sentinelIndex].GetHostString()}'...");
 
                 var sentinelWorker = new RedisSentinelWorker(this, SentinelEndpoints[sentinelIndex])
                 {

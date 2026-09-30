@@ -86,7 +86,7 @@ partial class RedisNativeClient
                 return await ParseSingleLineAsync(string.Concat(char.ToString((char)c), s), token).ConfigureAwait(false);
 
             case '-':
-                throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+                throw CreateResponseError(StripErrPrefix(s));
 
             case '*':
                 if (int.TryParse(s, out var count))
@@ -133,7 +133,7 @@ partial class RedisNativeClient
                 };
 
             case '-':
-                throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+                throw CreateResponseError(StripErrPrefix(s));
 
             case '*':
                 if (int.TryParse(s, out var count))
@@ -234,7 +234,7 @@ partial class RedisNativeClient
                     if (linkedRecvCts != null)
                     {
                         linkedRecvCts.CancelAfter(ReceiveTimeout);
-                        recvToken = linkedCts.Token;
+                        recvToken = linkedRecvCts.Token;
                     }
                     try
                     {
@@ -392,7 +392,7 @@ partial class RedisNativeClient
 
         char c = r[0];
         if (c == '-')
-            throw CreateResponseError(r.StartsWith("-ERR") ? r.Substring(5) : r.Substring(1));
+            throw CreateResponseError(StripErrPrefix(r.Substring(1)));
 
         if (c == '$')
         {
@@ -461,7 +461,7 @@ partial class RedisNativeClient
             Log((char)c + s);
 
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
 
         return s;
     }
@@ -485,7 +485,7 @@ partial class RedisNativeClient
                 return t;
 
             case '-':
-                throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+                throw CreateResponseError(StripErrPrefix(s));
 
             case '*':
                 if (int.TryParse(s, out var count))
@@ -551,7 +551,7 @@ partial class RedisNativeClient
             Log((char)c + s);
 
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") && s.Length >= 4 ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
     }
 
 
@@ -567,7 +567,7 @@ partial class RedisNativeClient
             Log((char)c + s);
 
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
 
         if (s != word)
             throw CreateResponseError($"Expected '{word}' got '{s}'");
@@ -583,7 +583,7 @@ partial class RedisNativeClient
         if (log.IsDebugEnabled)
             Log("R: {0}", s);
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
         if (c == '*')
         {
             if (int.TryParse(s, out var count))

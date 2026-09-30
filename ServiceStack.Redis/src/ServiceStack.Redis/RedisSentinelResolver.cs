@@ -171,17 +171,21 @@ public class RedisSentinelResolver : IRedisResolver, IRedisResolverExtended
                     var stopwatch = Stopwatch.StartNew();
                     while (true)
                     {
+                        RedisClient masterClient = null;
                         try
                         {
                             var masterConfig = sentinel.GetMaster();
-                            var masterClient = ClientFactory(masterConfig);
+                            masterClient = ClientFactory(masterConfig);
                             masterClient.ConnectTimeout = sentinel.SentinelWorkerConnectTimeoutMs;
 
                             var masterRole = masterClient.GetServerRole();
                             if (masterRole == RedisServerRole.Master)
                             {
                                 lastValidMasterFromSentinelAt = DateTime.UtcNow;
-                                return masterClient;
+                                client.Dispose(); // replaced by masterClient
+                                var validMaster = masterClient;
+                                masterClient = null;
+                                return validMaster;
                             }
                             else
                             {
@@ -189,6 +193,10 @@ public class RedisSentinelResolver : IRedisResolver, IRedisResolverExtended
                             }
                         }
                         catch { /* Ignore errors until MaxWait */ }
+                        finally
+                        {
+                            masterClient?.Dispose(); // close connections to invalid masters
+                        }
 
                         if (stopwatch.Elapsed > sentinel.MaxWaitBetweenFailedHosts)
                             throw new TimeoutException("Max Wait Between Sentinel Lookups Elapsed: {0}"
@@ -206,9 +214,10 @@ public class RedisSentinelResolver : IRedisResolver, IRedisResolverExtended
                     RedisClient masterClient = null;
                     foreach (var hostConfig in allHosts)
                     {
+                        RedisClient testClient = null;
                         try
                         {
-                            var testClient = ClientFactory(hostConfig);
+                            testClient = ClientFactory(hostConfig);
                             testClient.ConnectTimeout = RedisConfig.HostLookupTimeoutMs;
                             var testRole = testClient.GetServerRole();
                             switch (testRole)
@@ -216,7 +225,10 @@ public class RedisSentinelResolver : IRedisResolver, IRedisResolverExtended
                                 case RedisServerRole.Master:
                                     newMasters.Add(hostConfig);
                                     if (masterClient == null)
+                                    {
                                         masterClient = testClient;
+                                        testClient = null; // keep connection open
+                                    }
                                     break;
                                 case RedisServerRole.Slave:
                                     newReplicas.Add(hostConfig);
@@ -225,7 +237,14 @@ public class RedisSentinelResolver : IRedisResolver, IRedisResolverExtended
 
                         }
                         catch { /* skip past invalid master connections */ }
+                        finally
+                        {
+                            testClient?.Dispose(); // close lookup connections that aren't returned
+                        }
                     }
+
+                    // original client is not a master and is being replaced
+                    client.Dispose();
 
                     if (masterClient == null)
                     {

@@ -53,9 +53,35 @@ public partial class RedisNativeClient
     public int AssertServerVersionNumber()
     {
         if (ServerVersionNumber == 0)
+        {
             AssertConnectedSocket();
 
+            // already connected before the version was known (e.g. after RedisConfig.Reset())
+            if (ServerVersionNumber == 0 && Pipeline == null && Transaction == null)
+            {
+                try
+                {
+                    ServerVersionNumber = ParseServerVersionNumber(ServerVersion);
+                }
+                catch (Exception)
+                {
+                    ServerVersionNumber = Unknown;
+                }
+            }
+        }
+
         return ServerVersionNumber;
+    }
+
+    private static int ParseServerVersionNumber(string serverVersion)
+    {
+        var parts = serverVersion.Split('.');
+        var version = int.Parse(parts[0]) * 1000;
+        if (parts.Length > 1)
+            version += int.Parse(parts[1]) * 100;
+        if (parts.Length > 2)
+            version += int.Parse(parts[2]);
+        return version;
     }
 
     public static void DisposeTimers()
@@ -183,16 +209,7 @@ public partial class RedisNativeClient
                 {
                     ServerVersionNumber = RedisConfig.AssumeServerVersion.GetValueOrDefault(0);
                     if (ServerVersionNumber <= 0)
-                    {
-                        var parts = ServerVersion.Split('.');
-                        var version = int.Parse(parts[0]) * 1000;
-                        if (parts.Length > 1)
-                            version += int.Parse(parts[1]) * 100;
-                        if (parts.Length > 2)
-                            version += int.Parse(parts[2]);
-
-                        ServerVersionNumber = version;
-                    }
+                        ServerVersionNumber = ParseServerVersionNumber(ServerVersion);
                 }
             }
             catch (Exception)
@@ -200,6 +217,7 @@ public partial class RedisNativeClient
                 //Twemproxy doesn't support the INFO command so automatically closes the socket
                 //Fallback to ServerVersionNumber=Unknown then try re-connecting
                 ServerVersionNumber = Unknown;
+                SafeConnectionClose();
                 Connect();
                 return;
             }
@@ -364,6 +382,9 @@ public partial class RedisNativeClient
     private RedisException CreateConnectionError(Exception originalEx)
     {
         DeactivatedAt = DateTime.UtcNow;
+        // an unexpected error (e.g. cancellation or TLS IOException) mid-command leaves unread replies on the
+        // connection, close it so it can't return another command's reply if this client is reused
+        SafeConnectionClose();
         var throwEx = new RedisException(
             $"[{DateTime.UtcNow:HH:mm:ss.fff}] Unable to Connect: sPort: {clientPort}{(originalEx != null ? ", Error: " + originalEx.Message + "\n" + originalEx.StackTrace : "")}",
             originalEx ?? lastSocketException);
@@ -423,7 +444,13 @@ public partial class RedisNativeClient
         }
             
         if (log.IsDebugEnabled && RedisConfig.EnableVerboseLogging)
-            logDebug("stream.Write: " + Encoding.UTF8.GetString(bytes, 0, Math.Min(bytes.Length, 50)).Replace("\r\n"," ").SafeSubstring(0,50));
+        {
+            // never log AUTH credentials
+            var isAuth = cmdWithBinaryArgs.Length > 0 && cmdWithBinaryArgs[0].AreEqual(Commands.Auth);
+            logDebug("stream.Write: " + (isAuth 
+                ? "AUTH ***" 
+                : Encoding.UTF8.GetString(bytes, 0, Math.Min(bytes.Length, 50)).Replace("\r\n"," ").SafeSubstring(0,50)));
+        }
 
         SendDirectToSocket(new ArraySegment<byte>(bytes, 0, bytes.Length));
 
@@ -555,9 +582,11 @@ public partial class RedisNativeClient
             bufferedReader?.Reset();
             if (socket?.Available > 0)
             {
-                logDebug($"Draining existing socket of {socket.Available} bytes");
-                var buff = new byte[socket.Available];
-                socket.Receive(buff, SocketFlags.None);
+                // Unread data means the connection is out of sync with its replies. Draining raw socket bytes
+                // can't resync it reliably (more of a partial reply may still be in-flight) and corrupts TLS streams,
+                // so close the connection and lazily reconnect on the next command instead.
+                logDebug($"Closing out-of-sync connection with {socket.Available} unread bytes");
+                SafeConnectionClose();
             }
         }
         Active = true;
@@ -755,11 +784,18 @@ public partial class RedisNativeClient
         return socketEx;
     }
 
-    private static int GetBackOffMultiplier(int i)
+    private const int MaxBackOffMs = 5000;
+
+    // exponential back-off: BackOffMultiplier * 2^(i-1), capped at MaxBackOffMs
+    internal static int GetBackOffMultiplier(int i)
     {
-        var nextTryMs = (2 ^ i) * RedisConfig.BackOffMultiplier;
-        return nextTryMs;
+        var exponent = Math.Min(Math.Max(i - 1, 0), 16);
+        var nextTryMs = (long)(1 << exponent) * RedisConfig.BackOffMultiplier;
+        return (int)Math.Min(nextTryMs, MaxBackOffMs);
     }
+
+    // strips the generic "ERR " prefix from Redis error replies
+    private static string StripErrPrefix(string s) => s.Length > 4 && s.StartsWith("ERR") ? s.Substring(4) : s;
 
     protected void SendWithoutRead(params byte[][] cmdWithBinaryArgs)
     {
@@ -912,7 +948,7 @@ public partial class RedisNativeClient
             Log((char)c + s);
 
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") && s.Length >= 4 ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
     }
 
     private void ExpectWord(string word)
@@ -927,7 +963,7 @@ public partial class RedisNativeClient
             Log((char)c + s);
 
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
 
         if (s != word)
             throw CreateResponseError($"Expected '{word}' got '{s}'");
@@ -945,7 +981,7 @@ public partial class RedisNativeClient
             Log((char)c + s);
 
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
 
         return s;
     }
@@ -975,7 +1011,7 @@ public partial class RedisNativeClient
             Log("R: {0}", s);
 
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
 
         if (c == ':' || c == '$')//really strange why ZRANK needs the '$' here
         {
@@ -1014,7 +1050,7 @@ public partial class RedisNativeClient
 
         char c = r[0];
         if (c == '-')
-            throw CreateResponseError(r.StartsWith("-ERR") ? r.Substring(5) : r.Substring(1));
+            throw CreateResponseError(StripErrPrefix(r.Substring(1)));
 
         if (c == '$')
         {
@@ -1075,7 +1111,7 @@ public partial class RedisNativeClient
                 return t;
 
             case '-':
-                throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+                throw CreateResponseError(StripErrPrefix(s));
 
             case '*':
                 if (int.TryParse(s, out var count))
@@ -1121,7 +1157,7 @@ public partial class RedisNativeClient
                 return ParseSingleLine(string.Concat(char.ToString((char)c), s));
 
             case '-':
-                throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+                throw CreateResponseError(StripErrPrefix(s));
 
             case '*':
                 if (int.TryParse(s, out var count))
@@ -1162,7 +1198,7 @@ public partial class RedisNativeClient
                 };
 
             case '-':
-                throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+                throw CreateResponseError(StripErrPrefix(s));
 
             case '*':
                 if (int.TryParse(s, out var count))
@@ -1194,7 +1230,7 @@ public partial class RedisNativeClient
         if (log.IsDebugEnabled)
             Log("R: {0}", s);
         if (c == '-')
-            throw CreateResponseError(s.StartsWith("ERR") ? s.Substring(4) : s);
+            throw CreateResponseError(StripErrPrefix(s));
         if (c == '*')
         {
             if (int.TryParse(s, out var count))

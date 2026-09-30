@@ -163,7 +163,7 @@ public partial class BasicRedisClientManager
         var masters = readWriteHosts.ToList();
         var replicas = readOnlyHosts.ToList();
 
-        Log.Info($"FailoverTo: {string.Join(",", masters)} : {string.Join(",", replicas)} Total: {RedisState.TotalFailovers}");
+        Log.Info($"FailoverTo: {masters.ToSafeHostsString()} : {replicas.ToSafeHostsString()} Total: {RedisState.TotalFailovers}");
             
         lock (this)
         {

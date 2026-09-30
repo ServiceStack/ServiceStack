@@ -83,6 +83,16 @@ Distributed Caching & Sessions                  Enterprise Messaging & Real-Time
 ### 5. Mutating Cache Operations on Read Replicas
 - In `BasicRedisClientManager.ICacheClient`, mutating operations like `Remove(key)` must route to `GetCacheClient()` (master), never `GetReadOnlyCacheClient()`.
 
+### 6. Cloned / Derived Connections Must Preserve TLS
+- Any code creating a client from another client's settings (e.g. `RedisClient.CloneClient()`) must copy `Ssl` and `SslProtocols` (clone via a full `RedisEndpoint`), otherwise `AUTH` credentials are sent in plain-text.
+
+### 7. Never Log Connection Strings or Endpoints
+- Connection strings and `RedisEndpoint.ToString()` can contain passwords. Log only `GetHostString()` / `ToSafeHostString()` (`host:port`), and never log `AUTH` command arguments.
+
+### 8. Close Connections in an Unknown Protocol State
+- After a cancellation or unexpected (non-Redis, non-retryable) error mid-command, the connection may hold unread replies. Close it (`SafeConnectionClose()`) rather than reusing it, and never drain raw socket bytes (corrupts TLS streams).
+- Clients returned outside of a pool must have `ClientManager = null` so `Dispose()` closes their socket.
+
 ---
 
 ## Common Modification Scenarios

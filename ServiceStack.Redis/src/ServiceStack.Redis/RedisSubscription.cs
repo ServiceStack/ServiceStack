@@ -97,8 +97,9 @@ public partial class RedisSubscription
                 var msgBytes = multiBytes[i + MsgIndex];
                 this.OnMessageBytes?.Invoke(channel, msgBytes);
 
-                var message = msgBytes.FromUtf8Bytes();
-                this.OnMessage?.Invoke(channel, message);
+                // only decode when there's a string handler
+                var onMessage = this.OnMessage;
+                onMessage?.Invoke(channel, msgBytes.FromUtf8Bytes());
             }
             else if (PMessageWord.AreEqual(messageType))
             {
@@ -106,8 +107,9 @@ public partial class RedisSubscription
                 var msgBytes = multiBytes[i + MsgIndex + 1];
                 this.OnMessageBytes?.Invoke(channel, msgBytes);
 
-                var message = msgBytes.FromUtf8Bytes();
-                this.OnMessage?.Invoke(channel, message);
+                // only decode when there's a string handler
+                var onMessage = this.OnMessage;
+                onMessage?.Invoke(channel, msgBytes.FromUtf8Bytes());
             }
             else
             {

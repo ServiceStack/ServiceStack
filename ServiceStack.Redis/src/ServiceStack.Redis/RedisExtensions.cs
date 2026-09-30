@@ -121,6 +121,26 @@ public static class RedisExtensions
 
 internal static class RedisExtensionsInternal
 {
+    /// <summary>
+    /// Returns just the host:port of a connection string so credentials never end up in logs
+    /// </summary>
+    public static string ToSafeHostString(this string connectionString)
+    {
+        if (connectionString == null) return null;
+        try
+        {
+            return connectionString.ToRedisEndpoint().GetHostString();
+        }
+        catch
+        {
+            return "(invalid connection string)";
+        }
+    }
+
+    public static string ToSafeHostsString(this IEnumerable<string> connectionStrings) => connectionStrings == null
+        ? null
+        : string.Join(",", connectionStrings.Select(x => x.ToSafeHostString()));
+
     public static bool IsConnected(this Socket socket)
     {
         try

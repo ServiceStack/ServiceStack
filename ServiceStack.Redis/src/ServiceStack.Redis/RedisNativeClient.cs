@@ -195,7 +195,10 @@ public partial class RedisNativeClient
         Ssl = config.Ssl;
         SslProtocols = config.SslProtocols;
         IdleTimeOutSecs = config.IdleTimeOutSecs;
-        ServerVersionNumber = RedisConfig.AssumeServerVersion.GetValueOrDefault();
+        // ServerVersionNumber is static, only override it when explicitly configured. Resetting it to 0 here
+        // would make other connected clients see an unknown version and fall back to legacy commands
+        if (RedisConfig.AssumeServerVersion != null)
+            ServerVersionNumber = RedisConfig.AssumeServerVersion.Value;
         LogPrefix = "#" + ClientId + " ";
         JsConfig.InitStatics();
     }

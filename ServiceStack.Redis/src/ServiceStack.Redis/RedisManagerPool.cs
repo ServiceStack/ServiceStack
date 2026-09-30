@@ -94,7 +94,7 @@ public partial class RedisManagerPool
     {
         Interlocked.Increment(ref RedisState.TotalFailovers);
 
-        Log.Info($"FailoverTo: {string.Join(",", readWriteHosts)} Total: {RedisState.TotalFailovers}");
+        Log.Info($"FailoverTo: {readWriteHosts.ToSafeHostsString()} Total: {RedisState.TotalFailovers}");
             
         lock (clients)
         {
@@ -153,7 +153,7 @@ public partial class RedisManagerPool
                     poolIndex++;
                     inActiveClient.Activate();
 
-                    return !AssertAccessOnlyOnSameThread 
+                    return (!AssertAccessOnlyOnSameThread || forAsync)
                         ? inActiveClient
                         : inActiveClient.LimitAccessToThread(Thread.CurrentThread.ManagedThreadId, Environment.StackTrace);
                 }
@@ -334,11 +334,10 @@ public partial class RedisManagerPool
 
         foreach (var client in clients)
         {
-            if (client == null)
-            {
-                clientsCreated++;
+            if (client == null || client == reservedSlot)
                 continue;
-            }
+
+            clientsCreated++;
 
             if (client.HadExceptions)
                 clientsWithExceptions++;

@@ -34,7 +34,7 @@ internal class RedisSentinelWorker : IDisposable
         };
 
         if (Log.IsDebugEnabled)
-            Log.Debug($"Set up Redis Sentinel on {sentinelEndpoint}");
+            Log.Debug($"Set up Redis Sentinel on {sentinelEndpoint.GetHostString()}");
     }
 
     /// <summary>
@@ -193,7 +193,7 @@ internal class RedisSentinelWorker : IDisposable
                     };
                         
                     if (Log.IsDebugEnabled)
-                        Log.Debug($"Starting subscription to {sentinel.SentinelHosts.ToArray()}, replicas: {sentinel.SentinelHosts.ToArray()}...");
+                        Log.Debug($"Starting subscription to {sentinel.SentinelHosts.ToSafeHostsString()}...");
                         
                     this.sentinelPubSub = new RedisPubSubServer(sentinelManager)
                     {

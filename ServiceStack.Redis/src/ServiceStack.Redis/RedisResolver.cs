@@ -125,9 +125,10 @@ public class RedisResolver : IRedisResolver, IRedisResolverExtended
             RedisClient masterClient = null;
             foreach (var hostConfig in allHosts)
             {
+                RedisClient testClient = null;
                 try
                 {
-                    var testClient = ClientFactory(hostConfig);
+                    testClient = ClientFactory(hostConfig);
                     testClient.ConnectTimeout = RedisConfig.HostLookupTimeoutMs;
                     var testRole = testClient.GetServerRole();
                     switch (testRole)
@@ -135,7 +136,10 @@ public class RedisResolver : IRedisResolver, IRedisResolverExtended
                         case RedisServerRole.Master:
                             newMasters.Add(hostConfig);
                             if (masterClient == null)
+                            {
                                 masterClient = testClient;
+                                testClient = null; // keep connection open
+                            }
                             break;
                         case RedisServerRole.Slave:
                             newReplicas.Add(hostConfig);
@@ -144,7 +148,14 @@ public class RedisResolver : IRedisResolver, IRedisResolverExtended
 
                 }
                 catch { /* skip */ }
+                finally
+                {
+                    testClient?.Dispose(); // close lookup connections that aren't returned
+                }
             }
+
+            // original client is not a master and is being replaced
+            client.Dispose();
 
             if (masterClient == null)
             {

@@ -826,10 +826,19 @@ public partial class RedisClient
         this.RemoveEntry(typeIdsSetKey);
     }
 
-    public RedisClient CloneClient() => new(Host, Port, Password, Db) {
+    public RedisClient CloneClient() => new(new RedisEndpoint(Host, Port, Password, Db) {
+        Ssl = Ssl, // must be preserved to avoid sending AUTH credentials over plain-text to a TLS endpoint
+        SslProtocols = SslProtocols,
         Username = Username,
+        Client = Client,
+        NamespacePrefix = NamespacePrefix,
+        ConnectTimeout = ConnectTimeout,
         SendTimeout = SendTimeout,
-        ReceiveTimeout = ReceiveTimeout
+        ReceiveTimeout = ReceiveTimeout,
+        RetryTimeout = RetryTimeout,
+        IdleTimeOutSecs = IdleTimeOutSecs,
+    }) {
+        ConnectionFilter = ConnectionFilter,
     };
 
     /// <summary>
@@ -1014,9 +1023,20 @@ public partial class RedisClient
 
     public void RemoveByPattern(string pattern)
     {
-        var keys = ScanAllKeys(pattern).ToArray();
-        if (keys.Length > 0)
-            Del(keys);
+        // delete in batches to avoid buffering every matching key and blocking redis-server with a single huge DEL
+        const int BatchSize = 1024;
+        var batch = new List<string>(BatchSize);
+        foreach (var key in ScanAllKeys(pattern))
+        {
+            batch.Add(key);
+            if (batch.Count == BatchSize)
+            {
+                Del(batch.ToArray());
+                batch.Clear();
+            }
+        }
+        if (batch.Count > 0)
+            Del(batch.ToArray());
     }
 
     public void RemoveByRegex(string pattern)
@@ -1025,7 +1045,7 @@ public partial class RedisClient
     }
         
     private static string RegexToGlob(string regex)
-        => regex.Replace(".*", "*").Replace(".+", "?");
+        => regex.Replace(".*", "*").Replace(".+", "?*"); // .+ = one or more chars
 
     public IEnumerable<string> ScanAllKeys(string pattern = null, int pageSize = 1000)
     {

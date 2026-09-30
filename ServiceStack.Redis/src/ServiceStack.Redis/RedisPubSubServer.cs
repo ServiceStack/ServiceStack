@@ -251,9 +251,11 @@ public class RedisPubSubServer : IRedisPubSubServer
                 {
                     bool IsCtrlMessage(byte[] msg)
                     {
+                        // match "CTRL" or "CTRL:..." consistent with the OnMessage LeftPart(':') check
                         if (msg.Length < 4)
                             return false;
-                        return msg[0] == 'C' && msg[1] == 'T' && msg[2] == 'R' && msg[3] == 'L';
+                        return msg[0] == 'C' && msg[1] == 'T' && msg[2] == 'R' && msg[3] == 'L'
+                            && (msg.Length == 4 || msg[4] == ':');
                     }
                                 
                     ((RedisSubscription)subscription).OnMessageBytes = (channel, msg) => {
@@ -325,7 +327,8 @@ public class RedisPubSubServer : IRedisPubSubServer
                     }
                     else
                     {
-                        OnMessage(channel, msg);
+                        // OnMessage is optional when only OnMessageBytes is used
+                        OnMessage?.Invoke(channel, msg);
                     }
                 };
 

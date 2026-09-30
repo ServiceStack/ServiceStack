@@ -162,7 +162,7 @@ public partial class PooledRedisClientManager
         var masters = readWriteHosts.ToList();
         var replicas = readOnlyHosts.ToList();
 
-        Log.Info($"FailoverTo: {string.Join(",", masters)} : {string.Join(",", replicas)} Total: {RedisState.TotalFailovers}");
+        Log.Info($"FailoverTo: {masters.ToSafeHostsString()} : {replicas.ToSafeHostsString()} Total: {RedisState.TotalFailovers}");
 
         lock (readClients)
         {
@@ -283,6 +283,10 @@ public partial class PooledRedisClientManager
                         if (Log.IsDebugEnabled)
                             Log.Debug("writeClients[inactivePoolIndex] != existingClient: {0}".Fmt(writeClients[inactivePoolIndex]));
 
+                        Interlocked.Increment(ref RedisState.TotalClientsCreatedOutsidePool);
+
+                        //Don't handle callbacks for new client outside pool so Dispose() closes its connection
+                        newClient.ClientManager = null;
                         return newClient; //return client outside of pool
                     }
 
@@ -645,11 +649,10 @@ public partial class PooledRedisClientManager
 
         foreach (var client in writeClients)
         {
-            if (client == null)
-            {
-                writeClientsCreated++;
+            if (client == null || client == reservedSlot)
                 continue;
-            }
+
+            writeClientsCreated++;
 
             if (client.HadExceptions)
                 writeClientsWithExceptions++;
@@ -667,11 +670,10 @@ public partial class PooledRedisClientManager
 
         foreach (var client in readClients)
         {
-            if (client == null)
-            {
-                readClientsCreated++;
+            if (client == null || client == reservedSlot)
                 continue;
-            }
+
+            readClientsCreated++;
 
             if (client.HadExceptions)
                 readClientsWithExceptions++;

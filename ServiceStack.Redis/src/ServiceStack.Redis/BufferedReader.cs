@@ -70,7 +70,7 @@ internal sealed partial class BufferedReader : IDisposable
     private int ReadSlow(byte[] buffer, int offset, int count)
     {
         // if they're asking for more than we deal in, just step out of the way
-        if (count >= buffer.Length)
+        if (count >= this.buffer.Length)
             return source.Read(buffer, offset, count);
 
         // they're asking for less, so we could still have some left

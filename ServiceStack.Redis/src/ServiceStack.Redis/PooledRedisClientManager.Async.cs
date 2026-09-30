@@ -142,15 +142,18 @@ public partial class PooledRedisClientManager
                         if (Log.IsDebugEnabled)
                             Log.Debug("writeClients[inactivePoolIndex] != existingClient: {0}".Fmt(writeClients[inactivePoolIndex]));
 
+                        Interlocked.Increment(ref RedisState.TotalClientsCreatedOutsidePool);
+
+                        //Don't handle callbacks for new client outside pool so Dispose() closes its connection
+                        newClient.ClientManager = null;
                         return newClient; //return client outside of pool
                     }
 
                     WritePoolIndex++;
                     writeClients[inactivePoolIndex] = newClient;
 
-                    return !AssertAccessOnlyOnSameThread
-                        ? newClient
-                        : newClient.LimitAccessToThread(Thread.CurrentThread.ManagedThreadId, Environment.StackTrace);
+                    // async continuations can resume on any thread so never limit access to the current thread
+                    return newClient;
                 }
             }
             catch

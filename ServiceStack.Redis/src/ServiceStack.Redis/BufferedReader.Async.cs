@@ -50,7 +50,7 @@ internal sealed partial class BufferedReader
     private ValueTask<int> ReadSlowAsync(byte[] buffer, int offset, int count, in CancellationToken token)
     {
         // if they're asking for more than we deal in, just step out of the way
-        if (count >= buffer.Length)
+        if (count >= this.buffer.Length)
         {
 #if NET6_0_OR_GREATER
             return source.ReadAsync(new Memory<byte>(buffer, offset, count), token);
