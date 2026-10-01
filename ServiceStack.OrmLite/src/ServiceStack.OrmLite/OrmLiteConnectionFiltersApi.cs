@@ -89,6 +89,22 @@ public static class OrmLiteConnectionFiltersApi
     public static IDbConnection OnUpdate<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
         db.AddWriteRule(WriteRuleType.OnUpdate, field, valueFn);
 
+    /// <summary>
+    /// Always set the column to the value in rows inserted or updated on this connection, the same as registering
+    /// both OnInsert and OnUpdate, e.g:
+    /// <para>db.OnWrite&lt;IAudit&gt;(x =&gt; x.ModifiedBy, userId);</para>
+    /// </summary>
+    public static IDbConnection OnWrite<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
+        db.OnInsert(field, value).OnUpdate(field, value);
+
+    /// <summary>
+    /// Always set the column to the value returned by the function in rows inserted or updated on this connection,
+    /// the same as registering both OnInsert and OnUpdate, e.g:
+    /// <para>db.OnWrite&lt;IAudit&gt;(x =&gt; x.ModifiedDate, () =&gt; DateTime.UtcNow);</para>
+    /// </summary>
+    public static IDbConnection OnWrite<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
+        db.OnInsert(field, valueFn).OnUpdate(field, valueFn);
+
     private static Func<object?> ToValueFn(object? value) => value is Delegate
         ? throw new ArgumentException("Use a function that returns the value, like: () => DateTime.UtcNow", nameof(value))
         : () => value;

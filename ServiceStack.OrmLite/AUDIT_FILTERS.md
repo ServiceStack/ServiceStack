@@ -38,6 +38,9 @@ db.OnInsert<IAudit>(x => x.CreatedDate, () => DateTime.UtcNow);
 db.OnUpdate<IAudit>(x => x.ModifiedBy, userId);
 db.OnUpdate<IAudit>(x => x.ModifiedDate, () => DateTime.UtcNow);
 
+// OnWrite is an alias for both OnInsert and OnUpdate, e.g. to also set the modified columns when a row is created
+db.OnWrite<IAudit>(x => x.ModifiedBy, userId);
+
 // The same connection and transaction without any filters or rules, e.g. for admin tasks
 var adminDb = db.WithoutFilters();
 ```
@@ -63,7 +66,7 @@ public static IDbConnection OpenForTenant(this IDbConnectionFactory dbFactory, i
     db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
     db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
     db.OnInsert<IAudit>(x => x.CreatedBy, userId);
-    db.OnUpdate<IAudit>(x => x.ModifiedBy, userId);
+    db.OnWrite<IAudit>(x => x.ModifiedBy, userId);
     return db;
 }
 ```
@@ -84,7 +87,7 @@ public override IDbConnection GetDbConnection(IRequest? req = null)
         db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
         db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
         db.OnInsert<IAudit>(x => x.CreatedBy, session.UserAuthId);
-        db.OnUpdate<IAudit>(x => x.ModifiedBy, session.UserAuthId);
+        db.OnWrite<IAudit>(x => x.ModifiedBy, session.UserAuthId);
     }
     return db;
 }
@@ -144,6 +147,10 @@ Notes:
 
 Rule of thumb: `EnsureWrites` for who owns the row, `OnInsert` / `OnUpdate` for who changed it and when. The docs should
 lead the write rules section with this table.
+
+`OnWrite` registers both an `OnInsert` and an `OnUpdate` rule for a column. With only `OnUpdate`, a row's `ModifiedBy`
+and `ModifiedDate` are empty until its first update. The docs example should use `OnInsert` for the created columns,
+with `[IgnoreOnUpdate]`, and `OnWrite` for the modified columns.
 
 `EnsureWrites` depends on what's written:
 

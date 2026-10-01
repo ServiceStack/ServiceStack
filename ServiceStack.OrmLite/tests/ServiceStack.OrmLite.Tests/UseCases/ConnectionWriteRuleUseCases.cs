@@ -312,6 +312,43 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
     }
 
     [Test]
+    public void OnWrite_sets_columns_on_both_inserts_and_updates()
+    {
+        // e.g. to also record who modified a row when it's created, instead of leaving it empty until it's updated
+        IDbConnection OpenAs(string userId)
+        {
+            var db = OpenDbConnection();
+            db.EnsureFilter<IHasTenantId>(x => x.TenantId == 1);
+            db.EnsureWrites<IHasTenantId>(x => x.TenantId, 1);
+            db.OnInsert<IAudit>(x => x.CreatedBy, userId);
+            db.OnInsert<IAudit>(x => x.CreatedDate, () => Invoices.Created);
+            db.OnWrite<IAudit>(x => x.ModifiedBy, userId);
+            db.OnWrite<IAudit>(x => x.ModifiedDate, () => Invoices.Modified);
+            return db;
+        }
+
+        int id;
+        using (OpenForUser("seed")) {}
+        using (var db = OpenAs("alice"))
+        {
+            id = (int)db.Insert(new TenantInvoice { Customer = "Acme", Total = 100 }, selectIdentity: true);
+
+            var row = db.SingleById<TenantInvoice>(id);
+            AssertCreatedBy(row, "alice");
+            AssertModifiedBy(row, "alice");
+        }
+
+        using (var db = OpenAs("bob"))
+        {
+            db.UpdateOnly(() => new TenantInvoice { Total = 110 }, where: x => x.Id == id);
+
+            var row = db.SingleById<TenantInvoice>(id);
+            AssertCreatedBy(row, "alice");
+            AssertModifiedBy(row, "bob");
+        }
+    }
+
+    [Test]
     public void Rules_only_apply_to_their_tables_and_connection()
     {
         using (var db = OpenForUser("alice"))
