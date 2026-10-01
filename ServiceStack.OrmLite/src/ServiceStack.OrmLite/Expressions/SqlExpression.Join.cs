@@ -205,6 +205,28 @@ namespace ServiceStack.OrmLite
                 SqlColumn(refField));
         }
 
+        /// <summary>
+        /// Adds the connection's filters for a joined table to the join's ON condition, so LEFT JOINs keep their meaning,
+        /// or to the mandatory WHERE conditions for joins without one, e.g. CROSS JOIN
+        /// </summary>
+        private string AddJoinedTableFilter(string sqlExpr, ModelDefinition joinDef, string alias)
+        {
+            if (ConnectionFilters == null || ConnectionFilters.IsEmpty || joinDef?.ModelType == null)
+                return sqlExpr;
+            var condition = ConnectionFilters.ToFilterCondition(DialectProvider, joinDef.ModelType, alias, paramPrefix: "",
+                out var filterParams);
+            if (condition == null)
+                return sqlExpr;
+
+            condition = AddRenamedParams(filterParams, condition);
+            if (string.IsNullOrEmpty(sqlExpr))
+            {
+                Ensure(condition);
+                return sqlExpr;
+            }
+            return sqlExpr + " AND " + condition;
+        }
+
         public SqlExpression<T> CustomJoin(string joinString)
         {
             PrefixFieldWithTableName = true;
@@ -263,6 +285,8 @@ namespace ServiceStack.OrmLite
             var joinDef = tableDefs.Contains(targetDef) && !tableDefs.Contains(sourceDef)
                 ? sourceDef
                 : targetDef;
+
+            sqlExpr = AddJoinedTableFilter(sqlExpr, joinDef, joinAlias?.Alias);
 
             FromExpression += joinFormat != null
                 ? $" {joinType} {joinFormat(DialectProvider, joinDef, sqlExpr)}"

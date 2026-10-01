@@ -168,8 +168,9 @@ MySqlConnector, and a full test suite run.
 1. ✅ **Filters on queries**: connection storage, `EnsureFilter<T>()`, interface rebinding, `db.From<T>()`, sub queries
    and set operations, filters prefixed with their table (or alias) so later joins stay unambiguous, `Where()` keeps
    ensured conditions when clearing WHERE conditions, and filters scoped to the outermost open of shared connections.
-2. **All typed reads**: lambda / anonymous-object APIs, WHERE-clause shorthand APIs, by-id APIs, async and lazy
-   variants, joins (`ON` clause), `WithRecursive()`, `TopPerGroup()`, `LoadSelect()` and references.
+2. ✅ **All typed reads**: lambda / anonymous-object APIs, WHERE-clause shorthand APIs, by-id APIs, async and lazy
+   variants, joins (`ON` clause), `WithRecursive()`, `TopPerGroup()`, `LoadSelect()` and references. Filter conditions
+   added to SQL OrmLite builds on a command use `@_f0` style params so they don't clash with the command's params.
 3. **Updates and deletes**: filters on every update and delete API, incl. `Save`, `Upsert`, `UpdateFrom` and the
    returning APIs.
 4. **Write rules**: `EnsureValue`, `OnInsert` and `OnUpdate` for object writes, expression writes and upserts, then
@@ -182,4 +183,5 @@ MySqlConnector, and a full test suite run.
 - Should `Update(obj)` of a row excluded by a filter throw instead of returning 0, e.g. an opt-in strict mode?
 - Should `EnsureFilter` also be able to use a function for values that change during a connection's lifetime, or are
   captured values enough since connections are short-lived?
-- Legacy APIs (`Legacy/`): apply filters for consistency, or leave them unfiltered and document it?
+- Legacy APIs (`Legacy/`), e.g. `SelectFmt()`, aren't filtered yet: apply filters for consistency, or leave them
+  unfiltered and document it?

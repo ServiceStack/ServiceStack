@@ -403,7 +403,7 @@ public static class OrmLiteReadCommandExtensions
             sb.Append(dialectProvider.GetParam(p.ParameterName));
         }
 
-        return dialectProvider.ToSelectStatement(typeof(T), StringBuilderCache.ReturnAndFree(sb));
+        return dbCmd.ToFilteredSelectStatement(typeof(T), StringBuilderCache.ReturnAndFree(sb));
     }
 
 //        internal static bool CanReuseParam<T>(this IDbCommand dbCmd, string paramName)
@@ -463,7 +463,7 @@ public static class OrmLiteReadCommandExtensions
 
         return OrmLiteUtils.IsScalar<T>()
             ? dbCmd.Scalar<T>(sql)
-            : dbCmd.ConvertTo<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql));
+            : dbCmd.ConvertTo<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql));
     }
 
     internal static T Single<T>(this IDbCommand dbCmd, string sql, object anonType)
@@ -472,7 +472,7 @@ public static class OrmLiteReadCommandExtensions
 
         return OrmLiteUtils.IsScalar<T>()
             ? dbCmd.Scalar<T>(sql)
-            : dbCmd.ConvertTo<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql));
+            : dbCmd.ConvertTo<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql));
     }
 
     internal static List<T> Where<T>(this IDbCommand dbCmd, string name, object value)
@@ -490,8 +490,8 @@ public static class OrmLiteReadCommandExtensions
 
     internal static List<T> Select<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
     {
-        dbCmd.CommandText = dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql);
         if (sqlParams != null) dbCmd.SetParameters(sqlParams);
+        dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
 
         return dbCmd.ConvertToList<T>();
     }
@@ -499,7 +499,7 @@ public static class OrmLiteReadCommandExtensions
     internal static List<T> Select<T>(this IDbCommand dbCmd, string sql, object anonType = null)
     {
         if (anonType != null) dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql);
-        dbCmd.CommandText = dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql);
+        dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
 
         return dbCmd.ConvertToList<T>();
     }
@@ -507,7 +507,7 @@ public static class OrmLiteReadCommandExtensions
     internal static List<T> Select<T>(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict)
     {
         if (dict != null) SetParameters(dbCmd, dict, (bool)false, sql:ref sql);
-        dbCmd.CommandText = dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql);
+        dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
 
         return dbCmd.ConvertToList<T>();
     }
@@ -520,13 +520,17 @@ public static class OrmLiteReadCommandExtensions
     internal static List<T> Select<T>(this IDbCommand dbCmd, Type fromTableType, string sql, object anonType = null)
     {
         if (anonType != null) dbCmd.SetParameters(fromTableType, anonType, excludeDefaults: false, sql: ref sql);
-        dbCmd.CommandText = ToSelect<T>(dbCmd.GetDialectProvider(), fromTableType, sql);
+        dbCmd.CommandText = ToSelect<T>(dbCmd, fromTableType, sql);
 
         return dbCmd.ConvertToList<T>();
     }
 
-    internal static string ToSelect<TModel>(IOrmLiteDialectProvider dialectProvider, Type fromTableType, string sqlFilter)
+    internal static string ToSelect<TModel>(IDbCommand dbCmd, Type fromTableType, string sqlFilter)
     {
+        var dialectProvider = dbCmd.GetDialectProvider();
+        var condition = dbCmd.GetFilterCondition(fromTableType);
+        if (condition != null)
+            sqlFilter = OrmLiteConnectionFiltersApi.CombineFilter(condition, sqlFilter);
         var sql = StringBuilderCache.Allocate();
         var modelDef = ModelDefinition<TModel>.Definition;
         sql.Append(
@@ -622,7 +626,7 @@ public static class OrmLiteReadCommandExtensions
     {
         if (anonType != null) dbCmd.SetParameters<T>(anonType, excludeDefaults: true, sql: ref sql);
 
-        return dbCmd.ConvertToList<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql));
+        return dbCmd.ConvertToList<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql));
     }
 
     internal static IEnumerable<T> SelectLazy<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams)
@@ -634,7 +638,7 @@ public static class OrmLiteReadCommandExtensions
     {
         if (anonType != null) dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql);
         var dialectProvider = dbCmd.GetDialectProvider();
-        dbCmd.CommandText = dialectProvider.ToSelectStatement(typeof(T), sql);
+        dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
 
         var resultsFilter = OrmLiteConfig.ResultsFilter;
         if (resultsFilter != null)
@@ -672,7 +676,7 @@ public static class OrmLiteReadCommandExtensions
     private static IEnumerable<T> ColumnLazy<T>(this IDbCommand dbCmd, string sql)
     {
         var dialectProvider = dbCmd.GetDialectProvider();
-        dbCmd.CommandText = dialectProvider.ToSelectStatement(typeof(T), sql);
+        dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
 
         if (OrmLiteConfig.ResultsFilter != null)
         {
@@ -785,7 +789,7 @@ public static class OrmLiteReadCommandExtensions
     {
         if (anonType != null) dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql);
 
-        return dbCmd.Column<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql));
+        return dbCmd.Column<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql));
     }
 
     internal static List<T> Column<T>(this IDataReader reader, IOrmLiteDialectProvider dialectProvider)
@@ -911,7 +915,7 @@ public static class OrmLiteReadCommandExtensions
     {
         if (anonType != null) SetParameters(dbCmd, anonType.ToObjectDictionary(), (bool)false, sql:ref sql);
 
-        var result = dbCmd.Scalar(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql));
+        var result = dbCmd.Scalar(dbCmd.ToFilteredSelectStatement(typeof(T), sql));
         return result != null;
     }
 
@@ -923,12 +927,11 @@ public static class OrmLiteReadCommandExtensions
         var modelDef = ModelDefinition<T>.Definition;
         var pkName = ModelDefinition<T>.PrimaryKeyName;
         var dialect = dbCmd.GetDialectProvider();
-        var result = dbCmd.SqlScalar<int>(
-            "SELECT 1 FROM " + dialect.GetQuotedTableName(modelDef) + 
-            " WHERE " + dialect.GetQuotedColumnName(modelDef.PrimaryKey) + " = " + dialect.GetParam(pkName), 
-            new Dictionary<string,object> {
-                [pkName] = value
-            });
+        var sql = "SELECT 1 FROM " + dialect.GetQuotedTableName(modelDef) + 
+            " WHERE " + dialect.GetQuotedColumnName(modelDef.PrimaryKey) + " = " + dialect.GetParam(pkName);
+        dbCmd.SetParameters(new Dictionary<string,object> { [pkName] = value }, excludeDefaults: false, ref sql);
+        sql = dbCmd.AddFilterCondition(typeof(T), sql);
+        var result = dbCmd.Scalar<int>(sql);
         return result == 1;
     }
 

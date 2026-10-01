@@ -18,7 +18,7 @@ namespace ServiceStack.OrmLite
 
         internal static List<T> Select<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate)
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             string sql = q.Where(predicate).SelectInto<T>(QueryType.Select);
 
             return dbCmd.ExprConvertToList<T>(sql, q.Params);
@@ -141,7 +141,7 @@ namespace ServiceStack.OrmLite
 
         internal static T Single<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate)
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
 
             return Single(dbCmd, q.Where(predicate));
         }
@@ -161,7 +161,7 @@ namespace ServiceStack.OrmLite
 
         public static TKey Scalar<T, TKey>(this IDbCommand dbCmd, Expression<Func<T, object>> field)
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Select(field);
             var sql = q.SelectInto<T>(QueryType.Scalar);
             return dbCmd.Scalar<TKey>(sql, q.Params);
@@ -170,7 +170,7 @@ namespace ServiceStack.OrmLite
         internal static TKey Scalar<T, TKey>(this IDbCommand dbCmd,
             Expression<Func<T, object>> field, Expression<Func<T, bool>> predicate)
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Select(field).Where(predicate);
             string sql = q.SelectInto<T>(QueryType.Scalar);
             return dbCmd.Scalar<TKey>(sql, q.Params);
@@ -178,7 +178,7 @@ namespace ServiceStack.OrmLite
 
         internal static long Count<T>(this IDbCommand dbCmd)
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             var sql = q.ToCountStatement();
             return GetCount(dbCmd, sql, q.Params);
         }
@@ -191,7 +191,7 @@ namespace ServiceStack.OrmLite
 
         internal static long Count<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate)
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Where(predicate);
             var sql = q.ToCountStatement();
             return GetCount(dbCmd, sql, q.Params);
@@ -239,7 +239,7 @@ namespace ServiceStack.OrmLite
 
         internal static List<T> LoadSelect<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate, IEnumerable<string> include = null)
         {
-            var expr = dbCmd.GetDialectProvider().SqlExpression<T>().Where(predicate);
+            var expr = dbCmd.CreateQuery<T>().Where(predicate);
             return dbCmd.LoadListWithReferences<T, T>(expr, include);
         }
 

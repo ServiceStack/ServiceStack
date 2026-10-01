@@ -30,7 +30,7 @@ namespace ServiceStack.OrmLite.Support
             dialectProvider = dbCmd.GetDialectProvider();
 
             if (q == null)
-                q = dialectProvider.SqlExpression<From>();
+                q = dbCmd.CreateQuery<From>();
 
             this.dbCmd = dbCmd;
             this.q = q;
@@ -54,6 +54,7 @@ namespace ServiceStack.OrmLite.Support
                          $"FROM {dialectProvider.GetQuotedTableName(refModelDef)} " +
                          $"WHERE {dialectProvider.GetQuotedColumnName(refField)} " +
                          $"IN ({subSql})";
+            sqlRef = dbCmd.AddFilterCondition(refModelDef.ModelType, sqlRef);
 
             if (OrmLiteConfig.LoadReferenceSelectFilter != null)
                 sqlRef = OrmLiteConfig.LoadReferenceSelectFilter(refModelDef.ModelType, sqlRef);
@@ -89,13 +90,16 @@ namespace ServiceStack.OrmLite.Support
         }
 
         protected string GetRefSelfSql(ModelDefinition modelDef, FieldDefinition refSelf, ModelDefinition refModelDef, FieldDefinition refId) => 
-            dialectProvider.GetRefSelfSql(q.Clone(), modelDef, refSelf, refModelDef, refId);
+            dbCmd.AddFilterCondition(refModelDef.ModelType,
+                dialectProvider.GetRefSelfSql(q.Clone(), modelDef, refSelf, refModelDef, refId));
 
         protected string GetRefFieldSql(ModelDefinition refModelDef, FieldDefinition refField) =>
-            dialectProvider.GetRefFieldSql(subSql, refModelDef, refField);
+            dbCmd.AddFilterCondition(refModelDef.ModelType,
+                dialectProvider.GetRefFieldSql(subSql, refModelDef, refField));
 
         protected string GetFieldReferenceSql(FieldDefinition fieldDef, FieldReference fieldRef) =>
-            dialectProvider.GetFieldReferenceSql(subSql, fieldDef, fieldRef);
+            dbCmd.AddFilterCondition(fieldRef.RefModel,
+                dialectProvider.GetFieldReferenceSql(subSql, fieldDef, fieldRef));
 
         protected Dictionary<object, object> CreateRefMap()
         {

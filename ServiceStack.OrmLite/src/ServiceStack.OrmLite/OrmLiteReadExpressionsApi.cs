@@ -367,7 +367,7 @@ public static class OrmLiteReadExpressionsApi
 
     public static long Count<T>(this IDbConnection dbConn)
     {
-        var expression = dbConn.GetDialectProvider().SqlExpression<T>();
+        var expression = dbConn.CreateQuery<T>();
         return dbConn.Exec(dbCmd => dbCmd.Count(expression));
     }
 

@@ -56,6 +56,21 @@ namespace ServiceStack.OrmLite
         private bool hasEnsureConditions = false;
         private string ensureExpression; // the Ensure() conditions, kept when WHERE conditions are cleared
         private List<KeyValuePair<LambdaExpression, string>> connectionFilters; // filters from the connection and their SQL
+
+        /// <summary>
+        /// The connection's mandatory filters, applied to tables joined to the query
+        /// </summary>
+        internal OrmLiteConnectionFilters ConnectionFilters { get; set; }
+
+        /// <summary>
+        /// The Ensure() conditions of the query
+        /// </summary>
+        internal string EnsureExpression => ensureExpression;
+
+        /// <summary>
+        /// Prefix of param names, e.g. to add filter params to commands without clashing with their params
+        /// </summary>
+        internal string ParamPrefix { get; set; } = "";
         private bool inSqlMethodCall = false;
         
         public DialectSql sql { get; }
@@ -138,6 +153,8 @@ namespace ServiceStack.OrmLite
             to.hasEnsureConditions = hasEnsureConditions;
             to.ensureExpression = ensureExpression;
             to.connectionFilters = connectionFilters != null ? [..connectionFilters] : null;
+            to.ConnectionFilters = ConnectionFilters;
+            to.ParamPrefix = ParamPrefix;
 
             to.Params = new List<IDbDataParameter>(Params);
             to.setOperations = setOperations != null ? new List<SetOperation>(setOperations) : null;
@@ -1537,9 +1554,14 @@ namespace ServiceStack.OrmLite
             return DialectProvider.GetQuotedColumnName(columnName);
         }
 
+        /// <summary>
+        /// The name of the next param added to the query
+        /// </summary>
+        protected string NextParamName() => ParamPrefix + Params.Count;
+
         public virtual IDbDataParameter AddParam(object value)
         {
-            var paramName = Params.Count.ToString();
+            var paramName = NextParamName();
             var paramValue = value;
 
             var parameter = CreateParam(paramName, paramValue);

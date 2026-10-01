@@ -28,7 +28,7 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     internal static Task<List<T>> SelectAsync<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         string sql = q.Where(predicate).SelectInto<T>(QueryType.Select);
 
         return dbCmd.ExprConvertToListAsync<T>(sql, q.Params, q.OnlyFields, token);
@@ -115,7 +115,7 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     internal static Task<T> SingleAsync<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
 
         return SingleAsync(dbCmd, q.Where(predicate), token);
     }
@@ -130,7 +130,7 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     public static Task<TKey> ScalarAsync<T, TKey>(this IDbCommand dbCmd, Expression<Func<T, object>> field, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Select(field);
         var sql = q.SelectInto<T>(QueryType.Scalar);
         return dbCmd.ScalarAsync<TKey>(sql, q.Params, token);
@@ -139,7 +139,7 @@ internal static class ReadExpressionCommandExtensionsAsync
     internal static Task<TKey> ScalarAsync<T, TKey>(this IDbCommand dbCmd,
         Expression<Func<T, object>> field, Expression<Func<T, bool>> predicate, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Select(field).Where(predicate);
         string sql = q.SelectInto<T>(QueryType.Scalar);
         return dbCmd.ScalarAsync<TKey>(sql, q.Params, token);
@@ -147,7 +147,7 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     internal static Task<long> CountAsync<T>(this IDbCommand dbCmd, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         var sql = q.ToCountStatement();
         return GetCountAsync(dbCmd, sql, q.Params, token);
     }
@@ -160,7 +160,7 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     internal static Task<long> CountAsync<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Where(predicate);
         var sql = q.ToCountStatement();
         return GetCountAsync(dbCmd, sql, q.Params, token);
@@ -198,7 +198,7 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     internal static Task<List<T>> LoadSelectAsync<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate, IEnumerable<string> include = null, CancellationToken token = default)
     {
-        var expr = dbCmd.GetDialectProvider().SqlExpression<T>().Where(predicate);
+        var expr = dbCmd.CreateQuery<T>().Where(predicate);
         return dbCmd.LoadListWithReferences<T, T>(expr, include, token);
     }
 
@@ -210,7 +210,7 @@ internal static class ReadExpressionCommandExtensionsAsync
 
     internal static Task<List<T>> Select<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> predicate, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         string sql = q.Where(predicate).SelectInto<T>(QueryType.Select);
 
         return dbCmd.ExprConvertToListAsync<T>(sql, q.Params, q.OnlyFields, token);

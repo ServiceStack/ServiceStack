@@ -41,7 +41,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
         protected override void ConvertToPlaceholderAndParameter(ref object right)
         {
-            var paramName = Params.Count.ToString();
+            var paramName = NextParamName();
             var paramValue = right;
             var parameter = CreateParam(paramName, paramValue);
 

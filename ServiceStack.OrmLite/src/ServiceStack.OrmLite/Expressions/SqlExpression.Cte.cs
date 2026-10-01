@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Linq.Expressions;
 using System.Text;
 
@@ -62,6 +64,14 @@ namespace ServiceStack.OrmLite
             };
             joinQuery.Reset(); // render column names, as InternalJoin() does
             var onCondition = joinQuery.InternalCreateSqlFromExpression(recurse, isCrossJoin: false);
+
+            // Filter the rows added by the recursive step with the connection's filters, so it can't walk into
+            // filtered out rows
+            List<IDbDataParameter> recursiveFilterParams = null;
+            var recursiveFilter = ConnectionFilters?.ToFilterCondition(DialectProvider, typeof(T), ChildAlias,
+                paramPrefix: "", out recursiveFilterParams);
+            if (recursiveFilter != null)
+                onCondition += " WHERE " + AddRenamedParams(recursiveFilterParams, recursiveFilter);
 
             var columnNames = new StringBuilder();
             foreach (var fieldDef in modelDef.FieldDefinitions)

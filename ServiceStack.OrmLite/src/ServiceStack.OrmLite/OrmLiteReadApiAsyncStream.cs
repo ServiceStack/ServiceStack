@@ -91,7 +91,7 @@ public static class OrmLiteReadApiAsyncStream
         [EnumeratorCancellation] CancellationToken token)
     {
         var dialectProvider = dbCmd.GetDialectProvider();
-        dbCmd.CommandText = dialectProvider.ToSelectStatement(typeof(T), sql);
+        dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
 
         var resultsFilter = OrmLiteConfig.ResultsFilter;
         if (resultsFilter != null)
@@ -117,7 +117,7 @@ public static class OrmLiteReadApiAsyncStream
         [EnumeratorCancellation] CancellationToken token)
     {
         var dialectProvider = dbCmd.GetDialectProvider();
-        dbCmd.CommandText = dialectProvider.ToSelectStatement(typeof(T), sql);
+        dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
 
         var resultsFilter = OrmLiteConfig.ResultsFilter;
         if (resultsFilter != null)

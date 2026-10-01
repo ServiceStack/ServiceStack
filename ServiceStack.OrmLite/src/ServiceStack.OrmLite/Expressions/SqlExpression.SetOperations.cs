@@ -143,7 +143,7 @@ namespace ServiceStack.OrmLite
             foreach (var p in otherParams)
             {
                 var pClone = DialectProvider.CreateParam().PopulateWith(p);
-                pClone.ParameterName = DialectProvider.GetParam(Params.Count.ToString());
+                pClone.ParameterName = DialectProvider.GetParam(NextParamName());
                 renames[StripParamPrefix(p.ParameterName)] = pClone.ParameterName;
                 Params.Add(pClone);
                 addedTo?.Add(pClone);

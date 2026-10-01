@@ -125,6 +125,12 @@ public interface IOrmLiteDialectProvider
     bool HasInsertReturnValues(ModelDefinition modelDef);
 
     /// <summary>
+    /// Whether the SQL is a complete SELECT statement, e.g. starting with SELECT or a common table expression, rather
+    /// than a WHERE filter
+    /// </summary>
+    bool IsFullSelectStatement(string sql);
+
+    /// <summary>
     /// Read each field of a row individually instead of with a single IDataReader.GetValues() call, for ADO.NET
     /// providers whose GetValues() changes how fields are read, e.g. System.Data.SQLite's GetGuid()
     /// </summary>

@@ -61,7 +61,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
     internal static Task<List<TModel>> SelectAsync<TModel>(this IDbCommand dbCmd, Type fromTableType, string sqlFilter, object anonType, CancellationToken token)
     {
         if (anonType != null) dbCmd.SetParameters(fromTableType, anonType, excludeDefaults: false, sql: ref sqlFilter);
-        var sql = OrmLiteReadCommandExtensions.ToSelect<TModel>(dbCmd.GetDialectProvider(), fromTableType, sqlFilter);
+        var sql = OrmLiteReadCommandExtensions.ToSelect<TModel>(dbCmd, fromTableType, sqlFilter);
         return dbCmd.ConvertToListAsync<TModel>(sql, token);
     }
 
@@ -109,14 +109,14 @@ internal static class OrmLiteReadCommandExtensionsAsync
     {
         return OrmLiteUtils.IsScalar<T>()
             ? dbCmd.ScalarAsync<T>(sql, sqlParams, token)
-            : dbCmd.SetParameters(sqlParams).ConvertToAsync<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql), token);
+            : dbCmd.SetParameters(sqlParams).ConvertToAsync<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql), token);
     }
 
     internal static Task<T> SingleAsync<T>(this IDbCommand dbCmd, string sql, object anonType, CancellationToken token)
     {
         return OrmLiteUtils.IsScalar<T>()
             ? dbCmd.ScalarAsync<T>(sql, anonType, token)
-            : dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql).ConvertToAsync<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql), token);
+            : dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql).ConvertToAsync<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql), token);
     }
 
     internal static Task<List<T>> WhereAsync<T>(this IDbCommand dbCmd, string name, object value, CancellationToken token)
@@ -132,19 +132,19 @@ internal static class OrmLiteReadCommandExtensionsAsync
 
     internal static Task<List<T>> SelectAsync<T>(this IDbCommand dbCmd, string sql, IEnumerable<IDbDataParameter> sqlParams, CancellationToken token)
     {
-        dbCmd.SetParameters(sqlParams).CommandText = dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql);
+        dbCmd.SetParameters(sqlParams).CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
         return dbCmd.ConvertToListAsync<T>(null, token);
     }
 
     internal static Task<List<T>> SelectAsync<T>(this IDbCommand dbCmd, string sql, object anonType, CancellationToken token)
     {
-        dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql).CommandText = dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql);
+        dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql).CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
         return dbCmd.ConvertToListAsync<T>(null, token);
     }
 
     internal static Task<List<T>> SelectAsync<T>(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict, CancellationToken token)
     {
-        dbCmd.SetParameters(dict, excludeDefaults: false, sql:ref sql).CommandText = dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql);
+        dbCmd.SetParameters(dict, excludeDefaults: false, sql:ref sql).CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), sql);
         return dbCmd.ConvertToListAsync<T>(null, token);
     }
 
@@ -214,7 +214,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
 
     internal static Task<List<T>> SelectNonDefaultsAsync<T>(this IDbCommand dbCmd, string sql, object anonType, CancellationToken token)
     {
-        return dbCmd.SetParameters<T>(anonType, excludeDefaults: true, sql: ref sql).ConvertToListAsync<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql), token);
+        return dbCmd.SetParameters<T>(anonType, excludeDefaults: true, sql: ref sql).ConvertToListAsync<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql), token);
     }
 
     internal static Task<T> ScalarAsync<T>(this IDbCommand dbCmd, string sql, object anonType, CancellationToken token)
@@ -238,7 +238,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
     {
         if (anonType != null) dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql);
 
-        return dbCmd.ColumnAsync<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql), token);
+        return dbCmd.ColumnAsync<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sql), token);
     }
 
     internal static async Task<List<T>> ColumnAsync<T>(this IDataReader reader, IOrmLiteDialectProvider dialectProvider, CancellationToken token)
@@ -355,7 +355,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
     {
         if (anonType != null) dbCmd.SetParameters(anonType.ToObjectDictionary(), (bool)false, sql:ref sql);
 
-        var ret = await dbCmd.ScalarAsync(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sql), token).ConfigAwait();
+        var ret = await dbCmd.ScalarAsync(dbCmd.ToFilteredSelectStatement(typeof(T), sql), token).ConfigAwait();
         return ret != null;
     }
 
@@ -367,12 +367,11 @@ internal static class OrmLiteReadCommandExtensionsAsync
         var modelDef = ModelDefinition<T>.Definition;
         var pkName = ModelDefinition<T>.PrimaryKeyName;
         var dialect = dbCmd.GetDialectProvider();
-        var result = await dbCmd.SqlScalarAsync<int>(
-            "SELECT 1 FROM " + dialect.GetQuotedTableName(modelDef) + 
-            " WHERE " + dialect.GetQuotedColumnName(modelDef.PrimaryKey) + " = " + dialect.GetParam(pkName), 
-            new Dictionary<string,object> {
-                [pkName] = value
-            }, token);
+        var sql = "SELECT 1 FROM " + dialect.GetQuotedTableName(modelDef) + 
+            " WHERE " + dialect.GetQuotedColumnName(modelDef.PrimaryKey) + " = " + dialect.GetParam(pkName);
+        dbCmd.SetParameters(new Dictionary<string,object> { [pkName] = value }, excludeDefaults: false, ref sql);
+        sql = dbCmd.AddFilterCondition(typeof(T), sql);
+        var result = await dbCmd.ScalarAsync<int>(sql, token).ConfigAwait();
         return result == 1;
     }
 
