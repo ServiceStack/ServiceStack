@@ -4,7 +4,7 @@ import {
 } from "@servicestack/client"
 import { useClient } from "@servicestack/vue"
 import { keydown } from "app"
-import { AdminProfiling } from "dtos"
+import { AdminProfiling, AdminExplainQuery, AdminRunQuery } from "dtos"
 import { prettyJson, hasItems } from "core"
 export const Profiling = {
     template:`
@@ -29,13 +29,26 @@ export const Profiling = {
 </section>
 <div v-else>
     <div class="mb-3 flex flex-wrap items-center gap-2">
-        <label class="text-sm text-gray-700" for="profiling-trace-id">Trace Id</label>
-        <input id="profiling-trace-id" type="search" :value="routes.traceId || ''"
+        <span v-if="plugin.slowQueriesLimit" class="isolate inline-flex rounded-md shadow-sm" role="group" aria-label="Profiling view">
+          <button type="button" v-href="viewHref('')" :aria-pressed="!isSlow"
+                  :class="[!isSlow ? 'z-10 bg-indigo-50 text-indigo-700 ring-indigo-300' : 'bg-white text-gray-700 ring-gray-300 hover:bg-gray-50',
+                    'relative inline-flex h-9 items-center rounded-l-md px-3 text-sm font-medium ring-1 ring-inset focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500']">
+            Latest
+          </button>
+          <button type="button" v-href="viewHref('slow')" :aria-pressed="isSlow"
+                  :title="'The ' + plugin.slowQueriesLimit + ' slowest database queries since the App started'"
+                  :class="[isSlow ? 'z-10 bg-indigo-50 text-indigo-700 ring-indigo-300' : 'bg-white text-gray-700 ring-gray-300 hover:bg-gray-50',
+                    '-ml-px relative inline-flex h-9 items-center rounded-r-md px-3 text-sm font-medium ring-1 ring-inset focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500']">
+            Slowest Queries
+          </button>
+        </span>
+        <label v-if="!isSlow" class="text-sm text-gray-700" for="profiling-trace-id">Trace Id</label>
+        <input v-if="!isSlow" id="profiling-trace-id" type="search" :value="routes.traceId || ''"
                @input="onTraceFilterInput($event.target.value)"
                @change="setTraceFilter($event.target.value)" @keyup.enter="setTraceFilter($event.target.value)"
                placeholder="Trace Id" aria-label="Filter by Trace Id"
                class="h-9 w-72 rounded-md border border-gray-300 px-2 font-mono text-xs" />
-        <button v-href="href({ withErrors:hasErrors ? '' : true })" type="button" :aria-pressed="hasErrors"
+        <button v-if="!isSlow" v-href="href({ withErrors:hasErrors ? '' : true })" type="button" :aria-pressed="hasErrors"
                 :class="['inline-flex h-9 items-center gap-x-1.5 rounded-md px-3 text-sm font-medium shadow-sm ring-1 ring-inset focus:outline-none focus:ring-2 focus:ring-indigo-500',
                     hasErrors ? 'bg-red-50 text-red-700 ring-red-300 hover:bg-red-100' : 'bg-white text-gray-700 ring-gray-300 hover:bg-gray-50']">
             <span :class="['h-2 w-2 rounded-full', hasErrors ? 'bg-red-500' : 'bg-gray-300']" aria-hidden="true"></span>
@@ -142,6 +155,7 @@ export const Profiling = {
                   <a v-if="row[k] && ['traceId','spanId'].includes(k)"
                      v-href="identifierHref(k, row[k])" @click.stop
                      :title="row[k]" class="text-blue-600 hover:underline">{{ valueFmt(row[k], k) }}</a>
+                  <span v-else-if="k === 'command'" :title="row[k]" class="font-mono text-xs">{{ sqlFmt(row[k]) }}</span>
                   <span v-else :title="apiValueTitle(row[k],k)">{{ valueFmt(row[k], k) }}</span>
                 </td>
               </tr>
@@ -149,7 +163,7 @@ export const Profiling = {
             </table>
           </div>
           <div v-else-if="api && api.completed">
-            <h3 class="p-2">No Results</h3>
+            <h3 class="p-2">{{ isSlow ? 'No database queries have been profiled yet' : 'No Results' }}</h3>
           </div>
         </div>
       </div>
@@ -158,14 +172,14 @@ export const Profiling = {
     <div v-if="selected" class="relative z-20" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
       <div class="fixed overflow-hidden">
         <div class="absolute overflow-hidden">
-          <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
-            <div class="pointer-events-auto w-screen max-w-2xl">
+          <div :class="['pointer-events-none fixed inset-y-0 right-0 flex max-w-full', maximized ? '' : 'pl-10 sm:pl-16']">
+            <div :class="['pointer-events-auto w-screen', maximized ? 'max-w-none' : 'max-w-2xl']">
               <form v-if="selected" class="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
                 <div class="flex-1">
                   <!-- Header -->
                   <div class="bg-gray-50 px-4 py-5 sm:px-6">
                     <div class="flex items-start gap-4">
-                      <div class="min-w-0 flex-1">
+                      <div class="min-w-0 flex-1" style="padding-right:4.5rem">
                         <h2 id="slide-over-title" :class="['break-words text-lg font-semibold leading-6', statusColor(selected.error)]"
                             :title="selected.message || valueFmt(selected.eventType,'eventType')">
                           {{ msgFmt(selected.message || valueFmt(selected.eventType, 'eventType')) }}
@@ -177,9 +191,18 @@ export const Profiling = {
                              :title="selected.eventType">{{ valueFmt(selected.eventType, 'eventType') }}</a>
                         </div>
                       </div>
+                      <!-- Positioned next to the CloseButton, which is at the top right of the panel -->
+                      <div class="absolute top-0 right-0 pt-4" style="padding-right:3rem">
+                        <button type="button" @click="maximized = !maximized" :aria-pressed="maximized"
+                                :title="maximized ? 'Restore panel size' : 'Maximize panel'" :aria-label="maximized ? 'Restore panel size' : 'Maximize panel'"
+                                class="cursor-pointer rounded-md bg-gray-50 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                          <svg v-if="maximized" class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 4v5H4m11-5v5h5M9 20v-5H4m11 5v-5h5"/></svg>
+                          <svg v-else class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 9V4h5m11 5V4h-5M4 15v5h5m11-5v5h-5"/></svg>
+                        </button>
+                      </div>
                       <CloseButton @close="toggle(selected)" button-class="shrink-0 bg-gray-50" />
                     </div>
-                    <dl v-if="selected.traceId || selected.spanId || selected.threadId || selected.duration || selected.date"
+                    <dl v-if="selected.traceId || selected.spanId || selected.threadId || selected.duration || selected.date || selected.operation"
                         class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
                       <div v-if="selected.traceId" class="min-w-0">
                         <dt class="text-xs text-gray-500">Trace Id</dt>
@@ -202,6 +225,14 @@ export const Profiling = {
                       <div v-if="selected.duration" class="min-w-0">
                         <dt class="text-xs text-gray-500">Duration</dt>
                         <dd class="mt-0.5 text-gray-700">{{ valueFmt(selected.duration, 'duration') }}</dd>
+                      </div>
+                      <div v-if="selected.command && selected.source === 'OrmLite'" class="min-w-0">
+                        <dt class="text-xs text-gray-500">Connection</dt>
+                        <dd class="mt-0.5 text-gray-700">{{ selected.namedConnection || 'default' }}</dd>
+                      </div>
+                      <div v-if="selected.operation" class="min-w-0">
+                        <dt class="text-xs text-gray-500">Operation</dt>
+                        <dd class="mt-0.5 truncate text-gray-700" :title="selected.operation">{{ selected.operation }}</dd>
                       </div>
                     </dl>
                   </div>
@@ -237,7 +268,66 @@ export const Profiling = {
                       </div>
                     </div>
                     <div v-if="selected.command" class="p-4">
-                      {{ selected.command }}
+                      <div class="group relative">
+                        <CopyIcon class="absolute right-0 opacity-0 transition-opacity group-hover:opacity-100" :text="selected.command" />
+                        <div class="whitespace-pre-wrap break-words pr-8 font-mono text-sm">{{ selected.command }}</div>
+                      </div>
+                      <div v-if="canQuery" class="mt-4 flex flex-wrap items-center gap-2">
+                        <button type="button" @click="explain(false)" :disabled="!!querying" title="Show the query plan without running the query"
+                                class="inline-flex h-9 items-center rounded-md bg-white px-3 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+                          Explain
+                        </button>
+                        <button v-if="canAnalyze" type="button" @click="explain(true)" :disabled="!!querying" title="Run the query to show its plan with actual row counts and timings"
+                                class="inline-flex h-9 items-center rounded-md bg-white px-3 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50">
+                          Analyze
+                        </button>
+                        <button type="button" @click="runQuery" :disabled="!!querying" :title="'Run the query again with the same arguments and show its first ' + runQueryLimit + ' rows'"
+                                class="inline-flex h-9 items-center rounded-md bg-indigo-600 px-3 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50">
+                          Run Query
+                        </button>
+                        <span v-if="querying" class="text-sm text-gray-500" role="status">{{ querying }}…</span>
+                      </div>
+                    </div>
+
+                    <div v-if="explainApi" class="bg-indigo-700 text-white px-3 py-3">
+                      <div class="flex items-start justify-between space-x-3">
+                        <h2 class="font-medium text-white">Query Plan <span v-if="explainApi.analyze" class="font-normal">(analyzed)</span></h2>
+                      </div>
+                    </div>
+                    <div v-if="explainApi" class="p-4">
+                      <p v-if="explainApi.error" class="text-sm text-red-700" role="alert">{{ explainApi.error.message }}</p>
+                      <div v-else class="group relative">
+                        <CopyIcon class="absolute right-0 opacity-0 transition-opacity group-hover:opacity-100" :text="explainApi.response.plan" />
+                        <pre class="overflow-x-auto pr-8 text-xs">{{ explainApi.response.plan }}</pre>
+                      </div>
+                    </div>
+
+                    <div v-if="runApi" class="bg-indigo-700 text-white px-3 py-3">
+                      <div class="flex items-start justify-between space-x-3">
+                        <h2 class="font-medium text-white">Results</h2>
+                        <span v-if="runApi.response" class="text-sm text-gray-200">
+                          {{ runApi.response.truncated ? 'first ' : '' }}{{ runApi.response.results.length }}
+                          {{ runApi.response.results.length === 1 ? 'row' : 'rows' }} in {{ valueFmt(runApi.response.duration, 'duration') }}
+                        </span>
+                      </div>
+                    </div>
+                    <div v-if="runApi" class="overflow-auto">
+                      <p v-if="runApi.error" class="p-4 text-sm text-red-700" role="alert">{{ runApi.error.message }}</p>
+                      <p v-else-if="!runApi.response.results.length" class="p-4 text-sm text-gray-600">The query returned no rows.</p>
+                      <table v-else class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50">
+                          <tr>
+                            <th v-for="column in runApi.response.columns" :key="column" scope="col"
+                                class="px-3 py-2 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">{{ column }}</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                          <tr v-for="(row,index) in runApi.response.results" :key="index">
+                            <td v-for="column in runApi.response.columns" :key="column" :title="cellTitle(row[column])"
+                                :class="[maximized ? 'max-w-md' : 'max-w-xs', 'truncate px-3 py-2 whitespace-nowrap text-gray-700']">{{ cellFmt(row[column]) }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
     
                     <div v-if="selectedArgs" class="bg-indigo-700 text-white px-3 py-3">
@@ -254,8 +344,8 @@ export const Profiling = {
                             {{ name }}
                           </a>
                         </span>
-                        <div v-if="routes.body == ''" class="pt-2 icon-outer" style="min-height:2.5rem">
-                          <CopyIcon class="absolute right-4" :text="prettyJson(selectedArgs)" />
+                        <div v-if="routes.body == ''" class="group pt-2 icon-outer" style="min-height:2.5rem">
+                          <CopyIcon class="absolute right-4 opacity-0 transition-opacity group-hover:opacity-100" :text="prettyJson(selectedArgs)" />
                           <pre class="whitespace-pre-wrap"><code lang="json" v-highlightjs="prettyJson(selectedArgs)"></code></pre>
                         </div>
                         <div v-else-if="routes.body == 'raw'" class="flex pt-2">
@@ -274,8 +364,8 @@ export const Profiling = {
                     </div>
                     <div v-if="selected.error" class="flex overflow-auto">
                       <div class="p-2 relative w-full">
-                        <div class="pt-2 icon-outer" style="min-height:2.5rem">
-                          <CopyIcon class="absolute right-4" :text="prettyJson(selected.error)" />
+                        <div class="group pt-2 icon-outer" style="min-height:2.5rem">
+                          <CopyIcon class="absolute right-4 opacity-0 transition-opacity group-hover:opacity-100" :text="prettyJson(selected.error)" />
                           <table>
                           <tbody>
                             <tr>
@@ -356,10 +446,14 @@ export const Profiling = {
         let plugin = server.plugins.profiling
         let summaryFields = server.plugins.profiling.summaryFields.map(toCamelCase)
         let linkFields = 'id,traceId,spanId,source,eventType,operation,threadId,commandType,userAuthId,sessionId,withErrors,tag,skip'.split(',')
-        let fieldLabels = { eventType:'Event', threadId:'Thread', userAuthId:'User Id', date:'Time', traceId:'Trace Id' }
+        let fieldLabels = { eventType:'Event', threadId:'Thread', userAuthId:'User Id', date:'Time', traceId:'Trace Id', namedConnection:'Connection', command:'Query' }
         if (plugin.tagLabel)
             fieldLabels.tag = plugin.tagLabel
         let timeFmt = new Intl.DateTimeFormat('en-US', {hour:'numeric',minute:'numeric',second:'numeric',fractionalSecondDigits:3,hour12:false})
+        // The slowest queries are retained for as long as the App runs
+        let dateTimeFmt = new Intl.DateTimeFormat('en-US', {month:'short',day:'numeric',hour:'numeric',minute:'numeric',second:'numeric',hour12:false})
+        const slowQueryFields = 'date,duration,namedConnection,command'.split(',')
+        const isSlow = computed(() => routes.view === 'slow')
         let showTitle = 'traceId,eventType,duration,timestamp'.split(',')
         /** @type {Ref<ApiResult<AdminProfilingResponse>>} */
         const api = ref(new ApiResult())
@@ -373,6 +467,8 @@ export const Profiling = {
             })
             // route values from the URL are strings
             request.withErrors = hasErrors.value || undefined
+            if (isSlow.value)
+                request.slow = true
             if (loadAll.value && routes.traceId) {
                 request.skip = 0
                 request.take = Math.max(total.value || 0, results.value.length)
@@ -413,8 +509,59 @@ export const Profiling = {
             if (routes.skip) routes.to({ skip:'' })
             else update()
         }
-        const uniqueKeys = summaryFields
+        const uniqueKeys = computed(() => isSlow.value ? slowQueryFields : summaryFields)
         const selected = computed(() => routes.show && results.value.find(x => x.id == routes.show))
+
+        // Explaining and re-running SELECT queries requires the AdminDatabaseFeature plugin
+        const canQuery = computed(() => !!server.plugins.adminDatabase && selected.value?.source === 'OrmLite'
+            && /^\s*(select|with)\b/i.test(selected.value?.command || ''))
+        // Show the detail panel in full-screen, e.g. for wide query plans and results
+        const maximized = ref(false)
+        // Not every database can analyze queries, e.g. SQLite
+        const canAnalyze = computed(() => {
+            const name = selected.value?.namedConnection || 'main'
+            return !!server.plugins.adminDatabase?.databases?.find(x => x.name === name)?.supportsAnalyze
+        })
+        const runQueryLimit = server.plugins.adminDatabase?.runQueryLimit || 20
+        const explainApi = ref(null)
+        const runApi = ref(null)
+        const querying = ref('')
+        watch(() => selected.value?.id, () => {
+            explainApi.value = null
+            runApi.value = null
+        })
+        async function explain(analyze) {
+            const id = selected.value.id
+            querying.value = analyze ? 'Analyzing' : 'Explaining'
+            const api = await client.api(new AdminExplainQuery({ id, analyze:analyze || undefined }))
+            querying.value = ''
+            if (selected.value?.id !== id) return
+            api.analyze = analyze
+            explainApi.value = api
+        }
+        async function runQuery() {
+            const id = selected.value.id
+            querying.value = 'Running'
+            const api = await client.api(new AdminRunQuery({ id }), { jsconfig: 'eccn' })
+            querying.value = ''
+            if (selected.value?.id !== id) return
+            runApi.value = api
+        }
+        function sqlFmt(sql) {
+            const s = (sql || '').replace(/\s+/g, ' ').trim()
+            return s.length > 100 ? s.substring(0, 100) + '…' : s
+        }
+        function cellFmt(value) {
+            if (value == null) return ''
+            return typeof value === 'object' ? JSON.stringify(value) : `${value}`
+        }
+        function cellTitle(value) {
+            const s = cellFmt(value)
+            return s.length > 30 ? s : ''
+        }
+        function viewHref(view) {
+            return Object.assign(href({}), { view, skip:'', orderBy:'' })
+        }
         const selectedArgs = computed(() => {
             let namedArgs = selected.value?.namedArgs
             let args = selected.value?.args
@@ -437,7 +584,7 @@ export const Profiling = {
             }
             if (k === 'date') {
                 let d = toDate(obj)
-                return timeFmt.format(d)
+                return isSlow.value ? dateTimeFmt.format(d) : timeFmt.format(d)
             }
             if (k === 'timestamp') {
                 let d = new Date(obj / 10)
@@ -513,6 +660,20 @@ export const Profiling = {
         })
         
         return {
+            maximized,
+            isSlow,
+            viewHref,
+            canQuery,
+            canAnalyze,
+            runQueryLimit,
+            explain,
+            runQuery,
+            explainApi,
+            runApi,
+            querying,
+            sqlFmt,
+            cellFmt,
+            cellTitle,
             hasErrors,
             plugin,
             routes,

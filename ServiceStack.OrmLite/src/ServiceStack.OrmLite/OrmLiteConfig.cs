@@ -121,6 +121,13 @@ public static class OrmLiteConfig
         ? ormLiteCmd.OrmLiteConnection.GetTag() 
         : null;
 
+    /// <summary>
+    /// The named connection the command is run on, or null for the default connection
+    /// </summary>
+    public static string GetNamedConnection(this IDbCommand db) => db is OrmLiteCommand ormLiteCmd
+        ? ormLiteCmd.OrmLiteConnection.NamedConnection
+        : null;
+
 #if NET8_0_OR_GREATER
     public static TimeSpan? GetElapsedTime(this IDbCommand db) => db is OrmLiteCommand ormLiteCmd 
         ? ormLiteCmd.GetElapsedTime() 

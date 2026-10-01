@@ -273,6 +273,8 @@ public class PublishTasks
                 typeof(AdminProfiling),
                 typeof(AdminRedis),
                 typeof(AdminDatabase),
+                typeof(AdminExplainQuery),
+                typeof(AdminRunQuery),
                 typeof(AdminQueryApiKeys),
                 typeof(AdminCreateApiKey),
                 typeof(AdminUpdateApiKey),

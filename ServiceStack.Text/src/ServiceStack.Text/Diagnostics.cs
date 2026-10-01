@@ -216,6 +216,10 @@ public class OrmLiteDiagnosticEvent : DiagnosticEvent
 {
     public override string Source => "OrmLite";
     public Guid? ConnectionId { get; set; }
+    /// <summary>
+    /// The named connection the command was run on, or null for the default connection
+    /// </summary>
+    public string? NamedConnection { get; set; }
     public IDbConnection? Connection { get; set; }
     public IDbCommand? Command { get; set; }
     public IsolationLevel? IsolationLevel { get; set; }

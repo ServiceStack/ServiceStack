@@ -41,6 +41,17 @@ public class ProfilingFeature : IPlugin, IConfigureServices, Model.IHasStringId,
     public int Capacity { get; set; } = DefaultCapacity;
 
     /// <summary>
+    /// The number of slowest OrmLite queries to retain after they're no longer in the latest entries, 0 to disable
+    /// (default 50)
+    /// </summary>
+    public int SlowQueriesLimit { get; set; } = 50;
+
+    /// <summary>
+    /// Don't profile OrmLite events of connections with these tags, e.g. queries run by Admin UI features
+    /// </summary>
+    public HashSet<string> ExcludeTags { get; set; } = new();
+
+    /// <summary>
     /// Don't log requests of these types. By default Profiling/Metadata requests are excluded
     /// </summary>
     public List<Type> ExcludeRequestDtoTypes { get; set; } = new();
@@ -238,9 +249,21 @@ public class ProfilingFeature : IPlugin, IConfigureServices, Model.IHasStringId,
                 SummaryFields = SummaryFields,
                 TagLabel = TagLabel,
                 DefaultLimit = DefaultLimit,
+                SlowQueriesLimit = SlowQueriesLimit,
             };
         });
     }
+
+    /// <summary>
+    /// The profiled entry with the id, from the latest entries or the slowest queries, or null if it's no longer
+    /// retained
+    /// </summary>
+    public DiagnosticEntry? GetEntry(long id) => Observer?.GetEntry(id);
+
+    /// <summary>
+    /// The slowest OrmLite queries, slowest first
+    /// </summary>
+    public List<DiagnosticEntry> GetSlowestQueries() => Observer?.GetSlowestQueries() ?? [];
 
     public void BeforePluginsLoaded(IAppHost appHost)
     {
@@ -298,6 +321,59 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
         log.Error(error.Message, error);
     }
     
+    // The slowest OrmLite commands, retained after they're no longer in the latest entries
+    private readonly int slowQueriesLimit = feature.SlowQueriesLimit;
+    private readonly List<DiagnosticEntry> slowestQueries = [];
+    private long slowestQueriesMinTicks;
+
+    void TrackSlowQuery(DiagnosticEntry entry)
+    {
+        if (slowQueriesLimit <= 0 || entry.Command == null || entry.Duration == null)
+            return;
+
+        var ticks = entry.Duration.Value.Ticks;
+        // Most queries aren't slower than the fastest of the slowest queries
+        if (ticks <= Interlocked.Read(ref slowestQueriesMinTicks))
+            return;
+
+        lock (slowestQueries)
+        {
+            if (slowestQueries.Count >= slowQueriesLimit)
+            {
+                var fastest = 0;
+                for (var i = 1; i < slowestQueries.Count; i++)
+                {
+                    if (slowestQueries[i].Duration < slowestQueries[fastest].Duration)
+                        fastest = i;
+                }
+                if (ticks <= slowestQueries[fastest].Duration!.Value.Ticks)
+                    return;
+                slowestQueries.RemoveAt(fastest);
+            }
+            slowestQueries.Add(entry);
+
+            if (slowestQueries.Count >= slowQueriesLimit)
+                Interlocked.Exchange(ref slowestQueriesMinTicks, slowestQueries.Min(x => x.Duration!.Value.Ticks));
+        }
+    }
+
+    public List<DiagnosticEntry> GetSlowestQueries()
+    {
+        lock (slowestQueries)
+            return slowestQueries.Where(x => !x.Deleted).OrderByDescending(x => x.Duration).ToList();
+    }
+
+    public DiagnosticEntry? GetEntry(long id)
+    {
+        lock (slowestQueries)
+        {
+            var slow = slowestQueries.FirstOrDefault(x => x.Id == id);
+            if (slow != null)
+                return slow;
+        }
+        return entries.FirstOrDefault(x => x.Id == id && !x.Deleted);
+    }
+
     public List<DiagnosticEntry> GetLatestEntries(int? take)
     {
         return take != null 
@@ -765,6 +841,7 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
         if (e.Command != null)
         {
             to.Command = e.Command.CommandText;
+            to.NamedConnection = e.NamedConnection;
             to.Message = to.Command.LeftPart(' ');
             to.NamedArgs = new();
             foreach (IDbDataParameter p in e.Command.Parameters)
@@ -799,7 +876,9 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     void AddOrmLite(OrmLiteDiagnosticEvent before, OrmLiteDiagnosticEvent after)
     {
-        after.DiagnosticEntry = AddEntry(ToDiagnosticEntry(after, before));
+        var entry = AddEntry(ToDiagnosticEntry(after, before));
+        after.DiagnosticEntry = entry;
+        TrackSlowQuery(entry);
     }
 
     public DiagnosticEntry ToDiagnosticEntry(RedisDiagnosticEvent e, RedisDiagnosticEvent? orig = null)
@@ -1054,6 +1133,9 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
 
         
         /** OrmLite */
+        if (kvp.Value is OrmLiteDiagnosticEvent { Tag: not null } taggedEvent && feature.ExcludeTags.Contains(taggedEvent.Tag))
+            return;
+
         if (kvp.Key == Diagnostics.Events.OrmLite.WriteCommandBefore && kvp.Value is OrmLiteDiagnosticEvent dbBefore)
         {
             AddOrmLite(dbBefore);
@@ -1266,6 +1348,10 @@ public class DiagnosticEntry
     /// SQL, Redis
     /// </summary>
     public string Command { get; set; }
+    /// <summary>
+    /// The OrmLite named connection the command was run on, null for the default connection
+    /// </summary>
+    public string? NamedConnection { get; set; }
     public string? UserAuthId { get; set; }
     public string? SessionId { get; set; }
     /// <summary>

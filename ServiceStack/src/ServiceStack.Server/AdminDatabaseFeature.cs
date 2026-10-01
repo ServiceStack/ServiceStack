@@ -25,9 +25,15 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
 
     public int QueryLimit { get; set; } = 100;
 
+    /// <summary>
+    /// The max number of rows returned when re-running a profiled query from the Profiling Admin UI (default 20)
+    /// </summary>
+    public int RunQueryLimit { get; set; } = 20;
+
     public void Configure(IServiceCollection services)
     {
         services.RegisterService(typeof(AdminDatabaseService));
+        services.RegisterService(typeof(AdminQueryService));
     }
 
     public void Register(IAppHost appHost)
@@ -61,10 +67,34 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
         appHost.ConfigurePlugin<RequestLogsFeature>(feature =>
         {
             feature.ExcludeRequestDtoTypes.Add(typeof(AdminDatabase));
+            feature.ExcludeRequestDtoTypes.Add(typeof(AdminExplainQuery));
+            feature.ExcludeRequestDtoTypes.Add(typeof(AdminRunQuery));
+        });
+        appHost.ConfigurePlugin<ProfilingFeature>(feature =>
+        {
+            feature.ExcludeRequestDtoTypes.Add(typeof(AdminExplainQuery));
+            feature.ExcludeRequestDtoTypes.Add(typeof(AdminRunQuery));
+            // Explaining or re-running a profiled query isn't profiled
+            feature.ExcludeTags.Add(nameof(AdminDatabaseFeature));
         });
     }
 
-    static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(AdminDatabaseFeature));
+    internal static void ConfigureDb(IDbConnection db) => db.WithTag(nameof(AdminDatabaseFeature));
+
+    // e.g. SQLite can explain queries, but not analyze them
+    static bool? SupportsAnalyze(IDbConnection db)
+    {
+        try
+        {
+            db.GetDialectProvider().ToExplainQuery(db, "SELECT 1", analyze: true);
+            return true;
+        }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
+    }
+
     public void AfterPluginsLoaded(IAppHost appHost)
     {
         var dbFactory = appHost.Resolve<IDbConnectionFactory>();
@@ -74,6 +104,7 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
             new() {
                 Name = "main",
                 Schemas = ToSchemaTables(db.GetSchemaTables()),
+                SupportsAnalyze = SupportsAnalyze(db),
             }
         };
 
@@ -83,6 +114,7 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
             databases.Add(new () {
                 Name = entry.Key,
                 Schemas = ToSchemaTables(namedDb.GetSchemaTables()),
+                SupportsAnalyze = SupportsAnalyze(namedDb),
             });
         }
 
@@ -94,6 +126,7 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
         appHost.AddToAppMetadata(meta => {
             meta.Plugins.AdminDatabase = new AdminDatabaseInfo {
                 QueryLimit = QueryLimit,
+                RunQueryLimit = RunQueryLimit,
                 Databases = databases,
             };
         });

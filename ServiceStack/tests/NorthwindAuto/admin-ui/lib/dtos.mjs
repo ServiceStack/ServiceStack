@@ -2635,7 +2635,7 @@ export class AdminQueryRequestLogs extends QueryDb {
     createResponse() { return new QueryResponse() }
 }
 export class AdminProfiling {
-    /** @param {{source?:string,eventType?:string,threadId?:number,traceId?:string,userAuthId?:string,sessionId?:string,tag?:string,skip?:number,take?:number,orderBy?:string,withErrors?:boolean,pending?:boolean}} [init] */
+    /** @param {{source?:string,eventType?:string,threadId?:number,traceId?:string,userAuthId?:string,sessionId?:string,tag?:string,skip?:number,take?:number,orderBy?:string,withErrors?:boolean,pending?:boolean,slow?:boolean}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {?string} */
     source;
@@ -2661,6 +2661,8 @@ export class AdminProfiling {
     withErrors;
     /** @type {?boolean} */
     pending;
+    /** @type {?boolean} */
+    slow;
     getTypeName() { return 'AdminProfiling' }
     getMethod() { return 'POST' }
     createResponse() { return new AdminProfilingResponse() }
@@ -2706,6 +2708,50 @@ export class AdminDatabase {
     getTypeName() { return 'AdminDatabase' }
     getMethod() { return 'GET' }
     createResponse() { return new AdminDatabaseResponse() }
+}
+export class AdminExplainQueryResponse {
+    /** @param {{plan?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    plan;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminExplainQuery {
+    /** @param {{id?:number,analyze?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?boolean} */
+    analyze;
+    getTypeName() { return 'AdminExplainQuery' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminExplainQueryResponse() }
+}
+export class AdminRunQueryResponse {
+    /** @param {{columns?:string[],results?:{ [index:string]: Object; }[],truncated?:boolean,duration?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string[]} */
+    columns = [];
+    /** @type {{ [index:string]: Object; }[]} */
+    results = [];
+    /** @type {boolean} */
+    truncated;
+    /** @type {string} */
+    duration;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminRunQuery {
+    /** @param {{id?:number,take?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    id;
+    /** @type {?number} */
+    take;
+    getTypeName() { return 'AdminRunQuery' }
+    getMethod() { return 'POST' }
+    createResponse() { return new AdminRunQueryResponse() }
 }
 export class ViewCommands {
     /** @param {{include?:string[],skip?:number,take?:number}} [init] */

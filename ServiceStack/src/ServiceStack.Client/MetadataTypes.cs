@@ -320,6 +320,10 @@ public class ProfilingInfo : IMeta
     public int DefaultLimit { get; set; }
     public List<string> SummaryFields { get; set; }
     public string TagLabel { get; set; }
+    /// <summary>
+    /// The number of slowest queries that are retained, 0 if disabled
+    /// </summary>
+    public int SlowQueriesLimit { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
 
@@ -402,6 +406,10 @@ public class RedisEndpointInfo
 public class AdminDatabaseInfo : IMeta
 {
     public int QueryLimit { get; set; }
+    /// <summary>
+    /// The max number of rows returned when re-running a profiled query
+    /// </summary>
+    public int RunQueryLimit { get; set; }
     public List<DatabaseInfo> Databases { get; set; }
     public Dictionary<string, string> Meta { get; set; }
 }
@@ -412,6 +420,10 @@ public class DatabaseInfo
     public string Alias { get; set; }
     public string Name { get; set; }
     public List<SchemaInfo> Schemas { get; set; }
+    /// <summary>
+    /// Whether the database can run a query to return its plan with actual row counts and timings
+    /// </summary>
+    public bool? SupportsAnalyze { get; set; }
 }
 
 [Exclude(Feature.Soap | Feature.ApiExplorer)]

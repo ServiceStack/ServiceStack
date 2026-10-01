@@ -23,6 +23,10 @@ public class AdminProfiling : IReturn<AdminProfilingResponse>
     public string? OrderBy { get; set; }
     public bool? WithErrors { get; set; }
     public bool? Pending { get; set; }
+    /// <summary>
+    /// Return the slowest OrmLite queries instead of the latest events
+    /// </summary>
+    public bool? Slow { get; set; }
 }
 
 public class AdminProfilingResponse
@@ -46,9 +50,12 @@ public class AdminProfilingService : Service
     public async Task<object> Any(AdminProfiling request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
-        var snapshot = request.Pending != true 
-            ? feature.Observer.GetLatestEntries(null)
-            : feature.Observer.GetPendingEntries(null);
+        var slow = request.Slow == true;
+        var snapshot = slow
+            ? feature.Observer.GetSlowestQueries()
+            : request.Pending != true 
+                ? feature.Observer.GetLatestEntries(null)
+                : feature.Observer.GetPendingEntries(null);
         
         var logs = snapshot.AsQueryable();
         
@@ -75,7 +82,9 @@ public class AdminProfilingService : Service
 
         var isTrace = !request.TraceId.IsNullOrEmpty();
         var query = string.IsNullOrEmpty(request.OrderBy)
-            ? isTrace ? logs.OrderBy(x => x.Date) : logs.OrderByDescending(x => x.Id)
+            ? slow
+                ? logs.OrderByDescending(x => x.Duration)
+                : isTrace ? logs.OrderBy(x => x.Date) : logs.OrderByDescending(x => x.Id)
             : logs.OrderBy(request.OrderBy);
 
         // Traces are read in full, so return the whole trace unless a page size was requested
