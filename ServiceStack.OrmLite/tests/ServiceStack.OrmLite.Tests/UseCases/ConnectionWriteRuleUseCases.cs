@@ -136,9 +136,9 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
         Assert.That(row.ModifiedBy, Is.Null);
         Assert.That(row.ModifiedDate, Is.Null);
 
-        // Insert doesn't modify the object
-        Assert.That(invoice.TenantId, Is.EqualTo(0));
-        Assert.That(invoice.CreatedBy, Is.Null);
+        // The object has the values that were written
+        Assert.That(invoice.TenantId, Is.EqualTo(1));
+        AssertCreatedBy(invoice, "alice");
 
         // A rule's value replaces a value from the app, so audit columns can be trusted
         id = db.Insert(new TenantInvoice { Customer = "Globex", CreatedBy = "mallory" }, selectIdentity: true);
@@ -213,8 +213,8 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
         AssertModifiedBy(row, "alice");
         AssertCreatedBy(row, "alice"); // [IgnoreOnUpdate] columns aren't updated
 
-        // Update doesn't modify the object
-        Assert.That(invoice.ModifiedBy, Is.Null);
+        // The object has the values that were written
+        AssertModifiedBy(invoice, "alice");
     }
 
     [Test]
@@ -471,7 +471,7 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
 
         var invoice = new TenantInvoice { Customer = "Acme", Total = 100 };
         var id = (int)await db.InsertAsync(invoice, selectIdentity: true);
-        Assert.That(invoice.CreatedBy, Is.Null);
+        AssertCreatedBy(invoice, "alice");
 
         await db.InsertAllAsync(new[] { new TenantInvoice { Customer = "Globex" } });
         await db.InsertOnlyAsync(() => new TenantInvoice { Customer = "Hooli" });

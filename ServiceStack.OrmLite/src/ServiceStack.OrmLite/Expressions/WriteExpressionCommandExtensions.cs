@@ -36,15 +36,8 @@ namespace ServiceStack.OrmLite
 
             onlyFields.CopyParamsTo(dbCmd);
 
-            var ruleValues = dbCmd.SetUpdateRuleValues<T>(model, fieldsToUpdate);
-            try
-            {
-                dbCmd.GetDialectProvider().PrepareUpdateRowStatement(dbCmd, model, fieldsToUpdate);
-            }
-            finally
-            {
-                ruleValues.Restore();
-            }
+            dbCmd.SetUpdateRuleValues<T>(model, fieldsToUpdate);
+            dbCmd.GetDialectProvider().PrepareUpdateRowStatement(dbCmd, model, fieldsToUpdate);
 
             if (!onlyFields.WhereExpression.IsNullOrEmpty())
                 dbCmd.CommandText += " " + onlyFields.WhereExpression;
@@ -316,15 +309,8 @@ namespace ServiceStack.OrmLite
         /// </summary>
         internal static void PrepareUpdateStatement<T>(this IDbCommand dbCmd, SqlExpression<T> q, T item, bool excludeDefaults = false)
         {
-            var ruleValues = dbCmd.SetUpdateRuleValues<T>(item, excludeDefaults: excludeDefaults);
-            try
-            {
-                q.PrepareUpdateStatement(dbCmd, item, excludeDefaults);
-            }
-            finally
-            {
-                ruleValues.Restore();
-            }
+            dbCmd.SetUpdateRuleValues<T>(item, excludeDefaults: excludeDefaults);
+            q.PrepareUpdateStatement(dbCmd, item, excludeDefaults);
         }
 
         public static int Update<T>(this IDbCommand dbCmd, object updateOnly, Expression<Func<T, bool>> where = null, Action<IDbCommand> commandFilter = null)
@@ -419,17 +405,10 @@ namespace ServiceStack.OrmLite
         internal static string ToInsertOnlyStatement<T>(this IDbCommand dbCmd, T obj, ICollection<string> onlyFields)
         {
             var dialectProvider = dbCmd.GetDialectProvider();
-            var ruleValues = dbCmd.SetInsertRuleValues<T>(obj);
-            try
-            {
-                var sql = dialectProvider.ToInsertRowStatement(dbCmd, obj, dbCmd.WithRuleFields<T>(onlyFields, forInsert: true));
-                dialectProvider.SetParameterValues<T>(dbCmd, obj);
-                return sql;
-            }
-            finally
-            {
-                ruleValues.Restore();
-            }
+            dbCmd.SetInsertRuleValues<T>(obj);
+            var sql = dialectProvider.ToInsertRowStatement(dbCmd, obj, dbCmd.WithRuleFields<T>(onlyFields, forInsert: true));
+            dialectProvider.SetParameterValues<T>(dbCmd, obj);
+            return sql;
         }
 
         public static long InsertOnly<T>(this IDbCommand dbCmd, Expression<Func<T>> insertFields, bool selectIdentity)

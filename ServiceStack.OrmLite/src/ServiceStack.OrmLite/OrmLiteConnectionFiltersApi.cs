@@ -166,6 +166,47 @@ public static class OrmLiteConnectionFiltersApi
     }
 
     /// <summary>
+    /// Whether the connection was returned by WithoutFilters()
+    /// </summary>
+    public static bool IsWithoutFilters(this IDbConnection db) => db.ToOrmLiteConnection()?.IsWithoutFilters == true;
+
+    /// <summary>
+    /// Keep a value with the connection for as long as it's open, e.g. the tenant its filters confine it to:
+    /// <para>db.SetItem("TenantId", tenantId);</para>
+    /// Items are shared with the connections returned by WithoutFilters(), which are the same connection.
+    /// </summary>
+    public static IDbConnection SetItem(this IDbConnection db, string key, object? value)
+    {
+        var dbConn = db.ToOrmLiteConnection()
+            ?? throw new NotSupportedException("Items can only be kept with connections opened by OrmLite");
+        dbConn.Items[key] = value;
+        return db;
+    }
+
+    /// <summary>
+    /// The value kept with the connection, or the default value if there isn't one, e.g:
+    /// <para>var tenantId = db.GetItem&lt;string&gt;("TenantId");</para>
+    /// </summary>
+    public static T? GetItem<T>(this IDbConnection db, string key) =>
+        db.ToOrmLiteConnection() is { } dbConn && dbConn.Items.TryGetValue(key, out var value) && value is T item
+            ? item
+            : default;
+
+    /// <summary>
+    /// The value kept with the connection, adding the value returned by the function if there isn't one
+    /// </summary>
+    public static T GetOrAddItem<T>(this IDbConnection db, string key, Func<T> create)
+    {
+        var dbConn = db.ToOrmLiteConnection()
+            ?? throw new NotSupportedException("Items can only be kept with connections opened by OrmLite");
+        if (dbConn.Items.TryGetValue(key, out var value) && value is T item)
+            return item;
+        item = create();
+        dbConn.Items[key] = item;
+        return item;
+    }
+
+    /// <summary>
     /// The mandatory filters of the connection
     /// </summary>
     public static OrmLiteConnectionFilters GetFilters(this IDbConnection db) =>

@@ -520,15 +520,8 @@ public static class OrmLiteWriteApiAsync
     /// </summary>
     public static async Task BulkInsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
     {
-        var ruleValues = dbConn.SetBulkInsertRuleValues(ref objs, ref config);
-        try
-        {
-            await dbConn.Dialect().BulkInsertAsync(dbConn, objs, config, token).ConfigAwait();
-        }
-        finally
-        {
-            ruleValues.Restore();
-        }
+        dbConn.SetBulkInsertRuleValues(ref objs, ref config);
+        await dbConn.Dialect().BulkInsertAsync(dbConn, objs, config, token).ConfigAwait();
     }
 
     // Procedures

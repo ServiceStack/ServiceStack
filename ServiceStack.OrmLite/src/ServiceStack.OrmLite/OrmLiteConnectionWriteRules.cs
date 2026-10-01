@@ -7,7 +7,7 @@ namespace ServiceStack.OrmLite;
 
 /// <summary>
 /// The original values of an object's properties that were set by the connection's write rules, to restore them
-/// after the object is written, as Insert and Update APIs don't modify the objects passed to them
+/// if the object is rejected by a rule. Objects that are written keep the values that were saved.
 /// </summary>
 internal readonly struct WriteRuleValues(object obj, List<KeyValuePair<FieldDefinition, object?>> original)
 {
@@ -243,8 +243,8 @@ internal static class OrmLiteConnectionWriteRules
     }
 
     /// <summary>
-    /// Set the values of the connection's rules on the rows of a bulk insert, returning their original values to
-    /// restore after they're inserted, or null if no rules apply
+    /// Set the values of the connection's rules on the rows of a bulk insert, returning their original values,
+    /// or null if no rules apply
     /// </summary>
     internal static List<WriteRuleValues>? SetBulkInsertRuleValues<T>(this IDbConnection db,
         ref IEnumerable<T> objs, ref BulkInsertConfig? config)
@@ -292,15 +292,8 @@ internal static class OrmLiteConnectionWriteRules
     /// </summary>
     internal static void SetInsertParameterValues<T>(this IDbCommand dbCmd, object obj)
     {
-        var ruleValues = dbCmd.SetInsertRuleValues<T>(obj);
-        try
-        {
-            dbCmd.GetDialectProvider().SetParameterValues<T>(dbCmd, obj);
-        }
-        finally
-        {
-            ruleValues.Restore();
-        }
+        dbCmd.SetInsertRuleValues<T>(obj);
+        dbCmd.GetDialectProvider().SetParameterValues<T>(dbCmd, obj);
     }
 
     /// <summary>
@@ -314,6 +307,7 @@ internal static class OrmLiteConnectionWriteRules
             return "";
 
         var dialect = dbCmd.GetDialectProvider();
+
         var ruleValues = new Dictionary<string, KeyValuePair<FieldDefinition, object?>>();
         foreach (var rule in rules.EnsureWrites)
             ruleValues[rule.Field.Name] = new(rule.Field, rule.GetValue());

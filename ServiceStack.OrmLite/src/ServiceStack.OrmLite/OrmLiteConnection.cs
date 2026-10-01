@@ -58,6 +58,21 @@ public class OrmLiteConnection
     /// </summary>
     public OrmLiteConnectionFilters Filters { get; internal set; } = OrmLiteConnectionFilters.Empty;
 
+    private System.Collections.Generic.Dictionary<string, object?>? items;
+
+    /// <summary>
+    /// State to keep with this connection for as long as it's open, e.g. the tenant it's confined to, see db.SetItem().
+    /// Shared with the connections returned by WithoutFilters(), which are the same connection.
+    /// </summary>
+    public System.Collections.Generic.Dictionary<string, object?> Items => source != null
+        ? source.Items
+        : items ??= new();
+
+    /// <summary>
+    /// Whether this connection was returned by WithoutFilters()
+    /// </summary>
+    public bool IsWithoutFilters => source != null;
+
     public OrmLiteConnection(OrmLiteConnectionFactory factory)
     {
         this.Factory = factory;
@@ -119,11 +134,12 @@ public class OrmLiteConnection
         Factory.OnDispose?.Invoke(this);
         if (!Factory.AutoDisposeConnection)
         {
-            // Filters of a shared connection are scoped to its outermost open so they aren't used by the next open
+            // Filters and items of a shared connection are scoped to its outermost open so they aren't used by the next open
             if (Interlocked.Decrement(ref sharedOpens) <= 0)
             {
                 Interlocked.Exchange(ref sharedOpens, 0);
                 Filters = OrmLiteConnectionFilters.Empty;
+                items = null;
             }
             return;
         }

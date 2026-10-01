@@ -252,15 +252,8 @@ public static class OrmLiteWriteApi
     /// </summary>
     public static void BulkInsert<T>(this IDbConnection dbConn, IEnumerable<T> objs, BulkInsertConfig config = null)
     {
-        var ruleValues = dbConn.SetBulkInsertRuleValues(ref objs, ref config);
-        try
-        {
-            dbConn.Dialect().BulkInsert(dbConn, objs, config);
-        }
-        finally
-        {
-            ruleValues.Restore();
-        }
+        dbConn.SetBulkInsertRuleValues(ref objs, ref config);
+        dbConn.Dialect().BulkInsert(dbConn, objs, config);
     }
 
     /// <summary>
