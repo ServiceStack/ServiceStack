@@ -432,7 +432,8 @@ public static class OrmLiteWriteCommandExtensions
         return dbCmd.UpdateInternal<T>(obj, commandFilter);
     }
 
-    internal static int UpdateInternal<T>(this IDbCommand dbCmd, object obj, Action<IDbCommand> commandFilter = null)
+    internal static int UpdateInternal<T>(this IDbCommand dbCmd, object obj, Action<IDbCommand> commandFilter = null,
+        bool keepRuleValues = false)
     {
         OrmLiteUtils.AssertNotAnonType<T>();
             
@@ -444,9 +445,30 @@ public static class OrmLiteWriteCommandExtensions
             return 0;
 
         dbCmd.AddFilterToWhere(typeof(T));
-        dialectProvider.SetParameterValues<T>(dbCmd, obj);
+        dbCmd.SetUpdateParameterValues<T>(obj, keepRuleValues);
 
         return dbCmd.UpdateAndVerify<T>(commandFilter, hadRowVersion);
+    }
+
+    /// <summary>
+    /// Set the params of an UPDATE of all fields from the object, with the values of the connection's rules
+    /// </summary>
+    internal static void SetUpdateParameterValues<T>(this IDbCommand dbCmd, object obj, bool keepRuleValues = false)
+    {
+        // Rule values are set on a copy of a dictionary
+        if (obj is Dictionary<string, object> values && dbCmd.HasWriteRules<T>())
+            obj = new Dictionary<string, object>(values, values.Comparer);
+
+        var ruleValues = dbCmd.SetUpdateRuleValues<T>(obj);
+        try
+        {
+            dbCmd.GetDialectProvider().SetParameterValues<T>(dbCmd, obj);
+        }
+        finally
+        {
+            if (!keepRuleValues)
+                ruleValues.Restore();
+        }
     }
 
     internal static int UpdateAndVerify<T>(this IDbCommand dbCmd, Action<IDbCommand> commandFilter, bool hadRowVersion)
@@ -488,7 +510,7 @@ public static class OrmLiteWriteCommandExtensions
             {
                 OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, obj);
 
-                dialectProvider.SetParameterValues<T>(dbCmd, obj);
+                dbCmd.SetUpdateParameterValues<T>(obj);
 
                 commandFilter?.Invoke(dbCmd); //filters can augment SQL & only should be invoked once
                 commandFilter = null;
@@ -756,12 +778,27 @@ public static class OrmLiteWriteCommandExtensions
         return dbCmd.ExecuteSql(dbCmd.ToFilteredDeleteStatement(tableType, sql));
     }
         
-    internal static long Insert<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity = false, bool enableIdentityInsert=false)
+    internal static long Insert<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity = false, bool enableIdentityInsert=false,
+        bool keepRuleValues = false)
     {
         OrmLiteUtils.AssertNotAnonType<T>();
             
         OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
 
+        var ruleValues = dbCmd.SetInsertRuleValues<T>(obj);
+        try
+        {
+            return dbCmd.InsertObject(obj, commandFilter, selectIdentity, enableIdentityInsert);
+        }
+        finally
+        {
+            if (!keepRuleValues)
+                ruleValues.Restore();
+        }
+    }
+
+    private static long InsertObject<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity, bool enableIdentityInsert)
+    {
         var dialectProvider = dbCmd.GetDialectProvider();
         var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
         if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
@@ -798,6 +835,7 @@ public static class OrmLiteWriteCommandExtensions
         OrmLiteUtils.AssertNotAnonType<T>();
             
         OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj.ToFilterType<T>());
+        obj = dbCmd.WithInsertRuleValues<T>(obj);
 
         var dialectProvider = dbCmd.GetDialectProvider();
         var modelDef = ModelDefinition<T>.Definition;
@@ -918,7 +956,8 @@ public static class OrmLiteWriteCommandExtensions
 
         dbCmd.SetParameters(query.Params);
 
-        dbCmd.CommandText = dbCmd.CommandText.LeftPart(")") + ")\n" + sql;
+        dbCmd.CommandText = dbCmd.CommandText.LeftPart(")")
+            + dbCmd.AddInsertIntoSelectRuleValues<T>(fieldsOrAliases, ref sql) + ")\n" + sql;
 
         commandFilter?.Invoke(dbCmd); //dbCmd.OnConflictInsert() needs to be applied before last insert id
         return dbCmd;
@@ -943,20 +982,28 @@ public static class OrmLiteWriteCommandExtensions
                 {
                     OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
 
-                    var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
-                    if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
+                    var ruleValues = dbCmd.SetInsertRuleValues<T>(obj);
+                    try
                     {
-                        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                            insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
-                    }
-                    else
-                    {
-                        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                            insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
-                            shouldInclude: f => f == pkField);
-                    }
+                        var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
+                        if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
+                        {
+                            dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+                                insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
+                        }
+                        else
+                        {
+                            dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+                                insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
+                                shouldInclude: f => f == pkField);
+                        }
 
-                    InsertInternal<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false);
+                        InsertInternal<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false);
+                    }
+                    finally
+                    {
+                        ruleValues.Restore();
+                    }
                 }
             }
             finally
@@ -991,12 +1038,12 @@ public static class OrmLiteWriteCommandExtensions
                 .ToSet(); 
 
             dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                insertFields: fieldsWithoutDefaults);
+                insertFields: dbCmd.WithRuleFields<T>(fieldsWithoutDefaults, forInsert: true));
 
             foreach (var obj in objs)
             {
                 OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
-                dialectProvider.SetParameterValues<T>(dbCmd, obj);
+                dbCmd.SetInsertParameterValues<T>(obj);
 
                 try
                 {
@@ -1040,17 +1087,17 @@ public static class OrmLiteWriteCommandExtensions
         if (primaryKey.AutoIncrement && (id == null || Equals(id, defaultId)))
         {
             var dialect = dbCmd.GetDialectProvider();
-            var newId = dbCmd.Insert(obj, commandFilter: null, selectIdentity: true);
+            var newId = dbCmd.Insert(obj, commandFilter: null, selectIdentity: true, keepRuleValues: true);
             primaryKey.SetValue(obj, dialect.FromDbValue(newId, primaryKey.FieldType));
             dbCmd.ReadBackUpsertFields(obj, modelDef, GetUpsertFieldsAfterInsert(dialect, modelDef), primaryKey.GetValue(obj));
             return;
         }
 
-        // A single upsert statement can't filter the row it updates in every RDBMS, so the existence check and
-        // the update are filtered instead
+        // A single upsert statement can't filter the row it updates in every RDBMS, or use different values for
+        // its insert and update, so a filtered existence check is followed by an insert or a filtered update
         var dialectProvider = dbCmd.GetDialectProvider();
         if (dialectProvider is not IOrmLiteUpsertDialectProvider { SupportsUpsert: true } upsertProvider
-            || dbCmd.HasFilters<T>())
+            || dbCmd.HasFilters<T>() || dbCmd.HasWriteRules<T>())
         {
             dbCmd.UpsertUsingSave(obj, modelDef, primaryKey, updateFieldDefs);
             return;
@@ -1184,6 +1231,31 @@ public static class OrmLiteWriteCommandExtensions
             .ToList();
     }
 
+    /// <summary>
+    /// The values to update an existing row with, after setting the values of the connection's rules on the object,
+    /// which Upsert keeps in sync with its row
+    /// </summary>
+    internal static Dictionary<string, object> GetUpsertUpdateFields<T>(this IDbCommand dbCmd, T obj,
+        FieldDefinition primaryKey, List<FieldDefinition> updateFieldDefs)
+    {
+        dbCmd.SetUpdateRuleValues<T>(obj, updateFieldDefs.Map(x => x.Name));
+
+        var updateFields = new Dictionary<string, object>
+        {
+            [primaryKey.Name] = primaryKey.GetValue(obj),
+        };
+        foreach (var fieldDef in updateFieldDefs)
+            updateFields[fieldDef.Name] = fieldDef.GetValue(obj);
+
+        var rules = dbCmd.GetWriteRules(typeof(T));
+        if (rules != null)
+        {
+            foreach (var rule in rules.OnUpdate)
+                updateFields[rule.Field.Name] = rule.Field.GetValue(obj);
+        }
+        return updateFields;
+    }
+
     private static void UpsertUsingSave<T>(this IDbCommand dbCmd, T obj,
         ModelDefinition modelDef, FieldDefinition primaryKey, List<FieldDefinition> updateFieldDefs)
     {
@@ -1192,20 +1264,13 @@ public static class OrmLiteWriteCommandExtensions
         {
             if (updateFieldDefs.Count > 0)
             {
-                var updateFields = new Dictionary<string, object>
-                {
-                    [primaryKey.Name] = id,
-                };
-                foreach (var fieldDef in updateFieldDefs)
-                    updateFields[fieldDef.Name] = fieldDef.GetValue(obj);
-
-                dbCmd.UpdateOnly<T>(updateFields);
+                dbCmd.UpdateOnly<T>(dbCmd.GetUpsertUpdateFields(obj, primaryKey, updateFieldDefs), applyRules: false);
             }
         }
         else
         {
             dbCmd.Insert(obj, commandFilter: null, selectIdentity: false,
-                enableIdentityInsert: primaryKey.AutoIncrement);
+                enableIdentityInsert: primaryKey.AutoIncrement, keepRuleValues: true);
             dbCmd.ReadBackUpsertFields(obj, modelDef, GetUpsertFieldsAfterInsert(dbCmd.GetDialectProvider(), modelDef), id);
             return;
         }
@@ -1226,14 +1291,14 @@ public static class OrmLiteWriteCommandExtensions
             if (modelDef.HasAutoIncrementId)
             {
                 var dialectProvider = dbCmd.GetDialectProvider();
-                var newId = dbCmd.Insert(obj, commandFilter:null, selectIdentity: true);
+                var newId = dbCmd.Insert(obj, commandFilter:null, selectIdentity: true, keepRuleValues: true);
                 var safeId = dialectProvider.FromDbValue(newId, modelDef.PrimaryKey.FieldType);
                 modelDef.PrimaryKey.SetValue(obj, safeId);
                 id = newId;
             }
             else
             {
-                dbCmd.Insert(obj, commandFilter:null);
+                dbCmd.Insert(obj, commandFilter:null, keepRuleValues: true);
             }
 
             modelDef.RowVersion?.SetValue(obj, dbCmd.GetRowVersion(modelDef, id));
@@ -1241,7 +1306,7 @@ public static class OrmLiteWriteCommandExtensions
             return true;
         }
 
-        var rowsUpdated = dbCmd.Update(obj);
+        var rowsUpdated = dbCmd.UpdateInternal<T>(obj, keepRuleValues: true);
         if (rowsUpdated == 0 && Env.StrictMode)
             throw new OptimisticConcurrencyException("No rows were inserted or updated");
 
@@ -1282,20 +1347,20 @@ public static class OrmLiteWriteCommandExtensions
                 var id = modelDef.GetPrimaryKey(row);
                 if (id != defaultIdValue && existingRowsMap.ContainsKey(id))
                 {
-                    dbCmd.Update(row);
+                    dbCmd.UpdateInternal<T>(row, keepRuleValues: true);
                 }
                 else
                 {
                     if (modelDef.HasAutoIncrementId)
                     {
-                        var newId = dbCmd.Insert(row, commandFilter: null, selectIdentity: true);
+                        var newId = dbCmd.Insert(row, commandFilter: null, selectIdentity: true, keepRuleValues: true);
                         var safeId = dialect.FromDbValue(newId, modelDef.PrimaryKey.FieldType);
                         modelDef.PrimaryKey.SetValue(row, safeId);
                         id = newId;
                     }
                     else
                     {
-                        dbCmd.Insert(row, commandFilter: null);
+                        dbCmd.Insert(row, commandFilter: null, keepRuleValues: true);
                     }
 
                     rowsAdded++;

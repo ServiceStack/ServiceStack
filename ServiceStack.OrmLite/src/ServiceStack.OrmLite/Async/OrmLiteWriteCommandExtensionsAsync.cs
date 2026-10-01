@@ -83,7 +83,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         return dbCmd.UpdateInternalAsync<T>(obj, token, commandFilter);
     }
 
-    internal static async Task<int> UpdateInternalAsync<T>(this IDbCommand dbCmd, object obj, CancellationToken token, Action<IDbCommand> commandFilter=null)
+    internal static async Task<int> UpdateInternalAsync<T>(this IDbCommand dbCmd, object obj, CancellationToken token, Action<IDbCommand> commandFilter=null,
+        bool keepRuleValues = false)
     {
         OrmLiteUtils.AssertNotAnonType<T>();
             
@@ -95,7 +96,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             return 0;
 
         dbCmd.AddFilterToWhere(typeof(T));
-        dialectProvider.SetParameterValues<T>(dbCmd, obj);
+        dbCmd.SetUpdateParameterValues<T>(obj, keepRuleValues);
 
         return await dbCmd.UpdateAndVerifyAsync<T>(commandFilter, hadRowVersion, token).ConfigAwait();
     }
@@ -140,7 +141,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             {
                 OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, obj);
     
-                dialectProvider.SetParameterValues<T>(dbCmd, obj);
+                dbCmd.SetUpdateParameterValues<T>(obj);
 
                 commandFilter?.Invoke(dbCmd); //filters can augment SQL & only should be invoked once
                 commandFilter = null;
@@ -347,11 +348,26 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         return dbCmd.ExecuteSqlAsync(dbCmd.ToFilteredDeleteStatement(tableType, sql), token);
     }
 
-    internal static async Task<long> InsertAsync<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity, bool enableIdentityInsert,CancellationToken token)
+    internal static async Task<long> InsertAsync<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity, bool enableIdentityInsert,CancellationToken token,
+        bool keepRuleValues = false)
     {
         OrmLiteUtils.AssertNotAnonType<T>();
         OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
 
+        var ruleValues = dbCmd.SetInsertRuleValues<T>(obj);
+        try
+        {
+            return await dbCmd.InsertObjectAsync(obj, commandFilter, selectIdentity, enableIdentityInsert, token).ConfigAwait();
+        }
+        finally
+        {
+            if (!keepRuleValues)
+                ruleValues.Restore();
+        }
+    }
+
+    private static async Task<long> InsertObjectAsync<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity, bool enableIdentityInsert,CancellationToken token)
+    {
         var dialectProvider = dbCmd.GetDialectProvider();
         var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
         if (!enableIdentityInsert || pkField == null || !pkField.AutoIncrement)
@@ -389,6 +405,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
     {
         OrmLiteUtils.AssertNotAnonType<T>();
         OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj.ToFilterType<T>());
+        obj = dbCmd.WithInsertRuleValues<T>(obj);
 
         var dialectProvider = dbCmd.GetDialectProvider();
         var modelDef = ModelDefinition<T>.Definition;
@@ -471,7 +488,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             .Select(x => x.Name)
             .ToSet(); 
 
-        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd, insertFields: fieldsWithoutDefaults);
+        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+            insertFields: dbCmd.WithRuleFields<T>(fieldsWithoutDefaults, forInsert: true));
 
         using (dbTrans)
         {
@@ -479,7 +497,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             {
                 OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
 
-                dialectProvider.SetParameterValues<T>(dbCmd, obj);
+                dbCmd.SetInsertParameterValues<T>(obj);
 
                 await dbCmd.ExecNonQueryAsync(token).ConfigAwait();
             }
@@ -512,20 +530,28 @@ internal static class OrmLiteWriteCommandExtensionsAsync
                 {
                     OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
 
-                    var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
-                    if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
+                    var ruleValues = dbCmd.SetInsertRuleValues<T>(obj);
+                    try
                     {
-                        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                            insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
-                    }
-                    else
-                    {
-                        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
-                            insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
-                            shouldInclude: f => f == pkField);
-                    }
+                        var pkField = ModelDefinition<T>.Definition.FieldDefinitions.FirstOrDefault(f => f.IsPrimaryKey);
+                        if (!enableIdentityInsert || pkField is not { AutoIncrement: true })
+                        {
+                            dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+                                insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
+                        }
+                        else
+                        {
+                            dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+                                insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj),
+                                shouldInclude: f => f == pkField);
+                        }
 
-                    await InsertInternalAsync<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false, token);
+                        await InsertInternalAsync<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false, token);
+                    }
+                    finally
+                    {
+                        ruleValues.Restore();
+                    }
                 }
             }
             finally
@@ -567,18 +593,18 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         {
             var dialect = dbCmd.GetDialectProvider();
             var newId = await dbCmd.InsertAsync(obj, commandFilter: null, selectIdentity: true,
-                enableIdentityInsert: false, token: token).ConfigAwait();
+                enableIdentityInsert: false, token: token, keepRuleValues: true).ConfigAwait();
             primaryKey.SetValue(obj, dialect.FromDbValue(newId, primaryKey.FieldType));
             await dbCmd.ReadBackUpsertFieldsAsync(obj, modelDef,
                 OrmLiteWriteCommandExtensions.GetUpsertFieldsAfterInsert(dialect, modelDef), primaryKey.GetValue(obj), token).ConfigAwait();
             return;
         }
 
-        // A single upsert statement can't filter the row it updates in every RDBMS, so the existence check and
-        // the update are filtered instead
+        // A single upsert statement can't filter the row it updates in every RDBMS, or use different values for
+        // its insert and update, so a filtered existence check is followed by an insert or a filtered update
         var dialectProvider = dbCmd.GetDialectProvider();
         if (dialectProvider is not IOrmLiteUpsertDialectProvider { SupportsUpsert: true } upsertProvider
-            || dbCmd.HasFilters<T>())
+            || dbCmd.HasFilters<T>() || dbCmd.HasWriteRules<T>())
         {
             await dbCmd.UpsertUsingSaveAsync(obj, modelDef, primaryKey, updateFieldDefs, token).ConfigAwait();
             return;
@@ -676,20 +702,14 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         {
             if (updateFieldDefs.Count > 0)
             {
-                var updateFields = new Dictionary<string, object>
-                {
-                    [primaryKey.Name] = id,
-                };
-                foreach (var fieldDef in updateFieldDefs)
-                    updateFields[fieldDef.Name] = fieldDef.GetValue(obj);
-
-                await dbCmd.UpdateOnlyAsync<T>(updateFields, commandFilter: null, token: token).ConfigAwait();
+                await dbCmd.UpdateOnlyAsync<T>(dbCmd.GetUpsertUpdateFields(obj, primaryKey, updateFieldDefs),
+                    commandFilter: null, token: token, applyRules: false).ConfigAwait();
             }
         }
         else
         {
             await dbCmd.InsertAsync(obj, commandFilter: null, selectIdentity: false,
-                enableIdentityInsert: primaryKey.AutoIncrement, token: token).ConfigAwait();
+                enableIdentityInsert: primaryKey.AutoIncrement, token: token, keepRuleValues: true).ConfigAwait();
             await dbCmd.ReadBackUpsertFieldsAsync(obj, modelDef,
                 OrmLiteWriteCommandExtensions.GetUpsertFieldsAfterInsert(dbCmd.GetDialectProvider(), modelDef), id, token).ConfigAwait();
             return;
@@ -711,14 +731,14 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             if (modelDef.HasAutoIncrementId)
             {
 
-                var newId = await dbCmd.InsertAsync(obj, commandFilter: null, selectIdentity: true, enableIdentityInsert:false, token:token).ConfigAwait();
+                var newId = await dbCmd.InsertAsync(obj, commandFilter: null, selectIdentity: true, enableIdentityInsert:false, token:token, keepRuleValues: true).ConfigAwait();
                 var safeId = dbCmd.GetDialectProvider().FromDbValue(newId, modelDef.PrimaryKey.FieldType);
                 modelDef.PrimaryKey.SetValue(obj, safeId);
                 id = newId;
             }
             else
             {
-                await dbCmd.InsertAsync(obj, commandFilter:null, selectIdentity:false, enableIdentityInsert: false, token: token).ConfigAwait();
+                await dbCmd.InsertAsync(obj, commandFilter:null, selectIdentity:false, enableIdentityInsert: false, token: token, keepRuleValues: true).ConfigAwait();
             }
 
             modelDef.RowVersion?.SetValue(obj, await dbCmd.GetRowVersionAsync(modelDef, id, token).ConfigAwait());
@@ -726,7 +746,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             return true;
         }
 
-        await dbCmd.UpdateAsync(obj, token, null);
+        await dbCmd.UpdateInternalAsync<T>(obj, token, keepRuleValues: true).ConfigAwait();
 
         modelDef.RowVersion?.SetValue(obj, await dbCmd.GetRowVersionAsync(modelDef, id, token).ConfigAwait());
 
@@ -769,20 +789,20 @@ internal static class OrmLiteWriteCommandExtensionsAsync
                 var id = modelDef.GetPrimaryKey(row);
                 if (id != defaultIdValue && existingRowsMap.ContainsKey(id))
                 {
-                    await dbCmd.UpdateAsync(row, token, null).ConfigAwait();
+                    await dbCmd.UpdateInternalAsync<T>(row, token, keepRuleValues: true).ConfigAwait();
                 }
                 else
                 {
                     if (modelDef.HasAutoIncrementId)
                     {
-                        var newId = await dbCmd.InsertAsync(row, commandFilter:null, selectIdentity:true, enableIdentityInsert: false, token: token).ConfigAwait();
+                        var newId = await dbCmd.InsertAsync(row, commandFilter:null, selectIdentity:true, enableIdentityInsert: false, token: token, keepRuleValues: true).ConfigAwait();
                         var safeId = dialectProvider.FromDbValue(newId, modelDef.PrimaryKey.FieldType);
                         modelDef.PrimaryKey.SetValue(row, safeId);
                         id = newId;
                     }
                     else
                     {
-                        await dbCmd.InsertAsync(row, commandFilter:null, selectIdentity:false, enableIdentityInsert: false, token:token).ConfigAwait();
+                        await dbCmd.InsertAsync(row, commandFilter:null, selectIdentity:false, enableIdentityInsert: false, token:token, keepRuleValues: true).ConfigAwait();
                     }
 
                     rowsAdded++;

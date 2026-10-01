@@ -68,24 +68,25 @@ public static class OrmLiteUpdateFromApi
     /// <summary>
     /// The UPDATE statement from a copy of the query, so the query and its params can be reused
     /// </summary>
-    private static string PrepareUpdateFrom<T>(SqlExpression<T> q, LambdaExpression set, out SqlExpression<T> stmt)
+    private static string PrepareUpdateFrom<T>(IDbCommand dbCmd, SqlExpression<T> q, LambdaExpression set, out SqlExpression<T> stmt)
     {
         if (q == null)
             throw new ArgumentNullException(nameof(q));
         stmt = q.Clone();
+        stmt.UpdateFromRules = dbCmd.GetWriteRules(typeof(T));
         return stmt.ToUpdateFromStatement(set);
     }
 
     internal static int UpdateFrom<T>(this IDbCommand dbCmd, SqlExpression<T> q, LambdaExpression set)
     {
-        var sql = PrepareUpdateFrom(q, set, out var stmt);
+        var sql = PrepareUpdateFrom(dbCmd, q, set, out var stmt);
         return dbCmd.ExecuteSql(sql, stmt.Params);
     }
 
     internal static Task<int> UpdateFromAsync<T>(this IDbCommand dbCmd, SqlExpression<T> q, LambdaExpression set,
         CancellationToken token)
     {
-        var sql = PrepareUpdateFrom(q, set, out var stmt);
+        var sql = PrepareUpdateFrom(dbCmd, q, set, out var stmt);
         return dbCmd.ExecuteSqlAsync(sql, stmt.Params, null, token);
     }
 }

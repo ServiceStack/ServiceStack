@@ -24,10 +24,37 @@ namespace ServiceStack.OrmLite
             if (modelDef.PrimaryKey == null)
                 throw new NotSupportedException($"UpdateFrom() requires {typeof(T).Name} to have a primary key");
 
-            var sql = ToUpdateFromStatement(GetUpdateFromValues(set));
+            var values = GetUpdateFromValues(set);
+            AddUpdateFromRuleValues(values);
+            var sql = ToUpdateFromStatement(values);
             return SqlFilter != null
                 ? SqlFilter(sql)
                 : sql;
+        }
+
+        /// <summary>
+        /// The connection's write rules for the table, whose OnUpdate values are added to an UpdateFrom()
+        /// </summary>
+        internal TableWriteRules UpdateFromRules { get; set; }
+
+        private void AddUpdateFromRuleValues(List<KeyValuePair<FieldDefinition, string>> values)
+        {
+            if (UpdateFromRules == null)
+                return;
+
+            // Values from other columns can't be verified
+            foreach (var rule in UpdateFromRules.EnsureWrites)
+            {
+                if (values.Exists(x => x.Key == rule.Field))
+                    throw new NotSupportedException(
+                        $"UpdateFrom() can't update '{rule.Field.Name}', which has an EnsureWrites rule on this connection");
+            }
+            foreach (var rule in UpdateFromRules.OnUpdate)
+            {
+                values.RemoveAll(x => x.Key == rule.Field);
+                var value = DialectProvider.GetFieldValue(rule.Field, rule.GetValue());
+                values.Add(new(rule.Field, AddParam(value).ParameterName));
+            }
         }
 
         /// <summary>

@@ -8,8 +8,8 @@ using ServiceStack.Data;
 namespace ServiceStack.OrmLite;
 
 /// <summary>
-/// Connection-scoped mandatory filters, e.g. for multi-tenancy or soft deletes, applied to every query OrmLite creates
-/// on the connection for a table they apply to
+/// Connection-scoped mandatory filters, e.g. for multi-tenancy or soft deletes, and write rules, e.g. for auditing,
+/// applied to every statement OrmLite creates on the connection for a table they apply to
 /// </summary>
 public static class OrmLiteConnectionFiltersApi
 {
@@ -41,6 +41,75 @@ public static class OrmLiteConnectionFiltersApi
         var dbConn = db.ToOrmLiteConnection()
             ?? throw new NotSupportedException("Filters can only be added to connections opened by OrmLite");
         dbConn.Filters = dbConn.Filters.AddEnsureFilter(typeof(T), filterFn);
+        return db;
+    }
+
+    /// <summary>
+    /// Require the column to have the value in every row written on this connection, for the table type or every
+    /// table implementing the interface, e.g:
+    /// <para>db.EnsureWrites&lt;IHasTenantId&gt;(x =&gt; x.TenantId, tenantId);</para>
+    /// Inserts set the value when it isn't set. Inserts and updates with a different value throw.
+    /// </summary>
+    public static IDbConnection EnsureWrites<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
+        db.AddWriteRule(WriteRuleType.EnsureWrites, field, ToValueFn(value));
+
+    /// <summary>
+    /// Require the column to have the value returned by the function, which is called for each row written
+    /// </summary>
+    public static IDbConnection EnsureWrites<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
+        db.AddWriteRule(WriteRuleType.EnsureWrites, field, valueFn);
+
+    /// <summary>
+    /// Always set the column to the value in rows inserted on this connection, for the table type or every table
+    /// implementing the interface, e.g:
+    /// <para>db.OnInsert&lt;IAudit&gt;(x =&gt; x.CreatedBy, userId);</para>
+    /// </summary>
+    public static IDbConnection OnInsert<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
+        db.AddWriteRule(WriteRuleType.OnInsert, field, ToValueFn(value));
+
+    /// <summary>
+    /// Always set the column to the value returned by the function in rows inserted on this connection, e.g:
+    /// <para>db.OnInsert&lt;IAudit&gt;(x =&gt; x.CreatedDate, () =&gt; DateTime.UtcNow);</para>
+    /// </summary>
+    public static IDbConnection OnInsert<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
+        db.AddWriteRule(WriteRuleType.OnInsert, field, valueFn);
+
+    /// <summary>
+    /// Always set the column to the value in rows updated on this connection, for the table type or every table
+    /// implementing the interface, e.g:
+    /// <para>db.OnUpdate&lt;IAudit&gt;(x =&gt; x.ModifiedBy, userId);</para>
+    /// </summary>
+    public static IDbConnection OnUpdate<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
+        db.AddWriteRule(WriteRuleType.OnUpdate, field, ToValueFn(value));
+
+    /// <summary>
+    /// Always set the column to the value returned by the function in rows updated on this connection, e.g:
+    /// <para>db.OnUpdate&lt;IAudit&gt;(x =&gt; x.ModifiedDate, () =&gt; DateTime.UtcNow);</para>
+    /// </summary>
+    public static IDbConnection OnUpdate<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
+        db.AddWriteRule(WriteRuleType.OnUpdate, field, valueFn);
+
+    private static Func<object?> ToValueFn(object? value) => value is Delegate
+        ? throw new ArgumentException("Use a function that returns the value, like: () => DateTime.UtcNow", nameof(value))
+        : () => value;
+
+    private static IDbConnection AddWriteRule<T>(this IDbConnection db, WriteRuleType ruleType,
+        Expression<Func<T, object?>> field, Func<object?> valueFn)
+    {
+        if (field == null)
+            throw new ArgumentNullException(nameof(field));
+        if (valueFn == null)
+            throw new ArgumentNullException(nameof(valueFn));
+
+        var body = field.Body;
+        while (body is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+            body = convert.Operand;
+        if (body is not MemberExpression member || member.Expression != field.Parameters[0])
+            throw new ArgumentException("Expected a column like: x => x.TenantId", nameof(field));
+
+        var dbConn = db.ToOrmLiteConnection()
+            ?? throw new NotSupportedException("Rules can only be added to connections opened by OrmLite");
+        dbConn.Filters = dbConn.Filters.AddWriteRule(typeof(T), ruleType, member.Member.Name, valueFn);
         return db;
     }
 

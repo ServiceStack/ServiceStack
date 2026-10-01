@@ -30,13 +30,21 @@ namespace ServiceStack.OrmLite
             
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, model);
 
-            var fieldsToUpdate = onlyFields.UpdateFields.Count == 0
+            var fieldsToUpdate = dbCmd.WithRuleFields<T>(onlyFields.UpdateFields.Count == 0
                 ? onlyFields.GetAllFields()
-                : onlyFields.UpdateFields;
+                : onlyFields.UpdateFields, forInsert: false);
 
             onlyFields.CopyParamsTo(dbCmd);
 
-            dbCmd.GetDialectProvider().PrepareUpdateRowStatement(dbCmd, model, fieldsToUpdate);
+            var ruleValues = dbCmd.SetUpdateRuleValues<T>(model, fieldsToUpdate);
+            try
+            {
+                dbCmd.GetDialectProvider().PrepareUpdateRowStatement(dbCmd, model, fieldsToUpdate);
+            }
+            finally
+            {
+                ruleValues.Restore();
+            }
 
             if (!onlyFields.WhereExpression.IsNullOrEmpty())
                 dbCmd.CommandText += " " + onlyFields.WhereExpression;
@@ -95,7 +103,7 @@ namespace ServiceStack.OrmLite
 
             q.CopyParamsTo(dbCmd);
 
-            var updateFieldValues = updateFields.AssignedValues();
+            var updateFieldValues = dbCmd.WithUpdateRuleValues<T>(updateFields.AssignedValues());
             dbCmd.GetDialectProvider().PrepareUpdateRowStatement<T>(dbCmd, updateFieldValues, q.WhereExpression);
 
             return dbCmd;
@@ -124,7 +132,7 @@ namespace ServiceStack.OrmLite
             dbCmd.SetParameters(sqlParams);
             whereExpression = dbCmd.AddFilterToWhereExpression(typeof(T), whereExpression);
 
-            var updateFieldValues = updateFields.AssignedValues();
+            var updateFieldValues = dbCmd.WithUpdateRuleValues<T>(updateFields.AssignedValues());
             dbCmd.GetDialectProvider().PrepareUpdateRowStatement<T>(dbCmd, updateFieldValues, whereExpression);
 
             return dbCmd;
@@ -149,8 +157,7 @@ namespace ServiceStack.OrmLite
 
             q.CopyParamsTo(dbCmd);
 
-            var updateFieldValues = updateFields.AssignedValues();
-            dbCmd.GetDialectProvider().PrepareUpdateRowAddStatement<T>(dbCmd, updateFieldValues, q.WhereExpression);
+            dbCmd.PrepareUpdateRowAddStatement<T>(updateFields.AssignedValues(), q.WhereExpression);
 
             return dbCmd;
         }
@@ -166,6 +173,7 @@ namespace ServiceStack.OrmLite
                 throw new ArgumentNullException(nameof(updateFields));
 
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.ToFilterType<T>());
+            updateFields = dbCmd.WithUpdateRuleValues<T>(updateFields);
 
             var q = dbCmd.CreateQuery<T>();
             q.Where(where);
@@ -211,11 +219,12 @@ namespace ServiceStack.OrmLite
 
         public static int UpdateOnly<T>(this IDbCommand dbCmd,
             Dictionary<string, object> updateFields,
-            Action<IDbCommand> commandFilter = null)
+            Action<IDbCommand> commandFilter = null,
+            bool applyRules = true)
         {
             return dbCmd.UpdateOnlyReferences<T>(updateFields, dbFields => {
                 var whereExpr = dbCmd.GetDialectProvider().GetUpdateOnlyWhereExpression<T>(dbFields, out var exprArgs);
-                dbCmd.PrepareUpdateOnly<T>(dbFields, whereExpr, exprArgs);
+                dbCmd.PrepareUpdateOnly<T>(dbFields, whereExpr, exprArgs, applyRules);
                 return dbCmd.UpdateAndVerify<T>(commandFilter, dbFields.ContainsKey(ModelDefinition.RowVersionName));
             });
         }
@@ -266,12 +275,15 @@ namespace ServiceStack.OrmLite
         }
 
         
-        internal static void PrepareUpdateOnly<T>(this IDbCommand dbCmd, Dictionary<string, object> updateFields, string whereExpression, object[] whereParams)
+        internal static void PrepareUpdateOnly<T>(this IDbCommand dbCmd, Dictionary<string, object> updateFields, string whereExpression, object[] whereParams,
+            bool applyRules = true)
         {
             if (updateFields == null)
                 throw new ArgumentNullException(nameof(updateFields));
 
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.ToFilterType<T>());
+            if (applyRules)
+                updateFields = dbCmd.WithUpdateRuleValues<T>(updateFields);
 
             var q = dbCmd.CreateQuery<T>();
             q.Where(whereExpression, whereParams);
@@ -284,7 +296,7 @@ namespace ServiceStack.OrmLite
 
             var q = dbCmd.CreateQuery<T>();
             q.Where(@where);
-            q.PrepareUpdateStatement(dbCmd, item, excludeDefaults: true);
+            dbCmd.PrepareUpdateStatement(q, item, excludeDefaults: true);
             return dbCmd.ExecNonQuery();
         }
 
@@ -294,9 +306,25 @@ namespace ServiceStack.OrmLite
 
             var q = dbCmd.CreateQuery<T>();
             q.Where(expression);
-            q.PrepareUpdateStatement(dbCmd, item);
+            dbCmd.PrepareUpdateStatement(q, item);
             commandFilter?.Invoke(dbCmd);
             return dbCmd.ExecNonQuery();
+        }
+
+        /// <summary>
+        /// UPDATE statement of the object's fields, with the values of the connection's rules
+        /// </summary>
+        internal static void PrepareUpdateStatement<T>(this IDbCommand dbCmd, SqlExpression<T> q, T item, bool excludeDefaults = false)
+        {
+            var ruleValues = dbCmd.SetUpdateRuleValues<T>(item, excludeDefaults: excludeDefaults);
+            try
+            {
+                q.PrepareUpdateStatement(dbCmd, item, excludeDefaults);
+            }
+            finally
+            {
+                ruleValues.Restore();
+            }
         }
 
         public static int Update<T>(this IDbCommand dbCmd, object updateOnly, Expression<Func<T, bool>> where = null, Action<IDbCommand> commandFilter = null)
@@ -304,6 +332,7 @@ namespace ServiceStack.OrmLite
             OrmLiteUtils.AssertNotAnonType<T>();
             
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateOnly.ToFilterType<T>());
+            updateOnly = dbCmd.WithUpdateRuleValues<T>(updateOnly);
 
             var q = dbCmd.CreateQuery<T>();
             var whereSql = q.Where(where).WhereExpression;
@@ -376,14 +405,31 @@ namespace ServiceStack.OrmLite
             OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
 
             var dialectProvider = dbCmd.GetDialectProvider();
-            var sql = dialectProvider.ToInsertRowStatement(dbCmd, obj, onlyFields);
-
-            dialectProvider.SetParameterValues<T>(dbCmd, obj);
+            var sql = dbCmd.ToInsertOnlyStatement(obj, onlyFields);
 
             if (selectIdentity)
                 return dbCmd.ExecLongScalar(sql + dialectProvider.GetLastInsertIdSqlSuffix<T>());
 
             return dbCmd.ExecuteSql(sql);
+        }
+
+        /// <summary>
+        /// INSERT statement of the object's fields and its params, with the values of the connection's rules
+        /// </summary>
+        internal static string ToInsertOnlyStatement<T>(this IDbCommand dbCmd, T obj, ICollection<string> onlyFields)
+        {
+            var dialectProvider = dbCmd.GetDialectProvider();
+            var ruleValues = dbCmd.SetInsertRuleValues<T>(obj);
+            try
+            {
+                var sql = dialectProvider.ToInsertRowStatement(dbCmd, obj, dbCmd.WithRuleFields<T>(onlyFields, forInsert: true));
+                dialectProvider.SetParameterValues<T>(dbCmd, obj);
+                return sql;
+            }
+            finally
+            {
+                ruleValues.Restore();
+            }
         }
 
         public static long InsertOnly<T>(this IDbCommand dbCmd, Expression<Func<T>> insertFields, bool selectIdentity)
@@ -403,7 +449,7 @@ namespace ServiceStack.OrmLite
 
             OrmLiteConfig.InsertFilter?.Invoke(dbCmd, insertFields.EvalFactoryFn());
 
-            var fieldValuesMap = insertFields.AssignedValues();
+            var fieldValuesMap = dbCmd.WithInsertRuleValues<T>(insertFields.AssignedValues());
             dbCmd.GetDialectProvider().PrepareInsertRowStatement<T>(dbCmd, fieldValuesMap);
             return dbCmd;
         }

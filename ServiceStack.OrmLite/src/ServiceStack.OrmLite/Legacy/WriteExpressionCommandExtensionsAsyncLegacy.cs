@@ -58,10 +58,7 @@ internal static class WriteExpressionCommandExtensionsAsyncLegacy
         if (OrmLiteConfig.InsertFilter != null)
             OrmLiteConfig.InsertFilter(dbCmd, obj);
 
-        var dialectProvider = dbCmd.GetDialectProvider();
-        var sql = dialectProvider.ToInsertRowStatement(dbCmd, obj, onlyFields.InsertFields);
-
-        dialectProvider.SetParameterValues<T>(dbCmd, obj);
+        var sql = dbCmd.ToInsertOnlyStatement(obj, onlyFields.InsertFields);
             
         return dbCmd.ExecuteSqlAsync(sql, token);
     }

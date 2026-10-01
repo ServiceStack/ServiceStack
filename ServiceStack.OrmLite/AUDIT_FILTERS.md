@@ -30,7 +30,7 @@ db.EnsureFilter<IHasTenantId>(() => {
 });
 
 // Mandatory values: set on insert when unset, throws when set to a different value or changed by an update
-db.EnsureValue<IHasTenantId>(x => x.TenantId, tenantId);
+db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
 
 // Write rules: always set the column on inserts / updates
 db.OnInsert<IAudit>(x => x.CreatedBy, userId);
@@ -61,7 +61,7 @@ public static IDbConnection OpenForTenant(this IDbConnectionFactory dbFactory, i
 {
     var db = dbFactory.OpenDbConnection();
     db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
-    db.EnsureValue<IHasTenantId>(x => x.TenantId, tenantId);
+    db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
     db.OnInsert<IAudit>(x => x.CreatedBy, userId);
     db.OnUpdate<IAudit>(x => x.ModifiedBy, userId);
     return db;
@@ -82,7 +82,7 @@ public override IDbConnection GetDbConnection(IRequest? req = null)
     {
         var tenantId = session.GetTenantId(); // app-specific
         db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
-        db.EnsureValue<IHasTenantId>(x => x.TenantId, tenantId);
+        db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
         db.OnInsert<IAudit>(x => x.CreatedBy, session.UserAuthId);
         db.OnUpdate<IAudit>(x => x.ModifiedBy, session.UserAuthId);
     }
@@ -128,19 +128,54 @@ Notes:
 
 | Rule | APIs |
 |-|-|
-| `OnInsert` | `Insert`, `InsertAll`, `Save` / `SaveAll` (new rows), `Upsert` / `UpsertAll` (insert part), `InsertIntoSelect`, `BulkInsert`, `InsertOnly` |
-| `OnUpdate` | `Update(obj)`, `UpdateAll`, `Save` / `SaveAll` (existing rows), `Upsert` / `UpsertAll` (update part), `UpdateOnly` (all forms), `UpdateAdd`, `UpdateNonDefaults`, `UpdateFrom` |
-| `EnsureValue` | Inserts: sets the value when it's the default, throws when it's different. Updates: throws when an update sets it to a different value, incl. expression updates like `UpdateOnly(() => new T { TenantId = ... })` |
+| `OnInsert` | `Insert` (objects and dictionaries), `InsertAll`, `InsertUsingDefaults`, `InsertOnly` (all forms), `BulkInsert`, `InsertIntoSelect`, and the inserts of `Save` / `SaveAll` and `Upsert` / `UpsertAll` |
+| `OnUpdate` | `Update(obj)`, `UpdateAll`, `UpdateOnly` (all forms), `UpdateOnlyFields`, `UpdateNonDefaults`, `UpdateAdd`, `UpdateFrom`, `UpdateOnlyReturning`, and the updates of `Save` / `SaveAll` and `Upsert` / `UpsertAll` |
+| `EnsureWrites` | Every insert and update API above |
+| Raw SQL, e.g. `ExecuteSql`, and the legacy `UpdateFmt()` | **Not applied** |
 
-- **Object writes** (`Insert(obj)`, `Update(obj)`, ...) use the rule's value for the column's param instead of the
-  object's property. Following the write-back convention, `Insert` / `Update` don't modify the object, while `Save`
-  and `Upsert`, which keep objects in sync with their rows, also set the object's property.
-- **Expression writes** (`UpdateOnly`, `UpdateAdd`, `UpdateFrom`, `InsertIntoSelect`) add the column to the `SET` or
-  `INSERT` column list, replacing a value for the same column in the expression.
-- **Upserts** are one statement that inserts or updates, so `OnInsert` columns are only in the insert part, e.g.
-  `CreatedDate` is never overwritten when the row already exists, and `OnUpdate` columns are in the update part.
-- A rule's value always wins over a value from the app, so audit columns can be trusted, while `EnsureValue` throws
-  instead of silently changing the value.
+### Which rule to use
+
+| | `EnsureWrites` | `OnInsert` / `OnUpdate` |
+|-|-|-|
+| Use for | A column that's the same for everything the connection writes, e.g. `TenantId` | A column recording an insert or update, e.g. `CreatedBy`, `ModifiedDate` |
+| Applies to | Inserts and updates | Only inserts, or only updates |
+| App sets a different value | Throws, as it's a bug | Replaced with the rule's value |
+| App doesn't set a value | Inserts set it, updates leave the column alone | Always set |
+
+Rule of thumb: `EnsureWrites` for who owns the row, `OnInsert` / `OnUpdate` for who changed it and when. The docs should
+lead the write rules section with this table.
+
+`EnsureWrites` depends on what's written:
+
+| Write | Column isn't set | Column is set to a different value |
+|-|-|-|
+| Insert of an object or dictionary, `InsertOnly`, `BulkInsert` | Sets the value | Throws `InvalidOperationException` |
+| `InsertIntoSelect` | Sets the value | Throws `NotSupportedException` if the column is selected |
+| Update of all an object's fields: `Update(obj)`, `UpdateAll`, `Save`, `Upsert` | Sets the value, so the update keeps it | Throws `InvalidOperationException` |
+| Update of some fields: expressions, dictionaries, anonymous objects, `UpdateOnlyFields`, `UpdateNonDefaults` | Not updated | Throws `InvalidOperationException` |
+| `UpdateFrom` | Not updated | Throws `NotSupportedException` if the column is updated, as values from other columns can't be verified |
+
+- **Object writes** (`Insert(obj)`, `Update(obj)`, ...) set the rule's values on the object while it's written, then
+  restore its original values. Following the write-back convention, `Insert` / `Update` don't modify the object, while
+  `Save` and `Upsert`, which keep objects in sync with their rows, keep the values on the object.
+- **Dictionary, anonymous object and expression writes** (`UpdateOnly`, `InsertOnly`, ...) add the column to the `SET`
+  or `INSERT` column list, replacing a value for the same column. The app's dictionary isn't modified.
+- **`UpdateAdd`** sets the values of rules instead of adding them, e.g. a numeric `ModifiedByUserId`.
+- **`InsertIntoSelect`** selects the values of rules with the rows of the query:
+  `INSERT INTO t (cols, TenantId) SELECT _s.*, @p FROM (query) _s`.
+- **Upserts** on a table with rules use a filtered existence check followed by an insert or an update, like tables
+  with filters, as a single upsert statement can't use different values for its insert and update. So `OnInsert`
+  columns are only set when the row is inserted, and `OnUpdate` columns when it's updated.
+- A rule's value always wins over a value from the app, incl. values set by `OrmLiteConfig.InsertFilter` /
+  `UpdateFilter` which run first, so audit columns can be trusted, while `EnsureWrites` throws instead of silently
+  changing the value.
+- **`OnInsert` columns aren't protected from updates**: updating all an object's fields, e.g. `db.Update(obj)`, also
+  writes its `CreatedBy`. Add `[IgnoreOnUpdate]` to created columns so they're only set when the row is inserted,
+  which the docs should recommend.
+- `EnsureWrites` guards the values that are written, `EnsureFilter` guards the rows that are changed. Multi-tenant apps
+  need both: without the filter, an update could move another tenant's row into the connection's tenant.
+- Rule values are passed as a value or a lambda, e.g. `() => DateTime.UtcNow`. Passing a delegate variable, e.g. a
+  `Func<DateTime>`, as a value throws, as it would be used as the value.
 
 ## `WithoutFilters()`
 
@@ -172,9 +207,9 @@ to the next request or test.
   filter to its `ON` clause, and `WithRecursive()` to its recursive step.
 - **By-id and object writes**: render the table's filter condition with its params from a filtered `SqlExpression<T>`
   and append it to the statement's `WHERE` clause.
-- **Write rules**: applied where insert / update statements and their params are prepared
-  (`PrepareParameterizedInsertStatement`, `SetParameterValues`, `PrepareParameterizedUpdateStatement`, `InitUpdateOnly`,
-  the upsert statements and `ToUpdateFromStatement`), plus `BulkInsert` and `InsertIntoSelect`.
+- **Write rules**: `OrmLiteConnectionWriteRules` applies them where each write API invokes `OrmLiteConfig.InsertFilter`
+  / `UpdateFilter`: objects have the values set and restored around the statement, which also works for dialect
+  specific `BulkInsert` implementations, and dictionaries of values are copied with the rule values.
 
 ## Stages
 
@@ -190,7 +225,7 @@ MySqlConnector, and a full test suite run.
 3. ✅ **Updates and deletes**: filters on every update and delete API, incl. `Save`, `Upsert`, `UpdateFrom` and the
    returning APIs, the legacy APIs, and `EnsureFilter<T>()` with a function. Params of filter conditions are skipped when an object's
    values are set on a command's params.
-4. **Write rules**: `EnsureValue`, `OnInsert` and `OnUpdate` for object writes, expression writes and upserts, then
+4. ✅ **Write rules**: `EnsureWrites`, `OnInsert` and `OnUpdate` for object writes, expression writes and upserts, then
    `BulkInsert` and `InsertIntoSelect`.
 5. **`WithoutFilters()`** and the reference docs: a new page leading with the `GetDbConnection()` pattern, multi-tenancy
    and auditing examples, the table of covered APIs and the raw SQL caveat, plus release notes.
@@ -210,8 +245,8 @@ Everything the docs need is recorded in this file and the reference tests, so th
   hand.
 
 **Sources**: the tables and notes above, and the reference tests in `tests/ServiceStack.OrmLite.Tests/UseCases/`:
-`ConnectionFilterUseCases`, `ConnectionFilterReadUseCases`, `ConnectionFilterWriteUseCases`, and the stage 4 and 5
-tests when they're added.
+`ConnectionFilterUseCases`, `ConnectionFilterReadUseCases`, `ConnectionFilterWriteUseCases`,
+`ConnectionWriteRuleUseCases`, and the stage 5 tests when they're added.
 
 **What to cover**:
 
@@ -223,7 +258,10 @@ tests when they're added.
 - Behaviour of rows that don't match: 0 rows affected, `OptimisticConcurrencyException` with `[RowVersion]`, and
   `Save` / `Upsert` failing on the primary key.
 - `Upsert` on a filtered table using two statements.
-- Write rules and `WithoutFilters()` (stages 4 and 5).
+- Write rules: the "Which rule to use" table first, then the tenant and auditing example from
+  `ConnectionWriteRuleUseCases`, the `EnsureWrites` table, which
+  APIs modify objects, and the `[IgnoreOnUpdate]` recommendation for created columns.
+- `WithoutFilters()` (stage 5).
 - Changes for custom dialect providers: `IsFullSelectStatement()` was added to `IOrmLiteDialectProvider` (implemented
   by `OrmLiteDialectProviderBase`), `SetParameterValues()` overrides need to skip params where
   `OrmLiteConnectionFiltersApi.IsFilterParam()` is true, and `SqlExpression` overrides that name params need to use

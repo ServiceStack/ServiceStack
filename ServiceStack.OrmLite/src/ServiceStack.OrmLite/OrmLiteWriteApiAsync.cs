@@ -518,9 +518,17 @@ public static class OrmLiteWriteApiAsync
     /// <summary>
     /// Uses the most optimal approach to bulk insert multiple rows for each RDBMS provider 
     /// </summary>
-    public static Task BulkInsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
+    public static async Task BulkInsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default)
     {
-        return dbConn.Dialect().BulkInsertAsync(dbConn, objs, config, token);
+        var ruleValues = dbConn.SetBulkInsertRuleValues(ref objs, ref config);
+        try
+        {
+            await dbConn.Dialect().BulkInsertAsync(dbConn, objs, config, token).ConfigAwait();
+        }
+        finally
+        {
+            ruleValues.Restore();
+        }
     }
 
     // Procedures

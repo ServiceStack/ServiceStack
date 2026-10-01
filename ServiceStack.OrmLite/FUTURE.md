@@ -38,7 +38,7 @@ read back for wide tables.
 
 ### 3.1 Connection Filters and Write Rules (in progress)
 Connection-scoped mandatory filters for multi-tenancy and soft deletes (`db.EnsureFilter<T>()`), and write rules for
-auditing columns (`db.EnsureValue<T>()`, `db.OnInsert<T>()`, `db.OnUpdate<T>()`). Filters on reads, updates and deletes
+auditing columns (`db.EnsureWrites<T>()`, `db.OnInsert<T>()`, `db.OnUpdate<T>()`). Filters on reads, updates and deletes
 are done. See [AUDIT_FILTERS.md](AUDIT_FILTERS.md) for the plan and remaining stages.
 
 ### 3.2 LINQ Queries Into JSON / Complex-Type Columns (L)
