@@ -35,13 +35,20 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
     public Func<IDbConnection>? UseDb { get; set; }
     public string? NamedConnection { get; set; }
 
-    public IDbConnection OpenDb()
+    public IDbConnection OpenDb() => OpenDb(null);
+
+    /// <summary>
+    /// Open a connection to the database containing the API Keys.
+    /// Pass the Request when opening it for a request, so it's opened by the AppHost as one of the request's
+    /// connections, e.g. with the filters an App applies in GetDbConnection(IRequest) to confine it to a tenant.
+    /// </summary>
+    public IDbConnection OpenDb(IRequest? req)
     {
         return UseDb != null 
             ? UseDb() 
             : NamedConnection != null
-                ? HostContext.AppHost.GetDbConnection(NamedConnection, null, db => db.WithTag(GetType().Name))
-                : HostContext.AppHost.GetDbConnection(null, db => db.WithTag(GetType().Name));
+                ? HostContext.AppHost.GetDbConnection(NamedConnection, req, db => db.WithTag(GetType().Name))
+                : HostContext.AppHost.GetDbConnection(req, db => db.WithTag(GetType().Name));
     }
     
     public List<Type> RegisterServices { get; set; } = [
@@ -250,6 +257,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         {
             if (entry.dateTime + CacheDuration > DateTime.UtcNow)
             {
+                AssertCanAccess(req, entry.apiKey, requestDto);
                 req.SetItem(Keywords.ApiKey, entry.apiKey);
                 if (entry.apiKey.HasScope(RoleNames.Admin))
                 {
@@ -268,6 +276,7 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
         var apiKey = await source.GetApiKeyAsync(apiKeyToken);
         if (apiKey != null)
         {
+            AssertCanAccess(req, apiKey, requestDto);
             req.SetItem(Keywords.ApiKey, apiKey);
             if (apiKey.HasScope(RoleNames.Admin))
             {
@@ -282,6 +291,18 @@ public class ApiKeysFeature : IPlugin, IConfigureServices, IRequiresSchema, Mode
             }
             RecordUsage(apiKey);
         }
+    }
+
+    /// <summary>
+    /// A User API Key that authenticated the request as its user (see ApiKeyAuthenticationHandler) can call any
+    /// API its user can, unless it's restricted to specific APIs.
+    /// </summary>
+    public void AssertCanAccess(IRequest req, IApiKey apiKey, object requestDto)
+    {
+        if (!req.GetClaimsPrincipal().IsApiKeyUser() || apiKey.HasScope(RoleNames.Admin))
+            return;
+        if (!apiKey.CanAccess(requestDto.GetType()))
+            throw HttpError.Forbidden(ErrorMessages.ApiKeyInvalid.Localize(req));
     }
 
     public void RecordUsage(IApiKey apiKey)
@@ -488,7 +509,7 @@ public class AdminApiKeysService : Service
     {
         var feature = await AssertRequiredRole().ConfigAwait();
 
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
         var q = db.From<ApiKeysFeature.ApiKey>();
         if (request.Id != null)
             q.Where(x => x.Id == request.Id);
@@ -529,7 +550,7 @@ public class AdminApiKeysService : Service
     public async Task<object> Any(AdminCreateApiKey request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
 
         var apiKey = request.ConvertTo<ApiKeysFeature.ApiKey>();
         await feature.InsertAllAsync(db, [apiKey]);
@@ -543,7 +564,7 @@ public class AdminApiKeysService : Service
     public async Task<object> Any(AdminUpdateApiKey request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
 
         var dict = request.ToObjectDictionary();
         var updateModel = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -577,7 +598,7 @@ public class AdminApiKeysService : Service
     public async Task<object> Any(AdminDeleteApiKey request)
     {
         var feature = await AssertRequiredRole().ConfigAwait();
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
 
         await db.DeleteByIdAsync<ApiKeysFeature.ApiKey>(request.Id);
         feature.RemoveValidApiKeyById(request.Id.GetValueOrDefault());
@@ -601,7 +622,7 @@ public class UserApiKeysService : Service
     {
         var (userId, _) = GetUserIdAndUserName();
         var feature = AssertPlugin<ApiKeysFeature>();
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
 
         var q = db.From<ApiKeysFeature.ApiKey>()
             .Where(x => x.UserId == userId);
@@ -635,7 +656,7 @@ public class UserApiKeysService : Service
     public async Task<object> Any(CreateUserApiKey request)
     {
         var feature = AssertPlugin<ApiKeysFeature>();
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
 
         var (userId, userName) = GetUserIdAndUserName();
         var apiKey = request.ConvertTo<ApiKeysFeature.ApiKey>();
@@ -661,7 +682,7 @@ public class UserApiKeysService : Service
     {
         var (userId, _) = GetUserIdAndUserName();
         var feature = HostContext.AssertPlugin<ApiKeysFeature>();
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
 
         var dict = request.ToObjectDictionary();
         var updateModel = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
@@ -705,7 +726,7 @@ public class UserApiKeysService : Service
     {
         var (userId, _) = GetUserIdAndUserName();
         var feature = AssertPlugin<ApiKeysFeature>();
-        using var db = feature.OpenDb();
+        using var db = feature.OpenDb(Request);
 
         await db.DeleteAsync<ApiKeysFeature.ApiKey>(x => x.Id == request.Id && x.UserId == userId);
         feature.RemoveValidApiKeyById(request.Id.GetValueOrDefault());
