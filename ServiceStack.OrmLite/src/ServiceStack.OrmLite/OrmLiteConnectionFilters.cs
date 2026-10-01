@@ -253,8 +253,8 @@ internal sealed class WriteRuleDef(Type type, WriteRuleType ruleType, string mem
     /// <summary>
     /// The rule's value when it's not from a function, to detect duplicate and conflicting rules
     /// </summary>
-    public bool HasValue { get; init; }
-    public object? Value { get; init; }
+    public bool HasValue { get; set; }
+    public object? Value { get; set; }
 
     public bool HasSameValue(WriteRuleDef other) => HasValue
         ? other.HasValue && Equals(Value, other.Value)
