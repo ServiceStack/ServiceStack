@@ -89,6 +89,47 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
     }
 
     [Test]
+    public void Filter_with_a_function_for_filters_that_change()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var tenantId = 1;
+        var isAdmin = false;
+
+        using var db = OpenDbConnection();
+        // The function is called for each statement, no filter is applied when it returns null
+        db.EnsureFilter<IHasTenantId>(() => {
+            if (isAdmin)
+                return null;
+            return x => x.TenantId == tenantId;
+        });
+        Assert.That(db.Count<TenantOrder>(), Is.EqualTo(3));
+        Assert.That(db.SingleById<TenantOrder>(4), Is.Null);
+
+        tenantId = 2;
+        Assert.That(db.Select<TenantOrder>().Map(x => x.Id), Is.EqualTo(new[] { 4 }));
+
+        isAdmin = true;
+        Assert.That(db.Count<TenantOrder>(), Is.EqualTo(4));
+        Assert.That(db.Count<TenantCustomer>(), Is.EqualTo(3));
+    }
+
+    [Test]
+    public void Captured_values_of_a_filter_are_read_for_each_statement()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var tenantId = 1;
+        using var db = OpenDbConnection().EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
+        Assert.That(db.Count<TenantOrder>(), Is.EqualTo(3));
+
+        tenantId = 2;
+        Assert.That(db.Count<TenantOrder>(), Is.EqualTo(1));
+    }
+
+    [Test]
     public void Other_conditions_cant_widen_the_filter()
     {
         using (var seed = OpenDbConnection())

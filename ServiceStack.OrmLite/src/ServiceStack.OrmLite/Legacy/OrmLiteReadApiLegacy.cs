@@ -118,7 +118,7 @@ namespace ServiceStack.OrmLite.Legacy
         {
             return dbConn.Exec(dbCmd =>
             {
-                var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+                var q = dbCmd.CreateQuery<T>();
                 return dbCmd.Scalar(expression(q).Limit(1).Select("'exists'")) != null;
             });
         }

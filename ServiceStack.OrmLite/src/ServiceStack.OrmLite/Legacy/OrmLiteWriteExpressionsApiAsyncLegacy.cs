@@ -25,6 +25,7 @@ public static class OrmLiteWriteExpressionsApiAsyncLegacy
     ///   db.InsertOnly(new Person { FirstName = "Amy" }, q => q.Insert(p => new { p.FirstName }));
     ///   INSERT INTO "Person" ("FirstName") VALUES ('Amy');
     /// </summary>
+    [Obsolete("Use db.InsertOnlyAsync(() => new Person { ... })")]
     public static Task InsertOnlyAsync<T>(this IDbConnection dbConn, T obj, SqlExpression<T> onlyFields, CancellationToken token = default)
     {
         return dbConn.Exec(dbCmd => dbCmd.InsertOnlyAsync(obj, onlyFields, token));

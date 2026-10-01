@@ -144,7 +144,7 @@ public static class OrmLiteReadApiAsyncLegacy
     {
         return dbConn.Exec(dbCmd =>
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             var sql = expression(q).Limit(1);
             return dbCmd.SingleAsync<T>(sql, token).Then(x => x != null);
         });

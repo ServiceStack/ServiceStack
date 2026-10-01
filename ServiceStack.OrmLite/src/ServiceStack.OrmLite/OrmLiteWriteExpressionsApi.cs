@@ -76,7 +76,7 @@ public static class OrmLiteWriteExpressionsApi
         Expression<Func<T, bool>> where = null,
         Action<IDbCommand> commandFilter = null)
     {
-        return dbConn.Exec(dbCmd => dbCmd.UpdateOnly(updateFields, dbCmd.GetDialectProvider().SqlExpression<T>().Where(where), commandFilter));
+        return dbConn.Exec(dbCmd => dbCmd.UpdateOnly(updateFields, dbCmd.CreateQuery<T>().Where(where), commandFilter));
     }
 
     /// <summary>
@@ -161,7 +161,7 @@ public static class OrmLiteWriteExpressionsApi
         Expression<Func<T, bool>> where = null,
         Action<IDbCommand> commandFilter = null)
     {
-        return dbConn.Exec(dbCmd => dbCmd.UpdateAdd(updateFields, dbCmd.GetDialectProvider().SqlExpression<T>().Where(where), commandFilter));
+        return dbConn.Exec(dbCmd => dbCmd.UpdateAdd(updateFields, dbCmd.CreateQuery<T>().Where(where), commandFilter));
     }
 
     /// <summary>

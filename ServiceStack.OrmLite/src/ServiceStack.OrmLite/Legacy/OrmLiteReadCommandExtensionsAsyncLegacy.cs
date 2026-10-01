@@ -15,18 +15,17 @@ internal static class OrmLiteReadCommandExtensionsAsyncLegacy
 {
     internal static Task<T> SingleFmtAsync<T>(this IDbCommand dbCmd, CancellationToken token, string filter, params object[] filterParams)
     {
-        return dbCmd.ConvertToAsync<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), filter, filterParams), token);
+        return dbCmd.ConvertToAsync<T>(dbCmd.ToFilteredSelectStatement(typeof(T), filter, filterParams), token);
     }
 
     internal static Task<List<T>> SelectFmtAsync<T>(this IDbCommand dbCmd, CancellationToken token, string sqlFilter, params object[] filterParams)
     {
-        return dbCmd.ConvertToListAsync<T>(
-            dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sqlFilter, filterParams), token);
+        return dbCmd.ConvertToListAsync<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sqlFilter, filterParams), token);
     }
 
     internal static Task<List<TModel>> SelectFmtAsync<TModel>(this IDbCommand dbCmd, CancellationToken token, Type fromTableType, string sqlFilter, params object[] filterParams)
     {
-        var sql = OrmLiteReadCommandExtensionsLegacy.ToSelectFmt<TModel>(dbCmd.GetDialectProvider(), fromTableType, sqlFilter, filterParams);
+        var sql = dbCmd.ToSelectFmt<TModel>(fromTableType, sqlFilter, filterParams);
         return dbCmd.ConvertToListAsync<TModel>(sql, token);
     }
 
@@ -58,7 +57,7 @@ internal static class OrmLiteReadCommandExtensionsAsyncLegacy
     internal static Task<bool> ExistsFmtAsync<T>(this IDbCommand dbCmd, CancellationToken token, string sqlFilter, params object[] filterParams)
     {
         var fromTableType = typeof(T);
-        return dbCmd.ScalarAsync(dbCmd.GetDialectProvider().ToSelectStatement(fromTableType, sqlFilter, filterParams), token)
+        return dbCmd.ScalarAsync(dbCmd.ToFilteredSelectStatement(fromTableType, sqlFilter, filterParams), token)
             .Then(x => x != null);
     }
 
@@ -69,7 +68,6 @@ internal static class OrmLiteReadCommandExtensionsAsyncLegacy
 
     internal static Task<int> DeleteFmtAsync(this IDbCommand dbCmd, CancellationToken token, Type tableType, string sqlFilter, params object[] filterParams)
     {
-        var dialectProvider = dbCmd.GetDialectProvider();
-        return dbCmd.ExecuteSqlAsync(dialectProvider.ToDeleteStatement(tableType, sqlFilter, filterParams), token);
+        return dbCmd.ExecuteSqlAsync(dbCmd.ToFilteredDeleteStatement(tableType, sqlFilter, filterParams), token);
     }
 }

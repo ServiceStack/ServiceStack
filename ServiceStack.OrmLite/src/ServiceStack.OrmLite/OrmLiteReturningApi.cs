@@ -21,7 +21,7 @@ public static class OrmLiteReturningApi
     public static List<T> UpdateOnlyReturning<T>(this IDbConnection dbConn,
         Expression<Func<T>> updateFields, Expression<Func<T, bool>> where = null) =>
         dbConn.Exec(dbCmd => dbCmd.ConvertToList<T>(
-            dbCmd.PrepareUpdateOnlyReturning(updateFields, dbCmd.GetDialectProvider().SqlExpression<T>().Where(where))));
+            dbCmd.PrepareUpdateOnlyReturning(updateFields, dbCmd.CreateQuery<T>().Where(where))));
 
     /// <summary>
     /// Update the fields in the expression of rows matching the query and return the updated rows, e.g:
@@ -37,7 +37,7 @@ public static class OrmLiteReturningApi
     /// </summary>
     public static List<T> DeleteReturning<T>(this IDbConnection dbConn, Expression<Func<T, bool>> where) =>
         dbConn.Exec(dbCmd => dbCmd.ConvertToList<T>(
-            dbCmd.PrepareDeleteReturning(dbCmd.GetDialectProvider().SqlExpression<T>().Where(where))));
+            dbCmd.PrepareDeleteReturning(dbCmd.CreateQuery<T>().Where(where))));
 
     /// <summary>
     /// Delete rows matching the query and return the deleted rows
@@ -48,7 +48,7 @@ public static class OrmLiteReturningApi
     public static Task<List<T>> UpdateOnlyReturningAsync<T>(this IDbConnection dbConn,
         Expression<Func<T>> updateFields, Expression<Func<T, bool>> where = null, CancellationToken token = default) =>
         dbConn.Exec(dbCmd => dbCmd.ConvertToListAsync<T>(
-            dbCmd.PrepareUpdateOnlyReturning(updateFields, dbCmd.GetDialectProvider().SqlExpression<T>().Where(where)), token));
+            dbCmd.PrepareUpdateOnlyReturning(updateFields, dbCmd.CreateQuery<T>().Where(where)), token));
 
     public static Task<List<T>> UpdateOnlyReturningAsync<T>(this IDbConnection dbConn,
         Expression<Func<T>> updateFields, SqlExpression<T> q, CancellationToken token = default) =>
@@ -57,7 +57,7 @@ public static class OrmLiteReturningApi
     public static Task<List<T>> DeleteReturningAsync<T>(this IDbConnection dbConn,
         Expression<Func<T, bool>> where, CancellationToken token = default) =>
         dbConn.Exec(dbCmd => dbCmd.ConvertToListAsync<T>(
-            dbCmd.PrepareDeleteReturning(dbCmd.GetDialectProvider().SqlExpression<T>().Where(where)), token));
+            dbCmd.PrepareDeleteReturning(dbCmd.CreateQuery<T>().Where(where)), token));
 
     public static Task<List<T>> DeleteReturningAsync<T>(this IDbConnection dbConn,
         SqlExpression<T> q, CancellationToken token = default) =>

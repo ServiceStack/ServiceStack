@@ -30,7 +30,7 @@ internal static class WriteExpressionCommandExtensionsAsync
         if (onlyFields == null)
             throw new ArgumentNullException(nameof(onlyFields));
 
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Update(onlyFields);
         q.Where(where);
         return dbCmd.UpdateOnlyFieldsAsync(obj, q, commandFilter, token);
@@ -47,7 +47,7 @@ internal static class WriteExpressionCommandExtensionsAsync
         if (onlyFields == null)
             throw new ArgumentNullException(nameof(onlyFields));
 
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Update(onlyFields);
         q.Where(where);
         return dbCmd.UpdateOnlyFieldsAsync(obj, q, commandFilter, token);
@@ -106,7 +106,7 @@ internal static class WriteExpressionCommandExtensionsAsync
 
         OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.ToFilterType<T>());
 
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Where(where);
         q.PrepareUpdateStatement(dbCmd, updateFields);
         return dbCmd.UpdateAndVerifyAsync<T>(commandFilter, updateFields.ContainsKey(ModelDefinition.RowVersionName), token);
@@ -134,7 +134,7 @@ internal static class WriteExpressionCommandExtensionsAsync
     {
         return dbCmd.UpdateOnlyReferencesAsync<T>(updateFields, dbFields =>
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Where(whereExpression, whereParams);
             q.PrepareUpdateStatement(dbCmd, dbFields);
             return dbCmd.UpdateAndVerifyAsync<T>(commandFilter, dbFields.ContainsKey(ModelDefinition.RowVersionName), token);
@@ -180,7 +180,7 @@ internal static class WriteExpressionCommandExtensionsAsync
 
         OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, item);
 
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Where(obj);
         q.PrepareUpdateStatement(dbCmd, item, excludeDefaults: true);
         return dbCmd.ExecNonQueryAsync(token);
@@ -192,7 +192,7 @@ internal static class WriteExpressionCommandExtensionsAsync
 
         OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, item);
 
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Where(expression);
         q.PrepareUpdateStatement(dbCmd, item);
         commandFilter?.Invoke(dbCmd);
@@ -205,7 +205,7 @@ internal static class WriteExpressionCommandExtensionsAsync
 
         OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateOnly.ToFilterType<T>());
 
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         var whereSql = q.Where(where).WhereExpression;
         q.CopyParamsTo(dbCmd);
         dbCmd.PrepareUpdateAnonSql<T>(dbCmd.GetDialectProvider(), updateOnly, whereSql);
@@ -238,7 +238,7 @@ internal static class WriteExpressionCommandExtensionsAsync
     internal static Task<int> DeleteAsync<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> where, 
         Action<IDbCommand> commandFilter, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Where(where);
         return dbCmd.DeleteAsync(q, commandFilter, token);
     }
@@ -253,7 +253,7 @@ internal static class WriteExpressionCommandExtensionsAsync
     internal static Task<int> DeleteWhereAsync<T>(this IDbCommand dbCmd, string whereFilter, object[] whereParams, 
         Action<IDbCommand> commandFilter, CancellationToken token)
     {
-        var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+        var q = dbCmd.CreateQuery<T>();
         q.Where(whereFilter, whereParams);
         var sql = q.ToDeleteRowStatement();
         return dbCmd.ExecuteSqlAsync(sql, q.Params, commandFilter, token);

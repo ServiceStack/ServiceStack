@@ -36,8 +36,10 @@ read back for wide tables.
 
 ## 3. Modelling
 
-### 3.1 Auditing Columns (S)
-Auto-populate columns tagged with `[CreatedDate]`, `[ModifiedDate]`, `[CreatedBy]` and `[ModifiedBy]` on insert, update and upsert. Values come from a pluggable `OrmLiteConfig.AuditUserResolver`, which is cheaper and more discoverable than hand-written `InsertFilter` / `UpdateFilter` code.
+### 3.1 Connection Filters and Write Rules (in progress)
+Connection-scoped mandatory filters for multi-tenancy and soft deletes (`db.EnsureFilter<T>()`), and write rules for
+auditing columns (`db.EnsureValue<T>()`, `db.OnInsert<T>()`, `db.OnUpdate<T>()`). Filters on reads, updates and deletes
+are done. See [AUDIT_FILTERS.md](AUDIT_FILTERS.md) for the plan and remaining stages.
 
 ### 3.2 LINQ Queries Into JSON / Complex-Type Columns (L)
 Complex properties are already stored as JSON/JSV text blobs, but querying them needs `Sql.JsonValue("path")` strings. Translate member access directly:
@@ -137,12 +139,6 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 
 ## Considered and Not Planned
 
-- **Typed global query filters (soft delete / multi-tenancy):** complete coverage means changing nearly every read and
-  write path (`SqlExpression` generation, JOIN clauses, the raw `SingleById` / `Where(anon)` APIs, reference loading,
-  and every update and delete), which is too disruptive for the value it adds. Soft delete is already supported for
-  typed queries with `OrmLiteConfig.SqlExpressionSelectFilter` and `LoadReferenceSelectFilter`. ServiceStack apps
-  typically handle multi-tenancy with a database per tenant or with AutoQuery / AutoCrud filters rather than
-  ORM-level tenant filters.
 - **OpenTelemetry `ActivitySource` spans:** OrmLite's diagnostic events already appear in ServiceStack's Profiling UI
   with trace ids, and ADO.NET providers like Npgsql and SqlClient emit their own database spans.
 - **Sending large collections in raw SQL as a single array or JSON param:** it requires rewriting user-written SQL,

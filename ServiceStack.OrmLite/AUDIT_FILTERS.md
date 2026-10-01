@@ -23,6 +23,12 @@ registered on a database connection and applied to every typed API OrmLite const
 db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);  // every table implementing IHasTenantId
 db.EnsureFilter<Order>(x => !x.IsDeleted);                   // only the Order table
 
+// A function called for each statement, for filters that change. No filter is applied when it returns null
+db.EnsureFilter<IHasTenantId>(() => {
+    if (user.IsAdmin) return null;
+    return x => x.TenantId == user.TenantId;
+});
+
 // Mandatory values: set on insert when unset, throws when set to a different value or changed by an update
 db.EnsureValue<IHasTenantId>(x => x.TenantId, tenantId);
 
@@ -42,6 +48,8 @@ var adminDb = db.WithoutFilters();
 - Multiple filters and rules combine, e.g. a tenant filter and a soft delete filter.
 - Values are either fixed (`userId`) or a function (`() => DateTime.UtcNow`) evaluated for each statement, or each
   row for object writes. Captured values in filter expressions are sent as params.
+- Captured values of a filter are read for each statement, so a filter on a captured `tenantId` variable uses its
+  current value. Use the function overload when the filter itself changes, e.g. no filter for admins.
 - Registering on a connection that isn't an `OrmLiteConnection` throws, so a filter is never silently ignored.
 
 ### App-defined openers
@@ -91,19 +99,27 @@ Filters are added to the SQL OrmLite constructs for a filtered table:
 | `db.From<T>()`, incl. sub queries, set operations and `SeekAfter()` | `Ensure()` condition when the query is created |
 | Typed lambda and anonymous-object APIs: `Select`, `Single`, `Count`, `Exists`, `Scalar`, `Column`, `Dictionary`, `Lookup`, `Where(anon)`, `SelectNonDefaults`, and their async / lazy variants | `Ensure()` condition on the query they build |
 | WHERE-clause shorthand APIs with SQL fragments, e.g. `db.Select<T>(Sql.Fmt($"..."))`, `db.Select<T>("Age > @age", ...)` | `WHERE {filter} AND ({fragment})` |
-| By-id APIs: `SingleById`, `SelectByIds`, `LoadSingleById`, `DeleteById`, `DeleteByIds`, `ExistsById` | `AND {filter}` added to their `WHERE Id = @id` |
+| By-id APIs: `SingleById`, `SelectByIds`, `LoadSingleById`, `DeleteById`, `DeleteByIds`, `ExistsById`, `GetRowVersion` | `AND {filter}` added to their `WHERE Id = @id` |
 | Joined tables, e.g. `.Join<Customer>()`, `.LeftJoin<Customer>()` | Added to the join's `ON` clause, so `LEFT JOIN` keeps its meaning |
 | `WithRecursive()` | Applied to the seed query and the recursive step, so recursion can't walk into filtered out rows |
 | `LoadSelect()`, `LoadSingleById()` and `[Reference]` loading | Applied to the child table queries |
 | `TopPerGroup()` | Applied inside the ranked sub query, before rows are ranked |
-| Updates and deletes: `Update(obj)`, `UpdateAll`, `UpdateOnly` (all forms), `UpdateAdd`, `UpdateFrom`, `Delete(obj)`, `Delete(x => ...)`, `Delete(q)`, `DeleteAll`, `UpdateOnlyReturning`, `DeleteReturning` | `AND {filter}` added to their `WHERE`, so rows that don't match aren't changed |
+| Updates and deletes: `Update(obj)`, `UpdateAll`, `UpdateOnly` (all forms), `UpdateOnlyFields`, `UpdateNonDefaults`, `UpdateAdd`, `UpdateFrom`, `Delete(obj)`, `Delete(x => ...)`, `Delete(q)`, `DeleteNonDefaults`, `DeleteWhere`, `DeleteAll`, `UpdateOnlyReturning`, `DeleteReturning` | `AND {filter}` added to their `WHERE`, so rows that don't match aren't changed |
+| WHERE-clause deletes and updates with SQL fragments, e.g. `db.Delete<T>("Age > @age", ...)`, `db.UpdateOnly(() => ..., whereExpression, params)` | `WHERE {filter} AND ({fragment})` |
 | `Save`, `Upsert` | The existence check, and the update of an existing row, are filtered |
-| Raw SQL: complete statements in `SqlList`, `SqlColumn`, `SqlScalar`, `ExecuteSql`, `Select<T>(fullSql)` | **Not applied**: OrmLite doesn't parse user SQL, which is the app's responsibility |
+| Raw SQL: complete statements in `SqlList`, `SqlColumn`, `SqlScalar`, `ExecuteSql`, `Select<T>(fullSql)`, `Delete<T>(fullSql)` | **Not applied**: OrmLite doesn't parse user SQL, which is the app's responsibility |
+| Legacy `[Obsolete]` APIs: `SelectFmt`, `SelectLazyFmt`, `SingleFmt`, `ExistsFmt`, `UpdateFmt<T>`, `DeleteFmt<T>`, the `Func<SqlExpression<T>, SqlExpression<T>>` overloads and `db.SqlExpression<T>()` | Filtered like their replacements: `WHERE {filter} AND ({fragment})` or a filtered query |
+| Legacy APIs without a table type: complete SQL in `ScalarFmt`, `ColumnFmt`, `ColumnDistinctFmt`, `LookupFmt`, `DictionaryFmt`, and `UpdateFmt(table, ...)` / `DeleteFmt(table, ...)` with a table name | **Not applied**: there's no table type to resolve filters for |
 
 Notes:
 
-- Updating a row that the filter excludes affects 0 rows, the same as a row that doesn't exist, so `Update(obj)`
-  returns 0 and `[RowVersion]` updates throw `OptimisticConcurrencyException`.
+- Updating or deleting a row that the filter excludes affects 0 rows, the same as a row that doesn't exist, so
+  `Update(obj)` returns 0 and `[RowVersion]` updates and deletes throw `OptimisticConcurrencyException`. Apps check the
+  returned row count to handle rows that weren't changed.
+- `Save` and `Upsert` of a row that the filter excludes don't see it as an existing row, so they insert it, which fails
+  on its primary key instead of overwriting it.
+- `Upsert` on a filtered table uses a filtered existence check followed by an insert or a filtered update, instead of
+  a single upsert statement, as not every RDBMS can filter the row a single upsert statement updates.
 - `Where()`, which clears the WHERE conditions, keeps ensured conditions.
 - Filters only apply to queries created from the filtered connection. A `SqlExpression` created from another connection
   or `OrmLiteConfig.DialectProvider.SqlExpression<T>()` isn't filtered, which the docs should call out.
@@ -171,17 +187,53 @@ MySqlConnector, and a full test suite run.
 2. ✅ **All typed reads**: lambda / anonymous-object APIs, WHERE-clause shorthand APIs, by-id APIs, async and lazy
    variants, joins (`ON` clause), `WithRecursive()`, `TopPerGroup()`, `LoadSelect()` and references. Filter conditions
    added to SQL OrmLite builds on a command use `@_f0` style params so they don't clash with the command's params.
-3. **Updates and deletes**: filters on every update and delete API, incl. `Save`, `Upsert`, `UpdateFrom` and the
-   returning APIs.
+3. ✅ **Updates and deletes**: filters on every update and delete API, incl. `Save`, `Upsert`, `UpdateFrom` and the
+   returning APIs, the legacy APIs, and `EnsureFilter<T>()` with a function. Params of filter conditions are skipped when an object's
+   values are set on a command's params.
 4. **Write rules**: `EnsureValue`, `OnInsert` and `OnUpdate` for object writes, expression writes and upserts, then
    `BulkInsert` and `InsertIntoSelect`.
 5. **`WithoutFilters()`** and the reference docs: a new page leading with the `GetDbConnection()` pattern, multi-tenancy
    and auditing examples, the table of covered APIs and the raw SQL caveat, plus release notes.
 
-## Open questions
+## Docs checklist for stage 5
 
-- Should `Update(obj)` of a row excluded by a filter throw instead of returning 0, e.g. an opt-in strict mode?
-- Should `EnsureFilter` also be able to use a function for values that change during a connection's lifetime, or are
-  captured values enough since connections are short-lived?
-- Legacy APIs (`Legacy/`), e.g. `SelectFmt()`, aren't filtered yet: apply filters for consistency, or leave them
-  unfiltered and document it?
+Everything the docs need is recorded in this file and the reference tests, so they can be written from a new session.
+
+**Where they go** (in `/home/mythz/src/ServiceStack/docs.servicestack.net/MyApp`):
+
+- Release notes: a new section in `_pages/releases/v10_04.md`, written as marketing release notes that lead with the
+  problem and the `GetDbConnection()` pattern.
+- Reference docs: a new `_pages/ormlite/connection-filters.md` page with full details, linked from
+  `_pages/ormlite/sidebar.json`. `_pages/ormlite/ensure-apis.md` and `filters.md` should link to it.
+- C# examples with the SQL they generate use the `<generated-sql>` component: a `csharp` code block followed by a `sql`
+  code block, with param values in a `-- @p0 = 1` comment. The SQL is captured from running the example, not written by
+  hand.
+
+**Sources**: the tables and notes above, and the reference tests in `tests/ServiceStack.OrmLite.Tests/UseCases/`:
+`ConnectionFilterUseCases`, `ConnectionFilterReadUseCases`, `ConnectionFilterWriteUseCases`, and the stage 4 and 5
+tests when they're added.
+
+**What to cover**:
+
+- Registering filters: tables and interfaces, combining filters, the function overload and captured values.
+- App-defined openers and the ServiceStack `GetDbConnection()` override.
+- The table of covered read, update and delete APIs, with generated SQL for a query, a by-id read, a join and an update.
+- What isn't filtered: complete SQL statements, legacy APIs without a table type, and queries created from another
+  connection or `OrmLiteConfig.DialectProvider.SqlExpression<T>()`.
+- Behaviour of rows that don't match: 0 rows affected, `OptimisticConcurrencyException` with `[RowVersion]`, and
+  `Save` / `Upsert` failing on the primary key.
+- `Upsert` on a filtered table using two statements.
+- Write rules and `WithoutFilters()` (stages 4 and 5).
+- Changes for custom dialect providers: `IsFullSelectStatement()` was added to `IOrmLiteDialectProvider` (implemented
+  by `OrmLiteDialectProviderBase`), `SetParameterValues()` overrides need to skip params where
+  `OrmLiteConnectionFiltersApi.IsFilterParam()` is true, and `SqlExpression` overrides that name params need to use
+  `NextParamName()`.
+- `FUTURE.md`: remove 3.1 when the feature is complete.
+
+## Decisions
+
+- `Update(obj)` of a row excluded by a filter returns 0 instead of throwing, apps check the row count.
+- `EnsureFilter<T>()` has an overload with a function called for each statement, for filters that change during a
+  connection's lifetime.
+- Legacy APIs (`Legacy/`), e.g. `SelectFmt()`, are filtered where they have a table type. They're all marked
+  `[Obsolete]`. The ones taking complete SQL or a table name aren't filtered, like other raw SQL.

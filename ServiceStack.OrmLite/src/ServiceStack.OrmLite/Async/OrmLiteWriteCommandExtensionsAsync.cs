@@ -94,6 +94,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         if (string.IsNullOrEmpty(dbCmd.CommandText))
             return 0;
 
+        dbCmd.AddFilterToWhere(typeof(T));
         dialectProvider.SetParameterValues<T>(dbCmd, obj);
 
         return await dbCmd.UpdateAndVerifyAsync<T>(commandFilter, hadRowVersion, token).ConfigAwait();
@@ -130,6 +131,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         var hadRowVersion = dialectProvider.PrepareParameterizedUpdateStatement<T>(dbCmd);
         if (string.IsNullOrEmpty(dbCmd.CommandText))
             return 0;
+
+        dbCmd.AddFilterToWhere(typeof(T));
 
         using (dbTrans)
         {
@@ -178,6 +181,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         var hadRowVersion = dialectProvider.PrepareParameterizedDeleteStatement<T>(
             dbCmd, anonType.AllFieldsMap<T>());
 
+        dbCmd.AddFilterToWhere(typeof(T));
         dialectProvider.SetParameterValues<T>(dbCmd, anonType);
 
         return AssertRowsUpdatedAsync(dbCmd, hadRowVersion, token);
@@ -191,6 +195,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         var hadRowVersion = dialectProvider.PrepareParameterizedDeleteStatement<T>(
             dbCmd, filter.AllFieldsMap<T>().NonDefaultsOnly());
 
+        dbCmd.AddFilterToWhere(typeof(T));
         dialectProvider.SetParameterValues<T>(dbCmd, filter);
 
         return AssertRowsUpdatedAsync(dbCmd, hadRowVersion, token);
@@ -235,6 +240,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
                 dialectProvider.PrepareParameterizedDeleteStatement<T>(dbCmd, fieldValues);
 
+                dbCmd.AddFilterToWhere(typeof(T));
                 dialectProvider.SetParameterValues<T>(dbCmd, obj);
                     
                 commandFilter?.Invoke(dbCmd); //filters can augment SQL & only should be invoked once
@@ -281,7 +287,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             if (string.IsNullOrEmpty(sqlIn))
                 return 0;
 
-            var sql = OrmLiteWriteCommandExtensions.GetDeleteByIdsSql<T>(sqlIn, dialect);
+            var sql = dbCmd.AddFilterToWhere(typeof(T), OrmLiteWriteCommandExtensions.GetDeleteByIdsSql<T>(sqlIn, dialect));
             return await dbCmd.ExecuteSqlAsync(sql, commandFilter, token).ConfigAwait();
         }
 
@@ -296,7 +302,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             {
                 dbCmd.Parameters.Clear();
                 var sqlIn = dbCmd.SetIdsInSqlParams(batch);
-                var sql = OrmLiteWriteCommandExtensions.GetDeleteByIdsSql<T>(sqlIn, dialect);
+                var sql = dbCmd.AddFilterToWhere(typeof(T), OrmLiteWriteCommandExtensions.GetDeleteByIdsSql<T>(sqlIn, dialect));
                 count += await dbCmd.ExecuteSqlAsync(sql, commandFilter, token).ConfigAwait();
             }
 
@@ -324,8 +330,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
     internal static Task<int> DeleteAllAsync(this IDbCommand dbCmd, Type tableType, CancellationToken token)
     {
-        var dialectProvider = dbCmd.GetDialectProvider();
-        return dbCmd.ExecuteSqlAsync(dialectProvider.ToDeleteStatement(tableType, null), token);
+        return dbCmd.ExecuteSqlAsync(dbCmd.ToFilteredDeleteStatement(tableType, null), token);
     }
 
     internal static Task<int> DeleteAsync<T>(this IDbCommand dbCmd, string sql, object anonType, CancellationToken token)
@@ -333,13 +338,13 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         OrmLiteUtils.AssertNotAnonType<T>();
             
         if (anonType != null) dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql);
-        return dbCmd.ExecuteSqlAsync(dbCmd.GetDialectProvider().ToDeleteStatement(typeof(T), sql), token);
+        return dbCmd.ExecuteSqlAsync(dbCmd.ToFilteredDeleteStatement(typeof(T), sql), token);
     }
 
     internal static Task<int> DeleteAsync(this IDbCommand dbCmd, Type tableType, string sql, object anonType, CancellationToken token)
     {
         if (anonType != null) dbCmd.SetParameters(tableType, anonType, excludeDefaults: false, sql: ref sql);
-        return dbCmd.ExecuteSqlAsync(dbCmd.GetDialectProvider().ToDeleteStatement(tableType, sql), token);
+        return dbCmd.ExecuteSqlAsync(dbCmd.ToFilteredDeleteStatement(tableType, sql), token);
     }
 
     internal static async Task<long> InsertAsync<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity, bool enableIdentityInsert,CancellationToken token)
@@ -569,8 +574,11 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             return;
         }
 
+        // A single upsert statement can't filter the row it updates in every RDBMS, so the existence check and
+        // the update are filtered instead
         var dialectProvider = dbCmd.GetDialectProvider();
-        if (dialectProvider is not IOrmLiteUpsertDialectProvider { SupportsUpsert: true } upsertProvider)
+        if (dialectProvider is not IOrmLiteUpsertDialectProvider { SupportsUpsert: true } upsertProvider
+            || dbCmd.HasFilters<T>())
         {
             await dbCmd.UpsertUsingSaveAsync(obj, modelDef, primaryKey, updateFieldDefs, token).ConfigAwait();
             return;

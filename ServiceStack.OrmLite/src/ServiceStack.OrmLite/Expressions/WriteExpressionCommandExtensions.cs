@@ -52,7 +52,7 @@ namespace ServiceStack.OrmLite
             if (onlyFields == null)
                 throw new ArgumentNullException(nameof(onlyFields));
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Update(onlyFields);
             q.Where(where);
             return dbCmd.UpdateOnlyFields(obj, q, commandFilter);
@@ -68,7 +68,7 @@ namespace ServiceStack.OrmLite
             if (onlyFields == null)
                 throw new ArgumentNullException(nameof(onlyFields));
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Update(onlyFields);
             q.Where(where);
             return dbCmd.UpdateOnlyFields(obj, q, commandFilter);
@@ -122,6 +122,7 @@ namespace ServiceStack.OrmLite
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.EvalFactoryFn());
 
             dbCmd.SetParameters(sqlParams);
+            whereExpression = dbCmd.AddFilterToWhereExpression(typeof(T), whereExpression);
 
             var updateFieldValues = updateFields.AssignedValues();
             dbCmd.GetDialectProvider().PrepareUpdateRowStatement<T>(dbCmd, updateFieldValues, whereExpression);
@@ -166,7 +167,7 @@ namespace ServiceStack.OrmLite
 
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.ToFilterType<T>());
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Where(where);
             q.PrepareUpdateStatement(dbCmd, updateFields);
             return dbCmd.UpdateAndVerify<T>(commandFilter, updateFields.ContainsKey(ModelDefinition.RowVersionName));
@@ -272,7 +273,7 @@ namespace ServiceStack.OrmLite
 
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.ToFilterType<T>());
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Where(whereExpression, whereParams);
             q.PrepareUpdateStatement(dbCmd, updateFields);
         }
@@ -281,7 +282,7 @@ namespace ServiceStack.OrmLite
         {
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, item);
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Where(@where);
             q.PrepareUpdateStatement(dbCmd, item, excludeDefaults: true);
             return dbCmd.ExecNonQuery();
@@ -291,7 +292,7 @@ namespace ServiceStack.OrmLite
         {
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, item);
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Where(expression);
             q.PrepareUpdateStatement(dbCmd, item);
             commandFilter?.Invoke(dbCmd);
@@ -304,7 +305,7 @@ namespace ServiceStack.OrmLite
             
             OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateOnly.ToFilterType<T>());
 
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             var whereSql = q.Where(where).WhereExpression;
             q.CopyParamsTo(dbCmd);
             var hadRowVersion = dbCmd.PrepareUpdateAnonSql<T>(dbCmd.GetDialectProvider(), updateOnly, whereSql);
@@ -409,7 +410,7 @@ namespace ServiceStack.OrmLite
 
         public static int Delete<T>(this IDbCommand dbCmd, Expression<Func<T, bool>> where, Action<IDbCommand> commandFilter = null)
         {
-            var ev = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var ev = dbCmd.CreateQuery<T>();
             ev.Where(where);
             return dbCmd.Delete(ev, commandFilter);
         }
@@ -422,7 +423,7 @@ namespace ServiceStack.OrmLite
 
         public static int DeleteWhere<T>(this IDbCommand dbCmd, string whereFilter, object[] whereParams)
         {
-            var q = dbCmd.GetDialectProvider().SqlExpression<T>();
+            var q = dbCmd.CreateQuery<T>();
             q.Where(whereFilter, whereParams);
             var sql = q.ToDeleteRowStatement();
             return dbCmd.ExecuteSql(sql, q.Params);

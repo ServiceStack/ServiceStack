@@ -16,30 +16,37 @@ public sealed class OrmLiteConnectionFilters
     public static readonly OrmLiteConnectionFilters Empty = new([]);
 
     private readonly EnsureFilterDef[] ensureFilters;
-    private readonly ConcurrentDictionary<Type, LambdaExpression[]> ensureFiltersByTable = new();
+    private readonly ConcurrentDictionary<Type, Func<LambdaExpression?>[]> ensureFiltersByTable = new();
 
     private OrmLiteConnectionFilters(EnsureFilterDef[] ensureFilters) => this.ensureFilters = ensureFilters;
 
     public bool IsEmpty => ensureFilters.Length == 0;
 
-    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, LambdaExpression predicate)
+    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, LambdaExpression predicate) =>
+        Add(new EnsureFilterDef(type, predicate, null));
+
+    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, Func<LambdaExpression?> predicateFn) =>
+        Add(new EnsureFilterDef(type, null, predicateFn));
+
+    private OrmLiteConnectionFilters Add(EnsureFilterDef filter)
     {
         var filters = new EnsureFilterDef[ensureFilters.Length + 1];
         ensureFilters.CopyTo(filters, 0);
-        filters[ensureFilters.Length] = new EnsureFilterDef(type, predicate);
+        filters[ensureFilters.Length] = filter;
         return new OrmLiteConnectionFilters(filters);
     }
 
     /// <summary>
-    /// The filters that apply to the table, with interface filters rebound to the table's properties
+    /// The filters that apply to the table, with interface filters rebound to the table's properties.
+    /// Filters registered with a function are resolved on each call.
     /// </summary>
     public Expression<Func<T, bool>>[] GetEnsureFilters<T>()
     {
         if (ensureFilters.Length == 0)
             return [];
 
-        var filters = ensureFiltersByTable.GetOrAdd(typeof(T), _ => {
-            var to = new List<LambdaExpression>();
+        var filterFns = ensureFiltersByTable.GetOrAdd(typeof(T), _ => {
+            var to = new List<Func<LambdaExpression?>>();
             foreach (var filter in ensureFilters)
             {
                 if (filter.Type.IsAssignableFrom(typeof(T)))
@@ -47,20 +54,47 @@ public sealed class OrmLiteConnectionFilters
             }
             return to.ToArray();
         });
+        if (filterFns.Length == 0)
+            return [];
 
-        var typed = new Expression<Func<T, bool>>[filters.Length];
-        for (var i = 0; i < filters.Length; i++)
-            typed[i] = (Expression<Func<T, bool>>)filters[i];
-        return typed;
+        var typed = new List<Expression<Func<T, bool>>>(filterFns.Length);
+        foreach (var filterFn in filterFns)
+        {
+            if (filterFn() is Expression<Func<T, bool>> filter)
+                typed.Add(filter);
+        }
+        return typed.ToArray();
     }
 
-    private sealed class EnsureFilterDef(Type type, LambdaExpression predicate)
+    /// <summary>
+    /// Whether any filters currently apply to the table
+    /// </summary>
+    public bool HasEnsureFilters<T>() => GetEnsureFilters<T>().Length > 0;
+
+    private sealed class EnsureFilterDef(Type type, LambdaExpression? predicate, Func<LambdaExpression?>? predicateFn)
     {
         public Type Type { get; } = type;
 
-        public LambdaExpression For(Type tableType) => tableType == Type
-            ? predicate
-            : TableTypeRebinder.Rebind(predicate, tableType);
+        /// <summary>
+        /// Resolves the filter for the table: fixed filters are rebound once, filters from a function are rebound
+        /// each time as the function can return a different filter, or null for no filter
+        /// </summary>
+        public Func<LambdaExpression?> For(Type tableType)
+        {
+            if (predicateFn != null)
+            {
+                return () => predicateFn() is { } filter
+                    ? Rebind(filter, tableType)
+                    : null;
+            }
+
+            var rebound = Rebind(predicate!, tableType);
+            return () => rebound;
+        }
+
+        private LambdaExpression Rebind(LambdaExpression filter, Type tableType) => tableType == Type
+            ? filter
+            : TableTypeRebinder.Rebind(filter, tableType);
     }
 }
 

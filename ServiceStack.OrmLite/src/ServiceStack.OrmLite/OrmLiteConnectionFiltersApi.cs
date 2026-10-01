@@ -30,6 +30,21 @@ public static class OrmLiteConnectionFiltersApi
     }
 
     /// <summary>
+    /// Only return rows matching the filter returned by the function, which is called for each statement, for filters
+    /// that change during the connection's lifetime. No filter is applied when it returns null, e.g:
+    /// <para>db.EnsureFilter&lt;IHasTenantId&gt;(() =&gt; user.IsAdmin ? null : x =&gt; x.TenantId == user.TenantId);</para>
+    /// </summary>
+    public static IDbConnection EnsureFilter<T>(this IDbConnection db, Func<Expression<Func<T, bool>>?> filterFn)
+    {
+        if (filterFn == null)
+            throw new ArgumentNullException(nameof(filterFn));
+        var dbConn = db.ToOrmLiteConnection()
+            ?? throw new NotSupportedException("Filters can only be added to connections opened by OrmLite");
+        dbConn.Filters = dbConn.Filters.AddEnsureFilter(typeof(T), filterFn);
+        return db;
+    }
+
+    /// <summary>
     /// The mandatory filters of the connection
     /// </summary>
     public static OrmLiteConnectionFilters GetFilters(this IDbConnection db) =>
@@ -81,6 +96,24 @@ public static class OrmLiteConnectionFiltersApi
     /// Params of filter conditions added to commands, e.g. @_f0, so they don't clash with the command's params
     /// </summary>
     internal const string FilterParamPrefix = "_f";
+
+    /// <summary>
+    /// Whether the param is from a filter condition, e.g. @_f0, and not from a column
+    /// </summary>
+    public static bool IsFilterParam(string? paramName)
+    {
+        if (paramName == null)
+            return false;
+        var name = paramName.TrimStart('@', ':', '?');
+        if (name.Length <= FilterParamPrefix.Length || !name.StartsWith(FilterParamPrefix, StringComparison.Ordinal))
+            return false;
+        for (var i = FilterParamPrefix.Length; i < name.Length; i++)
+        {
+            if (!char.IsDigit(name[i]))
+                return false;
+        }
+        return true;
+    }
 
     /// <summary>
     /// The table's filters as a SQL condition with columns prefixed by the table, or alias, with params named with
@@ -140,8 +173,7 @@ public static class OrmLiteConnectionFiltersApi
         // Replace params of a previous filter condition, e.g. when loading multiple references with the same command
         for (var i = dbCmd.Parameters.Count - 1; i >= 0; i--)
         {
-            if (dbCmd.Parameters[i] is IDbDataParameter p
-                && p.ParameterName.TrimStart('@', ':', '?').StartsWith(FilterParamPrefix, StringComparison.Ordinal))
+            if (dbCmd.Parameters[i] is IDbDataParameter p && IsFilterParam(p.ParameterName))
                 dbCmd.Parameters.RemoveAt(i);
         }
         foreach (var p in filterParams)
@@ -194,6 +226,66 @@ public static class OrmLiteConnectionFiltersApi
         return pos >= 0
             ? sql.Substring(0, pos + " WHERE ".Length) + condition + " AND " + sql.Substring(pos + " WHERE ".Length)
             : sql + " WHERE " + condition;
+    }
+
+    /// <summary>
+    /// Add the table's filter condition to the UPDATE or DELETE statement OrmLite constructed on the command, whose
+    /// WHERE (if any) only has AND conditions, so rows that don't match the filter aren't changed
+    /// </summary>
+    internal static void AddFilterToWhere(this IDbCommand dbCmd, Type tableType)
+    {
+        if (string.IsNullOrEmpty(dbCmd.CommandText))
+            return;
+        dbCmd.CommandText = dbCmd.AddFilterToWhere(tableType, dbCmd.CommandText);
+    }
+
+    internal static string AddFilterToWhere(this IDbCommand dbCmd, Type tableType, string sql)
+    {
+        var condition = dbCmd.GetFilterCondition(tableType);
+        if (condition == null)
+            return sql;
+        var hasWhere = sql.IndexOf(" WHERE ", StringComparison.Ordinal) >= 0;
+        return sql.TrimEnd() + (hasWhere ? " AND " : " WHERE ") + condition;
+    }
+
+    /// <summary>
+    /// Add the table's filter condition to a WHERE expression, e.g. "WHERE Age &gt; @age", which can have OR conditions
+    /// </summary>
+    internal static string? AddFilterToWhereExpression(this IDbCommand dbCmd, Type tableType, string? whereExpression)
+    {
+        var condition = dbCmd.GetFilterCondition(tableType);
+        return condition != null
+            ? "WHERE " + CombineFilter(condition, whereExpression)
+            : whereExpression;
+    }
+
+    /// <summary>
+    /// DELETE statement for the table from a WHERE filter, e.g. from db.Delete&lt;T&gt;("Age &gt; @age"), with the
+    /// table's filter condition. Complete DELETE statements are raw SQL which isn't changed.
+    /// </summary>
+    internal static string ToFilteredDeleteStatement(this IDbCommand dbCmd, Type tableType, string? sqlFilter,
+        params object[] filterParams)
+    {
+        const string deleteStatement = "DELETE ";
+        var isFullDeleteStatement = sqlFilter != null
+            && sqlFilter.Length > deleteStatement.Length
+            && sqlFilter.StartsWith(deleteStatement, StringComparison.OrdinalIgnoreCase);
+        if (!isFullDeleteStatement)
+        {
+            var condition = dbCmd.GetFilterCondition(tableType);
+            if (condition != null)
+                sqlFilter = CombineFilter(condition, sqlFilter);
+        }
+        return dbCmd.GetDialectProvider().ToDeleteStatement(tableType, sqlFilter, filterParams);
+    }
+
+    /// <summary>
+    /// Whether any of the connection's filters currently apply to the table
+    /// </summary>
+    internal static bool HasFilters<T>(this IDbCommand dbCmd)
+    {
+        var filters = dbCmd.GetFilters();
+        return !filters.IsEmpty && filters.HasEnsureFilters<T>();
     }
 
     internal static OrmLiteConnection? ToOrmLiteConnection(this IDbConnection? db)

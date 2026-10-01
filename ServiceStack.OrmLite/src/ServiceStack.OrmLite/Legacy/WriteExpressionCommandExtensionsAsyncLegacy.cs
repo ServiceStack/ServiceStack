@@ -12,18 +12,20 @@ internal static class WriteExpressionCommandExtensionsAsyncLegacy
     [Obsolete("Use db.InsertOnlyAsync(obj, db.From<T>())")]
     internal static Task InsertOnlyAsync<T>(this IDbCommand dbCmd, T obj, Func<SqlExpression<T>, SqlExpression<T>> onlyFields, CancellationToken token)
     {
-        return dbCmd.InsertOnlyAsync(obj, onlyFields(dbCmd.GetDialectProvider().SqlExpression<T>()), token);
+        return dbCmd.InsertOnlyAsync(obj, onlyFields(dbCmd.CreateQuery<T>()), token);
     }
 
     [Obsolete("Use db.UpdateOnlyAsync(model, db.From<T>())")]
     internal static Task<int> UpdateOnlyAsync<T>(this IDbCommand dbCmd, T model, Func<SqlExpression<T>, SqlExpression<T>> onlyFields, CancellationToken token)
     {
-        return dbCmd.UpdateOnlyFieldsAsync(model, onlyFields(dbCmd.GetDialectProvider().SqlExpression<T>()), null, token);
+        return dbCmd.UpdateOnlyFieldsAsync(model, onlyFields(dbCmd.CreateQuery<T>()), null, token);
     }
 
     internal static Task<int> UpdateFmtAsync<T>(this IDbCommand dbCmd, string set, string where, CancellationToken token)
     {
-        return dbCmd.UpdateFmtAsync(typeof(T).GetModelDefinition().ModelName, set, where, token);
+        var sql = WriteExpressionCommandExtensionsLegacy.UpdateFmtSql(dbCmd.GetDialectProvider(),
+            typeof(T).GetModelDefinition().ModelName, set, where, dbCmd.GetFilterCondition(typeof(T)));
+        return dbCmd.ExecuteSqlAsync(sql, token);
     }
 
     internal static Task<int> UpdateFmtAsync(this IDbCommand dbCmd, string table, string set, string where, CancellationToken token)
@@ -35,12 +37,14 @@ internal static class WriteExpressionCommandExtensionsAsyncLegacy
     [Obsolete("Use db.DeleteAsync(db.From<T>())")]
     internal static Task<int> DeleteAsync<T>(this IDbCommand dbCmd, Func<SqlExpression<T>, SqlExpression<T>> where, CancellationToken token)
     {
-        return dbCmd.DeleteAsync(where(dbCmd.GetDialectProvider().SqlExpression<T>()), null, token);
+        return dbCmd.DeleteAsync(where(dbCmd.CreateQuery<T>()), null, token);
     }
 
     internal static Task<int> DeleteFmtAsync<T>(this IDbCommand dbCmd, string where, CancellationToken token)
     {
-        return dbCmd.DeleteFmtAsync(typeof(T).GetModelDefinition().ModelName, where, token);
+        var sql = WriteExpressionCommandExtensionsLegacy.DeleteFmtSql(dbCmd.GetDialectProvider(),
+            typeof(T).GetModelDefinition().ModelName, where, dbCmd.GetFilterCondition(typeof(T)));
+        return dbCmd.ExecuteSqlAsync(sql, token);
     }
 
     internal static Task<int> DeleteFmtAsync(this IDbCommand dbCmd, string table, string where, CancellationToken token)

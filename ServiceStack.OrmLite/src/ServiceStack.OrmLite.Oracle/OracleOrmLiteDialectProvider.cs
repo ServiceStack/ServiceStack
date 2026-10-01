@@ -338,6 +338,9 @@ namespace ServiceStack.OrmLite.Oracle
 
             foreach (IDataParameter p in dbCmd.Parameters)
             {
+                if (OrmLiteConnectionFiltersApi.IsFilterParam(p.ParameterName))
+                    continue; // params of the connection's filter conditions
+
                 var fieldName = this.ToFieldName(p.ParameterName);
                 fieldMap.TryGetValue(fieldName, out var fieldDef);
 

@@ -443,6 +443,7 @@ public static class OrmLiteWriteCommandExtensions
         if (string.IsNullOrEmpty(dbCmd.CommandText))
             return 0;
 
+        dbCmd.AddFilterToWhere(typeof(T));
         dialectProvider.SetParameterValues<T>(dbCmd, obj);
 
         return dbCmd.UpdateAndVerify<T>(commandFilter, hadRowVersion);
@@ -480,6 +481,8 @@ public static class OrmLiteWriteCommandExtensions
             var hadRowVersion = dialectProvider.PrepareParameterizedUpdateStatement<T>(dbCmd);
             if (string.IsNullOrEmpty(dbCmd.CommandText))
                 return 0;
+
+            dbCmd.AddFilterToWhere(typeof(T));
 
             foreach (var obj in objs)
             {
@@ -528,6 +531,7 @@ public static class OrmLiteWriteCommandExtensions
         var hadRowVersion = dialectProvider.PrepareParameterizedDeleteStatement<T>(
             dbCmd, anonType.AllFieldsMap<T>());
 
+        dbCmd.AddFilterToWhere(typeof(T));
         dialectProvider.SetParameterValues<T>(dbCmd, anonType);
 
         commandFilter?.Invoke(dbCmd);
@@ -541,6 +545,7 @@ public static class OrmLiteWriteCommandExtensions
         var hadRowVersion = dialectProvider.PrepareParameterizedDeleteStatement<T>(
             dbCmd, filter.AllFieldsMap<T>().NonDefaultsOnly());
 
+        dbCmd.AddFilterToWhere(typeof(T));
         dialectProvider.SetParameterValues<T>(dbCmd, filter);
 
         return AssertRowsUpdated(dbCmd, hadRowVersion);
@@ -583,6 +588,7 @@ public static class OrmLiteWriteCommandExtensions
 
                 dialectProvider.PrepareParameterizedDeleteStatement<T>(dbCmd, fieldValues);
 
+                dbCmd.AddFilterToWhere(typeof(T));
                 dialectProvider.SetParameterValues<T>(dbCmd, obj);
 
                 commandFilter?.Invoke(dbCmd); //filters can augment SQL & only should be invoked once
@@ -622,7 +628,7 @@ public static class OrmLiteWriteCommandExtensions
         idParam.Value = id;
         dbCmd.Parameters.Add(idParam);
         dialectProvider.ConfigureParam(idParam, id, null);
-        return sql;
+        return dbCmd.AddFilterToWhere(typeof(T), sql);
     }
 
     internal static void DeleteById<T>(this IDbCommand dbCmd, object id, ulong rowVersion, Action<IDbCommand> commandFilter = null)
@@ -666,7 +672,7 @@ public static class OrmLiteWriteCommandExtensions
                   $"WHERE {dialectProvider.GetQuotedColumnName(modelDef.PrimaryKey)} = {idParam.ParameterName} " +
                   $"AND {dialectProvider.GetRowVersionColumn(rowVersionField)} = {rowVersionParam.ParameterName}";
 
-        return sql;
+        return dbCmd.AddFilterToWhere(typeof(T), sql);
     }
 
     internal static int DeleteByIds<T>(this IDbCommand dbCmd, IEnumerable idValues)
@@ -681,7 +687,7 @@ public static class OrmLiteWriteCommandExtensions
             if (string.IsNullOrEmpty(sqlIn))
                 return 0;
 
-            return dbCmd.ExecuteSql(GetDeleteByIdsSql<T>(sqlIn, dialect));
+            return dbCmd.ExecuteSql(dbCmd.AddFilterToWhere(typeof(T), GetDeleteByIdsSql<T>(sqlIn, dialect)));
         }
 
         // Delete all batches atomically
@@ -695,7 +701,7 @@ public static class OrmLiteWriteCommandExtensions
             {
                 dbCmd.Parameters.Clear();
                 var sqlIn = dbCmd.SetIdsInSqlParams(batch);
-                count += dbCmd.ExecuteSql(GetDeleteByIdsSql<T>(sqlIn, dialect));
+                count += dbCmd.ExecuteSql(dbCmd.AddFilterToWhere(typeof(T), GetDeleteByIdsSql<T>(sqlIn, dialect)));
             }
 
             dbTrans?.Commit();
@@ -733,7 +739,7 @@ public static class OrmLiteWriteCommandExtensions
 
     internal static int DeleteAll(this IDbCommand dbCmd, Type tableType)
     {
-        return dbCmd.ExecuteSql(dbCmd.GetDialectProvider().ToDeleteStatement(tableType, null));
+        return dbCmd.ExecuteSql(dbCmd.ToFilteredDeleteStatement(tableType, null));
     }
 
     internal static int Delete<T>(this IDbCommand dbCmd, string sql, object anonType = null)
@@ -741,13 +747,13 @@ public static class OrmLiteWriteCommandExtensions
         OrmLiteUtils.AssertNotAnonType<T>();
             
         if (anonType != null) dbCmd.SetParameters<T>(anonType, excludeDefaults: false, sql: ref sql);
-        return dbCmd.ExecuteSql(dbCmd.GetDialectProvider().ToDeleteStatement(typeof(T), sql));
+        return dbCmd.ExecuteSql(dbCmd.ToFilteredDeleteStatement(typeof(T), sql));
     }
 
     internal static int Delete(this IDbCommand dbCmd, Type tableType, string sql, object anonType = null)
     {
         if (anonType != null) dbCmd.SetParameters(tableType, anonType, excludeDefaults: false, sql: ref sql);
-        return dbCmd.ExecuteSql(dbCmd.GetDialectProvider().ToDeleteStatement(tableType, sql));
+        return dbCmd.ExecuteSql(dbCmd.ToFilteredDeleteStatement(tableType, sql));
     }
         
     internal static long Insert<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity = false, bool enableIdentityInsert=false)
@@ -1040,8 +1046,11 @@ public static class OrmLiteWriteCommandExtensions
             return;
         }
 
+        // A single upsert statement can't filter the row it updates in every RDBMS, so the existence check and
+        // the update are filtered instead
         var dialectProvider = dbCmd.GetDialectProvider();
-        if (dialectProvider is not IOrmLiteUpsertDialectProvider { SupportsUpsert: true } upsertProvider)
+        if (dialectProvider is not IOrmLiteUpsertDialectProvider { SupportsUpsert: true } upsertProvider
+            || dbCmd.HasFilters<T>())
         {
             dbCmd.UpsertUsingSave(obj, modelDef, primaryKey, updateFieldDefs);
             return;
@@ -1440,6 +1449,6 @@ public static class OrmLiteWriteCommandExtensions
         dialectProvider.SetParamValue(idParam, id, modelDef.PrimaryKey.ColumnType, modelDef.PrimaryKey);
 
         dbCmd.Parameters.Add(idParam);
-        return sql;
+        return dbCmd.AddFilterToWhere(modelDef.ModelType, sql);
     }
 }

@@ -10,19 +10,23 @@ namespace ServiceStack.OrmLite.Legacy
     {
         internal static List<T> SelectFmt<T>(this IDbCommand dbCmd, string sqlFilter, params object[] filterParams)
         {
-            return dbCmd.ConvertToList<T>(
-                dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), sqlFilter, filterParams));
+            return dbCmd.ConvertToList<T>(dbCmd.ToFilteredSelectStatement(typeof(T), sqlFilter, filterParams));
         }
 
         internal static List<TModel> SelectFmt<TModel>(this IDbCommand dbCmd, Type fromTableType, string sqlFilter, params object[] filterParams)
         {
-            var sql = ToSelectFmt<TModel>(dbCmd.GetDialectProvider(), fromTableType, sqlFilter, filterParams);
+            var sql = dbCmd.ToSelectFmt<TModel>(fromTableType, sqlFilter, filterParams);
 
             return dbCmd.ConvertToList<TModel>(sql);
         }
 
-        internal static string ToSelectFmt<TModel>(IOrmLiteDialectProvider dialectProvider, Type fromTableType, string sqlFilter, object[] filterParams)
+        internal static string ToSelectFmt<TModel>(this IDbCommand dbCmd, Type fromTableType, string sqlFilter, object[] filterParams)
         {
+            var dialectProvider = dbCmd.GetDialectProvider();
+            var condition = dbCmd.GetFilterCondition(fromTableType);
+            if (condition != null)
+                sqlFilter = OrmLiteConnectionFiltersApi.CombineFilter(condition, sqlFilter);
+
             var sql = StringBuilderCache.Allocate();
             var modelDef = ModelDefinition<TModel>.Definition;
             sql.AppendFormat("SELECT {0} FROM {1}", dialectProvider.GetColumnNames(modelDef),
@@ -39,7 +43,7 @@ namespace ServiceStack.OrmLite.Legacy
         internal static IEnumerable<T> SelectLazyFmt<T>(this IDbCommand dbCmd, string filter, params object[] filterParams)
         {
             var dialectProvider = dbCmd.GetDialectProvider();
-            dbCmd.CommandText = dialectProvider.ToSelectStatement(typeof(T), filter, filterParams);
+            dbCmd.CommandText = dbCmd.ToFilteredSelectStatement(typeof(T), filter, filterParams);
 
             if (OrmLiteConfig.ResultsFilter != null)
             {
@@ -63,7 +67,7 @@ namespace ServiceStack.OrmLite.Legacy
 
         internal static T SingleFmt<T>(this IDbCommand dbCmd, string filter, params object[] filterParams)
         {
-            return dbCmd.ConvertTo<T>(dbCmd.GetDialectProvider().ToSelectStatement(typeof(T), filter, filterParams));
+            return dbCmd.ConvertTo<T>(dbCmd.ToFilteredSelectStatement(typeof(T), filter, filterParams));
         }
 
         internal static T ScalarFmt<T>(this IDbCommand dbCmd, string sql, params object[] sqlParams)
@@ -94,7 +98,7 @@ namespace ServiceStack.OrmLite.Legacy
         internal static bool ExistsFmt<T>(this IDbCommand dbCmd, string sqlFilter, params object[] filterParams)
         {
             var fromTableType = typeof(T);
-            var result = dbCmd.Scalar(dbCmd.GetDialectProvider().ToSelectStatement(fromTableType, sqlFilter, filterParams));
+            var result = dbCmd.Scalar(dbCmd.ToFilteredSelectStatement(fromTableType, sqlFilter, filterParams));
             return result != null;
         }
     }

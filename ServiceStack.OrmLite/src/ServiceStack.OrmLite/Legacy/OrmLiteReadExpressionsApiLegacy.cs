@@ -13,7 +13,7 @@ namespace ServiceStack.OrmLite.Legacy
         [Obsolete("Use From<T>")]
         public static SqlExpression<T> SqlExpression<T>(this IDbConnection dbConn)
         {
-            return dbConn.GetExecFilter().SqlExpression<T>(dbConn);
+            return dbConn.GetExecFilter().SqlExpression<T>(dbConn).WithFilters(dbConn);
         }
 
         /// <summary>
