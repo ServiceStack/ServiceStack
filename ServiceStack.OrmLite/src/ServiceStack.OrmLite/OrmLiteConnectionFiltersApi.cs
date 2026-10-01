@@ -51,7 +51,7 @@ public static class OrmLiteConnectionFiltersApi
     /// Inserts set the value when it isn't set. Inserts and updates with a different value throw.
     /// </summary>
     public static IDbConnection EnsureWrites<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
-        db.AddWriteRule(WriteRuleType.EnsureWrites, field, ToValueFn(value));
+        db.AddWriteRule(WriteRuleType.EnsureWrites, field, value);
 
     /// <summary>
     /// Require the column to have the value returned by the function, which is called for each row written
@@ -65,7 +65,7 @@ public static class OrmLiteConnectionFiltersApi
     /// <para>db.OnInsert&lt;IAudit&gt;(x =&gt; x.CreatedBy, userId);</para>
     /// </summary>
     public static IDbConnection OnInsert<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
-        db.AddWriteRule(WriteRuleType.OnInsert, field, ToValueFn(value));
+        db.AddWriteRule(WriteRuleType.OnInsert, field, value);
 
     /// <summary>
     /// Always set the column to the value returned by the function in rows inserted on this connection, e.g:
@@ -80,7 +80,7 @@ public static class OrmLiteConnectionFiltersApi
     /// <para>db.OnUpdate&lt;IAudit&gt;(x =&gt; x.ModifiedBy, userId);</para>
     /// </summary>
     public static IDbConnection OnUpdate<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
-        db.AddWriteRule(WriteRuleType.OnUpdate, field, ToValueFn(value));
+        db.AddWriteRule(WriteRuleType.OnUpdate, field, value);
 
     /// <summary>
     /// Always set the column to the value returned by the function in rows updated on this connection, e.g:
@@ -105,12 +105,17 @@ public static class OrmLiteConnectionFiltersApi
     public static IDbConnection OnWrite<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
         db.OnInsert(field, valueFn).OnUpdate(field, valueFn);
 
-    private static Func<object?> ToValueFn(object? value) => value is Delegate
+    private static IDbConnection AddWriteRule<T>(this IDbConnection db, WriteRuleType ruleType,
+        Expression<Func<T, object?>> field, object? value) => value is Delegate
         ? throw new ArgumentException("Use a function that returns the value, like: () => DateTime.UtcNow", nameof(value))
-        : () => value;
+        : db.AddWriteRule(ruleType, field, () => value, hasValue: true, value);
 
     private static IDbConnection AddWriteRule<T>(this IDbConnection db, WriteRuleType ruleType,
-        Expression<Func<T, object?>> field, Func<object?> valueFn)
+        Expression<Func<T, object?>> field, Func<object?> valueFn) =>
+        db.AddWriteRule(ruleType, field, valueFn, hasValue: false, null);
+
+    private static IDbConnection AddWriteRule<T>(this IDbConnection db, WriteRuleType ruleType,
+        Expression<Func<T, object?>> field, Func<object?> valueFn, bool hasValue, object? value)
     {
         if (field == null)
             throw new ArgumentNullException(nameof(field));
@@ -125,8 +130,27 @@ public static class OrmLiteConnectionFiltersApi
 
         var dbConn = db.ToOrmLiteConnection()
             ?? throw new NotSupportedException("Rules can only be added to connections opened by OrmLite");
-        dbConn.Filters = dbConn.Filters.AddWriteRule(typeof(T), ruleType, member.Member.Name, valueFn);
+        dbConn.Filters = dbConn.Filters.AddWriteRule(new WriteRuleDef(typeof(T), ruleType, member.Member.Name, valueFn) {
+            HasValue = hasValue,
+            Value = hasValue ? ToMemberValue(member, value) : null,
+        });
         return db;
+    }
+
+    // The value as the column's type, so the same value registered as different types, e.g. 1 and 1L, is the same
+    private static object? ToMemberValue(MemberExpression member, object? value)
+    {
+        if (value == null)
+            return null;
+        try
+        {
+            var type = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
+            return type.IsInstanceOfType(value) ? value : value.ConvertTo(type);
+        }
+        catch (Exception)
+        {
+            return value;
+        }
     }
 
     /// <summary>

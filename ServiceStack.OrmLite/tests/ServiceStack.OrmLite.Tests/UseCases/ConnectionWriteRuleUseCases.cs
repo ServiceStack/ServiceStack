@@ -377,6 +377,34 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
     }
 
     [Test]
+    public void Registering_the_same_rules_again_is_ignored()
+    {
+        using var db = OpenForUser("alice");
+
+        // e.g. when a connection is configured more than once
+        var rules = db.GetFilters();
+        db.ForUser(1, "alice");
+        Assert.That(db.GetFilters(), Is.SameAs(rules));
+
+        var id = db.Insert(new TenantInvoice { Customer = "Acme" }, selectIdentity: true);
+        AssertCreatedBy(db.SingleById<TenantInvoice>(id), "alice");
+
+        // The same value of a different type is the same rule
+        db.EnsureWrites<IHasTenantId>(x => x.TenantId, 1L);
+        Assert.That(db.GetFilters(), Is.SameAs(rules));
+
+        // A connection can't ensure 2 different values for a column
+        var ex = Assert.Throws<InvalidOperationException>(() => db.EnsureWrites<IHasTenantId>(x => x.TenantId, 2));
+        Assert.That(ex.Message, Does.Contain("TenantId"));
+        Assert.Throws<InvalidOperationException>(() => db.EnsureWrites<TenantInvoice>(x => x.TenantId, 2));
+
+        // A different OnInsert, OnUpdate or OnWrite value replaces the previous value, which logs a warning
+        db.OnInsert<IAudit>(x => x.CreatedBy, "bob");
+        id = db.Insert(new TenantInvoice { Customer = "Globex" }, selectIdentity: true);
+        AssertCreatedBy(db.SingleById<TenantInvoice>(id), "bob");
+    }
+
+    [Test]
     public void Invalid_rules_throw()
     {
         using var db = OpenForUser("alice");

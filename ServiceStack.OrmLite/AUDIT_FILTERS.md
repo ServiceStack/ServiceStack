@@ -55,6 +55,28 @@ var adminDb = db.WithoutFilters();
   current value. Use the function overload when the filter itself changes, e.g. no filter for admins.
 - Registering on a connection that isn't an `OrmLiteConnection` throws, so a filter is never silently ignored.
 
+### Registering more than once
+
+A connection can be configured more than once, e.g. a shared SQLite `:memory:` connection that's opened multiple times
+in a request, so registrations are compared with the ones a connection already has:
+
+| Registered again | Result |
+|-|-|
+| The same filter with the same captured values, or the same filter function | Ignored |
+| The same rule for a column with the same value, or the same function | Ignored |
+| The same filter with different captured values, e.g. another tenant | Added, with a warning logged as rows need to match both |
+| `EnsureWrites` for a column with a different value | Throws `InvalidOperationException` |
+| `OnInsert` / `OnUpdate` for a column with a different value | Added, replacing the previous value, with a warning logged |
+
+- Filters are compared by their expression and the values they captured when registered. Captured values that aren't
+  simple values, e.g. collections, can't be compared, so the filter is added without a warning.
+- Lambdas that capture variables are a new function each time they're created, so filter functions and rule value
+  functions like `() => clock.UtcNow` are added again. Functions that don't capture, like `() => DateTime.UtcNow`,
+  are the same function. Repeated rules set the same value and repeated filters add the same condition.
+- Rule values are compared as the column's type, so `1` and `1L` are the same value. Rules for the same column on an
+  interface and a table implementing it are compared too.
+- Warnings are logged to the `OrmLiteConnectionFilters` logger.
+
 ### App-defined openers
 
 Apps wrap their rules in an extension method so they're defined once:

@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using ServiceStack.Logging;
 
 namespace ServiceStack.OrmLite;
 
@@ -14,6 +15,8 @@ namespace ServiceStack.OrmLite;
 public sealed class OrmLiteConnectionFilters
 {
     public static readonly OrmLiteConnectionFilters Empty = new([], []);
+
+    private static readonly ILog Log = LogManager.GetLogger(typeof(OrmLiteConnectionFilters));
 
     private readonly EnsureFilterDef[] ensureFilters;
     private readonly ConcurrentDictionary<Type, Func<LambdaExpression?>[]> ensureFiltersByTable = new();
@@ -34,11 +37,41 @@ public sealed class OrmLiteConnectionFilters
     /// </summary>
     public bool HasWriteRules => writeRules.Length > 0;
 
-    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, LambdaExpression predicate) =>
-        Add(new EnsureFilterDef(type, predicate, null));
+    /// <summary>
+    /// Adds the filter, unless the same filter with the same captured values is already registered
+    /// </summary>
+    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, LambdaExpression predicate)
+    {
+        var filter = new EnsureFilterDef(type, predicate, null);
+        foreach (var existing in ensureFilters)
+        {
+            if (existing.Type != type || existing.Predicate == null || existing.Shape != filter.Shape)
+                continue;
 
-    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, Func<LambdaExpression?> predicateFn) =>
-        Add(new EnsureFilterDef(type, null, predicateFn));
+            var comparison = CapturedValues.Compare(existing.Values, filter.Values);
+            if (comparison == CapturedValuesComparison.Same)
+                return this;
+
+            // The same filter with different values is likely registered twice, e.g. for 2 different tenants
+            if (comparison == CapturedValuesComparison.Different)
+                Log.Warn($"Connection already has the filter {type.Name}: {predicate} with different values, " +
+                         "rows need to match both filters");
+        }
+        return Add(filter);
+    }
+
+    /// <summary>
+    /// Adds the filter function, unless the same function is already registered
+    /// </summary>
+    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, Func<LambdaExpression?> predicateFn)
+    {
+        foreach (var existing in ensureFilters)
+        {
+            if (existing.Type == type && Equals(existing.PredicateFn, predicateFn))
+                return this;
+        }
+        return Add(new EnsureFilterDef(type, null, predicateFn));
+    }
 
     private OrmLiteConnectionFilters Add(EnsureFilterDef filter)
     {
@@ -48,11 +81,38 @@ public sealed class OrmLiteConnectionFilters
         return new OrmLiteConnectionFilters(filters, writeRules);
     }
 
-    internal OrmLiteConnectionFilters AddWriteRule(Type type, WriteRuleType ruleType, string memberName, Func<object?> valueFn)
+    /// <summary>
+    /// Adds the rule, unless the same rule with the same value or function is already registered.
+    /// A different EnsureWrites value for the same column throws.
+    /// </summary>
+    internal OrmLiteConnectionFilters AddWriteRule(WriteRuleDef rule)
     {
+        foreach (var existing in writeRules)
+        {
+            if (existing.RuleType != rule.RuleType || existing.MemberName != rule.MemberName)
+                continue;
+
+            var sameType = existing.Type == rule.Type;
+            if (sameType && existing.HasSameValue(rule))
+                return this;
+
+            // Rules with values that can't be compared, e.g. from different functions, are all applied
+            var appliesToSameTables = sameType || existing.Type.IsAssignableFrom(rule.Type) || rule.Type.IsAssignableFrom(existing.Type);
+            if (!appliesToSameTables || !existing.HasValue || !rule.HasValue || Equals(existing.Value, rule.Value))
+                continue;
+
+            if (rule.RuleType == WriteRuleType.EnsureWrites)
+                throw new InvalidOperationException(
+                    $"Connection already ensures {existing.Type.Name}.{rule.MemberName} is '{existing.Value}', " +
+                    $"it can't also be '{rule.Value}'");
+
+            Log.Warn($"Connection already has an {rule.RuleType} rule setting {existing.Type.Name}.{rule.MemberName} " +
+                     $"to '{existing.Value}', which is replaced by '{rule.Value}'");
+        }
+
         var rules = new WriteRuleDef[writeRules.Length + 1];
         writeRules.CopyTo(rules, 0);
-        rules[writeRules.Length] = new WriteRuleDef(type, ruleType, memberName, valueFn);
+        rules[writeRules.Length] = rule;
         return new OrmLiteConnectionFilters(ensureFilters, rules);
     }
 
@@ -125,9 +185,33 @@ public sealed class OrmLiteConnectionFilters
     /// </summary>
     public bool HasEnsureFilters<T>() => GetEnsureFilters<T>().Length > 0;
 
-    private sealed class EnsureFilterDef(Type type, LambdaExpression? predicate, Func<LambdaExpression?>? predicateFn)
+    private sealed class EnsureFilterDef
     {
-        public Type Type { get; } = type;
+        private readonly LambdaExpression? predicate;
+        private readonly Func<LambdaExpression?>? predicateFn;
+
+        public EnsureFilterDef(Type type, LambdaExpression? predicate, Func<LambdaExpression?>? predicateFn)
+        {
+            Type = type;
+            this.predicate = predicate;
+            this.predicateFn = predicateFn;
+            if (predicate != null)
+            {
+                // Closures are shown by their type, so the same filter from 2 calls has the same shape
+                Shape = predicate.ToString();
+                Values = CapturedValues.Of(predicate);
+            }
+        }
+
+        public Type Type { get; }
+        public LambdaExpression? Predicate => predicate;
+        public Func<LambdaExpression?>? PredicateFn => predicateFn;
+
+        /// <summary>
+        /// The filter's expression and the values it captured when it was registered, to detect duplicates
+        /// </summary>
+        public string? Shape { get; }
+        public List<object?> Values { get; } = [];
 
         /// <summary>
         /// Resolves the filter for the table: fixed filters are rebound once, filters from a function are rebound
@@ -165,6 +249,110 @@ internal sealed class WriteRuleDef(Type type, WriteRuleType ruleType, string mem
     public WriteRuleType RuleType { get; } = ruleType;
     public string MemberName { get; } = memberName;
     public Func<object?> ValueFn { get; } = valueFn;
+
+    /// <summary>
+    /// The rule's value when it's not from a function, to detect duplicate and conflicting rules
+    /// </summary>
+    public bool HasValue { get; init; }
+    public object? Value { get; init; }
+
+    public bool HasSameValue(WriteRuleDef other) => HasValue
+        ? other.HasValue && Equals(Value, other.Value)
+        : !other.HasValue && Equals(ValueFn, other.ValueFn);
+}
+
+internal enum CapturedValuesComparison
+{
+    Same,
+    Different,
+    Unknown,
+}
+
+/// <summary>
+/// The values an expression captures, e.g. the tenantId in x =&gt; x.TenantId == tenantId, read when it's registered
+/// </summary>
+internal sealed class CapturedValues : ExpressionVisitor
+{
+    private readonly List<object?> values = [];
+
+    public static List<object?> Of(Expression expression)
+    {
+        var visitor = new CapturedValues();
+        visitor.Visit(expression);
+        return visitor.values;
+    }
+
+    /// <summary>
+    /// Whether the values of 2 expressions with the same shape are the same. Different values that aren't simple
+    /// values, e.g. collections, can't be compared.
+    /// </summary>
+    public static CapturedValuesComparison Compare(List<object?> a, List<object?> b)
+    {
+        if (a.Count != b.Count)
+            return CapturedValuesComparison.Unknown;
+
+        var result = CapturedValuesComparison.Same;
+        for (var i = 0; i < a.Count; i++)
+        {
+            if (Equals(a[i], b[i]))
+                continue;
+            if (!IsSimple(a[i]) || !IsSimple(b[i]))
+                return CapturedValuesComparison.Unknown;
+            result = CapturedValuesComparison.Different;
+        }
+        return result;
+    }
+
+    private static bool IsSimple(object? value) =>
+        value == null || value is string || value.GetType().IsValueType;
+
+    protected override Expression VisitMember(MemberExpression node)
+    {
+        if (TryEvaluate(node, out var value))
+        {
+            values.Add(value);
+            return node;
+        }
+        return base.VisitMember(node);
+    }
+
+    protected override Expression VisitConstant(ConstantExpression node)
+    {
+        values.Add(node.Value);
+        return node;
+    }
+
+    // A captured variable is a member of a closure, e.g. value(Closure).tenantId or value(Closure).user.TenantId
+    private static bool TryEvaluate(Expression? expression, out object? value)
+    {
+        value = null;
+        if (expression is ConstantExpression constant)
+        {
+            value = constant.Value;
+            return true;
+        }
+        if (expression is not MemberExpression { Expression: not null } member
+            || !TryEvaluate(member.Expression, out var target) || target == null)
+            return false;
+
+        try
+        {
+            switch (member.Member)
+            {
+                case FieldInfo field:
+                    value = field.GetValue(target);
+                    return true;
+                case PropertyInfo property:
+                    value = property.GetValue(target);
+                    return true;
+            }
+        }
+        catch (Exception)
+        {
+            // treated as a value that can't be compared
+        }
+        return false;
+    }
 }
 
 /// <summary>

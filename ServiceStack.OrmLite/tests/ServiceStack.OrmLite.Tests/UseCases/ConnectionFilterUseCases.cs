@@ -214,6 +214,30 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
     }
 
     [Test]
+    public void Registering_the_same_filter_again_is_ignored()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        // e.g. when a connection is configured more than once
+        using var db = OpenDbConnection().ForTenant(1).ForTenant(1);
+        db.EnsureFilter<TenantOrder>(x => !x.IsDeleted);
+        db.EnsureFilter<TenantOrder>(x => !x.IsDeleted);
+
+        var filters = db.GetFilters();
+        Assert.That(db.From<TenantOrder>().Params.Count, Is.EqualTo(1));
+        Assert.That(db.Select<TenantOrder>().Map(x => x.Id), Is.EquivalentTo(new[] { 1, 3 }));
+
+        db.ForTenant(1);
+        Assert.That(db.GetFilters(), Is.SameAs(filters));
+
+        // A different value is another filter, which logs a warning as rows need to match both
+        db.ForTenant(2);
+        Assert.That(db.From<TenantOrder>().Params.Count, Is.EqualTo(2));
+        Assert.That(db.Select<TenantOrder>(), Is.Empty);
+    }
+
+    [Test]
     public void WithoutFilters_for_admin_tasks()
     {
         using (var seed = OpenDbConnection())
