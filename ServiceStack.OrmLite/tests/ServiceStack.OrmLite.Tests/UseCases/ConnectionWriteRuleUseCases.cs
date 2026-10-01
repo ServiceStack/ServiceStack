@@ -359,6 +359,13 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
             db.DropAndCreateTable<TenantOrder>();
             db.Insert(new TenantOrder { Id = 1, Total = 10 });
             Assert.That(db.SingleById<TenantOrder>(1).TenantId, Is.EqualTo(1));
+
+            // WithoutFilters() has no rules, e.g. for an admin task writing another tenant's rows
+            var adminDb = db.WithoutFilters();
+            var adminId = adminDb.Insert(new TenantInvoice { TenantId = 2, Customer = "Admin", CreatedDate = Invoices.Created }, selectIdentity: true);
+            var adminRow = adminDb.SingleById<TenantInvoice>(adminId);
+            Assert.That(adminRow.TenantId, Is.EqualTo(2));
+            Assert.That(adminRow.CreatedBy, Is.Null);
         }
 
         // Connections opened later have no rules

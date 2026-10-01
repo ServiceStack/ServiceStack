@@ -36,12 +36,7 @@ read back for wide tables.
 
 ## 3. Modelling
 
-### 3.1 Connection Filters and Write Rules (in progress)
-Connection-scoped mandatory filters for multi-tenancy and soft deletes (`db.EnsureFilter<T>()`), and write rules for
-auditing columns (`db.EnsureWrites<T>()`, `db.OnInsert<T>()`, `db.OnUpdate<T>()`). Filters on reads, updates and deletes
-are done. See [AUDIT_FILTERS.md](AUDIT_FILTERS.md) for the plan and remaining stages.
-
-### 3.2 LINQ Queries Into JSON / Complex-Type Columns (L)
+### 3.1 LINQ Queries Into JSON / Complex-Type Columns (L)
 Complex properties are already stored as JSON/JSV text blobs, but querying them needs `Sql.JsonValue("path")` strings. Translate member access directly:
 ```csharp
 db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
@@ -50,7 +45,7 @@ db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
 - Includes optional `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes.
 - Requires JSON (not JSV) serialization for the column, so this would be opt-in via `[Json]` / `[PgSqlJsonB]`.
 
-### 3.3 Vector Columns and Similarity Search (M)
+### 3.2 Vector Columns and Similarity Search (M)
 First-class `float[]` / `ReadOnlyMemory<float>` vector columns for AI and RAG apps. Supported natively by pgvector, SQL Server 2025 `VECTOR`, sqlite-vec and MySQL 9 `VECTOR`:
 ```csharp
 public class Doc { public int Id { get; set; } [Vector(1536)] public float[] Embedding { get; set; } }
@@ -59,7 +54,7 @@ var nearest = db.Select(db.From<Doc>().OrderBy(x => Sql.CosineDistance(x.Embeddi
 - Includes index DDL (`HNSW` / `IVFFLAT`) through attributes.
 - Would pair naturally with ServiceStack's AI features.
 
-### 3.4 Temporal / System-Versioned Tables (M)
+### 3.3 Temporal / System-Versioned Tables (M)
 `[SystemVersioned]` DDL support, plus `q.AsOf(timestamp)` / `q.Between(from, to)` for SQL Server temporal tables and MariaDB system-versioned tables. On other dialects this would be emulated with history tables and triggers.
 
 ---

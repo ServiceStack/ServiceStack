@@ -19,9 +19,26 @@ public class OrmLiteConnection
 {
     public readonly OrmLiteConnectionFactory Factory;
     public string? Tag { get; set; }
-    public IDbTransaction? Transaction { get; set; }
+    private IDbTransaction? transaction;
+    public IDbTransaction? Transaction
+    {
+        get => source != null ? source.Transaction : transaction;
+        set
+        {
+            if (source != null)
+                source.Transaction = value;
+            else
+                transaction = value;
+        }
+    }
     public IDbTransaction? DbTransaction => Transaction;
     private IDbConnection? dbConnection;
+
+    /// <summary>
+    /// The connection this is an unfiltered view of, when created by WithoutFilters(), which shares its underlying
+    /// connection and transaction
+    /// </summary>
+    private OrmLiteConnection? source;
 
     public IOrmLiteDialectProvider DialectProvider { get; set; }
     public string? LastCommandText { get; set; }
@@ -37,7 +54,7 @@ public class OrmLiteConnection
     public object? WriteLock { get; set; }
 
     /// <summary>
-    /// Mandatory filters applied to queries on this connection, see db.EnsureFilter()
+    /// Mandatory filters and write rules applied to statements on this connection, see db.EnsureFilter()
     /// </summary>
     public OrmLiteConnectionFilters Filters { get; internal set; } = OrmLiteConnectionFilters.Empty;
 
@@ -57,7 +74,28 @@ public class OrmLiteConnection
         }
     }
 
-    public IDbConnection DbConnection => dbConnection ??= ConnectionString.ToDbConnection(Factory.DialectProvider);
+    public IDbConnection DbConnection => source != null
+        ? source.DbConnection
+        : dbConnection ??= ConnectionString.ToDbConnection(Factory.DialectProvider);
+
+    /// <summary>
+    /// A connection over the same underlying connection and transaction, without this connection's filters and
+    /// rules. Disposing or closing it doesn't close the underlying connection.
+    /// </summary>
+    internal OrmLiteConnection CreateWithoutFilters()
+    {
+        var owner = source ?? this;
+        return new OrmLiteConnection(Factory) {
+            source = owner,
+            DialectProvider = owner.DialectProvider,
+            Tag = owner.Tag,
+            NamedConnection = owner.NamedConnection,
+            CommandTimeout = owner.CommandTimeout,
+            ConnectionId = owner.ConnectionId,
+            WriteLock = owner.WriteLock,
+            connectionString = owner.connectionString,
+        };
+    }
 
     /// <summary>
     /// The number of times a shared connection, e.g. SQLite :memory:, is open
@@ -75,6 +113,9 @@ public class OrmLiteConnection
 
     public void Dispose()
     {
+        if (source != null)
+            return; // the underlying connection is owned by the connection it was created from
+
         Factory.OnDispose?.Invoke(this);
         if (!Factory.AutoDisposeConnection)
         {
@@ -122,6 +163,9 @@ public class OrmLiteConnection
 
     public void Close()
     {
+        if (source != null)
+            return;
+
         if (dbConnection == null)
         {
             LogManager.GetLogger(GetType()).WarnFormat("No dbConnection to Close()");
@@ -167,6 +211,12 @@ public class OrmLiteConnection
 
     public void Open()
     {
+        if (source != null)
+        {
+            source.Open();
+            return;
+        }
+
         var dbConn = DbConnection;
         if (dbConn.State == ConnectionState.Broken)
             dbConn.Close();
@@ -201,6 +251,12 @@ public class OrmLiteConnection
 
     public async Task OpenAsync(CancellationToken token = default)
     {
+        if (source != null)
+        {
+            await source.OpenAsync(token).ConfigAwait();
+            return;
+        }
+
         var dbConn = DbConnection;
         if (dbConn.State == ConnectionState.Broken)
             dbConn.Close();

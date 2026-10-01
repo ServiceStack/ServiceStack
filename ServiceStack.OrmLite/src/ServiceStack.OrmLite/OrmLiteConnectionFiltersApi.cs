@@ -130,6 +130,18 @@ public static class OrmLiteConnectionFiltersApi
     }
 
     /// <summary>
+    /// The same connection and transaction without any of its filters or rules, e.g. for admin tasks:
+    /// <para>var adminDb = db.WithoutFilters();</para>
+    /// Disposing it doesn't close the connection.
+    /// </summary>
+    public static IDbConnection WithoutFilters(this IDbConnection db)
+    {
+        var dbConn = db.ToOrmLiteConnection()
+            ?? throw new NotSupportedException("WithoutFilters() can only be used with connections opened by OrmLite");
+        return dbConn.CreateWithoutFilters();
+    }
+
+    /// <summary>
     /// The mandatory filters of the connection
     /// </summary>
     public static OrmLiteConnectionFilters GetFilters(this IDbConnection db) =>

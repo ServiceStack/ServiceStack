@@ -187,8 +187,10 @@ with `[IgnoreOnUpdate]`, and `OnWrite` for the modified columns.
 ## `WithoutFilters()`
 
 - Returns a lightweight `OrmLiteConnection` over the same underlying connection and transaction, with no filters or
-  rules, so admin tasks can run in the current transaction.
-- Disposing it doesn't close the underlying connection.
+  rules, so admin tasks can run in the current transaction. It delegates its connection and transaction to the
+  connection it was created from, so a transaction opened from either is used by both.
+- Disposing or closing it doesn't close the underlying connection.
+- Throws for connections that weren't opened by OrmLite.
 - Filters and rules can't be removed from a connection otherwise, and there's no per-query bypass like
   `q.IgnoreFilters()`, so one line can't remove a mandatory filter from a query.
 
@@ -234,46 +236,18 @@ MySqlConnector, and a full test suite run.
    values are set on a command's params.
 4. ✅ **Write rules**: `EnsureWrites`, `OnInsert` and `OnUpdate` for object writes, expression writes and upserts, then
    `BulkInsert` and `InsertIntoSelect`.
-5. **`WithoutFilters()`** and the reference docs: a new page leading with the `GetDbConnection()` pattern, multi-tenancy
+5. ✅ **`WithoutFilters()`** and the reference docs: a new page leading with the `GetDbConnection()` pattern, multi-tenancy
    and auditing examples, the table of covered APIs and the raw SQL caveat, plus release notes.
 
-## Docs checklist for stage 5
+## Docs
 
-Everything the docs need is recorded in this file and the reference tests, so they can be written from a new session.
+In `/home/mythz/src/ServiceStack/docs.servicestack.net/MyApp`:
 
-**Where they go** (in `/home/mythz/src/ServiceStack/docs.servicestack.net/MyApp`):
-
-- Release notes: a new section in `_pages/releases/v10_04.md`, written as marketing release notes that lead with the
-  problem and the `GetDbConnection()` pattern.
-- Reference docs: a new `_pages/ormlite/connection-filters.md` page with full details, linked from
-  `_pages/ormlite/sidebar.json`. `_pages/ormlite/ensure-apis.md` and `filters.md` should link to it.
-- C# examples with the SQL they generate use the `<generated-sql>` component: a `csharp` code block followed by a `sql`
-  code block, with param values in a `-- @p0 = 1` comment. The SQL is captured from running the example, not written by
-  hand.
-
-**Sources**: the tables and notes above, and the reference tests in `tests/ServiceStack.OrmLite.Tests/UseCases/`:
-`ConnectionFilterUseCases`, `ConnectionFilterReadUseCases`, `ConnectionFilterWriteUseCases`,
-`ConnectionWriteRuleUseCases`, and the stage 5 tests when they're added.
-
-**What to cover**:
-
-- Registering filters: tables and interfaces, combining filters, the function overload and captured values.
-- App-defined openers and the ServiceStack `GetDbConnection()` override.
-- The table of covered read, update and delete APIs, with generated SQL for a query, a by-id read, a join and an update.
-- What isn't filtered: complete SQL statements, legacy APIs without a table type, and queries created from another
-  connection or `OrmLiteConfig.DialectProvider.SqlExpression<T>()`.
-- Behaviour of rows that don't match: 0 rows affected, `OptimisticConcurrencyException` with `[RowVersion]`, and
-  `Save` / `Upsert` failing on the primary key.
-- `Upsert` on a filtered table using two statements.
-- Write rules: the "Which rule to use" table first, then the tenant and auditing example from
-  `ConnectionWriteRuleUseCases`, the `EnsureWrites` table, which
-  APIs modify objects, and the `[IgnoreOnUpdate]` recommendation for created columns.
-- `WithoutFilters()` (stage 5).
-- Changes for custom dialect providers: `IsFullSelectStatement()` was added to `IOrmLiteDialectProvider` (implemented
-  by `OrmLiteDialectProviderBase`), `SetParameterValues()` overrides need to skip params where
-  `OrmLiteConnectionFiltersApi.IsFilterParam()` is true, and `SqlExpression` overrides that name params need to use
-  `NextParamName()`.
-- `FUTURE.md`: remove 3.1 when the feature is complete.
+- Reference docs: `_pages/ormlite/connection-filters.md`, linked from `_pages/ormlite/sidebar.json`, `ensure-apis.md`,
+  `filters.md` and `upsert.md`.
+- Release notes: "Multi-tenancy, soft deletes and auditing with connection filters" in `_pages/releases/v10_04.md`.
+- The SQL in their `<generated-sql>` examples was captured from running the examples on SQLite. Update both when
+  behaviour changes.
 
 ## Decisions
 

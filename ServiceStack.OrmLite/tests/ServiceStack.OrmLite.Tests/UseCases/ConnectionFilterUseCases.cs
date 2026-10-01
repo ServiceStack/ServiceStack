@@ -214,6 +214,55 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
     }
 
     [Test]
+    public void WithoutFilters_for_admin_tasks()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        using var db = OpenDbConnection().ForTenant(1);
+
+        // The same connection without its filters, e.g. for a report across tenants
+        using (var adminDb = db.WithoutFilters())
+        {
+            Assert.That(adminDb.Count<TenantOrder>(), Is.EqualTo(4));
+            Assert.That(adminDb.SingleById<TenantOrder>(4), Is.Not.Null);
+            Assert.That(adminDb.Select(adminDb.From<TenantOrder>().Where(x => x.Total > 400)).Count, Is.EqualTo(1));
+        }
+
+        // Disposing it doesn't close the connection, which is still filtered
+        Assert.That(db.Count<TenantOrder>(), Is.EqualTo(3));
+        Assert.That(db.SingleById<TenantOrder>(4), Is.Null);
+    }
+
+    [Test]
+    public void WithoutFilters_shares_the_connections_transaction()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        using var db = OpenDbConnection().ForTenant(1);
+        var adminDb = db.WithoutFilters();
+
+        using (var trans = db.OpenTransaction())
+        {
+            // Changes with and without filters are in the same transaction
+            Assert.That(db.UpdateOnly(() => new TenantOrder { Total = 1 }), Is.EqualTo(3));
+            Assert.That(adminDb.UpdateOnly(() => new TenantOrder { Total = 2 }, where: x => x.Id == 4), Is.EqualTo(1));
+            Assert.That(adminDb.Select<TenantOrder>(x => x.Total <= 2).Count, Is.EqualTo(4));
+            trans.Rollback();
+        }
+        Assert.That(adminDb.Select<TenantOrder>(x => x.Total <= 2), Is.Empty);
+
+        // A transaction can also be opened from the unfiltered connection
+        using (var trans = adminDb.OpenTransaction())
+        {
+            Assert.That(db.UpdateOnly(() => new TenantOrder { Total = 1 }), Is.EqualTo(3));
+            trans.Commit();
+        }
+        Assert.That(adminDb.Select<TenantOrder>(x => x.Total == 1).Count, Is.EqualTo(3));
+    }
+
+    [Test]
     public async Task Async_APIs()
     {
         using (var seed = await OpenDbConnectionAsync())
