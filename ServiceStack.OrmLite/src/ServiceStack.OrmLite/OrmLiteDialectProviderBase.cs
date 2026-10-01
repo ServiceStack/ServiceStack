@@ -40,6 +40,9 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null) =>
         throw new NotSupportedException($"{GetType().Name} doesn't support returning rows from UPDATE and DELETE statements");
 
+    public virtual ExplainQuery ToExplainQuery(IDbConnection db, string sql, bool analyze) =>
+        throw new NotSupportedException($"{GetType().Name} doesn't support returning query plans");
+
     /// <summary>
     /// The columns of a RETURNING clause: all the table's columns, or only the returnFields
     /// </summary>

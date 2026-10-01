@@ -285,6 +285,9 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             : null;
     }
 
+    public override ExplainQuery ToExplainQuery(IDbConnection db, string sql, bool analyze) =>
+        new() { Sql = (analyze ? "EXPLAIN ANALYZE " : "EXPLAIN ") + sql };
+
     public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null) =>
         sql.TrimEnd().TrimEnd(';') + " RETURNING " + GetReturningColumns(modelDef, returnFields);
 

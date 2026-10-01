@@ -95,16 +95,9 @@ Would cover:
 
 ---
 
-## 6. Observability and Diagnostics
+## 6. Resilience
 
-### 6.1 `db.Explain(q)` (S)
-Returns the provider's query plan (`EXPLAIN [ANALYZE]`, `SET SHOWPLAN_XML`, `EXPLAIN QUERY PLAN`), which helps with index tuning from tests or admin UIs.
-
----
-
-## 7. Resilience
-
-### 7.1 Transient-Fault Retry Policies (S/M)
+### 6.1 Transient-Fault Retry Policies (S/M)
 ```csharp
 dbFactory.RetryPolicy = OrmLiteRetry.Exponential(maxRetries: 3)
     .Handle(SqlServerTransient.IsTransient)   // deadlocks (1205), Azure throttling, failover
@@ -112,14 +105,14 @@ dbFactory.RetryPolicy = OrmLiteRetry.Exponential(maxRetries: 3)
 ```
 Retries would only apply outside explicit transactions, or re-run a whole `db.InTransaction(fn)` block. Serializable isolation and cloud databases make this important.
 
-### 7.2 Read/Write Connection Routing (S)
+### 6.2 Read/Write Connection Routing (S)
 Named connections exist, but routing is manual. An `OpenReadOnlyDbConnection()` (or `db.ReadReplica()`) convention would pick a replica connection string automatically, falling back to the primary when no replica is configured.
 
 ---
 
-## 8. Security
+## 7. Security
 
-### 8.1 Roslyn Analyzer Package (M)
+### 7.1 Roslyn Analyzer Package (M)
 A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 - String concatenation or interpolation passed to `Where(string)`, `OrderBy(string)`, `Unsafe*`, `SqlList(string)` and `ExecuteSql(string)`. The code fix would suggest parameters or `Sql.Fmt()`.
 - Use of `Unsafe*` APIs with non-constant arguments.

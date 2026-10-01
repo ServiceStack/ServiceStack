@@ -65,6 +65,20 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 
 	public override bool SupportsUpsert => UseNativeUpsert;
 
+	// EXPLAIN returns a row for each table of the query. Analyzing uses EXPLAIN ANALYZE in MySQL 8.0.18+ which
+	// returns the lines of the plan, and ANALYZE in MariaDB which returns rows with actual row counts.
+	public override ExplainQuery ToExplainQuery(IDbConnection db, string sql, bool analyze)
+	{
+		if (!analyze)
+			return new() { Sql = "EXPLAIN " + sql, ReadPlan = reader => ExplainQuery.ReadTable(reader) };
+
+		var serverVersion = (db as DbConnection ?? db?.ToDbConnection() as DbConnection)?.ServerVersion;
+		var isMariaDb = serverVersion?.IndexOf("MariaDB", StringComparison.OrdinalIgnoreCase) >= 0;
+		return isMariaDb
+			? new() { Sql = "ANALYZE " + sql, ReadPlan = reader => ExplainQuery.ReadTable(reader) }
+			: new() { Sql = "EXPLAIN ANALYZE " + sql };
+	}
+
 	public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
 		ICollection<string> insertFields = null, ICollection<string> updateOnly = null)
 	{

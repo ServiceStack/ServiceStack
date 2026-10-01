@@ -462,6 +462,29 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
     public override string SqlBool(bool value) => value ? "1" : "0";
 
+    public override ExplainQuery ToExplainQuery(IDbConnection db, string sql, bool analyze) => analyze
+        ? throw new NotSupportedException("SQLite doesn't support analyzing query plans")
+        : new() { Sql = "EXPLAIN QUERY PLAN " + sql, ReadPlan = ReadQueryPlan };
+
+    // EXPLAIN QUERY PLAN returns the steps of the plan as a tree of (id, parent, notused, detail) rows
+    private static string ReadQueryPlan(IDataReader reader)
+    {
+        var depths = new Dictionary<long, int>();
+        var sb = new StringBuilder();
+        while (reader.Read())
+        {
+            var id = Convert.ToInt64(reader.GetValue(0));
+            var parent = Convert.ToInt64(reader.GetValue(1));
+            var depth = depths.TryGetValue(parent, out var parentDepth) ? parentDepth + 1 : 0;
+            depths[id] = depth;
+
+            if (sb.Length > 0)
+                sb.Append('\n');
+            sb.Append(' ', depth * 2).Append(Convert.ToString(reader.GetValue(3)));
+        }
+        return sb.ToString();
+    }
+
     // Requires SQLite 3.35+
     public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition>? returnFields = null) =>
         sql.TrimEnd().TrimEnd(';') + " RETURNING " + GetReturningColumns(modelDef, returnFields);

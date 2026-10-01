@@ -48,6 +48,12 @@ public interface IOrmLiteDialectProvider
     /// support it.
     /// </summary>
     string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null);
+
+    /// <summary>
+    /// How to get the query plan of a statement, where analyze also runs the statement to include actual row counts
+    /// and timings. Throws NotSupportedException if the RDBMS doesn't support it.
+    /// </summary>
+    ExplainQuery ToExplainQuery(IDbConnection db, string sql, bool analyze);
     
     /// <summary>
     /// Configure Provider with connection string options 

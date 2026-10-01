@@ -847,6 +847,23 @@ namespace ServiceStack.OrmLite.SqlServer
         /// UPDATE "Table" SET ... OUTPUT INSERTED."Id", ... WHERE ...
         /// Note: SQL Server doesn't allow OUTPUT without INTO on tables with enabled triggers
         /// </summary>
+        // SHOWPLAN_TEXT returns the estimated plan without running the query, but not for statements with params,
+        // so they're merged into the SQL. STATISTICS PROFILE runs the query and returns the plan with actual row
+        // counts after its results.
+        public override ExplainQuery ToExplainQuery(IDbConnection db, string sql, bool analyze) => analyze
+            ? new() {
+                Sql = sql,
+                BeforeSql = "SET STATISTICS PROFILE ON",
+                AfterSql = "SET STATISTICS PROFILE OFF",
+                ReadPlan = reader => ExplainQuery.ReadTable(reader, "Rows", "Executes", "StmtText"),
+            }
+            : new() {
+                Sql = sql,
+                BeforeSql = "SET SHOWPLAN_TEXT ON",
+                AfterSql = "SET SHOWPLAN_TEXT OFF",
+                MergeParams = true,
+            };
+
         public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null)
         {
             var output = GetOutputClause(modelDef, isDelete ? "DELETED" : "INSERTED", returnFields);
