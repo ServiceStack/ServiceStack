@@ -624,16 +624,25 @@ namespace ServiceStack.OrmLite.SqlServer
         public override bool SupportsUpsert => true;
 
         // MERGE ... OUTPUT INSERTED.* returns the row as it is after the insert or update
-        public override string ToUpsertReturningStatement(string sql, ModelDefinition modelDef)
+        public override string ToUpsertReturningStatement(string sql, ModelDefinition modelDef, ICollection<FieldDefinition> returnFields = null) =>
+            sql.TrimEnd().TrimEnd(';') + " " + GetOutputClause(modelDef, "INSERTED", returnFields) + ";";
+
+        /// <summary>
+        /// OUTPUT clause of all the table's columns, or only the returnFields
+        /// </summary>
+        private string GetOutputClause(ModelDefinition modelDef, string prefix, ICollection<FieldDefinition> returnFields)
         {
+            var returnAll = returnFields == null || returnFields.Count == 0;
             var sb = StringBuilderCache.Allocate();
             foreach (var fieldDef in modelDef.FieldDefinitions)
             {
-                if (fieldDef.CustomSelect != null)
+                if (fieldDef.CustomSelect != null || (!returnAll && !returnFields.Contains(fieldDef)))
                     continue;
-                sb.Append(sb.Length == 0 ? "OUTPUT " : ", ").Append("INSERTED.").Append(GetQuotedColumnName(fieldDef));
+                sb.Append(sb.Length == 0 ? "OUTPUT " : ", ").Append(prefix).Append('.').Append(GetQuotedColumnName(fieldDef));
             }
-            return sql.TrimEnd().TrimEnd(';') + " " + StringBuilderCache.ReturnAndFree(sb) + ";";
+            if (sb.Length == 0)
+                throw new ArgumentException($"No columns of {modelDef.Name} to return", nameof(returnFields));
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
@@ -838,17 +847,9 @@ namespace ServiceStack.OrmLite.SqlServer
         /// UPDATE "Table" SET ... OUTPUT INSERTED."Id", ... WHERE ...
         /// Note: SQL Server doesn't allow OUTPUT without INTO on tables with enabled triggers
         /// </summary>
-        public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete)
+        public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null)
         {
-            var prefix = isDelete ? "DELETED" : "INSERTED";
-            var sb = StringBuilderCache.Allocate();
-            foreach (var fieldDef in modelDef.FieldDefinitions)
-            {
-                if (fieldDef.CustomSelect != null)
-                    continue;
-                sb.Append(sb.Length == 0 ? "OUTPUT " : ", ").Append(prefix).Append('.').Append(GetQuotedColumnName(fieldDef));
-            }
-            var output = StringBuilderCache.ReturnAndFree(sb);
+            var output = GetOutputClause(modelDef, isDelete ? "DELETED" : "INSERTED", returnFields);
 
             sql = sql.TrimEnd().TrimEnd(';');
 

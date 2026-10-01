@@ -17,8 +17,8 @@ public interface IOrmLiteUpsertDialectProvider
         ICollection<string> updateOnly = null);
 
     /// <summary>
-    /// Converts a native UPSERT statement into one that also returns all columns of the upserted row, e.g. with
-    /// RETURNING or OUTPUT, or returns null if the RDBMS doesn't support it
+    /// Converts a native UPSERT statement into one that also returns the upserted row, e.g. with RETURNING or
+    /// OUTPUT, with all its columns or only the returnFields, or returns null if the RDBMS doesn't support it
     /// </summary>
-    string ToUpsertReturningStatement(string sql, ModelDefinition modelDef);
+    string ToUpsertReturningStatement(string sql, ModelDefinition modelDef, ICollection<FieldDefinition> returnFields = null);
 }

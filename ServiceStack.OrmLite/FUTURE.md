@@ -24,12 +24,7 @@ Recursive CTEs are supported with `q.WithRecursive(seed, recurse)`. Remaining CT
 
 ## 2. Data Access
 
-### 2.1 Returning Only Selected Columns (S)
-`UpdateOnlyReturning()`, `DeleteReturning()` and `Upsert` use `RETURNING` / `OUTPUT` to return all columns of the
-affected rows. Allow returning only selected columns, e.g. `returning: x => new { x.Id, x.Status }`, to reduce the data
-read back for wide tables.
-
-### 2.2 Bulk Upsert / Merge (M)
+### 2.1 Bulk Upsert / Merge (M)
 `BulkInsert` exists. Add `BulkUpsert<T>(rows, updateOnly)` that bulk-loads into a temp table (COPY / SqlBulkCopy / multi-row VALUES), then runs one `MERGE` / `ON CONFLICT` / `ON DUPLICATE KEY` statement.
 
 ---

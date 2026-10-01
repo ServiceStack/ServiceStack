@@ -184,8 +184,8 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
 
     public override bool SupportsUpsert => true;
 
-    public override string ToUpsertReturningStatement(string sql, ModelDefinition modelDef) =>
-        ToReturningStatement(sql, modelDef, isDelete: false);
+    public override string ToUpsertReturningStatement(string sql, ModelDefinition modelDef, ICollection<FieldDefinition>? returnFields = null) =>
+        ToReturningStatement(sql, modelDef, isDelete: false, returnFields);
 
     public override void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
         ICollection<string>? insertFields = null, ICollection<string>? updateOnly = null)
@@ -463,8 +463,8 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override string SqlBool(bool value) => value ? "1" : "0";
 
     // Requires SQLite 3.35+
-    public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete) =>
-        sql.TrimEnd().TrimEnd(';') + " RETURNING " + GetColumnNames(modelDef);
+    public override string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition>? returnFields = null) =>
+        sql.TrimEnd().TrimEnd(';') + " RETURNING " + GetReturningColumns(modelDef, returnFields);
 
     public override string SqlRandom => "random()";
 

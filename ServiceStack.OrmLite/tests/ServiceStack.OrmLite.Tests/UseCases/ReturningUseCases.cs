@@ -92,6 +92,55 @@ public class ReturningUseCases(DialectContext context) : OrmLiteProvidersTestBas
 
     [Test]
     [IgnoreDialect(Dialect.AnyMySql, Unsupported)]
+    public void Return_only_selected_columns()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        // Only read back the columns that are needed, e.g. for tables with many or large columns
+        var updated = db.UpdateOnlyReturning(() => new Book { Price = 20m },
+            where: x => x.Author == "J.R.R. Tolkien",
+            returning: x => new { x.Id, x.Title });
+
+        Assert.That(updated.Map(x => x.Title), Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion" }));
+        Assert.That(updated.All(x => x.Id > 0));
+        // Other columns aren't populated
+        Assert.That(updated.All(x => x.Price == 0 && x.Author == null));
+        Assert.That(db.Count<Book>(x => x.Price == 20m), Is.EqualTo(2));
+
+        // A single column, e.g. the ids of the deleted rows
+        var deleted = db.DeleteReturning<Book>(x => !x.Available, returning: x => x.Id);
+        Assert.That(deleted.Count, Is.EqualTo(2));
+        Assert.That(deleted.All(x => x.Id > 0 && x.Title == null));
+
+        // With a query
+        var q = db.From<Book>().Where(x => x.Genre == Genre.Science);
+        var discounted = db.UpdateOnlyReturning(() => new Book { Price = 5m }, q, returning: x => new { x.Title, x.Price });
+        Assert.That(discounted.Map(x => x.Title), Is.EquivalentTo(new[] { "A Brief History of Time", "Cosmos" }));
+        Assert.That(discounted.All(x => x.Price == 5m && x.Id == 0));
+
+        var removed = db.DeleteReturning(q, returning: x => x.Title);
+        Assert.That(removed.Map(x => x.Title), Is.EquivalentTo(new[] { "A Brief History of Time", "Cosmos" }));
+    }
+
+    [Test]
+    [IgnoreDialect(Dialect.AnyMySql, Unsupported)]
+    public void Return_selected_columns_of_rows_deleted_with_a_join()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        var q = db.From<Book>()
+            .Join<BookReview>((b, r) => b.Id == r.BookId)
+            .Where<BookReview>(r => r.Reviewer == "Bob");
+        var deleted = db.DeleteReturning(q, returning: x => new { x.Id, x.Title });
+
+        Assert.That(deleted.Map(x => x.Title), Is.EquivalentTo(new[] { "The Hobbit", "SPQR" }));
+        Assert.That(deleted.All(x => x.Id > 0 && x.Author == null));
+    }
+
+    [Test]
+    [IgnoreDialect(Dialect.AnyMySql, Unsupported)]
     public async Task Async_APIs()
     {
         using var db = await OpenDbConnectionAsync();
@@ -103,6 +152,14 @@ public class ReturningUseCases(DialectContext context) : OrmLiteProvidersTestBas
 
         var deleted = await db.DeleteReturningAsync(db.From<Book>().Where(x => x.Price == 9m));
         Assert.That(deleted.Map(x => x.Title), Is.EquivalentTo(new[] { "A Brief History of Time", "Cosmos" }));
+
+        var ids = await db.UpdateOnlyReturningAsync(() => new Book { Price = 1m }, where: x => x.Genre == Genre.History,
+            returning: x => x.Id);
+        Assert.That(ids.Count, Is.EqualTo(2));
+        Assert.That(ids.All(x => x.Id > 0 && x.Title == null));
+
+        var titles = await db.DeleteReturningAsync<Book>(x => x.Price == 1m, returning: x => x.Title);
+        Assert.That(titles.Map(x => x.Title), Is.EquivalentTo(new[] { "SPQR", "The Guns of August" }));
     }
 
     [Test]

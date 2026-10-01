@@ -43,10 +43,11 @@ public interface IOrmLiteDialectProvider
     int MaxInListParams { get; set; }
 
     /// <summary>
-    /// Converts an UPDATE or DELETE statement into one that also returns all columns of the affected rows,
-    /// e.g. with RETURNING or OUTPUT. Throws NotSupportedException if the RDBMS doesn't support it.
+    /// Converts an UPDATE or DELETE statement into one that also returns the affected rows, e.g. with RETURNING or
+    /// OUTPUT, with all their columns or only the returnFields. Throws NotSupportedException if the RDBMS doesn't
+    /// support it.
     /// </summary>
-    string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete);
+    string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null);
     
     /// <summary>
     /// Configure Provider with connection string options 

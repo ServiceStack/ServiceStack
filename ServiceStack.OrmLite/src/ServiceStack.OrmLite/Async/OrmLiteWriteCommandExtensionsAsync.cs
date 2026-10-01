@@ -624,7 +624,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
             // Return the upserted row in the same statement when supported, e.g. RETURNING or OUTPUT
             var returningSql = readBackFields.Count > 0
-                ? upsertProvider.ToUpsertReturningStatement(dbCmd.CommandText, modelDef)
+                ? upsertProvider.ToUpsertReturningStatement(dbCmd.CommandText, modelDef, readBackFields)
                 : null;
             if (returningSql != null)
             {

@@ -37,8 +37,27 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public int MaxInListParams { get; set; } = 1000;
 
-    public virtual string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete) =>
+    public virtual string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null) =>
         throw new NotSupportedException($"{GetType().Name} doesn't support returning rows from UPDATE and DELETE statements");
+
+    /// <summary>
+    /// The columns of a RETURNING clause: all the table's columns, or only the returnFields
+    /// </summary>
+    protected virtual string GetReturningColumns(ModelDefinition modelDef, ICollection<FieldDefinition> returnFields)
+    {
+        if (returnFields == null || returnFields.Count == 0)
+            return GetColumnNames(modelDef);
+
+        // The table's columns are in the same order as its fields
+        var allColumns = GetColumnNames(modelDef, null);
+        var sqlColumns = new List<SelectItem>();
+        for (var i = 0; i < allColumns.Length; i++)
+        {
+            if (returnFields.Contains(modelDef.FieldDefinitions[i]))
+                sqlColumns.Add(allColumns[i]);
+        }
+        return sqlColumns.ToArray().ToSelectString();
+    }
 
     #region ADO.NET supported types
     /* ADO.NET UNDERSTOOD DATA TYPES:
@@ -1044,7 +1063,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual bool SupportsUpsert => false;
 
-    public virtual string ToUpsertReturningStatement(string sql, ModelDefinition modelDef) => null;
+    public virtual string ToUpsertReturningStatement(string sql, ModelDefinition modelDef, ICollection<FieldDefinition> returnFields = null) => null;
 
     public virtual void PrepareParameterizedUpsertStatement<T>(IDbCommand cmd,
         ICollection<string> insertFields = null, ICollection<string> updateOnly = null) =>
