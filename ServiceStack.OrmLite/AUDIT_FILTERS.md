@@ -174,7 +174,8 @@ lead the write rules section with this table.
 and `ModifiedDate` are empty until its first update. The docs example should use `OnInsert` for the created columns,
 with `[IgnoreOnUpdate]`, and `OnWrite` for the modified columns.
 
-`EnsureWrites` depends on what's written:
+`EnsureWrites` depends on what's written. A column isn't set when it's `null`, its type's default value or an empty
+string, e.g. a property initialized with `string TenantId { get; set; } = ""`:
 
 | Write | Column isn't set | Column is set to a different value |
 |-|-|-|

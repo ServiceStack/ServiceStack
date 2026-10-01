@@ -371,8 +371,9 @@ internal sealed class WriteRule(FieldDefinition field, Func<object?> valueFn)
         return value.ConvertTo(Nullable.GetUnderlyingType(Field.FieldType) ?? Field.FieldType);
     }
 
+    // An empty string isn't set, e.g. a property initialized with: string TenantId { get; set; } = ""
     public bool IsDefault(object? value) =>
-        value == null || value.Equals(Field.FieldType.GetDefaultValue());
+        value == null || value is string { Length: 0 } || value.Equals(Field.FieldType.GetDefaultValue());
 }
 
 /// <summary>

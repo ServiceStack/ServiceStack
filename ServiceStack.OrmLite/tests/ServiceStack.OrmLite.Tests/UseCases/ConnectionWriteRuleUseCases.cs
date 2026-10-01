@@ -50,6 +50,24 @@ public class TenantInvoiceArchive : IHasTenantId, IAudit
     public DateTime? ModifiedDate { get; set; }
 }
 
+/// <summary>
+/// Tables can also share their tenant and audit columns in a base class, with string ids that default to ""
+/// </summary>
+public abstract class WorkspaceAuditBase
+{
+    public string WorkspaceId { get; set; } = "";
+    [IgnoreOnUpdate]
+    public string CreatedBy { get; set; } = "system";
+    public string ModifiedBy { get; set; } = "system";
+}
+
+public class WorkspaceDocument : WorkspaceAuditBase
+{
+    [PrimaryKey]
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string Name { get; set; }
+}
+
 public static class Invoices
 {
     public static readonly DateTime Created = new(2026, 1, 2, 3, 4, 5);
@@ -346,6 +364,35 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
             AssertCreatedBy(row, "alice");
             AssertModifiedBy(row, "bob");
         }
+    }
+
+    [Test]
+    public void Filters_and_rules_on_a_base_class_apply_to_its_tables()
+    {
+        using (var seed = OpenDbConnection())
+        {
+            seed.DropAndCreateTable<WorkspaceDocument>();
+            seed.Insert(new WorkspaceDocument { Id = "theirs", WorkspaceId = "w2", Name = "Theirs" });
+        }
+
+        var workspaceId = "w1";
+        using var db = OpenDbConnection();
+        db.EnsureFilter<WorkspaceAuditBase>(x => x.WorkspaceId == workspaceId);
+        db.EnsureWrites<WorkspaceAuditBase>(x => x.WorkspaceId, workspaceId);
+        db.OnInsert<WorkspaceAuditBase>(x => x.CreatedBy, "alice");
+        db.OnWrite<WorkspaceAuditBase>(x => x.ModifiedBy, "alice");
+
+        // An empty string isn't a value that was set, so the workspace is set from the rule
+        db.Insert(new WorkspaceDocument { Id = "mine", Name = "Mine" });
+
+        var row = db.SingleById<WorkspaceDocument>("mine");
+        Assert.That(row.WorkspaceId, Is.EqualTo("w1"));
+        Assert.That(row.CreatedBy, Is.EqualTo("alice"));
+        Assert.That(row.ModifiedBy, Is.EqualTo("alice"));
+
+        Assert.That(db.Select<WorkspaceDocument>().Map(x => x.Id), Is.EqualTo(new[] { "mine" }));
+        Assert.That(db.UpdateOnly(() => new WorkspaceDocument { Name = "Changed" }, where: x => x.Id == "theirs"), Is.EqualTo(0));
+        Assert.Throws<InvalidOperationException>(() => db.Insert(new WorkspaceDocument { WorkspaceId = "w2", Name = "Other" }));
     }
 
     [Test]
