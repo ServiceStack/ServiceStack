@@ -42,6 +42,7 @@ public class WhoAmIResponse
     public string? UserName { get; set; }
     public string? AuthProvider { get; set; }
     public bool IsApiKeyUser { get; set; }
+    public string? ApiKeyInRequestFilter { get; set; }
     public List<string> Scopes { get; set; } = [];
     public List<string> Roles { get; set; } = [];
     public ResponseStatus? ResponseStatus { get; set; }
@@ -63,6 +64,7 @@ public class WhoAmIServices : Service
             UserName = session.UserAuthName,
             AuthProvider = session.AuthProvider,
             IsApiKeyUser = Request.GetClaimsPrincipal().IsApiKeyUser(),
+            ApiKeyInRequestFilter = Request.GetItem(nameof(WhoAmIResponse.ApiKeyInRequestFilter)) as string,
             Scopes = (session as IAuthSessionExtended)?.Scopes ?? [],
             Roles = session.Roles ?? [],
         };
@@ -93,6 +95,10 @@ public class ApiKeyAuthTests
     {
         public override void Configure()
         {
+            // Runs before the Request Filter of the ApiKeysFeature
+            GlobalRequestFilters.Add((req, res, dto) =>
+                req.SetItem(nameof(WhoAmIResponse.ApiKeyInRequestFilter), req.GetApiKey()?.Key));
+
             IdentityJwtAuthProviderTests.CreateIdentityUsers(ApplicationServices);
             using (var scope = ApplicationServices.CreateScope())
             {
@@ -200,6 +206,15 @@ public class ApiKeyAuthTests
         Assert.That(api.Response.AuthProvider, Is.EqualTo(Keywords.ApiKeyParam));
         Assert.That(api.Response.IsApiKeyUser, Is.True);
         Assert.That(api.Response.Scopes, Is.EqualTo(new[] { "usage:write" }));
+    }
+
+    [Test]
+    public async Task User_ApiKey_is_available_to_Request_Filters()
+    {
+        var api = await CreateClient(ScopedKey).ApiAsync(new WhoAmI());
+        api.ThrowIfError();
+
+        Assert.That(api.Response!.ApiKeyInRequestFilter, Is.EqualTo(ScopedKey));
     }
 
     [Test]

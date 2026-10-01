@@ -532,9 +532,16 @@ namespace ServiceStack
             if (req == null)
                 return null;
 
-            return req.Items.TryGetValue(Keywords.ApiKey, out var oApiKey)
-                ? oApiKey as IApiKey
-                : null;
+            if (req.Items.TryGetValue(Keywords.ApiKey, out var oApiKey))
+                return oApiKey as IApiKey;
+
+#if NETCORE
+            // An API Key that was authenticated before ServiceStack handled the request, e.g. by AddApiKeyAuth()
+            if (req.OriginalRequest is Microsoft.AspNetCore.Http.HttpRequest httpReq
+                && httpReq.HttpContext.Items.TryGetValue(Keywords.ApiKey, out oApiKey))
+                return oApiKey as IApiKey;
+#endif
+            return null;
         }
 
         internal static ApiKeyAuthProvider AssertValidApiKeyRequest(this IRequest req)

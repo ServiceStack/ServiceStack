@@ -98,6 +98,9 @@ public class ApiKeyAuthHandler(
         }
         if (apiKey == null)
             return AuthenticateResult.Fail(ErrorMessages.ApiKeyInvalid);
+
+        // Available from req.GetApiKey() for the rest of the request, including in Request Filters
+        Context.Items[Keywords.ApiKey] = apiKey;
         if (string.IsNullOrEmpty(apiKey.UserAuthId))
             return AuthenticateResult.NoResult();
 
