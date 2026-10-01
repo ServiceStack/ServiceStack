@@ -54,7 +54,7 @@ export const Profiling = {
             <span :class="['h-2 w-2 rounded-full', hasErrors ? 'bg-red-500' : 'bg-gray-300']" aria-hidden="true"></span>
             Has Errors
         </button>
-        <span class="isolate inline-flex rounded-md shadow-sm">
+        <span v-if="!isSlow" class="isolate inline-flex rounded-md shadow-sm">
           <button type="button" :class="[canPrev ? 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' : 'text-gray-300 cursor-default',
             'relative inline-flex h-9 items-center rounded-l-md bg-white px-2 ring-1 ring-inset ring-gray-300 focus:z-10 focus:outline-none focus:ring-2 focus:ring-indigo-500']"
                   title="Previous page" :disabled="!canPrev" v-href="{ skip:nextSkip(-take) }">
@@ -156,6 +156,7 @@ export const Profiling = {
                      v-href="identifierHref(k, row[k])" @click.stop
                      :title="row[k]" class="text-blue-600 hover:underline">{{ valueFmt(row[k], k) }}</a>
                   <span v-else-if="k === 'command'" :title="row[k]" class="font-mono text-xs">{{ sqlFmt(row[k]) }}</span>
+                  <span v-else-if="k === 'namedConnection' && !row[k]" class="text-gray-400">default</span>
                   <span v-else :title="apiValueTitle(row[k],k)">{{ valueFmt(row[k], k) }}</span>
                 </td>
               </tr>
@@ -270,7 +271,8 @@ export const Profiling = {
                     <div v-if="selected.command" class="p-4">
                       <div class="group relative">
                         <CopyIcon class="absolute right-0 opacity-0 transition-opacity group-hover:opacity-100" :text="selected.command" />
-                        <div class="whitespace-pre-wrap break-words pr-8 font-mono text-sm">{{ selected.command }}</div>
+                        <pre v-if="selected.source === 'OrmLite'" class="whitespace-pre-wrap break-words pr-8 text-sm"><code class="language-sql" v-highlightjs="selected.command"></code></pre>
+                        <div v-else class="whitespace-pre-wrap break-words pr-8 font-mono text-sm">{{ selected.command }}</div>
                       </div>
                       <div v-if="canQuery" class="mt-4 flex flex-wrap items-center gap-2">
                         <button type="button" @click="explain(false)" :disabled="!!querying" title="Show the query plan without running the query"
@@ -318,13 +320,13 @@ export const Profiling = {
                         <thead class="bg-gray-50">
                           <tr>
                             <th v-for="column in runApi.response.columns" :key="column" scope="col"
-                                class="px-3 py-2 text-left text-xs font-semibold text-gray-600 whitespace-nowrap">{{ column }}</th>
+                                :class="[isNumericColumn(column) ? 'text-right' : 'text-left', 'px-3 py-2 text-xs font-semibold text-gray-600 whitespace-nowrap']">{{ column }}</th>
                           </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                           <tr v-for="(row,index) in runApi.response.results" :key="index">
                             <td v-for="column in runApi.response.columns" :key="column" :title="cellTitle(row[column])"
-                                :class="[maximized ? 'max-w-md' : 'max-w-xs', 'truncate px-3 py-2 whitespace-nowrap text-gray-700']">{{ cellFmt(row[column]) }}</td>
+                                :class="[maximized ? 'max-w-md' : 'max-w-xs', isNumericColumn(column) ? 'text-right' : '', row[column] == null ? 'text-gray-400' : 'text-gray-700', 'truncate px-3 py-2 whitespace-nowrap']">{{ row[column] == null ? 'NULL' : cellFmt(row[column]) }}</td>
                           </tr>
                         </tbody>
                       </table>
@@ -555,6 +557,12 @@ export const Profiling = {
             if (value == null) return ''
             return typeof value === 'object' ? JSON.stringify(value) : `${value}`
         }
+        // Columns where every value is a number
+        function isNumericColumn(column) {
+            const rows = runApi.value?.response?.results || []
+            const values = rows.map(row => row[column]).filter(x => x != null)
+            return values.length > 0 && values.every(x => typeof x === 'number')
+        }
         function cellTitle(value) {
             const s = cellFmt(value)
             return s.length > 30 ? s : ''
@@ -590,9 +598,22 @@ export const Profiling = {
                 let d = new Date(obj / 10)
                 return timeFmt.format(d)
             }
+            if (k === 'duration') return durationFmt(obj)
             return typeof obj === 'string' && obj.startsWith('PT')
                 ? fromXsdDuration(obj)
                 : apiValueFmt(obj)
+        }
+        // Durations with their unit, e.g. 7.6ms, 152ms, 1.25s, 2m 5s
+        function durationFmt(obj) {
+            const secs = typeof obj === 'string' && obj.startsWith('PT') ? fromXsdDuration(obj) : Number(obj)
+            if (!isFinite(secs)) return apiValueFmt(obj)
+            const ms = secs * 1000
+            if (ms < 0.001) return '0ms'
+            if (ms < 1) return Math.round(ms * 1000) + 'µs'
+            if (ms < 100) return ms.toFixed(1) + 'ms'
+            if (ms < 1000) return Math.round(ms) + 'ms'
+            if (secs < 60) return secs.toFixed(2) + 's'
+            return Math.floor(secs / 60) + 'm ' + Math.round(secs % 60) + 's'
         }
         function keyFmt(t) {
             return humanize(toPascalCase(t))
@@ -673,6 +694,7 @@ export const Profiling = {
             querying,
             sqlFmt,
             cellFmt,
+            isNumericColumn,
             cellTitle,
             hasErrors,
             plugin,
