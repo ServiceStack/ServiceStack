@@ -115,6 +115,40 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
         Assert.That(db.Count<TenantCustomer>(), Is.EqualTo(3));
     }
 
+    public class TenantScope
+    {
+        public int? TenantId { get; set; }
+        public int Calls { get; private set; }
+
+        public int AssertTenantId()
+        {
+            Calls++;
+            return TenantId ?? throw new InvalidOperationException("The tenant hasn't been resolved");
+        }
+    }
+
+    [Test]
+    public void Filter_can_throw_until_its_tenant_is_known()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var scope = new TenantScope();
+        using var db = OpenDbConnection();
+        db.EnsureFilter<IHasTenantId>(() => x => x.TenantId == scope.AssertTenantId());
+
+        // The exception of a method a filter calls is thrown as is, and the method is only called once
+        var ex = Assert.Throws<InvalidOperationException>(() => db.Select<TenantOrder>());
+        Assert.That(ex.Message, Is.EqualTo("The tenant hasn't been resolved"));
+        Assert.That(scope.Calls, Is.EqualTo(1));
+        Assert.Throws<InvalidOperationException>(() => db.SingleById<TenantOrder>(1));
+        Assert.Throws<InvalidOperationException>(() => db.Select<TenantOrder>(x => x.Total > 10));
+        Assert.Throws<InvalidOperationException>(() => db.Delete<TenantOrder>(x => x.Id == 1));
+
+        scope.TenantId = 2;
+        Assert.That(db.Select<TenantOrder>().Map(x => x.Id), Is.EqualTo(new[] { 4 }));
+    }
+
     [Test]
     public void Captured_values_of_a_filter_are_read_for_each_statement()
     {

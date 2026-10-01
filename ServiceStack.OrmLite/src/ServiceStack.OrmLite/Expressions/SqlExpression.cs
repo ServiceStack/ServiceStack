@@ -6,6 +6,7 @@ using System.Data;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Linq.Expressions;
@@ -2766,6 +2767,11 @@ namespace ServiceStack.OrmLite
             {
                 if (originalLambda == null)
                     throw;
+
+                // An expression that doesn't use the lambda's parameters was compiled and evaluated,
+                // so the exception was thrown by the expression itself, e.g. by a method it calls
+                if (!UsesParameters(m))
+                    throw;
                     
                 // Can't use expression.Compile() if lambda expression contains captured parameters.
                 // Fallback invokes expression with default parameters from original lambda expression  
@@ -2779,8 +2785,35 @@ namespace ServiceStack.OrmLite
                     exprParams[i] = p.Type.CreateInstance();
                 }
 
-                var ret = lambda.DynamicInvoke(exprParams);
-                return ret;
+                try
+                {
+                    var ret = lambda.DynamicInvoke(exprParams);
+                    return ret;
+                }
+                catch (TargetInvocationException e) when (e.InnerException != null)
+                {
+                    // Throw the exception of the expression, not of how it was invoked
+                    ExceptionDispatchInfo.Capture(e.InnerException).Throw();
+                    throw;
+                }
+            }
+        }
+
+        private static bool UsesParameters(Expression m)
+        {
+            var finder = new ParameterFinder();
+            finder.Visit(m);
+            return finder.Found;
+        }
+
+        private sealed class ParameterFinder : ExpressionVisitor
+        {
+            public bool Found;
+
+            protected override Expression VisitParameter(ParameterExpression node)
+            {
+                Found = true;
+                return node;
             }
         }
 
