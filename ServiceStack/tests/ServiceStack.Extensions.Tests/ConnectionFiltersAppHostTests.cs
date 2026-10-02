@@ -112,8 +112,8 @@ public class TenantItemServices : Service
 }
 
 /// <summary>
-/// Overriding AppHost.GetDbConnection() applies OrmLite's connection filters and write rules to every connection
-/// ServiceStack opens for a request, i.e. Db in Services, AutoQuery and AutoQuery CRUD.
+/// AppHost.DbConnectionRequestFilters configure every connection ServiceStack opens for a request, i.e. Db in Services,
+/// AutoQuery and AutoQuery CRUD, e.g. with OrmLite's connection filters and write rules.
 /// </summary>
 [NonParallelizable]
 public class ConnectionFiltersAppHostTests
@@ -121,27 +121,36 @@ public class ConnectionFiltersAppHostTests
     private const string BaseUrl = "http://localhost:20048";
     private const string TenantHeader = "X-Tenant";
     private const string UserHeader = "X-User";
+    private const string DeniedTenant = "denied";
 
     private readonly string dbPath = Path.Combine(Path.GetTempPath(), $"connfilters-{Guid.NewGuid():N}.sqlite");
     private OrmLiteConnectionFactory dbFactory = null!;
 
+    // The connections that were opened for requests, and how many times OnDbConnectionRequest() was called
+    private static readonly List<IDbConnection> RequestConnections = [];
+    private static int onDbConnectionRequestCalls;
+
     class AppHost() : AppHostBase(nameof(ConnectionFiltersAppHostTests), typeof(TenantItemServices).Assembly)
     {
-        public override void Configure() {}
-
-        public override IDbConnection GetDbConnection(IRequest? req, Action<IDbConnection> configure) =>
-            ConfigureDb(base.GetDbConnection(req, configure), req);
-
-        public override async Task<IDbConnection> GetDbConnectionAsync(IRequest? req, Action<IDbConnection> configure) =>
-            ConfigureDb(await base.GetDbConnectionAsync(req, configure), req);
-
-        // e.g. Apps would typically use the tenant and user of the authenticated session
-        static IDbConnection ConfigureDb(IDbConnection db, IRequest? req)
+        public override void Configure()
         {
-            var tenantId = req?.GetHeader(TenantHeader);
-            if (tenantId != null)
-                db.ForUser(int.Parse(tenantId), req!.GetHeader(UserHeader) ?? "anon");
-            return db;
+            // e.g. Apps would typically use the tenant and user of the authenticated session
+            DbConnectionRequestFilters.Add((db, req) => {
+                lock (RequestConnections) RequestConnections.Add(db);
+
+                var tenantId = req.GetHeader(TenantHeader);
+                if (tenantId == DeniedTenant)
+                    throw HttpError.Forbidden("You do not have access to this tenant");
+                if (tenantId != null)
+                    db.ForUser(int.Parse(tenantId), req.GetHeader(UserHeader) ?? "anon");
+            });
+        }
+
+        // Called for each connection that's opened for a request, which applies the DbConnectionRequestFilters
+        public override void OnDbConnectionRequest(IDbConnection db, IRequest req)
+        {
+            System.Threading.Interlocked.Increment(ref onDbConnectionRequestCalls);
+            base.OnDbConnectionRequest(db, req);
         }
     }
 
@@ -189,6 +198,9 @@ public class ConnectionFiltersAppHostTests
     [SetUp]
     public void SetUp()
     {
+        lock (RequestConnections) RequestConnections.Clear();
+        onDbConnectionRequestCalls = 0;
+
         using var db = dbFactory.OpenDbConnection();
         db.DropAndCreateTable<TenantItem>();
         db.InsertAll(new[] {
@@ -299,6 +311,43 @@ public class ConnectionFiltersAppHostTests
         // The tenant's own rows can be deleted
         (await client.ApiAsync(new DeleteTenantItem { Id = 1 })).ThrowIfError();
         Assert.That(AllItems().Keys, Is.EquivalentTo(new[] { 2, 3 }));
+    }
+
+    [Test]
+    public async Task A_filter_that_throws_fails_the_request_and_disposes_the_connection()
+    {
+        using var client = new JsonApiClient(BaseUrl);
+        client.AddHeader(TenantHeader, DeniedTenant);
+
+        var api = await client.ApiAsync(new GetTenantItem { Id = 1 });
+        Assert.That(api.Error!.ErrorCode, Is.EqualTo("Forbidden"));
+        var apiAsync = await client.ApiAsync(new GetTenantItemAsync { Id = 1 });
+        Assert.That(apiAsync.Error!.ErrorCode, Is.EqualTo("Forbidden"));
+        var autoQuery = await client.ApiAsync(new QueryTenantItems());
+        Assert.That(autoQuery.Error!.ErrorCode, Is.EqualTo("Forbidden"));
+
+        // The caller never got the connections, so they were disposed for it
+        lock (RequestConnections)
+        {
+            Assert.That(RequestConnections.Count, Is.EqualTo(3));
+            Assert.That(RequestConnections.Map(x => x.State), Is.All.EqualTo(ConnectionState.Closed));
+        }
+    }
+
+    [Test]
+    public async Task Filters_are_only_applied_to_connections_opened_for_a_request()
+    {
+        // A connection that's not opened for a request
+        using (var db = HostContext.AppHost.GetDbConnection())
+        {
+            Assert.That(db.Count<TenantItem>(), Is.EqualTo(3));
+        }
+        Assert.That(onDbConnectionRequestCalls, Is.EqualTo(0));
+
+        using var client = CreateClient(1, "alice");
+        (await client.ApiAsync(new GetTenantItem { Id = 1 })).ThrowIfError();
+        (await client.ApiAsync(new GetTenantItemAsync { Id = 1 })).ThrowIfError();
+        Assert.That(onDbConnectionRequestCalls, Is.EqualTo(2));
     }
 
     [Test]

@@ -1106,7 +1106,40 @@ public abstract partial class ServiceStackHost
         return GetDbConnection(req, withTag);
     }
 
-    public virtual IDbConnection GetDbConnection(IRequest req, Action<IDbConnection> configure)
+    /// <summary>
+    /// Called for each DB connection that's opened for a Request by GetDbConnection(req) or GetDbConnectionAsync(req),
+    /// which by default applies the registered <see cref="DbConnectionRequestFilters"/>.
+    /// </summary>
+    public virtual void OnDbConnectionRequest(IDbConnection db, IRequest req)
+    {
+        foreach (var filter in DbConnectionRequestFilters)
+        {
+            filter(db, req);
+        }
+    }
+
+    private IDbConnection ApplyDbConnectionRequestFilters(IDbConnection db, IRequest req)
+    {
+        if (req == null || db == null)
+            return db;
+
+        try
+        {
+            OnDbConnectionRequest(db, req);
+            return db;
+        }
+        catch
+        {
+            // The caller never gets the connection, so it wouldn't otherwise be disposed
+            db.Dispose();
+            throw;
+        }
+    }
+
+    public virtual IDbConnection GetDbConnection(IRequest req, Action<IDbConnection> configure) =>
+        ApplyDbConnectionRequestFilters(OpenDbConnection(req, configure), req);
+
+    private IDbConnection OpenDbConnection(IRequest req, Action<IDbConnection> configure)
     {
         var dbFactory = Container.TryResolve<IDbConnectionFactory>();
         if (req != null)
@@ -1156,7 +1189,10 @@ public abstract partial class ServiceStackHost
         return await GetDbConnectionAsync(req, withTag).ConfigAwait();
     }
 
-    public virtual async Task<IDbConnection> GetDbConnectionAsync(IRequest req, Action<IDbConnection> configure)
+    public virtual async Task<IDbConnection> GetDbConnectionAsync(IRequest req, Action<IDbConnection> configure) =>
+        ApplyDbConnectionRequestFilters(await OpenDbConnectionAsync(req, configure).ConfigAwait(), req);
+
+    private async Task<IDbConnection> OpenDbConnectionAsync(IRequest req, Action<IDbConnection> configure)
     {
         var dbFactory = Container.TryResolve<IDbConnectionFactory>();
         if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
