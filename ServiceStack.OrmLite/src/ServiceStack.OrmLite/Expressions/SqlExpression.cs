@@ -1,3 +1,4 @@
+using ServiceStack.DataAnnotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -3286,10 +3287,40 @@ namespace ServiceStack.OrmLite
             return new PartialSqlString($"(CASE WHEN {args[0]} = {args[1]} THEN 0 WHEN {args[0]} > {args[1]} THEN 1 ELSE -1 END)");
         }
 
+        // Sql.CosineDistance(x.Embedding, vector) and the other distances of [Vector] columns
+        protected virtual object VisitVectorSqlMethodCall(MethodCallExpression m)
+        {
+            var distance = m.Method.Name switch {
+                nameof(Sql.CosineDistance) => VectorDistance.Cosine,
+                nameof(Sql.L2Distance) => VectorDistance.L2,
+                _ => VectorDistance.NegativeInnerProduct,
+            };
+            return new PartialSqlString(DialectProvider.ToVectorDistance(distance,
+                VisitVectorOperand(m.Arguments[0]), VisitVectorOperand(m.Arguments[1])));
+        }
+
+        // A vector column, or a vector that's sent as a db param
+        private string VisitVectorOperand(Expression expression)
+        {
+            var value = Visit(expression);
+            if (value is PartialSqlString sql)
+                return sql.Text;
+
+            var vector = Converters.VectorConverter.ToFloats(value)
+                ?? throw new ArgumentNullException(nameof(expression), "The vector to compare with is null");
+            var converter = DialectProvider.VectorConverter;
+            var p = AddParam(converter.ToDbValue(typeof(float[]), vector));
+            converter.InitDbParam(p, typeof(float[]));
+            return DialectProvider.ToVectorParam(p.ParameterName, vector.Length);
+        }
+
         protected virtual object VisitSqlMethodCall(MethodCallExpression m)
         {
             if (IsJsonSqlMethod(m.Method.Name))
                 return VisitJsonSqlMethodCall(m);
+
+            if (m.Method.Name is nameof(Sql.CosineDistance) or nameof(Sql.L2Distance) or nameof(Sql.NegativeInnerProduct))
+                return VisitVectorSqlMethodCall(m);
 
             List<object> args = this.VisitInSqlExpressionList(m.Arguments);
             object quotedColName = args[0];
@@ -4066,6 +4097,10 @@ namespace ServiceStack.OrmLite
 
             if (fieldDef != null)
                 dialectProvider.SetParameter(fieldDef, parameter);
+
+            // The value is converted for its type above, where a vector needs the type of its column
+            if (fieldDef?.VectorDimensions != null)
+                parameter.Value = dialectProvider.GetFieldValue(fieldDef, value) ?? DBNull.Value;
 
             dbCmd.Parameters.Add(parameter);
             return parameter;

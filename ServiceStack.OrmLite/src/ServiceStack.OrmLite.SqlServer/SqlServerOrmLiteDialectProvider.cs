@@ -1,3 +1,4 @@
+using ServiceStack.OrmLite.Converters;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -27,6 +28,7 @@ namespace ServiceStack.OrmLite.SqlServer
 
         public SqlServerOrmLiteDialectProvider()
         {
+            VectorConverter = new VectorTextConverter();
             base.AutoIncrementDefinition = "IDENTITY(1,1)";
             base.SelectIdentitySql = "SELECT SCOPE_IDENTITY()";
 
@@ -301,14 +303,63 @@ namespace ServiceStack.OrmLite.SqlServer
                 : null;
         }
 
+        protected override bool SupportsIndexInclude => true;
+
+        // Vectors use the VECTOR type of SQL Server 2025 and Azure SQL
+        public override string GetVectorColumnDefinition(int dimensions) => $"VECTOR({dimensions})";
+
+        public override string ToVectorParam(string param, int dimensions) => $"CAST({param} AS VECTOR({dimensions}))";
+
+        public override string ToVectorDistance(VectorDistance distance, string vector, string other)
+        {
+            var metric = distance switch {
+                VectorDistance.Cosine => "cosine",
+                VectorDistance.L2 => "euclidean",
+                _ => "dot",
+            };
+            return $"VECTOR_DISTANCE('{metric}', {vector}, {other})";
+        }
+
+        // Computed columns have the type of their expression
+        protected override string GetGeneratedColumnDefinition(FieldDefinition fieldDef) =>
+            $"{GetQuotedColumnName(fieldDef)} AS ({ResolveColumnRefs(fieldDef.ModelDef, fieldDef.ComputeExpression)})" +
+            (fieldDef.IsPersisted ? " PERSISTED" : "");
+
+        public override List<string> ToCreateCommentStatements(Type tableType)
+        {
+            var to = new List<string>();
+            var modelDef = GetModel(tableType);
+            var tableRef = new TableRef(modelDef);
+            string N(string text) => "N" + GetQuotedValue(text);
+            // Tables without a [Schema] are created in the connection's default schema, which isn't always dbo
+            var schema = GetSchemaName(tableRef);
+            var table = "@level0type=N'SCHEMA', @level0name=" + (schema != null ? N(schema) : "@schema") +
+                        ", @level1type=N'TABLE', @level1name=" + N(GetTableNameOnly(tableRef));
+            var addDescription = (schema == null ? "DECLARE @schema sysname = SCHEMA_NAME(); " : "") +
+                                 "EXEC sp_addextendedproperty @name=N'MS_Description', @value=";
+
+            if (!string.IsNullOrEmpty(modelDef.Description))
+                to.Add($"{addDescription}{N(modelDef.Description)}, {table}");
+
+            foreach (var fieldDef in modelDef.FieldDefinitions)
+            {
+                if (string.IsNullOrEmpty(fieldDef.Description) || fieldDef.ShouldSkipCreate())
+                    continue;
+                var column = GetQuotedColumnName(fieldDef).StripDbQuotes();
+                to.Add($"{addDescription}{N(fieldDef.Description)}, {table}, @level2type=N'COLUMN', @level2name={N(column)}");
+            }
+            return to;
+        }
+
         public override string GetColumnDefinition(FieldDefinition fieldDef)
         {
             // https://msdn.microsoft.com/en-us/library/ms182776.aspx
             if (fieldDef.IsRowVersion)
                 return $"{fieldDef.FieldName} rowversion NOT NULL";
+            if (fieldDef.IsGenerated)
+                return GetGeneratedColumnDefinition(fieldDef);
 
-            var fieldDefinition = ResolveFragment(fieldDef.CustomFieldDefinition) ??
-                GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
+            var fieldDefinition = GetFieldTypeDefinition(fieldDef);
 
             var sql = StringBuilderCache.Allocate();
             sql.Append($"{GetQuotedColumnName(fieldDef)} {fieldDefinition}");

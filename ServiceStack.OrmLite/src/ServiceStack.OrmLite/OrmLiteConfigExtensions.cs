@@ -83,6 +83,7 @@ internal static class OrmLiteConfigExtensions
             PostCreateTableSql = JoinSql(postCreates.Map(x => x.Sql)),
             PreDropTableSql = JoinSql(preDrops.Map(x => x.Sql)),
             PostDropTableSql = JoinSql(postDrops.Map(x => x.Sql)),
+            Description = modelType.FirstAttribute<DescriptionAttribute>()?.Description,
         };
 
         modelDef.CompositeIndexes.AddRange(
@@ -172,6 +173,9 @@ internal static class OrmLiteConfigExtensions
             var fkAttr = propertyInfo.FirstAttribute<ForeignKeyAttribute>();
             var customFieldAttr = propertyInfo.FirstAttribute<CustomFieldAttribute>();
             var chkConstraintAttr = propertyInfo.FirstAttribute<CheckConstraintAttribute>();
+            var vectorAttr = propertyInfo.FirstAttribute<VectorAttribute>();
+            if (vectorAttr != null && propertyInfo.PropertyType != typeof(float[]))
+                throw new NotSupportedException($"[Vector] is only valid for float[] properties, {modelType.Name}.{propertyInfo.Name} is a {propertyInfo.PropertyType.Name}");
 
             var order = propertyInfoIdx++;
             if (customFieldAttr != null && customFieldAttr.Order != 0)
@@ -197,6 +201,12 @@ internal static class OrmLiteConfigExtensions
                 IsClustered = indexAttr?.Clustered == true,
                 IsNonClustered = indexAttr?.NonClustered == true,
                 IndexName = indexAttr?.Name,
+                IndexWhere = indexAttr?.Where,
+                IndexInclude = indexAttr?.Include,
+                CheckEnum = propertyInfo.HasAttributeCached<CheckEnumAttribute>(),
+                Description = propertyInfo.FirstAttribute<DescriptionAttribute>()?.Description,
+                VectorDimensions = vectorAttr?.Dimensions,
+                VectorDistance = vectorAttr?.Distance ?? VectorDistance.Cosine,
                 IsRowVersion = isRowVersion,
                 IgnoreOnInsert = propertyInfo.HasAttributeCached<IgnoreOnInsertAttribute>(),
                 IgnoreOnUpdate = propertyInfo.HasAttributeCached<IgnoreOnUpdateAttribute>(),

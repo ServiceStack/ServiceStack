@@ -125,9 +125,10 @@ namespace ServiceStack.OrmLite.SqlServer
             // https://msdn.microsoft.com/en-us/library/ms182776.aspx
             if (fieldDef.IsRowVersion)
                 return $"{fieldDef.FieldName} rowversion NOT NULL";
+            if (fieldDef.IsGenerated)
+                return GetGeneratedColumnDefinition(fieldDef);
 
-            var fieldDefinition = ResolveFragment(fieldDef.CustomFieldDefinition) ??
-                GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
+            var fieldDefinition = GetFieldTypeDefinition(fieldDef);
 
             var sql = StringBuilderCache.Allocate();
             sql.Append($"{GetQuotedColumnName(fieldDef)} {fieldDefinition}");
@@ -191,7 +192,7 @@ namespace ServiceStack.OrmLite.SqlServer
             {
                 foreach (var fieldDef in modelDef.FieldDefinitions)
                 {
-                    if (fieldDef.CustomSelect != null || (fieldDef.IsComputed && !fieldDef.IsPersisted))
+                    if (fieldDef.ShouldSkipCreate())
                         continue;
 
                     var columnDefinition = GetColumnDefinition(fieldDef);

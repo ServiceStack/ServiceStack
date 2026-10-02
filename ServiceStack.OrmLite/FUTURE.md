@@ -40,14 +40,13 @@ db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
 - Includes optional `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes.
 - Requires JSON (not JSV) serialization for the column, so this would be opt-in via `[Json]` / `[PgSqlJsonB]`.
 
-### 3.2 Vector Columns and Similarity Search (M)
-First-class `float[]` / `ReadOnlyMemory<float>` vector columns for AI and RAG apps. Supported natively by pgvector, SQL Server 2025 `VECTOR`, sqlite-vec and MySQL 9 `VECTOR`:
-```csharp
-public class Doc { public int Id { get; set; } [Vector(1536)] public float[] Embedding { get; set; } }
-var nearest = db.Select(db.From<Doc>().OrderBy(x => Sql.CosineDistance(x.Embedding, queryVec)).Take(5));
-```
-- Includes index DDL (`HNSW` / `IVFFLAT`) through attributes.
-- Would pair naturally with ServiceStack's AI features.
+### 3.2 More Vector Support (S/M)
+`[Vector]` columns and `Sql.CosineDistance()`, `Sql.L2Distance()` and `Sql.NegativeInnerProduct()` are supported on
+PostgreSQL (pgvector), SQL Server 2025, MariaDB, MySQL and SQLite (sqlite-vec). Remaining vector features:
+- SQL Server's `DiskANN` vector index, once it's no longer a preview feature that has to be enabled per database
+- Reading vectors in a custom `Select()` on PostgreSQL, which are only read as text when all columns are selected
+- `ReadOnlyMemory<float>` properties, half-precision and sparse vectors
+- Index options, e.g. HNSW `m` and `ef_construction`, and IVFFlat indexes
 
 ### 3.3 Temporal / System-Versioned Tables (M)
 `[SystemVersioned]` DDL support, plus `q.AsOf(timestamp)` / `q.Between(from, to)` for SQL Server temporal tables and MariaDB system-versioned tables. On other dialects this would be emulated with history tables and triggers.
@@ -83,15 +82,6 @@ The existing `Migrator` could also generate a new migration class from the diff.
 
 ### 5.2 Database-First Model Generation (M)
 Replace the legacy T4 templates with a `dotnet` tool (or `x` tool command) that generates OrmLite POCOs from an existing database, reusing the dialect catalog queries.
-
-### 5.3 Richer DDL Attributes (S)
-Would cover:
-- Partial and filtered indexes: `[Index(Where = "IsDeleted = 0")]`.
-- Covering indexes: `INCLUDE`.
-- Descending index columns.
-- Generated / stored columns.
-- `CHECK` constraints for enums (`[EnumAsCheck]`).
-- Table and column comments (`[Description]` → `COMMENT ON`).
 
 ---
 

@@ -170,6 +170,11 @@ public static class OrmLiteWriteCommandExtensions
                     }
                 }
 
+                foreach (var sqlComment in dialectProvider.ToCreateCommentStatements(modelType))
+                {
+                    dbCmd.ExecuteSql(sqlComment);
+                }
+
                 return true;
             }
         }

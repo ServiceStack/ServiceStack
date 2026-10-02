@@ -1,5 +1,6 @@
 #nullable enable
 
+using ServiceStack.DataAnnotations;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -436,6 +437,15 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         }
         return false;
     }
+
+    // Vectors are stored as the bytes of their floats, which the functions of the sqlite-vec extension compare
+    public override string GetVectorColumnDefinition(int dimensions) => "BLOB";
+
+    public override string ToVectorDistance(VectorDistance distance, string vector, string other) => distance switch {
+        VectorDistance.Cosine => $"vec_distance_cosine({vector}, {other})",
+        VectorDistance.L2 => $"vec_distance_L2({vector}, {other})",
+        _ => throw new NotSupportedException("sqlite-vec doesn't have an inner product vector distance"),
+    };
 
     public override string GetColumnDefinition(FieldDefinition fieldDef)
     {

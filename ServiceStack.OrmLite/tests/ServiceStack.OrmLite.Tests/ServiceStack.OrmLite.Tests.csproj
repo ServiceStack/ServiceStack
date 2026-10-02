@@ -32,6 +32,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
     <PackageReference Include="NUnit" Version="3.*" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.119" />
+    <!-- Native sqlite-vec extension for VectorUseCases -->
+    <PackageReference Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
   </ItemGroup>
   
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net10.0' ">

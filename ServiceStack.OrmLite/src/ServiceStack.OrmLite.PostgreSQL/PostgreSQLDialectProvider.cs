@@ -34,6 +34,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     public PostgreSqlDialectProvider()
     {
+        VectorConverter = new VectorTextConverter();
         base.AutoIncrementDefinition = "";
         base.ParamString = ":";
         base.SelectIdentitySql = "SELECT LASTVAL()";
@@ -219,10 +220,39 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         "WHERE",
     }, StringComparer.OrdinalIgnoreCase);
 
+    protected override bool SupportsIndexInclude => true;
+
+    // PostgreSQL only has virtual generated columns from v18, so they're always stored
+    protected override string GetGeneratedColumnDefinition(FieldDefinition fieldDef)
+    {
+        var columnType = GetFieldTypeDefinition(fieldDef);
+        return $"{GetQuotedColumnName(fieldDef)} {columnType} GENERATED ALWAYS AS " +
+               $"({ResolveColumnRefs(fieldDef.ModelDef, fieldDef.ComputeExpression)}) STORED";
+    }
+
+    public override List<string> ToCreateCommentStatements(Type tableType)
+    {
+        var to = new List<string>();
+        var modelDef = GetModel(tableType);
+        var table = GetQuotedTableName(modelDef);
+        if (!string.IsNullOrEmpty(modelDef.Description))
+            to.Add($"COMMENT ON TABLE {table} IS {GetQuotedValue(modelDef.Description)}");
+
+        foreach (var fieldDef in modelDef.FieldDefinitions)
+        {
+            if (string.IsNullOrEmpty(fieldDef.Description) || fieldDef.ShouldSkipCreate() || fieldDef.IsRowVersion)
+                continue;
+            to.Add($"COMMENT ON COLUMN {table}.{GetQuotedColumnName(fieldDef)} IS {GetQuotedValue(fieldDef.Description)}");
+        }
+        return to;
+    }
+
     public override string GetColumnDefinition(FieldDefinition fieldDef)
     {
         if (fieldDef.IsRowVersion)
             return null;
+        if (fieldDef.IsGenerated)
+            return GetGeneratedColumnDefinition(fieldDef);
 
         string fieldDefinition = null;
         if (fieldDef.CustomFieldDefinition != null)
@@ -240,7 +270,7 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             }
             else
             {
-                fieldDefinition = GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
+                fieldDefinition = GetFieldTypeDefinition(fieldDef);
             }
         }
 
@@ -893,9 +923,42 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         { "boolean[]", NpgsqlDbType.Array | NpgsqlDbType.Boolean },
     };
         
+    // Vectors use the vector type of the pgvector extension: CREATE EXTENSION vector
+    public override string GetVectorColumnDefinition(int dimensions) => $"vector({dimensions})";
+
+    public override string ToVectorParam(string param, int dimensions) => param + "::vector";
+
+    public override string ToVectorDistance(VectorDistance distance, string vector, string other) =>
+        $"({vector} {VectorOperator(distance)} {other})";
+
+    private static string VectorOperator(VectorDistance distance) => distance switch {
+        VectorDistance.Cosine => "<=>",
+        VectorDistance.L2 => "<->",
+        _ => "<#>",
+    };
+
+    // Npgsql can't read the vector type without a plugin, so it's read as text
+    protected override string GetVectorSelectExpression(string quotedColumn) => quotedColumn + "::text";
+
+    protected override string ToCreateVectorIndexStatement(ModelDefinition modelDef, FieldDefinition fieldDef, string indexName)
+    {
+        var operatorClass = fieldDef.VectorDistance switch {
+            VectorDistance.Cosine => "vector_cosine_ops",
+            VectorDistance.L2 => "vector_l2_ops",
+            _ => "vector_ip_ops",
+        };
+        return $"CREATE INDEX {indexName} ON {GetQuotedTableName(modelDef)} USING hnsw ({GetQuotedColumnName(fieldDef)} {operatorClass}); \n";
+    }
+
     public override void SetParameter(FieldDefinition fieldDef, IDbDataParameter p)
     {
-        if (fieldDef.CustomFieldDefinition != null &&
+        if (fieldDef.VectorDimensions != null)
+        {
+            // Sent as text without a type, which PostgreSQL converts to the type of its column
+            p.ParameterName = this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName));
+            ((NpgsqlParameter) p).NpgsqlDbType = NpgsqlDbType.Unknown;
+        }
+        else if (fieldDef.CustomFieldDefinition != null &&
             NativeTypes.TryGetValue(fieldDef.CustomFieldDefinition, out var npgsqlDbType))
         {
             p.ParameterName = this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName));

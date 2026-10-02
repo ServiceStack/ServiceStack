@@ -9,6 +9,7 @@
 // Licensed under the same terms of ServiceStack.
 //
 
+using ServiceStack.DataAnnotations;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -277,6 +278,23 @@ public interface IOrmLiteDialectProvider
     string ToPostDropTableStatement(ModelDefinition modelDef);
 
     List<string> ToCreateIndexStatements(Type tableType);
+    /// <summary>
+    /// The statements that add the [Description] of a table and its columns as comments
+    /// </summary>
+    List<string> ToCreateCommentStatements(Type tableType);
+
+    /// <summary>
+    /// Converts the float[] of a [Vector] column to and from the RDBMS's vector type
+    /// </summary>
+    IOrmLiteConverter VectorConverter { get; set; }
+    /// <summary>
+    /// The SQL for a db param with a vector's value, e.g. cast to the RDBMS's vector type
+    /// </summary>
+    string ToVectorParam(string param, int dimensions);
+    /// <summary>
+    /// The SQL for the distance of 2 vectors, which are columns or the SQL from ToVectorParam()
+    /// </summary>
+    string ToVectorDistance(VectorDistance distance, string vector, string other);
     List<string> ToCreateSequenceStatements(Type tableType);
     string ToCreateSequenceStatement(Type tableType, string sequenceName);
     string ToResetSequenceStatement(Type tableType, string columnName, int value);

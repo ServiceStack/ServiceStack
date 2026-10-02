@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ServiceStack.DataAnnotations;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -549,7 +550,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 		var modelDef = GetModel(tableType);
 		foreach (var fieldDef in CreateTableFieldsStrategy(modelDef))
 		{
-			if (fieldDef.CustomSelect != null || (fieldDef.IsComputed && !fieldDef.IsPersisted))
+			if (fieldDef.ShouldSkipCreate())
 				continue;
 
 			if (sbColumns.Length != 0) sbColumns.Append(", \n  ");
@@ -632,8 +633,70 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 		var ret = base.GetColumnDefinition(fieldDef);
 		if (fieldDef.IsRowVersion)
 			return $"{ret} DEFAULT 1";
+		if (!string.IsNullOrEmpty(fieldDef.Description))
+			return $"{ret} COMMENT {GetQuotedValue(fieldDef.Description)}";
 
 		return ret;
+	}
+
+	// MySQL and MariaDB have no filtered indexes or INCLUDE
+	protected override bool SupportsFilteredIndexes => false;
+
+	/// <summary>
+	/// Whether the server is MariaDB, which has different vector functions and a vector index. It's detected from
+	/// the first connection that's opened, set it to use them before then.
+	/// </summary>
+	public bool? IsMariaDb { get; set; }
+
+	public override void InitConnection(IDbConnection dbConn)
+	{
+		base.InitConnection(dbConn);
+		IsMariaDb ??= (dbConn.ToDbConnection() as DbConnection)?.ServerVersion?
+			.IndexOf("MariaDB", StringComparison.OrdinalIgnoreCase) >= 0;
+	}
+
+	// Vectors use the VECTOR type of MariaDB 11.7+ and MySQL 9+
+	public override string GetVectorColumnDefinition(int dimensions) => $"VECTOR({dimensions})";
+
+	public override string ToVectorDistance(VectorDistance distance, string vector, string other)
+	{
+		if (IsMariaDb == true)
+		{
+			return distance switch {
+				VectorDistance.Cosine => $"VEC_DISTANCE_COSINE({vector}, {other})",
+				VectorDistance.L2 => $"VEC_DISTANCE_EUCLIDEAN({vector}, {other})",
+				_ => throw new NotSupportedException("MariaDB doesn't have an inner product vector distance"),
+			};
+		}
+
+		// Only in MySQL HeatWave and Enterprise
+		var metric = distance switch {
+			VectorDistance.Cosine => "COSINE",
+			VectorDistance.L2 => "EUCLIDEAN",
+			_ => "DOT",
+		};
+		return $"DISTANCE({vector}, {other}, '{metric}')";
+	}
+
+	// MariaDB has a vector index for NOT NULL columns, MySQL has none
+	protected override string ToCreateVectorIndexStatement(ModelDefinition modelDef, FieldDefinition fieldDef, string indexName)
+	{
+		if (IsMariaDb != true)
+			return null;
+		if (fieldDef.VectorDistance == VectorDistance.NegativeInnerProduct)
+			throw new NotSupportedException("MariaDB doesn't have an inner product vector distance");
+
+		var distance = fieldDef.VectorDistance == VectorDistance.Cosine ? "cosine" : "euclidean";
+		return $"CREATE VECTOR INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({GetQuotedColumnName(fieldDef)}) DISTANCE={distance}; \n";
+	}
+
+	// Column comments are part of their definition
+	public override List<string> ToCreateCommentStatements(Type tableType)
+	{
+		var modelDef = GetModel(tableType);
+		return string.IsNullOrEmpty(modelDef.Description)
+			? []
+			: [$"ALTER TABLE {GetQuotedTableName(modelDef)} COMMENT = {GetQuotedValue(modelDef.Description)}"];
 	}
 
 	public override string SqlConflict(string sql, string conflictResolution)

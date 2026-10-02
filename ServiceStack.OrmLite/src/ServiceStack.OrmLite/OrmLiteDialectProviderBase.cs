@@ -361,6 +361,9 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         if (fieldDef.IsRowVersion)
             return RowVersionConverter;
 
+        if (fieldDef.VectorDimensions != null)
+            return VectorConverter;
+
         if (Converters.TryGetValue(fieldType, out var converter))
             return converter;
 
@@ -616,10 +619,69 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         return OrmLiteConfig.SanitizeFieldNameForParamNameFn(fieldName);
     }
 
+    /// <summary>
+    /// Replaces {Property} references in SQL from attributes with their quoted column name, e.g. in
+    /// [Index(Where)] and [Compute(expression)]
+    /// </summary>
+    public virtual string ResolveColumnRefs(ModelDefinition modelDef, string sql)
+    {
+        if (modelDef == null || string.IsNullOrEmpty(sql) || sql.IndexOf('{') < 0)
+            return sql;
+
+        return ColumnRefRegex.Replace(sql, m => modelDef.GetFieldDefinition(m.Groups[1].Value) is { } fieldDef
+            ? GetQuotedColumnName(fieldDef)
+            : m.Value);
+    }
+    private static readonly Regex ColumnRefRegex = new(@"\{(\w+)\}", RegexOptions.Compiled);
+
+    /// <summary>
+    /// A column the RDBMS generates from its [Compute("expression")], which is stored when it's [Persisted]
+    /// </summary>
+    /// <summary>
+    /// The column type of a field: its [CustomField], the vector type of a [Vector] or the type of its converter
+    /// </summary>
+    protected virtual string GetFieldTypeDefinition(FieldDefinition fieldDef) =>
+        ResolveFragment(fieldDef.CustomFieldDefinition) ?? (fieldDef.VectorDimensions != null
+            ? GetVectorColumnDefinition(fieldDef.VectorDimensions.Value)
+            : GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale));
+
+    public IOrmLiteConverter VectorConverter { get; set; } = new VectorConverter();
+
+    /// <summary>
+    /// The column type of a [Vector] with these dimensions
+    /// </summary>
+    public virtual string GetVectorColumnDefinition(int dimensions) =>
+        throw new NotSupportedException($"{GetType().Name} doesn't support [Vector] columns");
+
+    public virtual string ToVectorParam(string param, int dimensions) => param;
+
+    public virtual string ToVectorDistance(VectorDistance distance, string vector, string other) =>
+        throw new NotSupportedException($"{GetType().Name} doesn't support vector distances");
+
+    /// <summary>
+    /// The statement that creates the vector index of an indexed [Vector] column, or null if the RDBMS has none
+    /// </summary>
+    protected virtual string ToCreateVectorIndexStatement(ModelDefinition modelDef, FieldDefinition fieldDef, string indexName) => null;
+
+    /// <summary>
+    /// What's selected for a [Vector] column if it can't be read as it is, or null to select the column
+    /// </summary>
+    protected virtual string GetVectorSelectExpression(string quotedColumn) => null;
+
+    protected virtual string GetGeneratedColumnDefinition(FieldDefinition fieldDef)
+    {
+        var columnType = GetFieldTypeDefinition(fieldDef);
+        return $"{GetQuotedColumnName(fieldDef)} {columnType} GENERATED ALWAYS AS " +
+               $"({ResolveColumnRefs(fieldDef.ModelDef, fieldDef.ComputeExpression)}) " +
+               (fieldDef.IsPersisted ? "STORED" : "VIRTUAL");
+    }
+
     public virtual string GetColumnDefinition(FieldDefinition fieldDef)
     {
-        var fieldDefinition = ResolveFragment(fieldDef.CustomFieldDefinition) ?? 
-                              GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale);
+        if (fieldDef.IsGenerated)
+            return GetGeneratedColumnDefinition(fieldDef);
+
+        var fieldDefinition = GetFieldTypeDefinition(fieldDef);
 
         var sql = StringBuilderCache.Allocate();
         sql.Append($"{GetQuotedColumnName(fieldDef)} {fieldDefinition}");
@@ -812,6 +874,11 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             else if (field.IsRowVersion)
             {
                 sqlColumns[i] = GetRowVersionSelectColumn(field, quotedPrefix);
+            }
+            else if (field.VectorDimensions != null && GetVectorSelectExpression(
+                         (quotedPrefix.Length > 0 ? quotedPrefix + "." : "") + GetQuotedColumnName(field)) is { } vectorSelect)
+            {
+                sqlColumns[i] = new SelectItemExpression(this, vectorSelect, field.FieldName);
             }
             else
             {
@@ -1410,7 +1477,10 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual void SetParameter(FieldDefinition fieldDef, IDbDataParameter p)
     {
         p.ParameterName = this.GetParam(SanitizeFieldNameForParamName(fieldDef.FieldName));
-        InitDbParam(p, fieldDef.ColumnType);
+        if (fieldDef.VectorDimensions != null)
+            VectorConverter.InitDbParam(p, fieldDef.ColumnType);
+        else
+            InitDbParam(p, fieldDef.ColumnType);
     }
 
     public virtual void EnableIdentityInsert<T>(IDbCommand cmd) {}
@@ -1793,7 +1863,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         var modelDef = tableType.GetModelDefinition();
         foreach (var fieldDef in CreateTableFieldsStrategy(modelDef))
         {
-            if (fieldDef.CustomSelect != null || (fieldDef.IsComputed && !fieldDef.IsPersisted))
+            if (fieldDef.ShouldSkipCreate())
                 continue;
 
             var columnDefinition = GetColumnDefinition(fieldDef);
@@ -1852,11 +1922,43 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual string GetCheckConstraint(ModelDefinition modelDef, FieldDefinition fieldDef)
     {
-        if (fieldDef.CheckConstraint == null)
+        var constraint = fieldDef.CheckConstraint;
+        if (fieldDef.CheckEnum)
+        {
+            var enumConstraint = GetEnumCheckConstraint(fieldDef);
+            constraint = constraint == null
+                ? enumConstraint
+                : $"({constraint}) AND {enumConstraint}";
+        }
+        if (constraint == null)
             return null;
 
-        return $"CONSTRAINT CHK_{modelDef.Schema}_{modelDef.ModelName}_{fieldDef.FieldName} CHECK ({fieldDef.CheckConstraint})";
+        return $"CONSTRAINT CHK_{modelDef.Schema}_{modelDef.ModelName}_{fieldDef.FieldName} CHECK ({constraint})";
     }
+
+    /// <summary>
+    /// The condition a [CheckEnum] column is constrained by, which only allows the values of its Enum as they're
+    /// stored, e.g: "Status" IN ('New','Shipped')
+    /// </summary>
+    protected virtual string GetEnumCheckConstraint(FieldDefinition fieldDef)
+    {
+        var enumType = fieldDef.FieldType;
+        if (!enumType.IsEnum)
+            throw new NotSupportedException($"[CheckEnum] is only valid on Enum properties, {fieldDef.Name} is a {enumType.Name}");
+        if (enumType.HasAttributeCached<FlagsAttribute>())
+            throw new NotSupportedException($"[CheckEnum] isn't supported on [Flags] Enums like {enumType.Name}, whose values are combined");
+
+        var values = new List<string>();
+        foreach (var value in Enum.GetValues(enumType))
+        {
+            var quotedValue = GetQuotedValue(value, enumType);
+            if (!values.Contains(quotedValue))
+                values.Add(quotedValue);
+        }
+        return $"{GetQuotedColumnName(fieldDef)} IN ({string.Join(",", values)})";
+    }
+
+    public virtual List<string> ToCreateCommentStatements(Type tableType) => [];
 
     public virtual string ToPostCreateTableStatement(ModelDefinition modelDef)
     {
@@ -1890,8 +1992,19 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             var indexName = fieldDef.IndexName 
                             ?? GetIndexName(fieldDef.IsUniqueIndex, modelDef.ModelName.SafeVarName(), fieldDef.FieldName);
 
-            sqlIndexes.Add(
-                ToCreateIndexStatement(fieldDef.IsUniqueIndex, indexName, modelDef, fieldDef.FieldName, isCombined: false, fieldDef: fieldDef));
+            if (fieldDef.VectorDimensions != null)
+            {
+                // A vector index where the RDBMS has one, as other indexes can't be used to find similar vectors
+                var sqlVectorIndex = ToCreateVectorIndexStatement(modelDef, fieldDef, indexName);
+                if (sqlVectorIndex != null)
+                    sqlIndexes.Add(sqlVectorIndex);
+                continue;
+            }
+
+            var keyColumns = GetIndexKeyColumns(modelDef, fieldDef.IsUniqueIndex, GetQuotedColumnName(fieldDef), fieldDef.IndexInclude);
+            sqlIndexes.Add(WithIndexOptions(modelDef, fieldDef.IndexInclude, fieldDef.IndexWhere, keyColumns != null
+                ? ToCreateIndexStatement(fieldDef.IsUniqueIndex, indexName, modelDef, keyColumns, isCombined: true, fieldDef: fieldDef)
+                : ToCreateIndexStatement(fieldDef.IsUniqueIndex, indexName, modelDef, fieldDef.FieldName, isCombined: false, fieldDef: fieldDef)));
         }
 
         foreach (var compositeIndex in modelDef.CompositeIndexes)
@@ -1920,13 +2033,61 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
                 }
             }
 
-            sqlIndexes.Add(
+            var columns = StringBuilderCache.ReturnAndFree(sb);
+            sqlIndexes.Add(WithIndexOptions(modelDef, compositeIndex.Include, compositeIndex.Where,
                 ToCreateIndexStatement(compositeIndex.Unique, indexName, modelDef,
-                    StringBuilderCache.ReturnAndFree(sb),
-                    isCombined: true));
+                    GetIndexKeyColumns(modelDef, compositeIndex.Unique, columns, compositeIndex.Include) ?? columns,
+                    isCombined: true)));
         }
 
         return sqlIndexes;
+    }
+
+    /// <summary>
+    /// Whether indexes can keep other columns with INCLUDE. Where they can't, the columns of a covering index
+    /// are added to the key columns of non-unique indexes instead.
+    /// </summary>
+    protected virtual bool SupportsIndexInclude => false;
+
+    /// <summary>
+    /// Whether an index can be limited to the rows matching a condition
+    /// </summary>
+    protected virtual bool SupportsFilteredIndexes => true;
+
+    private string GetQuotedIndexColumn(ModelDefinition modelDef, string name) =>
+        modelDef.GetFieldDefinition(name) is { } fieldDef
+            ? GetQuotedColumnName(fieldDef)
+            : GetQuotedColumnName(name);
+
+    // The key columns with the columns to include, for an RDBMS without INCLUDE. Returns null if they're unchanged.
+    private string GetIndexKeyColumns(ModelDefinition modelDef, bool isUnique, string keyColumns, string[] include)
+    {
+        // Adding columns to a unique index would change which rows it allows
+        if (include == null || include.Length == 0 || SupportsIndexInclude || isUnique)
+            return null;
+        return keyColumns + ", " + string.Join(", ", include.Map(x => GetQuotedIndexColumn(modelDef, x)));
+    }
+
+    // Adds the INCLUDE and WHERE of a covering or filtered index to its CREATE INDEX statement
+    private string WithIndexOptions(ModelDefinition modelDef, string[] include, string where, string sql)
+    {
+        var options = "";
+        if (include is { Length: > 0 } && SupportsIndexInclude)
+            options += $" INCLUDE ({string.Join(", ", include.Map(x => GetQuotedIndexColumn(modelDef, x)))})";
+
+        if (!string.IsNullOrEmpty(where))
+        {
+            if (!SupportsFilteredIndexes)
+                throw new NotSupportedException($"{GetType().Name} doesn't support filtered indexes, used by {modelDef.Name}");
+            options += " WHERE " + ResolveColumnRefs(modelDef, where);
+        }
+        if (options.Length == 0)
+            return sql;
+
+        var endPos = sql.LastIndexOf(';');
+        return endPos >= 0
+            ? sql.Substring(0, endPos) + options + sql.Substring(endPos)
+            : sql + options;
     }
 
     public virtual bool DoesTableExist(IDbConnection db, TableRef tableRef)

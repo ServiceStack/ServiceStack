@@ -32,6 +32,11 @@ public class ModelDefinition
 
     public string PostCreateTableSql { get; set; }
 
+    /// <summary>
+    /// The table's comment, from [Description]
+    /// </summary>
+    public string Description { get; set; }
+
     public string PreDropTableSql { get; set; }
 
     public string PostDropTableSql { get; set; }
