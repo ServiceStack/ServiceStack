@@ -56,6 +56,33 @@ public class ConnectionFilterReadUseCases(DialectContext context) : OrmLiteProvi
     }
 
     [Test]
+    public async Task Apis_that_take_a_Type_are_filtered()
+    {
+        using var db = OpenForTenant(1);
+        var orderType = typeof(TenantOrder);
+
+        var api = db.CreateTypedApi(orderType);
+        Assert.That(api.Select().Cast<TenantOrder>().Select(x => x.Id), Is.EquivalentTo(new[] { 1, 2, 3 }));
+        Assert.That((await api.SelectAsync()).Count, Is.EqualTo(3));
+        Assert.That(api.Select("Total > @total", new { total = 0 }).Count, Is.EqualTo(3));
+        Assert.That((await api.SelectAsync("Total > @total", new { total = 0 })).Count, Is.EqualTo(3));
+        Assert.That(api.SingleById(1), Is.Not.Null);
+        Assert.That(api.SingleById(4), Is.Null);
+        Assert.That(await api.SingleByIdAsync(4), Is.Null);
+        Assert.That(api.Count(), Is.EqualTo(3));
+        Assert.That(await api.CountAsync(), Is.EqualTo(3));
+
+        Assert.That(db.Select<TenantOrder>(orderType).Map(x => x.Id), Is.EquivalentTo(new[] { 1, 2, 3 }));
+
+        // Another tenant's rows can't be deleted
+        Assert.That(api.DeleteById(4), Is.EqualTo(0));
+        Assert.That(db.Delete(orderType, "Id = @id", new { id = 4 }), Is.EqualTo(0));
+        Assert.That(api.DeleteAll(), Is.EqualTo(3));
+        Assert.That(db.DeleteAll(orderType), Is.EqualTo(0));
+        Assert.That(db.WithoutFilters().Select<TenantOrder>().Map(x => x.Id), Is.EqualTo(new[] { 4 }));
+    }
+
+    [Test]
     public void Typed_lambda_apis_are_filtered()
     {
         using var db = OpenForTenant(1);

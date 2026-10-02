@@ -61,6 +61,46 @@ public class UntypedApi<T> : IUntypedApi
             Db.Exec(filter);
     }
 
+    public IList Select()
+    {
+        return Exec(dbCmd => dbCmd.Select<T>());
+    }
+
+    public async Task<IList> SelectAsync(CancellationToken token = default)
+    {
+        return await Exec(dbCmd => dbCmd.SelectAsync<T>(token)).ConfigureAwait(false);
+    }
+
+    public IList Select(string sqlFilter, object anonType = null)
+    {
+        return Exec(dbCmd => dbCmd.Select<T>(sqlFilter, anonType));
+    }
+
+    public async Task<IList> SelectAsync(string sqlFilter, object anonType = null, CancellationToken token = default)
+    {
+        return await Exec(dbCmd => dbCmd.SelectAsync<T>(sqlFilter, anonType, token)).ConfigureAwait(false);
+    }
+
+    public object SingleById(object id)
+    {
+        return Exec(dbCmd => dbCmd.SingleById<T>(id));
+    }
+
+    public async Task<object> SingleByIdAsync(object id, CancellationToken token = default)
+    {
+        return await Exec(dbCmd => dbCmd.SingleByIdAsync<T>(id, token)).ConfigureAwait(false);
+    }
+
+    public long Count()
+    {
+        return Exec(dbCmd => dbCmd.Count<T>());
+    }
+
+    public Task<long> CountAsync(CancellationToken token = default)
+    {
+        return Exec(dbCmd => dbCmd.CountAsync<T>(token));
+    }
+
     public int SaveAll(IEnumerable objs)
     {
         return Exec(dbCmd => dbCmd.SaveAll((IEnumerable<T>)objs));

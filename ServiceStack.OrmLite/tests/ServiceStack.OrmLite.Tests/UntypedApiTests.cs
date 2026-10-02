@@ -60,6 +60,39 @@ public class UntypedApiTests(DialectContext context) : OrmLiteProvidersTestBase(
             Assert.That(typedRow.Name, Is.EqualTo("Foo"));
         }
     }
+
+    [Test]
+    public async System.Threading.Tasks.Task Can_read_rows_with_untyped_Api()
+    {
+        using var db = OpenDbConnection();
+        var useType = typeof(Target);
+        db.DropAndCreateTables(useType);
+
+        var typedApi = db.CreateTypedApi(useType);
+        typedApi.InsertAll(new[] {
+            new Target { Id = 1, Name = "Foo" },
+            new Target { Id = 2, Name = "Bar" },
+            new Target { Id = 3, Name = "Baz" },
+        });
+
+        // Rows are returned as a List of the table's Type
+        var rows = typedApi.Select();
+        Assert.That(rows, Is.TypeOf<List<Target>>());
+        Assert.That(rows.Cast<Target>().Select(x => x.Name), Is.EquivalentTo(new[] { "Foo", "Bar", "Baz" }));
+        Assert.That((await typedApi.SelectAsync()).Count, Is.EqualTo(3));
+
+        var filtered = typedApi.Select("Id > @id", new { id = 1 });
+        Assert.That(filtered.Cast<Target>().Select(x => x.Id), Is.EquivalentTo(new[] { 2, 3 }));
+        Assert.That((await typedApi.SelectAsync("Id > @id", new { id = 2 })).Cast<Target>().Select(x => x.Id),
+            Is.EqualTo(new[] { 3 }));
+
+        Assert.That(((Target)typedApi.SingleById(2)).Name, Is.EqualTo("Bar"));
+        Assert.That(((Target)await typedApi.SingleByIdAsync(3)).Name, Is.EqualTo("Baz"));
+        Assert.That(typedApi.SingleById(99), Is.Null);
+
+        Assert.That(typedApi.Count(), Is.EqualTo(3));
+        Assert.That(await typedApi.CountAsync(), Is.EqualTo(3));
+    }
         
     public class UserEntity
     {
