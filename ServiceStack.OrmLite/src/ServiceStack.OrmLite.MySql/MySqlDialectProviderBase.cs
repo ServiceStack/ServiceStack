@@ -94,6 +94,21 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 		                  $"ON DUPLICATE KEY UPDATE {updateSql}";
 	}
 
+	// DROP TABLE without TEMPORARY commits the current transaction
+	protected override string ToDropBulkStagingTableStatement(string stagingTable) => "DROP TEMPORARY TABLE " + stagingTable;
+
+	protected override string ToBulkUpsertStatement(ModelDefinition modelDef, string stagingTable,
+		List<FieldDefinition> insertFieldDefs, List<FieldDefinition> updateFieldDefs)
+	{
+		var table = GetQuotedTableName(modelDef);
+		var updateSql = updateFieldDefs.Count > 0
+			? updateFieldDefs.Map(x => $"{table}.{GetQuotedColumnName(x)}=" +
+				GetBulkUpsertValue(x.CustomUpdate, $"{stagingTable}.{GetQuotedColumnName(x)}")).Join(", ")
+			: $"{table}.{GetQuotedColumnName(modelDef.PrimaryKey)}={table}.{GetQuotedColumnName(modelDef.PrimaryKey)}";
+
+		return $"{GetBulkUpsertInsertSql(modelDef, stagingTable, insertFieldDefs)} ON DUPLICATE KEY UPDATE {updateSql}";
+	}
+
 	public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";
 
 	public static HashSet<string> ReservedWords = new([

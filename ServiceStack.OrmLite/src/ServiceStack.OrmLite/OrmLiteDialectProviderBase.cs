@@ -1030,6 +1030,249 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         }
     }
 
+    // What a bulk upsert does: load the rows into a temporary staging table, then upsert them from it
+    protected sealed class BulkUpsertPlan
+    {
+        public FieldDefinition PrimaryKey;
+        /// <summary>The quoted name of the temporary table the rows are loaded into</summary>
+        public string StagingTable;
+        /// <summary>The fields loaded into the staging table: those that are inserted or updated</summary>
+        public List<FieldDefinition> FieldDefs;
+        public string CreateStagingTableSql;
+        public string UpsertSql;
+        public string DropStagingTableSql;
+    }
+
+    /// <summary>
+    /// Returns null when rows have to be upserted one at a time: the RDBMS has no native upsert, or the connection
+    /// has filters or write rules for the table, which a single statement can't apply to the rows it updates
+    /// </summary>
+    protected virtual BulkUpsertPlan CreateBulkUpsertPlan<T>(IDbConnection db, ICollection<string> updateOnly, BulkInsertConfig config)
+    {
+        var modelDef = ModelDefinition<T>.Definition;
+        var primaryKey = modelDef.FieldDefinitions.FirstOrDefault(x => x.IsPrimaryKey)
+            ?? throw new NotSupportedException($"'{typeof(T).Name}' does not have a primary key");
+        var updateFieldDefs = OrmLiteWriteCommandExtensions.GetUpsertUpdateFieldDefinitions(modelDef, updateOnly);
+
+        if (!SupportsUpsert || db.Exec(dbCmd => dbCmd.HasFilters<T>() || dbCmd.HasWriteRules<T>()))
+            return null;
+
+        var requestedInsertFields = GetInsertFieldDefinitions(modelDef, config.InsertFields).ToSet();
+        requestedInsertFields.Add(primaryKey);
+        var insertFieldDefs = modelDef.FieldDefinitions
+            .Where(x => requestedInsertFields.Contains(x) && (!ShouldSkipInsert(x) || x.AutoId || x.IsPrimaryKey))
+            .ToList();
+
+        var fieldDefs = modelDef.FieldDefinitions
+            .Where(x => insertFieldDefs.Contains(x) || updateFieldDefs.Contains(x))
+            .ToList();
+
+        var stagingTable = GetBulkStagingTableName("ormlite_stage_" + Guid.NewGuid().ToString("N"));
+        return new BulkUpsertPlan {
+            PrimaryKey = primaryKey,
+            StagingTable = stagingTable,
+            FieldDefs = fieldDefs,
+            CreateStagingTableSql = ToCreateBulkStagingTableStatement(modelDef, stagingTable, fieldDefs),
+            UpsertSql = ToBulkUpsertStatement(modelDef, stagingTable, insertFieldDefs, updateFieldDefs),
+            DropStagingTableSql = ToDropBulkStagingTableStatement(stagingTable),
+        };
+    }
+
+    // Rows with an [AutoIncrement] primary key that hasn't been assigned are new, and are inserted for the RDBMS
+    // to assign it. The others are loaded into the staging table.
+    private static IEnumerable<T> GetRowsToStage<T>(IEnumerable<T> objs, FieldDefinition primaryKey, List<T> newRows)
+    {
+        if (!primaryKey.AutoIncrement)
+            return objs;
+
+        var defaultId = primaryKey.FieldType.GetDefaultValue();
+        IEnumerable<T> RowsWithIds()
+        {
+            foreach (var obj in objs)
+            {
+                var id = primaryKey.GetValue(obj);
+                if (id == null || Equals(id, defaultId))
+                    newRows.Add(obj);
+                else
+                    yield return obj;
+            }
+        }
+        return RowsWithIds();
+    }
+
+    public virtual void BulkUpsert<T>(IDbConnection db, IEnumerable<T> objs, ICollection<string> updateOnly = null, BulkInsertConfig config = null)
+    {
+        config ??= new();
+        var plan = CreateBulkUpsertPlan<T>(db, updateOnly, config);
+        if (plan == null)
+        {
+            if (updateOnly == null)
+                db.UpsertAll(objs);
+            else
+                db.UpsertAll(objs, updateOnly.ToArray());
+            return;
+        }
+
+        var newRows = new List<T>();
+        db.ExecuteSql(plan.CreateStagingTableSql);
+        try
+        {
+            BulkLoad(db, plan.StagingTable, plan.FieldDefs, GetRowsToStage(objs, plan.PrimaryKey, newRows), config);
+
+            db.Exec(dbCmd => {
+                // Rows keep the primary keys they were given
+                if (plan.PrimaryKey.AutoIncrement)
+                    EnableIdentityInsert<T>(dbCmd);
+                try
+                {
+                    return dbCmd.ExecuteSql(plan.UpsertSql);
+                }
+                finally
+                {
+                    if (plan.PrimaryKey.AutoIncrement)
+                        DisableIdentityInsert<T>(dbCmd);
+                }
+            });
+        }
+        finally
+        {
+            db.ExecuteSql(plan.DropStagingTableSql);
+        }
+
+        if (newRows.Count > 0)
+            db.BulkInsert(newRows, config);
+    }
+
+    public virtual async Task BulkUpsertAsync<T>(IDbConnection db, IEnumerable<T> objs, ICollection<string> updateOnly = null, BulkInsertConfig config = null, CancellationToken token=default)
+    {
+        config ??= new();
+        var plan = CreateBulkUpsertPlan<T>(db, updateOnly, config);
+        if (plan == null)
+        {
+            if (updateOnly == null)
+                await db.UpsertAllAsync(objs, token).ConfigAwait();
+            else
+                await db.UpsertAllAsync(objs, updateOnly.ToArray(), token).ConfigAwait();
+            return;
+        }
+
+        var newRows = new List<T>();
+        await db.ExecuteSqlAsync(plan.CreateStagingTableSql, token: token).ConfigAwait();
+        try
+        {
+            await BulkLoadAsync(db, plan.StagingTable, plan.FieldDefs, GetRowsToStage(objs, plan.PrimaryKey, newRows), config, token).ConfigAwait();
+
+            await db.Exec(async dbCmd => {
+                if (plan.PrimaryKey.AutoIncrement)
+                    await EnableIdentityInsertAsync<T>(dbCmd, token).ConfigAwait();
+                try
+                {
+                    return await dbCmd.ExecuteSqlAsync(plan.UpsertSql, token).ConfigAwait();
+                }
+                finally
+                {
+                    if (plan.PrimaryKey.AutoIncrement)
+                        await DisableIdentityInsertAsync<T>(dbCmd, token).ConfigAwait();
+                }
+            }).ConfigAwait();
+        }
+        finally
+        {
+            await db.ExecuteSqlAsync(plan.DropStagingTableSql, token: token).ConfigAwait();
+        }
+
+        if (newRows.Count > 0)
+            await db.BulkInsertAsync(newRows, config, token).ConfigAwait();
+    }
+
+    /// <summary>
+    /// The quoted name of a temporary table of this connection
+    /// </summary>
+    protected virtual string GetBulkStagingTableName(string name) => GetQuotedName(name);
+
+    /// <summary>
+    /// Creates an empty temporary table with the same columns as the fields of a table
+    /// </summary>
+    protected virtual string ToCreateBulkStagingTableStatement(ModelDefinition modelDef, string stagingTable, List<FieldDefinition> fieldDefs) =>
+        $"CREATE TEMPORARY TABLE {stagingTable} AS " +
+        $"SELECT {fieldDefs.Map(GetQuotedColumnName).Join(",")} FROM {GetQuotedTableName(modelDef)} WHERE 1=0";
+
+    protected virtual string ToDropBulkStagingTableStatement(string stagingTable) => "DROP TABLE " + stagingTable;
+
+    /// <summary>
+    /// The statement that inserts the rows of the staging table with a new primary key, and updates the
+    /// updateFieldDefs of those with an existing one
+    /// </summary>
+    protected virtual string ToBulkUpsertStatement(ModelDefinition modelDef, string stagingTable,
+        List<FieldDefinition> insertFieldDefs, List<FieldDefinition> updateFieldDefs) =>
+        throw new NotSupportedException($"{GetType().Name} does not support bulk upserts");
+
+    // INSERT INTO Table (columns) SELECT columns FROM staging
+    protected string GetBulkUpsertInsertSql(ModelDefinition modelDef, string stagingTable, List<FieldDefinition> insertFieldDefs) =>
+        $"INSERT INTO {GetQuotedTableName(modelDef)} ({insertFieldDefs.Map(GetQuotedColumnName).Join(",")}) " +
+        $"SELECT {insertFieldDefs.Map(x => GetBulkUpsertValue(x.CustomInsert, GetQuotedColumnName(x))).Join(",")} FROM {stagingTable}";
+
+    // The value a column is inserted or updated with: the staged column, in the field's [CustomInsert] or [CustomUpdate]
+    protected static string GetBulkUpsertValue(string customFormat, string stagedColumn) =>
+        customFormat != null ? string.Format(customFormat, stagedColumn) : stagedColumn;
+
+    /// <summary>
+    /// The value of a row that's loaded into a table, where an [AutoId] that hasn't been assigned gets a new one
+    /// </summary>
+    protected object GetBulkLoadValue(FieldDefinition fieldDef, object obj)
+    {
+        var value = fieldDef.GetValue(obj);
+        return fieldDef.AutoId && (value == null || Equals(value, fieldDef.FieldType.GetDefaultValue()))
+            ? GetInsertDefaultValue(fieldDef)
+            : value;
+    }
+
+    // INSERT INTO table (columns) VALUES (row),(row),...
+    private string ToBulkLoadSql<T>(string quotedTable, List<FieldDefinition> fieldDefs, IEnumerable<T> rows)
+    {
+        var sb = StringBuilderCache.Allocate()
+            .Append("INSERT INTO ").Append(quotedTable).Append(" (")
+            .Append(fieldDefs.Map(GetQuotedColumnName).Join(",")).Append(") VALUES ");
+
+        var count = 0;
+        foreach (var row in rows)
+        {
+            sb.Append(count++ > 0 ? ",\n(" : "\n(");
+            for (var i = 0; i < fieldDefs.Count; i++)
+            {
+                if (i > 0)
+                    sb.Append(',');
+                sb.Append(GetQuotedValue(GetBulkLoadValue(fieldDefs[i], row), fieldDefs[i].FieldType));
+            }
+            sb.Append(')');
+        }
+        var sql = StringBuilderCache.ReturnAndFree(sb);
+        return count > 0 ? sql : null;
+    }
+
+    /// <summary>
+    /// Loads rows into a table with the fields of the model, using the fastest way the RDBMS has
+    /// </summary>
+    protected virtual void BulkLoad<T>(IDbConnection db, string quotedTable, List<FieldDefinition> fieldDefs, IEnumerable<T> rows, BulkInsertConfig config)
+    {
+        foreach (var batch in rows.BatchesOf(config.BatchSize))
+        {
+            var sql = ToBulkLoadSql(quotedTable, fieldDefs, batch);
+            if (sql != null)
+                db.ExecuteSql(sql);
+        }
+    }
+
+    protected virtual async Task BulkLoadAsync<T>(IDbConnection db, string quotedTable, List<FieldDefinition> fieldDefs, IEnumerable<T> rows, BulkInsertConfig config, CancellationToken token)
+    {
+        foreach (var batch in rows.BatchesOf(config.BatchSize))
+        {
+            var sql = ToBulkLoadSql(quotedTable, fieldDefs, batch);
+            if (sql != null)
+                await db.ExecuteSqlAsync(sql, token: token).ConfigAwait();
+        }
+    }
+
     public virtual string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null)
     {
         var sbColumnNames = StringBuilderCache.Allocate();

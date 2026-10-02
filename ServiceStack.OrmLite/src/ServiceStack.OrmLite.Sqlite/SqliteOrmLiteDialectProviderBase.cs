@@ -203,6 +203,19 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
                           $"ON CONFLICT ({conflictTarget}) {conflictAction}";
     }
 
+    protected override string ToBulkUpsertStatement(ModelDefinition modelDef, string stagingTable,
+        List<FieldDefinition> insertFieldDefs, List<FieldDefinition> updateFieldDefs)
+    {
+        var conflictAction = updateFieldDefs.Count == 0
+            ? "DO NOTHING"
+            : "DO UPDATE SET " + updateFieldDefs.Map(x =>
+                GetQuotedColumnName(x) + "=" + GetBulkUpsertValue(x.CustomUpdate, "excluded." + GetQuotedColumnName(x))).Join(", ");
+
+        // WHERE true tells SQLite's parser that ON starts the upsert clause, and not a join of the SELECT
+        return $"{GetBulkUpsertInsertSql(modelDef, stagingTable, insertFieldDefs)} WHERE true " +
+               $"ON CONFLICT ({GetQuotedColumnName(modelDef.PrimaryKey)}) {conflictAction}";
+    }
+
     public override string ToInsertRowsSql<T>(IEnumerable<T> objs, ICollection<string>? insertFields = null)
     {
         var modelDef = ModelDefinition<T>.Definition;

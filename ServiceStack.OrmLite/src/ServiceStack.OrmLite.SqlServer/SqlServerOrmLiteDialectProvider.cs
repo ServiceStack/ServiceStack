@@ -438,22 +438,85 @@ namespace ServiceStack.OrmLite.SqlServer
             await bulkCopy.WriteToServerAsync(table, token).ConfigAwait();
         }
 
+        // A temporary table of the connection
+        protected override string GetBulkStagingTableName(string name) => GetQuotedName("#" + name);
+
+        // UNION ALL stops the staging table inheriting the IDENTITY of the table's column, so it can be given values
+        protected override string ToCreateBulkStagingTableStatement(ModelDefinition modelDef, string stagingTable, List<FieldDefinition> fieldDefs)
+        {
+            var columns = fieldDefs.Map(GetQuotedColumnName).Join(",");
+            var table = GetQuotedTableName(modelDef);
+            return $"SELECT {columns} INTO {stagingTable} FROM {table} WHERE 1=0 " +
+                   $"UNION ALL SELECT {columns} FROM {table} WHERE 1=0";
+        }
+
+        protected override string ToBulkUpsertStatement(ModelDefinition modelDef, string stagingTable,
+            List<FieldDefinition> insertFieldDefs, List<FieldDefinition> updateFieldDefs)
+        {
+            var quotedPrimaryKey = GetQuotedColumnName(modelDef.PrimaryKey);
+            var whenMatched = updateFieldDefs.Count > 0
+                ? "WHEN MATCHED THEN UPDATE SET " + updateFieldDefs.Map(x =>
+                    $"target.{GetQuotedColumnName(x)}=" + GetBulkUpsertValue(x.CustomUpdate, "source." + GetQuotedColumnName(x))).Join(", ") + " "
+                : "";
+
+            return $"MERGE INTO {GetQuotedTableName(modelDef)} WITH (HOLDLOCK) AS target " +
+                   $"USING {stagingTable} AS source " +
+                   $"ON target.{quotedPrimaryKey}=source.{quotedPrimaryKey} " +
+                   whenMatched +
+                   $"WHEN NOT MATCHED THEN INSERT ({insertFieldDefs.Map(GetQuotedColumnName).Join(",")}) " +
+                   $"VALUES ({insertFieldDefs.Map(x => GetBulkUpsertValue(x.CustomInsert, "source." + GetQuotedColumnName(x))).Join(",")});";
+        }
+
+        // Rows are loaded with SqlBulkCopy
+        protected override void BulkLoad<T>(IDbConnection db, string quotedTable, List<FieldDefinition> fieldDefs, IEnumerable<T> rows, BulkInsertConfig config)
+        {
+            if (config.Mode == BulkInsertMode.Sql)
+            {
+                base.BulkLoad(db, quotedTable, fieldDefs, rows, config);
+                return;
+            }
+
+            using var bulkCopy = CreateBulkCopy(db, quotedTable, fieldDefs, rows, config, GetBulkLoadValue, out var table);
+            bulkCopy.WriteToServer(table);
+        }
+
+        protected override async Task BulkLoadAsync<T>(IDbConnection db, string quotedTable, List<FieldDefinition> fieldDefs, IEnumerable<T> rows, BulkInsertConfig config, CancellationToken token)
+        {
+            if (config.Mode == BulkInsertMode.Sql)
+            {
+                await base.BulkLoadAsync(db, quotedTable, fieldDefs, rows, config, token).ConfigAwait();
+                return;
+            }
+
+            using var bulkCopy = CreateBulkCopy(db, quotedTable, fieldDefs, rows, config, GetBulkLoadValue, out var table);
+            await bulkCopy.WriteToServerAsync(table, token).ConfigAwait();
+        }
+
         private SqlBulkCopy CreateBulkCopy<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config, out DataTable table)
         {
-            var sqlConn = (SqlConnection)db.ToDbConnection();
-            var bulkCopy = new SqlBulkCopy(sqlConn);
             var modelDef = ModelDefinition<T>.Definition;
+            var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields)
+                .Where(x => !ShouldSkipInsert(x) || x.AutoId)
+                .ToList();
+
+            return CreateBulkCopy(db, GetQuotedTableName(modelDef), fieldDefs, objs, config,
+                (fieldDef, obj) => fieldDef.AutoId ? GetInsertDefaultValue(fieldDef) : fieldDef.GetValue(obj), out table);
+        }
+
+        private SqlBulkCopy CreateBulkCopy<T>(IDbConnection db, string quotedTable, List<FieldDefinition> fieldDefs,
+            IEnumerable<T> objs, BulkInsertConfig config, Func<FieldDefinition, object, object> getValue, out DataTable table)
+        {
+            var sqlConn = (SqlConnection)db.ToDbConnection();
+            // Rows are copied in the connection's transaction, which SqlBulkCopy doesn't use unless it's given it
+            var sqlTrans = db.GetTransaction()?.ToDbTransaction() as SqlTransaction;
+            var bulkCopy = new SqlBulkCopy(sqlConn, SqlBulkCopyOptions.Default, sqlTrans);
 
             bulkCopy.BatchSize = config.BatchSize;
-            bulkCopy.DestinationTableName = GetQuotedTableName(modelDef);
+            bulkCopy.DestinationTableName = quotedTable;
             
             table = new DataTable();
-            var fieldDefs = GetInsertFieldDefinitions(modelDef, insertFields:config.InsertFields);
             foreach (var fieldDef in fieldDefs)
             {
-                if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
-                    continue;
-
                 var columnName = NamingStrategy.GetColumnName(fieldDef.FieldName);
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
                 
@@ -474,12 +537,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 var row = table.NewRow();
                 foreach (var fieldDef in fieldDefs)
                 {
-                    if (ShouldSkipInsert(fieldDef) && !fieldDef.AutoId)
-                        continue;
-                    
-                    var value = fieldDef.AutoId
-                        ? GetInsertDefaultValue(fieldDef)
-                        : fieldDef.GetValue(obj);
+                    var value = getValue(fieldDef, obj);
 
                     var converter = GetConverterBestMatch(fieldDef);
                     var dbValue = converter.ToDbValue(fieldDef.FieldType, value);

@@ -524,6 +524,41 @@ public static class OrmLiteWriteApiAsync
         await dbConn.Dialect().BulkInsertAsync(dbConn, objs, config, token).ConfigAwait();
     }
 
+    /// <summary>
+    /// Inserts the rows with a new primary key and updates those with an existing one, for large numbers of rows.
+    /// The rows are bulk loaded into a temporary table, then upserted from it in a single statement.
+    /// </summary>
+    public static Task BulkUpsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token = default)
+    {
+        return dbConn.Dialect().BulkUpsertAsync(dbConn, objs, updateOnly: null, config, token);
+    }
+
+    /// <summary>
+    /// Inserts the rows with a new primary key and only updates the selected fields of those with an existing one,
+    /// for large numbers of rows.
+    /// </summary>
+    public static Task BulkUpsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs,
+        Expression<Func<T, object>> updateOnly, BulkInsertConfig config = null, CancellationToken token = default)
+    {
+        if (updateOnly == null)
+            throw new ArgumentNullException(nameof(updateOnly));
+
+        return dbConn.Dialect().BulkUpsertAsync(dbConn, objs, updateOnly.GetFieldNames(), config, token);
+    }
+
+    /// <summary>
+    /// Inserts the rows with a new primary key and only updates the named fields of those with an existing one,
+    /// for large numbers of rows.
+    /// </summary>
+    public static Task BulkUpsertAsync<T>(this IDbConnection dbConn, IEnumerable<T> objs, string[] updateOnly,
+        BulkInsertConfig config = null, CancellationToken token = default)
+    {
+        if (updateOnly == null)
+            throw new ArgumentNullException(nameof(updateOnly));
+
+        return dbConn.Dialect().BulkUpsertAsync(dbConn, objs, updateOnly, config, token);
+    }
+
     // Procedures
     public static Task ExecuteProcedureAsync<T>(this IDbConnection dbConn, T obj, CancellationToken token = default)
     {

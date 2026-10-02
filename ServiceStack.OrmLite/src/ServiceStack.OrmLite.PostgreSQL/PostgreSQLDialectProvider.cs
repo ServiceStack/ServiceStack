@@ -403,20 +403,91 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         await writer.CompleteAsync(token).ConfigureAwait(false);
     }
 
+    protected override string ToBulkUpsertStatement(ModelDefinition modelDef, string stagingTable,
+        List<FieldDefinition> insertFieldDefs, List<FieldDefinition> updateFieldDefs)
+    {
+        var conflictAction = updateFieldDefs.Count == 0
+            ? "DO NOTHING"
+            : "DO UPDATE SET " + updateFieldDefs.Map(x =>
+                GetQuotedColumnName(x) + "=" + GetBulkUpsertValue(x.CustomUpdate, "EXCLUDED." + GetQuotedColumnName(x))).Join(", ");
+
+        return $"{GetBulkUpsertInsertSql(modelDef, stagingTable, insertFieldDefs)} " +
+               $"ON CONFLICT ({GetQuotedColumnName(modelDef.PrimaryKey)}) {conflictAction}";
+    }
+
+    // Rows are loaded with COPY
+    protected override void BulkLoad<T>(IDbConnection db, string quotedTable, List<FieldDefinition> fieldDefs, IEnumerable<T> rows, BulkInsertConfig config)
+    {
+        if (config.Mode == BulkInsertMode.Sql)
+        {
+            base.BulkLoad(db, quotedTable, fieldDefs, rows, config);
+            return;
+        }
+
+        var pgConn = (NpgsqlConnection)db.ToDbConnection();
+        using var writer = pgConn.BeginBinaryImport(ToBinaryImportCommand(quotedTable, fieldDefs));
+        foreach (var row in rows)
+        {
+            writer.StartRow();
+            foreach (var fieldDef in fieldDefs)
+            {
+                var dbValue = ToBinaryImportDbValue(fieldDef, GetBulkLoadValue(fieldDef, row), out var dbType);
+                if (dbValue == null)
+                    writer.WriteNull();
+                else
+                    writer.Write(dbValue, dbType);
+            }
+        }
+        writer.Complete();
+    }
+
+    protected override async Task BulkLoadAsync<T>(IDbConnection db, string quotedTable, List<FieldDefinition> fieldDefs, IEnumerable<T> rows, BulkInsertConfig config, CancellationToken token)
+    {
+        if (config.Mode == BulkInsertMode.Sql)
+        {
+            await base.BulkLoadAsync(db, quotedTable, fieldDefs, rows, config, token).ConfigAwait();
+            return;
+        }
+
+        var pgConn = (NpgsqlConnection)db.ToDbConnection();
+        await using var writer = await pgConn.BeginBinaryImportAsync(ToBinaryImportCommand(quotedTable, fieldDefs), token).ConfigAwait();
+        foreach (var row in rows)
+        {
+            await writer.StartRowAsync(token).ConfigAwait();
+            foreach (var fieldDef in fieldDefs)
+            {
+                var dbValue = ToBinaryImportDbValue(fieldDef, GetBulkLoadValue(fieldDef, row), out var dbType);
+                if (dbValue == null)
+                    await writer.WriteNullAsync(token).ConfigAwait();
+                else
+                    await writer.WriteAsync(dbValue, dbType, token).ConfigAwait();
+            }
+        }
+        await writer.CompleteAsync(token).ConfigureAwait(false);
+    }
+
     private List<FieldDefinition> GetBinaryImportFieldDefinitions<T>(BulkInsertConfig config) =>
         GetInsertFieldDefinitions(ModelDefinition<T>.Definition, insertFields:config.InsertFields)
             .Where(x => !ShouldSkipInsert(x) || x.AutoId)
             .ToList();
 
     private string ToBinaryImportCommand<T>(List<FieldDefinition> fieldDefs) =>
-        $"COPY {GetQuotedTableName(ModelDefinition<T>.Definition)} ({string.Join(",", fieldDefs.Select(x => GetQuotedColumnName(x)))}) FROM STDIN (FORMAT BINARY)";
+        ToBinaryImportCommand(GetQuotedTableName(ModelDefinition<T>.Definition), fieldDefs);
+
+    private string ToBinaryImportCommand(string quotedTable, List<FieldDefinition> fieldDefs) =>
+        $"COPY {quotedTable} ({string.Join(",", fieldDefs.Select(x => GetQuotedColumnName(x)))}) FROM STDIN (FORMAT BINARY)";
 
     private object ToBinaryImportValue(FieldDefinition fieldDef, object obj, out NpgsqlDbType dbType)
     {
-        dbType = default;
         var value = fieldDef.AutoId
             ? GetInsertDefaultValue(fieldDef)
             : fieldDef.GetValue(obj);
+        return ToBinaryImportDbValue(fieldDef, value, out dbType);
+    }
+
+    private object ToBinaryImportDbValue(FieldDefinition fieldDef, object value, out NpgsqlDbType dbType)
+    {
+        dbType = default;
 
         var converter = GetConverterBestMatch(fieldDef)
             ?? throw new NotSupportedException($"No converter found for {fieldDef.FieldType.Name}");

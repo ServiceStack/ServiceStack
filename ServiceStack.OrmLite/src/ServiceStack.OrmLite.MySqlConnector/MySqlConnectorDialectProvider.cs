@@ -80,7 +80,8 @@ public class MySqlConnectorDialectProvider : MySqlDialectProviderBase<MySqlConne
             FieldQuotationCharacter = '"',
             FieldQuotationOptional = true,
             EscapeCharacter = '\\',
-            LineTerminator = Environment.NewLine,
+            // The row separator CsvSerializer writes, which isn't the newline of every OS
+            LineTerminator = CsvConfig.RowSeparatorString,
         };
         
         var (columns, expressions) = GetBulkLoadColumns<T>(dialect);

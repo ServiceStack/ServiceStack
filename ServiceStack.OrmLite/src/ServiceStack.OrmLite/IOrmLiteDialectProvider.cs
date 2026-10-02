@@ -216,6 +216,14 @@ public interface IOrmLiteDialectProvider
     void BulkInsert<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null);
     
     Task BulkInsertAsync<T>(IDbConnection db, IEnumerable<T> objs, BulkInsertConfig config = null, CancellationToken token=default);
+
+    /// <summary>
+    /// Bulk loads the rows into a temporary table, then inserts those with a new primary key and updates those
+    /// with an existing one in a single statement
+    /// </summary>
+    void BulkUpsert<T>(IDbConnection db, IEnumerable<T> objs, ICollection<string> updateOnly = null, BulkInsertConfig config = null);
+
+    Task BulkUpsertAsync<T>(IDbConnection db, IEnumerable<T> objs, ICollection<string> updateOnly = null, BulkInsertConfig config = null, CancellationToken token=default);
         
     string ToInsertRowStatement(IDbCommand cmd, object objWithProperties, ICollection<string> insertFields = null);
 
