@@ -1051,6 +1051,15 @@ public static class OrmLiteUtils
         return ret;
     }
 
+    /// <summary>
+    /// Whether complex types are serialized as JSON, which the JSON functions of an RDBMS can query
+    /// </summary>
+    public static bool IsJsonSerializer(this IStringSerializer serializer) => serializer is JsonStringSerializer
+#if NET8_0_OR_GREATER
+        or JsonComplexTypeSerializer
+#endif
+        ;
+
     public static string StripDbQuotes(this string quotedExpr)
     {
         return quotedExpr.Trim(QuotedChars);

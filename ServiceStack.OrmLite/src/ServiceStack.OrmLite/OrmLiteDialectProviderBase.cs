@@ -152,10 +152,12 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     }
     
     /// <summary>
-    /// Use JSON for serializing Complex Types
+    /// Use JSON for serializing Complex Types, which lets typed queries read their properties, e.g:
+    /// <para>db.Select&lt;Customer&gt;(x => x.Address.City == "London")</para>
     /// </summary>
     public virtual bool UseJson
     {
+        get => StringSerializer.IsJsonSerializer();
 #if NET8_0_OR_GREATER
         set => StringSerializer = value ? new JsonComplexTypeSerializer() : new JsvStringSerializer();
 #else

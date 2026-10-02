@@ -14,14 +14,14 @@ Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
 
 ## 1. Modelling
 
-### 1.1 LINQ Queries Into JSON / Complex-Type Columns (L)
-Complex properties are already stored as JSON/JSV text blobs, but querying them needs `Sql.JsonValue("path")` strings. Translate member access directly:
-```csharp
-db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
-```
-- PostgreSQL uses `jsonb` operators, SQL Server uses `JSON_VALUE` / `OPENJSON`, SQLite uses `json_extract`, and MySQL uses `->>`.
-- Includes optional `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes.
-- Requires JSON (not JSV) serialization for the column, so this would be opt-in via `[Json]` / `[PgSqlJsonB]`.
+### 1.1 More JSON Queries (M)
+Complex type properties stored as JSON are queried directly, e.g. `x.Address.City == "London"`,
+`x.Tags.Contains("vip")`, `x.Lines.Count` and `x.Lines[0].Quantity`, and JSON in `string` columns with `Sql.Json<T>()`.
+Remaining JSON features:
+- Matching the items of a list by a condition, e.g. `x.Lines.Any(l => l.Sku == "A-1" && l.Quantity > 1)`
+- `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes of a JSON property
+- Recognizing JSON by property, e.g. `[PgSqlJsonB]` columns and custom JSON serializers when the dialect doesn't use JSON
+- PostgreSQL's native arrays, e.g. `x.Aliases.Contains("Al")` on a `string[]` column as `= ANY(aliases)`
 
 ### 1.2 More Vector Support (S/M)
 `[Vector]` columns and `Sql.CosineDistance()`, `Sql.L2Distance()` and `Sql.NegativeInnerProduct()` are supported on

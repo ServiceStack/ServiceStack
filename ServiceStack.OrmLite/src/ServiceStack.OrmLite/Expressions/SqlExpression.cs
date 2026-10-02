@@ -3213,6 +3213,16 @@ namespace ServiceStack.OrmLite
 
         private object ToInPartialString(Expression memberExpr, object quotedColName)
         {
+            // list.Contains(column) is an IN, column.Contains(value) isn't: the list has to be a value
+            if (IsParameterAccess(memberExpr))
+                throw new NotSupportedException(
+                    $"Contains() can't be used on the {memberExpr.Type.Name} column '{memberExpr}'. " +
+                    "Complex types stored as JSON can be queried when the dialect has UseJson.");
+
+            // A value that's searched for is sent as a db param, only columns and SQL are used as they are
+            if (!IsSqlClass(quotedColName))
+                quotedColName = new PartialSqlString(ConvertToParam(quotedColName));
+
             var result = EvaluateExpression(memberExpr);
 
             var inArgs = Sql.Flatten(result as IEnumerable);
@@ -3522,10 +3532,11 @@ namespace ServiceStack.OrmLite
                 return true;
 
             var pathParts = new List<string>();
-            if (!TryCollectTypedJsonPath(expression, pathParts, out var marker) || pathParts.Count == 0)
+            if (!TryCollectTypedJsonPath(expression, pathParts, out var document) || pathParts.Count == 0)
                 return false;
 
-            var json = VisitJsonDocument(marker.Arguments[0]);
+            AssertJsonDocument(document);
+            var json = VisitJsonDocument(GetJsonDocument(document));
             var path = JsonPath("$" + string.Concat(pathParts));
             result = IsJsonScalarType(expression.Type)
                 ? VisitJsonValueMethod(json, path, expression.Type)
@@ -3547,6 +3558,12 @@ namespace ServiceStack.OrmLite
                 array = member.Expression;
                 isLength = true;
             }
+            else if (expression is UnaryExpression { NodeType: ExpressionType.ArrayLength } arrayLength)
+            {
+                // array.Length is its own kind of expression, unlike list.Count
+                array = arrayLength.Operand;
+                isLength = true;
+            }
             else if (expression is MethodCallExpression call && call.Method.Name == nameof(IList.Contains))
             {
                 if (call.Object != null && call.Arguments.Count == 1 && IsJsonArrayType(call.Object.Type))
@@ -3554,21 +3571,29 @@ namespace ServiceStack.OrmLite
                     array = call.Object;
                     value = call.Arguments[0];
                 }
-                else if (call.Object == null && call.Arguments.Count == 2 && IsJsonArrayType(call.Arguments[0].Type))
+                else if (call.Object == null && call.Arguments.Count == 2)
                 {
-                    array = call.Arguments[0];
-                    value = call.Arguments[1];
+                    // Enumerable.Contains(array, value), or MemoryExtensions.Contains(span, value) in C# 14
+                    // where the array is converted to a span
+                    var source = UnwrapSpanConversion(call.Arguments[0]);
+                    if (IsJsonArrayType(source.Type))
+                    {
+                        array = source;
+                        value = call.Arguments[1];
+                    }
                 }
             }
 
             if (array == null)
                 return false;
 
+            // The array can be a property of a document, or the document itself e.g. a List<string> column
             var pathParts = new List<string>();
-            if (!TryCollectTypedJsonPath(array, pathParts, out var marker) || pathParts.Count == 0)
+            if (!TryCollectTypedJsonPath(array, pathParts, out var document))
                 return false;
 
-            var json = VisitJsonDocument(marker.Arguments[0]);
+            AssertJsonDocument(document);
+            var json = VisitJsonDocument(GetJsonDocument(document));
             var path = JsonPath("$" + string.Concat(pathParts));
             result = isLength
                 ? VisitJsonArrayLengthMethod(json, path)
@@ -3576,19 +3601,75 @@ namespace ServiceStack.OrmLite
             return true;
         }
 
-        private bool TryCollectTypedJsonPath(Expression expression, List<string> pathParts, out MethodCallExpression marker)
+        /// <summary>
+        /// Whether the expression is a column that's a complex type OrmLite serializes, e.g. x.Address or x.Tags,
+        /// whose properties can be queried when it's stored as JSON
+        /// </summary>
+        private bool IsComplexTypeColumn(MemberExpression member)
         {
-            marker = null;
+            if (member.Member is not PropertyInfo || IsJsonScalarType(member.Type))
+                return false;
+
+            var source = member.Expression;
+            while (source is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                source = convert.Operand;
+            if (source is not ParameterExpression param)
+                return false;
+
+            var tableDef = param.Type.IsAssignableFrom(modelDef.ModelType)
+                ? modelDef
+                : tableDefs.FirstOrDefault(x => param.Type.IsAssignableFrom(x.ModelType));
+            var fieldDef = tableDef?.GetFieldDefinition(member.Member.Name);
+            if (fieldDef == null || fieldDef.IsReference || fieldDef.VectorDimensions != null)
+                return false;
+
+            // A property with the type of a table in the query refers to the columns of that table, e.g.
+            // x.Customer.Name is the Name of the joined Customer table
+            if (tableDefs.Any(x => x.ModelType == fieldDef.FieldType))
+                return false;
+
+            // Types with their own converter aren't serialized, e.g. PostgreSQL arrays and hstore
+            return DialectProvider.GetConverter(fieldDef.FieldType) == null;
+        }
+
+        // The document of Sql.Json(document), or the expression if it's a complex type column
+        private static Expression GetJsonDocument(Expression document) =>
+            document is MethodCallExpression { Method.Name: nameof(Sql.Json) } marker && marker.Method.DeclaringType == typeof(Sql)
+                ? marker.Arguments[0]
+                : document;
+
+        // Querying into a complex type column needs it to be stored as JSON. The document of Sql.Json() is
+        // JSON the App says it is, e.g. a string column, so it isn't checked.
+        private void AssertJsonDocument(Expression document)
+        {
+            if (document is MemberExpression column && !DialectProvider.StringSerializer.IsJsonSerializer())
+                throw new NotSupportedException(
+                    $"'{column}' can't be queried as {column.Member.DeclaringType?.Name}.{column.Member.Name} is a " +
+                    "complex type that isn't stored as JSON. Set UseJson = true on the dialect provider to store " +
+                    "complex types as JSON, which is the default when it's configured with AddOrmLite().");
+        }
+
+        // Collects the JSON path of an expression and the document it's in, which is the argument of Sql.Json()
+        // or a complex type column
+        private bool TryCollectTypedJsonPath(Expression expression, List<string> pathParts, out Expression document)
+        {
+            document = null;
             if (expression is UnaryExpression unary &&
                 (unary.NodeType == ExpressionType.Convert || unary.NodeType == ExpressionType.ConvertChecked))
-                return TryCollectTypedJsonPath(unary.Operand, pathParts, out marker);
+                return TryCollectTypedJsonPath(unary.Operand, pathParts, out document);
 
             if (expression is MemberExpression member)
             {
+                if (IsComplexTypeColumn(member))
+                {
+                    document = member;
+                    return true;
+                }
+
                 if (member.Expression != null &&
                     (IsJsonScalarType(member.Expression.Type) || IsJsonArrayType(member.Expression.Type)))
                     return false;
-                if (!TryCollectTypedJsonPath(member.Expression, pathParts, out marker))
+                if (!TryCollectTypedJsonPath(member.Expression, pathParts, out document))
                     return false;
                 pathParts.Add(JsonMemberPath(member.Member));
                 return true;
@@ -3598,13 +3679,13 @@ namespace ServiceStack.OrmLite
             {
                 if (call.Method.DeclaringType == typeof(Sql) && call.Method.Name == nameof(Sql.Json))
                 {
-                    marker = call;
+                    document = call;
                     return true;
                 }
 
                 if (call.Method.Name == "get_Item" && call.Arguments.Count == 1 &&
                     call.Object != null && !IsJsonScalarType(call.Object.Type) &&
-                    TryCollectTypedJsonPath(call.Object, pathParts, out marker))
+                    TryCollectTypedJsonPath(call.Object, pathParts, out document))
                 {
                     pathParts.Add(JsonIndexPath(call.Arguments[0]));
                     return true;
@@ -3612,14 +3693,14 @@ namespace ServiceStack.OrmLite
             }
 
             if (expression is IndexExpression index && index.Arguments.Count == 1 &&
-                TryCollectTypedJsonPath(index.Object, pathParts, out marker))
+                TryCollectTypedJsonPath(index.Object, pathParts, out document))
             {
                 pathParts.Add(JsonIndexPath(index.Arguments[0]));
                 return true;
             }
 
             if (expression is BinaryExpression binary && binary.NodeType == ExpressionType.ArrayIndex &&
-                TryCollectTypedJsonPath(binary.Left, pathParts, out marker))
+                TryCollectTypedJsonPath(binary.Left, pathParts, out document))
             {
                 pathParts.Add(JsonIndexPath(binary.Right));
                 return true;
