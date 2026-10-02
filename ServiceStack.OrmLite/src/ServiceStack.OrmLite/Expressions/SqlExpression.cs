@@ -163,7 +163,8 @@ namespace ServiceStack.OrmLite
             to.setOperationParams = setOperationParams != null ? new List<IDbDataParameter>(setOperationParams) : null;
             to.setOperationsSelect = setOperationsSelect;
             to.commonTableExpressions = commonTableExpressions != null ? [..commonTableExpressions] : null;
-            to.hasRecursiveCte = hasRecursiveCte;
+            to.recursiveCte = recursiveCte;
+            to.usesRecursiveDepth = usesRecursiveDepth;
             to.forUpdate = forUpdate;
             to.forUpdateSkipLocked = forUpdateSkipLocked;
             to.topPerGroupPartitionBy = topPerGroupPartitionBy;
@@ -2728,6 +2729,10 @@ namespace ServiceStack.OrmLite
         {
             if (m.Method.DeclaringType == typeof(Sql))
             {
+                // Handled before VisitSqlMethodCall() overrides, which expect the method to have arguments
+                if (m.Method.Name == nameof(Sql.RecursiveDepth))
+                    return VisitRecursiveDepth();
+
                 var hold = inSqlMethodCall;
                 inSqlMethodCall = true;
                 // Window functions are handled before VisitSqlMethodCall() overrides visit their window lambda

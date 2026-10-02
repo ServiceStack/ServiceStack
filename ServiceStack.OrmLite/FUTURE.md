@@ -12,19 +12,9 @@ Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
 
 ---
 
-## 1. Query Expressiveness
+## 1. Modelling
 
-### 1.1 More Recursive Queries (S/M)
-Recursive CTEs are supported with `q.WithRecursive(seed, recurse)` and named sub queries with `q.With<TCte>(subQuery)`.
-Remaining CTE features:
-- A depth column and max depth for recursive queries, e.g. to limit how many levels are returned
-- Cycle protection for data with loops, e.g. PostgreSQL 14+ `CYCLE` or tracking visited ids
-
----
-
-## 2. Modelling
-
-### 2.1 LINQ Queries Into JSON / Complex-Type Columns (L)
+### 1.1 LINQ Queries Into JSON / Complex-Type Columns (L)
 Complex properties are already stored as JSON/JSV text blobs, but querying them needs `Sql.JsonValue("path")` strings. Translate member access directly:
 ```csharp
 db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
@@ -33,7 +23,7 @@ db.Select<Customer>(x => x.Address.City == "London" && x.Tags.Contains("vip"));
 - Includes optional `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes.
 - Requires JSON (not JSV) serialization for the column, so this would be opt-in via `[Json]` / `[PgSqlJsonB]`.
 
-### 2.2 More Vector Support (S/M)
+### 1.2 More Vector Support (S/M)
 `[Vector]` columns and `Sql.CosineDistance()`, `Sql.L2Distance()` and `Sql.NegativeInnerProduct()` are supported on
 PostgreSQL (pgvector), SQL Server 2025, MariaDB, MySQL and SQLite (sqlite-vec). Remaining vector features:
 - SQL Server's `DiskANN` vector index, once it's no longer a preview feature that has to be enabled per database
@@ -41,14 +31,14 @@ PostgreSQL (pgvector), SQL Server 2025, MariaDB, MySQL and SQLite (sqlite-vec). 
 - `ReadOnlyMemory<float>` properties, half-precision and sparse vectors
 - Index options, e.g. HNSW `m` and `ef_construction`, and IVFFlat indexes
 
-### 2.3 Temporal / System-Versioned Tables (M)
+### 1.3 Temporal / System-Versioned Tables (M)
 `[SystemVersioned]` DDL support, plus `q.AsOf(timestamp)` / `q.Between(from, to)` for SQL Server temporal tables and MariaDB system-versioned tables. On other dialects this would be emulated with history tables and triggers.
 
 ---
 
-## 3. Performance
+## 2. Performance
 
-### 3.1 Compiled / Cached Queries (M)
+### 2.1 Compiled / Cached Queries (M)
 Expression visiting and SQL generation run on every call. A compiled-query API caches the SQL text once and only re-binds parameters:
 ```csharp
 static readonly var ByCustomer = OrmLite.Compile((IDbConnection db, int customerId) =>
@@ -57,15 +47,15 @@ var orders = db.Select(ByCustomer, 42);
 ```
 Prepared-statement reuse (`DbCommand.Prepare()` / `DbBatch`) could be layered on top.
 
-### 3.2 `DbBatch` Support (.NET 6+) (M)
+### 2.2 `DbBatch` Support (.NET 6+) (M)
 Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector. The upsert SQL, which `UpsertAll` currently
 generates for each row, would then be prepared once for each distinct set of insert fields.
 
 ---
 
-## 4. Schema and Migrations
+## 3. Schema and Migrations
 
-### 4.1 Schema Diff and Migration Scaffolding (L)
+### 3.1 Schema Diff and Migration Scaffolding (L)
 Compare `ModelDefinition`s against the live schema (columns, types, nullability, indexes, foreign keys) and emit:
 ```csharp
 var diff = db.GetSchemaDiff<Order>();      // added/removed/changed columns & indexes
@@ -73,14 +63,14 @@ db.ApplySchemaDiff(diff, allowDestructive: false);
 ```
 The existing `Migrator` could also generate a new migration class from the diff. This bridges the gap between `CreateTableIfNotExists` and hand-written migrations.
 
-### 4.2 Database-First Model Generation (M)
+### 3.2 Database-First Model Generation (M)
 Replace the legacy T4 templates with a `dotnet` tool (or `x` tool command) that generates OrmLite POCOs from an existing database, reusing the dialect catalog queries.
 
 ---
 
-## 5. Resilience
+## 4. Resilience
 
-### 5.1 Transient-Fault Retry Policies (S/M)
+### 4.1 Transient-Fault Retry Policies (S/M)
 ```csharp
 dbFactory.RetryPolicy = OrmLiteRetry.Exponential(maxRetries: 3)
     .Handle(SqlServerTransient.IsTransient)   // deadlocks (1205), Azure throttling, failover
@@ -88,14 +78,14 @@ dbFactory.RetryPolicy = OrmLiteRetry.Exponential(maxRetries: 3)
 ```
 Retries would only apply outside explicit transactions, or re-run a whole `db.InTransaction(fn)` block. Serializable isolation and cloud databases make this important.
 
-### 5.2 Read/Write Connection Routing (S)
+### 4.2 Read/Write Connection Routing (S)
 Named connections exist, but routing is manual. An `OpenReadOnlyDbConnection()` (or `db.ReadReplica()`) convention would pick a replica connection string automatically, falling back to the primary when no replica is configured.
 
 ---
 
-## 6. Security
+## 5. Security
 
-### 6.1 Roslyn Analyzer Package (M)
+### 5.1 Roslyn Analyzer Package (M)
 A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 - String concatenation or interpolation passed to `Where(string)`, `OrderBy(string)`, `Unsafe*`, `SqlList(string)` and `ExecuteSql(string)`. The code fix would suggest parameters or `Sql.Fmt()`.
 - Use of `Unsafe*` APIs with non-constant arguments.

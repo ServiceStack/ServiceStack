@@ -10,7 +10,77 @@ namespace ServiceStack.OrmLite
     {
         // Each common table expression (CTE) of the WITH clause by its quoted name, in the order they were added
         private List<KeyValuePair<string, string>> commonTableExpressions;
-        private bool hasRecursiveCte;
+
+        // The parts of the recursive CTE, which has more columns when the query uses its depth or detects cycles
+        private sealed class RecursiveCte
+        {
+            public string Name;
+            public string ColumnNames;
+            /// <summary>The seed's SELECT, with SeedColumnsMarker after its columns</summary>
+            public string SeedSql;
+            public string SeedPrimaryKey;
+            public string StepSelect;
+            public string StepFrom;
+            public string StepFilter;
+            public string StepPrimaryKey;
+            public int? MaxDepth;
+            public bool DetectCycles;
+        }
+        private RecursiveCte recursiveCte;
+        private bool usesRecursiveDepth;
+        private bool hasRecursiveCte => recursiveCte != null;
+
+        private const string RecursiveDepthColumn = "cte_depth";
+        private const string RecursivePathColumn = "cte_path";
+        private const string SeedColumnsMarker = "/*cte_seed*/";
+
+        // Sql.RecursiveDepth(): how many levels a row is from the rows the recursive query started with
+        private PartialSqlString VisitRecursiveDepth()
+        {
+            usesRecursiveDepth = true;
+            return new PartialSqlString(DialectProvider.GetQuotedName(RecursiveDepthColumn));
+        }
+
+        private string ToRecursiveCteSql(RecursiveCte cte)
+        {
+            var extraColumns = "";
+            var seedColumns = "";
+            var stepColumns = "";
+            var stepConditions = new List<string>();
+            if (cte.StepFilter != null)
+                stepConditions.Add(cte.StepFilter);
+
+            if (cte.MaxDepth != null || usesRecursiveDepth)
+            {
+                // Rows the query starts with are at depth 0, and each step adds the rows a level below them
+                var depth = DialectProvider.GetQuotedName(RecursiveDepthColumn);
+                extraColumns += ", " + depth;
+                seedColumns += $", 0 AS {depth}";
+                stepColumns += $", {cte.Name}.{depth} + 1";
+                if (cte.MaxDepth != null)
+                    stepConditions.Add($"{cte.Name}.{depth} < {cte.MaxDepth.Value}");
+            }
+
+            if (cte.DetectCycles)
+            {
+                // Each row has the path of ids that lead to it, e.g. /1/4/9/, and a row already in it isn't added
+                // again. Both parts of the CTE cast the path to the same type, as some RDBMS require.
+                var path = DialectProvider.GetQuotedName(RecursivePathColumn);
+                string Text(string sql) => DialectProvider.SqlCast(sql, Sql.VARCHAR);
+                var stepId = Text(cte.StepPrimaryKey);
+                extraColumns += ", " + path;
+                seedColumns += ", " + Text(DialectProvider.SqlConcat(new object[] { "'/'", Text(cte.SeedPrimaryKey), "'/'" })) + " AS " + path;
+                stepColumns += ", " + Text(DialectProvider.SqlConcat(new object[] { $"{cte.Name}.{path}", stepId, "'/'" }));
+                stepConditions.Add($"{cte.Name}.{path} NOT LIKE " + DialectProvider.SqlConcat(new object[] { "'%/'", stepId, "'/%'" }));
+            }
+
+            return $"{cte.Name} ({cte.ColumnNames}{extraColumns}) AS (\n" +
+                   $"{cte.SeedSql.Replace(SeedColumnsMarker, seedColumns)}\n" +
+                   "UNION ALL\n" +
+                   $"{cte.StepSelect}{stepColumns}{cte.StepFrom}" +
+                   (stepConditions.Count > 0 ? " WHERE " + string.Join(" AND ", stepConditions) : "") +
+                   "\n)";
+        }
 
         private string withClause
         {
@@ -24,7 +94,8 @@ namespace ServiceStack.OrmLite
                 {
                     if (i > 0)
                         sb.Append(",\n");
-                    sb.Append(commonTableExpressions[i].Value);
+                    // The recursive CTE is rendered when it's used, as the rest of the query decides its columns
+                    sb.Append(commonTableExpressions[i].Value ?? ToRecursiveCteSql(recursiveCte));
                 }
                 return sb.Append('\n').ToString();
             }
@@ -116,8 +187,18 @@ namespace ServiceStack.OrmLite
         /// <param name="recurse">Matches the next rows to add, where the first param is a row already found and the
         /// second is a row to add, e.g. descendants: (parent, child) =&gt; child.ParentId == parent.Id,
         /// ancestors: (child, parent) =&gt; parent.Id == child.ParentId</param>
-        public virtual SqlExpression<T> WithRecursive(SqlExpression<T> seed, Expression<Func<T, T, bool>> recurse)
+        /// <param name="maxDepth">How many levels of rows to add to the seed rows, e.g. 1 for only their children.
+        /// Use Sql.RecursiveDepth() in the rest of the query for the level of each row.</param>
+        /// <param name="detectCycles">Stop when a row is reached again by the rows that lead to it, for data that
+        /// can have loops, e.g. a category that's its own ancestor</param>
+        public virtual SqlExpression<T> WithRecursive(SqlExpression<T> seed, Expression<Func<T, T, bool>> recurse,
+            int? maxDepth = null, bool detectCycles = false)
         {
+            if (maxDepth < 0)
+                throw new ArgumentOutOfRangeException(nameof(maxDepth), "maxDepth can't be negative");
+            if (detectCycles && modelDef.PrimaryKey == null)
+                throw new NotSupportedException($"{typeof(T).Name} needs a primary key to detect cycles");
+
             if (seed == null)
                 throw new ArgumentNullException(nameof(seed));
             if (recurse == null)
@@ -134,7 +215,8 @@ namespace ServiceStack.OrmLite
 
             // Rows to start with, selecting all columns in the same order as the recursive step
             var seedQuery = seed.Clone();
-            seedQuery.Select(GetCteColumns(seedQuery.PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(modelDef) : null));
+            var seedPrefix = seedQuery.PrefixFieldWithTableName ? DialectProvider.GetQuotedTableName(modelDef) : null;
+            seedQuery.UnsafeSelect(GetCteColumns(seedPrefix) + SeedColumnsMarker);
             var seedSql = seedQuery.ToSetOperandStatement("seed");
             seedSql = AddRenamedParams(seedQuery.Params, seedSql);
 
@@ -156,7 +238,7 @@ namespace ServiceStack.OrmLite
             var recursiveFilter = ConnectionFilters?.ToFilterCondition(DialectProvider, typeof(T), ChildAlias,
                 paramPrefix: "", out recursiveFilterParams);
             if (recursiveFilter != null)
-                onCondition += " WHERE " + AddRenamedParams(recursiveFilterParams, recursiveFilter);
+                recursiveFilter = AddRenamedParams(recursiveFilterParams, recursiveFilter);
 
             var columnNames = new StringBuilder();
             foreach (var fieldDef in modelDef.FieldDefinitions)
@@ -166,12 +248,23 @@ namespace ServiceStack.OrmLite
                 columnNames.Append(DialectProvider.GetQuotedColumnName(fieldDef));
             }
 
-            AddCommonTableExpression(quotedCte, $"{quotedCte} ({columnNames}) AS (\n" +
-                         $"{seedSql}\n" +
-                         "UNION ALL\n" +
-                         $"SELECT {GetCteColumns(quotedChild)} FROM {DialectProvider.GetQuotedTableName(modelDef)} {quotedChild} " +
-                         $"INNER JOIN {quotedCte} {onCondition}\n)");
-            hasRecursiveCte = true;
+            string PrimaryKey(string quotedPrefix) => modelDef.PrimaryKey == null
+                ? null
+                : (quotedPrefix != null ? quotedPrefix + "." : "") + DialectProvider.GetQuotedColumnName(modelDef.PrimaryKey);
+
+            AddCommonTableExpression(quotedCte, definition: null);
+            recursiveCte = new RecursiveCte {
+                Name = quotedCte,
+                ColumnNames = columnNames.ToString(),
+                SeedSql = seedSql,
+                SeedPrimaryKey = PrimaryKey(seedPrefix),
+                StepSelect = $"SELECT {GetCteColumns(quotedChild)}",
+                StepFrom = $" FROM {DialectProvider.GetQuotedTableName(modelDef)} {quotedChild} INNER JOIN {quotedCte} {onCondition}",
+                StepFilter = recursiveFilter,
+                StepPrimaryKey = PrimaryKey(quotedChild),
+                MaxDepth = maxDepth,
+                DetectCycles = detectCycles,
+            };
 
             // Read from the CTE aliased as the model's table so the rest of the query is unchanged
             FromExpression = " \nFROM " + quotedCte + " " + DialectProvider.GetQuotedName(DialectProvider.NamingStrategy.GetTableName(modelDef));
@@ -198,6 +291,11 @@ namespace ServiceStack.OrmLite
             return sb.ToString();
         }
 
-        private string PrefixWithClause(string sql) => withClause is { } with ? with + sql : sql;
+        private string PrefixWithClause(string sql)
+        {
+            if (usesRecursiveDepth && recursiveCte == null)
+                throw new InvalidOperationException("Sql.RecursiveDepth() can only be used in a query with WithRecursive()");
+            return withClause is { } with ? with + sql : sql;
+        }
     }
 }

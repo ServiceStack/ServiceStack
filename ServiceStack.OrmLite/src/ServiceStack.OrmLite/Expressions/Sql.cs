@@ -52,6 +52,12 @@ namespace ServiceStack.OrmLite
 
         public static string As<T>(T value, object asValue) => value == null ? "" : $"{value} AS {asValue}";
 
+        /// <summary>
+        /// How many levels a row of a WithRecursive() query is from the rows it started with, which are at 0. E.g:
+        /// <para>q.WithRecursive(seed, recurse).OrderBy(x => Sql.RecursiveDepth())</para>
+        /// </summary>
+        public static int RecursiveDepth() => 0;
+
         public static T Sum<T>(T value) => value;
 
         public static string Sum(string value) => $"SUM({value})";
