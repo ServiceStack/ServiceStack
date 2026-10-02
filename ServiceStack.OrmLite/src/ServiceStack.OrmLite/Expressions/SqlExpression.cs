@@ -162,7 +162,8 @@ namespace ServiceStack.OrmLite
             to.setOperations = setOperations != null ? new List<SetOperation>(setOperations) : null;
             to.setOperationParams = setOperationParams != null ? new List<IDbDataParameter>(setOperationParams) : null;
             to.setOperationsSelect = setOperationsSelect;
-            to.withClause = withClause;
+            to.commonTableExpressions = commonTableExpressions != null ? [..commonTableExpressions] : null;
+            to.hasRecursiveCte = hasRecursiveCte;
             to.forUpdate = forUpdate;
             to.forUpdateSkipLocked = forUpdateSkipLocked;
             to.topPerGroupPartitionBy = topPerGroupPartitionBy;
@@ -249,8 +250,8 @@ namespace ServiceStack.OrmLite
             sb.Append(forUpdateSkipLocked ? "1" : "0");
             sb.AppendLine();
 
-            if (withClause != null)
-                sb.AppendLine(withClause);
+            if (withClause is { } with)
+                sb.AppendLine(with);
             if (topPerGroupPartitionBy != null)
                 sb.Append("TOP PER GROUP:").Append(topPerGroupPartitionBy).Append(',').Append(topPerGroupTake).AppendLine();
             DumpSetOperations(sb, includeParams);

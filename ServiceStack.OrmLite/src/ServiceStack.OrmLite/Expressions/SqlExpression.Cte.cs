@@ -8,12 +8,97 @@ namespace ServiceStack.OrmLite
 {
     public abstract partial class SqlExpression<T>
     {
-        private string withClause;
+        // Each common table expression (CTE) of the WITH clause by its quoted name, in the order they were added
+        private List<KeyValuePair<string, string>> commonTableExpressions;
+        private bool hasRecursiveCte;
+
+        private string withClause
+        {
+            get
+            {
+                if (commonTableExpressions == null || commonTableExpressions.Count == 0)
+                    return null;
+
+                var sb = new StringBuilder(hasRecursiveCte ? WithRecursiveKeyword : "WITH").Append(' ');
+                for (var i = 0; i < commonTableExpressions.Count; i++)
+                {
+                    if (i > 0)
+                        sb.Append(",\n");
+                    sb.Append(commonTableExpressions[i].Value);
+                }
+                return sb.Append('\n').ToString();
+            }
+        }
 
         /// <summary>
-        /// Whether this query reads from a common table expression (CTE), e.g. from WithRecursive()
+        /// Whether this query has a common table expression (CTE), e.g. from With() or WithRecursive()
         /// </summary>
-        public bool HasCommonTableExpression => withClause != null;
+        public bool HasCommonTableExpression => commonTableExpressions is { Count: > 0 };
+
+        private void AddCommonTableExpression(string quotedName, string definition)
+        {
+            commonTableExpressions ??= [];
+            if (commonTableExpressions.Exists(x => string.Equals(x.Key, quotedName, StringComparison.OrdinalIgnoreCase)))
+                throw new ArgumentException($"This query already has a common table expression named {quotedName}");
+            commonTableExpressions.Add(new(quotedName, definition));
+        }
+
+        /// <summary>
+        /// Name a sub query as a common table expression (CTE) that's read like the table of <typeparamref name="TCte"/>,
+        /// so this query can join it, filter by it and select from it with typed APIs, as often as it's needed, e.g:
+        /// <para>db.From&lt;Book&gt;().With&lt;AuthorTotal&gt;(totals).Join&lt;AuthorTotal&gt;((b, t) =&gt; b.Author == t.Author)</para>
+        /// </summary>
+        /// <typeparam name="TCte">A class with a property for each column of the sub query, in the order it selects them</typeparam>
+        /// <param name="subQuery">The query the CTE returns the rows of</param>
+        public virtual SqlExpression<T> With<TCte>(ISqlExpression subQuery)
+        {
+            var cteDef = typeof(TCte).GetModelDefinition();
+            if (cteDef.Schema != null)
+                throw new NotSupportedException($"{typeof(TCte).Name} can't be a common table expression as it has a [Schema]");
+
+            // Naming the columns matches them to the sub query's by position, whatever they're named or aliased as
+            var columnNames = new StringBuilder();
+            foreach (var fieldDef in cteDef.FieldDefinitions)
+            {
+                if (fieldDef.CustomSelect != null)
+                    throw new NotSupportedException(
+                        $"With() doesn't support {typeof(TCte).Name}.{fieldDef.Name} with a [CustomSelect]");
+                if (columnNames.Length > 0)
+                    columnNames.Append(", ");
+                columnNames.Append(DialectProvider.GetQuotedColumnName(fieldDef));
+            }
+            return With(DialectProvider.GetQuotedTableName(cteDef), columnNames.ToString(), subQuery);
+        }
+
+        /// <summary>
+        /// Name a sub query as a common table expression (CTE) that custom SQL in this query can read by its name, e.g:
+        /// <para>db.From&lt;Book&gt;().With("recent", db.From&lt;Book&gt;().Where(x =&gt; x.Year &gt; 2000)).From("recent")</para>
+        /// Use With&lt;TCte&gt;() to read it with typed APIs.
+        /// </summary>
+        public virtual SqlExpression<T> With(string name, ISqlExpression subQuery)
+        {
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentNullException(nameof(name));
+            return With(DialectProvider.GetQuotedName(name), null, subQuery);
+        }
+
+        private SqlExpression<T> With(string quotedName, string columnNames, ISqlExpression subQuery)
+        {
+            if (subQuery == null)
+                throw new ArgumentNullException(nameof(subQuery));
+            if (ReferenceEquals(subQuery, this))
+                throw new ArgumentException("The sub query can't be this query, use a new query or Clone()", nameof(subQuery));
+
+            var sql = subQuery.ToSelectStatement(QueryType.Select);
+            if (sql.TrimStart().StartsWith("WITH ", StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException(
+                    "The sub query of a common table expression can't have its own, add them to this query before it instead");
+            sql = AddRenamedParams(subQuery.Params, sql);
+
+            AddCommonTableExpression(quotedName,
+                quotedName + (columnNames != null ? $" ({columnNames})" : "") + $" AS (\n{sql}\n)");
+            return this;
+        }
 
         /// <summary>
         /// The WITH keyword for recursive CTEs, SQL Server and Oracle don't use RECURSIVE
@@ -39,8 +124,8 @@ namespace ServiceStack.OrmLite
                 throw new ArgumentNullException(nameof(recurse));
             if (ReferenceEquals(seed, this))
                 throw new ArgumentException("The seed query can't be this query, use a new query or Clone()", nameof(seed));
-            if (withClause != null)
-                throw new NotSupportedException("A query can only have one common table expression");
+            if (hasRecursiveCte)
+                throw new NotSupportedException("A query can only have one recursive common table expression");
 
             const string CteName = "cte";
             const string ChildAlias = "c";
@@ -81,11 +166,12 @@ namespace ServiceStack.OrmLite
                 columnNames.Append(DialectProvider.GetQuotedColumnName(fieldDef));
             }
 
-            withClause = $"{WithRecursiveKeyword} {quotedCte} ({columnNames}) AS (\n" +
+            AddCommonTableExpression(quotedCte, $"{quotedCte} ({columnNames}) AS (\n" +
                          $"{seedSql}\n" +
                          "UNION ALL\n" +
                          $"SELECT {GetCteColumns(quotedChild)} FROM {DialectProvider.GetQuotedTableName(modelDef)} {quotedChild} " +
-                         $"INNER JOIN {quotedCte} {onCondition}\n)\n";
+                         $"INNER JOIN {quotedCte} {onCondition}\n)");
+            hasRecursiveCte = true;
 
             // Read from the CTE aliased as the model's table so the rest of the query is unchanged
             FromExpression = " \nFROM " + quotedCte + " " + DialectProvider.GetQuotedName(DialectProvider.NamingStrategy.GetTableName(modelDef));
@@ -112,6 +198,6 @@ namespace ServiceStack.OrmLite
             return sb.ToString();
         }
 
-        private string PrefixWithClause(string sql) => withClause != null ? withClause + sql : sql;
+        private string PrefixWithClause(string sql) => withClause is { } with ? with + sql : sql;
     }
 }

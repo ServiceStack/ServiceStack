@@ -14,9 +14,9 @@ Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
 
 ## 1. Query Expressiveness
 
-### 1.1 More Common Table Expressions (S/M)
-Recursive CTEs are supported with `q.WithRecursive(seed, recurse)`. Remaining CTE features:
-- Non-recursive `q.With(name, subQuery)` for naming sub queries that are referenced multiple times
+### 1.1 More Recursive Queries (S/M)
+Recursive CTEs are supported with `q.WithRecursive(seed, recurse)` and named sub queries with `q.With<TCte>(subQuery)`.
+Remaining CTE features:
 - A depth column and max depth for recursive queries, e.g. to limit how many levels are returned
 - Cycle protection for data with loops, e.g. PostgreSQL 14+ `CYCLE` or tracking visited ids
 
