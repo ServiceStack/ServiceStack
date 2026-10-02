@@ -33,6 +33,9 @@ namespace ServiceStack.OrmLite
         /// </summary>
         private string GetLockedBodyExpression()
         {
+            if (HasSystemTime)
+                throw new NotSupportedException("ForUpdate() can't be used with previous versions of a table, e.g. AsOf()");
+
             var body = BodyExpression;
             var hint = DialectProvider.GetForUpdateTableHint(forUpdateSkipLocked);
             if (string.IsNullOrEmpty(hint))

@@ -163,6 +163,7 @@ namespace ServiceStack.OrmLite
             to.setOperationParams = setOperationParams != null ? new List<IDbDataParameter>(setOperationParams) : null;
             to.setOperationsSelect = setOperationsSelect;
             to.commonTableExpressions = commonTableExpressions != null ? [..commonTableExpressions] : null;
+            to.systemTimeClause = systemTimeClause;
             to.recursiveCte = recursiveCte;
             to.usesRecursiveDepth = usesRecursiveDepth;
             to.forUpdate = forUpdate;
@@ -253,6 +254,8 @@ namespace ServiceStack.OrmLite
 
             if (withClause is { } with)
                 sb.AppendLine(with);
+            if (systemTimeClause != null)
+                sb.AppendLine(systemTimeClause);
             if (topPerGroupPartitionBy != null)
                 sb.Append("TOP PER GROUP:").Append(topPerGroupPartitionBy).Append(',').Append(topPerGroupTake).AppendLine();
             DumpSetOperations(sb, includeParams);
@@ -1754,7 +1757,9 @@ namespace ServiceStack.OrmLite
         public string FromExpression
         {
             get => string.IsNullOrEmpty(fromExpression)
-                ? " \nFROM " + DialectProvider.GetQuotedTableName(modelDef) + (TableAlias != null ? " " + DialectProvider.GetQuotedName(TableAlias) : "")
+                ? " \nFROM " + DialectProvider.GetQuotedTableName(modelDef)
+                    + (systemTimeClause != null ? " " + systemTimeClause : "")
+                    + (TableAlias != null ? " " + DialectProvider.GetQuotedName(TableAlias) : "")
                 : fromExpression;
             set => fromExpression = value;
         }

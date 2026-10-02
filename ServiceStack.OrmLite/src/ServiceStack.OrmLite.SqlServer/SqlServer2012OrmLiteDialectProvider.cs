@@ -125,6 +125,8 @@ namespace ServiceStack.OrmLite.SqlServer
             // https://msdn.microsoft.com/en-us/library/ms182776.aspx
             if (fieldDef.IsRowVersion)
                 return $"{fieldDef.FieldName} rowversion NOT NULL";
+            if (fieldDef.IsRowStart || fieldDef.IsRowEnd)
+                return GetSystemTimeColumnDefinition(fieldDef);
             if (fieldDef.IsGenerated)
                 return GetGeneratedColumnDefinition(fieldDef);
 
@@ -257,7 +259,7 @@ namespace ServiceStack.OrmLite.SqlServer
                 ? $"\n AS FILETABLE{StringBuilderCache.ReturnAndFree(sbTableOptions)};"
                 : $"\n(\n  {StringBuilderCache.ReturnAndFree(sbColumns)}{StringBuilderCacheAlt.ReturnAndFree(sbConstraints)} \n){StringBuilderCache.ReturnAndFree(sbTableOptions)}; \n";
 
-            return sql;
+            return WithSystemVersioning(modelDef, sql);
         }
 
         public override void AppendFieldCondition(StringBuilder sqlFilter, FieldDefinition fieldDef, IDbCommand cmd)

@@ -680,6 +680,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual string GetColumnDefinition(FieldDefinition fieldDef)
     {
+        if (fieldDef.IsRowStart || fieldDef.IsRowEnd)
+            return GetSystemTimeColumnDefinition(fieldDef);
         if (fieldDef.IsGenerated)
             return GetGeneratedColumnDefinition(fieldDef);
 
@@ -2149,7 +2151,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         var sql = $"CREATE TABLE {GetQuotedTableName(modelDef)} " +
                   $"\n(\n  {StringBuilderCache.ReturnAndFree(sbColumns)}{StringBuilderCacheAlt.ReturnAndFree(sbConstraints)} \n); \n";
 
-        return sql;
+        return WithSystemVersioning(modelDef, sql);
     }
 
     public virtual string GetUniqueConstraints(ModelDefinition modelDef)
@@ -2213,6 +2215,60 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual string ToPostDropTableStatement(ModelDefinition modelDef)
     {
         return null;
+    }
+
+    public virtual string ToDropTableStatement(ModelDefinition modelDef) =>
+        $"DROP TABLE {GetQuotedTableName(modelDef)}";
+
+    /// <summary>
+    /// Whether the RDBMS can keep previous versions of a table's rows, from [SystemVersioned]
+    /// </summary>
+    public virtual bool SupportsSystemVersioning => false;
+
+    protected NotSupportedException SystemVersioningNotSupported() => new(
+        $"{GetType().Name} doesn't support system-versioned tables, which need SQL Server 2016+ or MariaDB 10.3+");
+
+    public virtual string ToSystemTimeClause(string condition) => SupportsSystemVersioning
+        ? "FOR SYSTEM_TIME " + condition
+        : throw SystemVersioningNotSupported();
+
+    public virtual DateTime ToSystemTime(DateTime time) => time;
+
+    /// <summary>
+    /// The column of a [RowStart] or [RowEnd] property of a [SystemVersioned] table
+    /// </summary>
+    protected virtual string GetSystemTimeColumnDefinition(FieldDefinition fieldDef) => throw SystemVersioningNotSupported();
+
+    /// <summary>
+    /// Makes the CREATE TABLE statement of a [SystemVersioned] table create it system-versioned
+    /// </summary>
+    protected virtual string ToSystemVersionedTableStatement(ModelDefinition modelDef, string createTableSql) =>
+        throw SystemVersioningNotSupported();
+
+    // The [RowStart] and [RowEnd] fields of a [SystemVersioned] table, which has both or neither
+    protected static void GetSystemTimeFields(ModelDefinition modelDef, out FieldDefinition rowStart, out FieldDefinition rowEnd)
+    {
+        rowStart = modelDef.FieldDefinitions.FirstOrDefault(x => x.IsRowStart);
+        rowEnd = modelDef.FieldDefinitions.FirstOrDefault(x => x.IsRowEnd);
+        if ((rowStart == null) != (rowEnd == null))
+            throw new NotSupportedException($"{modelDef.Name} needs both a [RowStart] and a [RowEnd] property, or neither");
+    }
+
+    // The CREATE TABLE statement, system-versioned when the table is [SystemVersioned]
+    protected string WithSystemVersioning(ModelDefinition modelDef, string createTableSql) => modelDef.IsSystemVersioned
+        ? ToSystemVersionedTableStatement(modelDef, createTableSql)
+        : createTableSql;
+
+    // Adds column and table definitions to a CREATE TABLE statement, before and after the ) that ends its columns
+    protected static string AddToCreateTable(string createTableSql, string definitions, string tableOptions)
+    {
+        var endPos = createTableSql.LastIndexOf(')');
+        if (endPos < 0)
+            throw new NotSupportedException("Could not find the end of the columns in: " + createTableSql);
+
+        return createTableSql.Substring(0, endPos).TrimEnd() +
+               (string.IsNullOrEmpty(definitions) ? "" : ",\n  " + definitions) +
+               " \n)" + tableOptions + createTableSql.Substring(endPos + 1);
     }
 
     public virtual string GetForeignKeyOnDeleteClause(ForeignKeyConstraint foreignKey)

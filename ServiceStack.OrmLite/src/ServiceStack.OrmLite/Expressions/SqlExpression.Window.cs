@@ -57,6 +57,8 @@ namespace ServiceStack.OrmLite
                 throw new NotSupportedException("TopPerGroup() can't be used with set operations like Union()");
             if (HasCommonTableExpression)
                 throw new NotSupportedException("TopPerGroup() can't be used with common table expressions like WithRecursive()");
+            if (HasSystemTime)
+                throw new NotSupportedException("TopPerGroup() can't be used with previous versions of a table, e.g. AsOf()");
             if (!string.IsNullOrEmpty(GroupByExpression))
                 throw new NotSupportedException("TopPerGroup() can't be used with GroupBy()");
             if (string.IsNullOrEmpty(orderBy))

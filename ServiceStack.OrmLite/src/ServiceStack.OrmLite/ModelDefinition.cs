@@ -37,6 +37,16 @@ public class ModelDefinition
     /// </summary>
     public string Description { get; set; }
 
+    /// <summary>
+    /// Whether the RDBMS keeps previous versions of the table's rows, from [SystemVersioned]
+    /// </summary>
+    public bool IsSystemVersioned { get; set; }
+
+    /// <summary>
+    /// The name of the table previous versions are kept in, where the RDBMS has one
+    /// </summary>
+    public string HistoryTable { get; set; }
+
     public string PreDropTableSql { get; set; }
 
     public string PostDropTableSql { get; set; }

@@ -227,7 +227,7 @@ public static class OrmLiteWriteCommandExtensions
                 {
                     dbCmd.ExecuteSql(dropTableFks);
                 }
-                dbCmd.ExecuteSql($"DROP TABLE {dialectProvider.GetQuotedTableName(modelDef)}");
+                dbCmd.ExecuteSql(dialectProvider.ToDropTableStatement(modelDef));
 
                 if (modelDef.PostDropTableSql != null)
                 {

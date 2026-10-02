@@ -17,8 +17,8 @@ namespace ServiceStack.OrmLite
         {
             if (set == null)
                 throw new ArgumentNullException(nameof(set));
-            if (HasSetOperations || HasCommonTableExpression || HasTopPerGroup || IsForUpdate)
-                throw new NotSupportedException("UpdateFrom() doesn't support set operations, CTEs, TopPerGroup() or ForUpdate()");
+            if (HasSetOperations || HasCommonTableExpression || HasTopPerGroup || IsForUpdate || HasSystemTime)
+                throw new NotSupportedException("UpdateFrom() doesn't support set operations, CTEs, TopPerGroup(), ForUpdate() or AsOf()");
             if (!string.IsNullOrEmpty(GroupByExpression) || Offset != null || Rows != null)
                 throw new NotSupportedException("UpdateFrom() doesn't support GroupBy(), Skip() or Take()");
             if (modelDef.PrimaryKey == null)

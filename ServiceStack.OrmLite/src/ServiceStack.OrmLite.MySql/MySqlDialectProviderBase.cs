@@ -604,7 +604,7 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 
 		var sql = $"CREATE TABLE {GetQuotedTableName(modelDef)} \n(\n  {StringBuilderCache.ReturnAndFree(sbColumns)}{StringBuilderCacheAlt.ReturnAndFree(sbConstraints)} \n); \n";
 
-		return sql;
+		return WithSystemVersioning(modelDef, sql);
 	}
 
 	public override List<string> GetSchemas(IDbCommand dbCmd)
@@ -652,6 +652,25 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 			return $"{ret} COMMENT {GetQuotedValue(fieldDef.Description)}";
 
 		return ret;
+	}
+
+	// MariaDB 10.3+ has system-versioned tables, MySQL doesn't
+	public override bool SupportsSystemVersioning => IsMariaDb == true;
+
+	protected override string GetSystemTimeColumnDefinition(FieldDefinition fieldDef) => SupportsSystemVersioning
+		? $"{GetQuotedColumnName(fieldDef)} TIMESTAMP(6) GENERATED ALWAYS AS ROW {(fieldDef.IsRowStart ? "START" : "END")}"
+		: throw SystemVersioningNotSupported();
+
+	protected override string ToSystemVersionedTableStatement(ModelDefinition modelDef, string createTableSql)
+	{
+		if (!SupportsSystemVersioning)
+			throw SystemVersioningNotSupported();
+
+		GetSystemTimeFields(modelDef, out var rowStart, out var rowEnd);
+		var definitions = rowStart != null
+			? $"PERIOD FOR SYSTEM_TIME ({GetQuotedColumnName(rowStart)}, {GetQuotedColumnName(rowEnd)})"
+			: null;
+		return AddToCreateTable(createTableSql, definitions, " WITH SYSTEM VERSIONING");
 	}
 
 	// MySQL and MariaDB have no filtered indexes or INCLUDE

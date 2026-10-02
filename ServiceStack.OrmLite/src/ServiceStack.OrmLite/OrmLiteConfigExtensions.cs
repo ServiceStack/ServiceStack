@@ -73,6 +73,7 @@ internal static class OrmLiteConfigExtensions
             return to;
         }
 
+        var systemVersionedAttr = modelType.FirstAttribute<SystemVersionedAttribute>();
         modelDef = new ModelDefinition
         {
             ModelType = modelType,
@@ -84,6 +85,8 @@ internal static class OrmLiteConfigExtensions
             PreDropTableSql = JoinSql(preDrops.Map(x => x.Sql)),
             PostDropTableSql = JoinSql(postDrops.Map(x => x.Sql)),
             Description = modelType.FirstAttribute<DescriptionAttribute>()?.Description,
+            IsSystemVersioned = systemVersionedAttr != null,
+            HistoryTable = systemVersionedAttr?.HistoryTable,
         };
 
         modelDef.CompositeIndexes.AddRange(
@@ -173,6 +176,10 @@ internal static class OrmLiteConfigExtensions
             var fkAttr = propertyInfo.FirstAttribute<ForeignKeyAttribute>();
             var customFieldAttr = propertyInfo.FirstAttribute<CustomFieldAttribute>();
             var chkConstraintAttr = propertyInfo.FirstAttribute<CheckConstraintAttribute>();
+            var isRowStart = propertyInfo.HasAttributeCached<RowStartAttribute>();
+            var isRowEnd = propertyInfo.HasAttributeCached<RowEndAttribute>();
+            if ((isRowStart || isRowEnd) && propertyType != typeof(DateTime))
+                throw new NotSupportedException($"[RowStart] and [RowEnd] are only valid for DateTime properties, {modelType.Name}.{propertyInfo.Name} is a {propertyInfo.PropertyType.Name}");
             var vectorAttr = propertyInfo.FirstAttribute<VectorAttribute>();
             if (vectorAttr != null && propertyInfo.PropertyType != typeof(float[]))
                 throw new NotSupportedException($"[Vector] is only valid for float[] properties, {modelType.Name}.{propertyInfo.Name} is a {propertyInfo.PropertyType.Name}");
@@ -208,8 +215,11 @@ internal static class OrmLiteConfigExtensions
                 VectorDimensions = vectorAttr?.Dimensions,
                 VectorDistance = vectorAttr?.Distance ?? VectorDistance.Cosine,
                 IsRowVersion = isRowVersion,
-                IgnoreOnInsert = propertyInfo.HasAttributeCached<IgnoreOnInsertAttribute>(),
-                IgnoreOnUpdate = propertyInfo.HasAttributeCached<IgnoreOnUpdateAttribute>(),
+                // The times of a row's version are set by the RDBMS
+                IgnoreOnInsert = propertyInfo.HasAttributeCached<IgnoreOnInsertAttribute>() || isRowStart || isRowEnd,
+                IgnoreOnUpdate = propertyInfo.HasAttributeCached<IgnoreOnUpdateAttribute>() || isRowStart || isRowEnd,
+                IsRowStart = isRowStart,
+                IsRowEnd = isRowEnd,
                 ReturnOnInsert = propertyInfo.HasAttributeCached<ReturnOnInsertAttribute>(),
                 FieldLength = stringLengthAttr?.MaximumLength,
                 DefaultValue = defaultValueAttr?.DefaultValue,

@@ -284,6 +284,16 @@ public interface IOrmLiteDialectProvider
     string ToCreateTableStatement(Type tableType);
     string ToPostCreateTableStatement(ModelDefinition modelDef);
     string ToPostDropTableStatement(ModelDefinition modelDef);
+    string ToDropTableStatement(ModelDefinition modelDef);
+
+    /// <summary>
+    /// The clause that reads previous versions of a system-versioned table, e.g. FOR SYSTEM_TIME AS OF @0
+    /// </summary>
+    string ToSystemTimeClause(string condition);
+    /// <summary>
+    /// The time a system-versioned table is compared with, e.g. in UTC for SQL Server
+    /// </summary>
+    DateTime ToSystemTime(DateTime time);
 
     List<string> ToCreateIndexStatements(Type tableType);
     /// <summary>

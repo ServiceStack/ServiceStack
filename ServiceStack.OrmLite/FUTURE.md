@@ -31,8 +31,15 @@ PostgreSQL (pgvector), SQL Server 2025, MariaDB, MySQL and SQLite (sqlite-vec). 
 - `ReadOnlyMemory<float>` properties, half-precision and sparse vectors
 - Index options, e.g. HNSW `m` and `ef_construction`, and IVFFlat indexes
 
-### 1.3 Temporal / System-Versioned Tables (M)
-`[SystemVersioned]` DDL support, plus `q.AsOf(timestamp)` / `q.Between(from, to)` for SQL Server temporal tables and MariaDB system-versioned tables. On other dialects this would be emulated with history tables and triggers.
+### 1.3 More Temporal Tables (M)
+`[SystemVersioned]` tables with `q.AsOf(time)`, `q.VersionsBetween(from, to)` and `q.AllVersions()` are supported by
+SQL Server and MariaDB, which have them natively. Remaining temporal features:
+- System-versioned tables in PostgreSQL, when it supports system time natively. They aren't emulated with history
+  tables and triggers on RDBMS that don't have them
+- Reading joined tables as of a time, which are read as they are now
+- Application-time tables, where the App says when a row is valid, e.g. a price from March to June. Supported by
+  PostgreSQL 18+ (`WITHOUT OVERLAPS` keys and `PERIOD` foreign keys) and MariaDB
+- Retention of previous versions, e.g. SQL Server's `HISTORY_RETENTION_PERIOD`
 
 ---
 

@@ -305,6 +305,55 @@ namespace ServiceStack.OrmLite.SqlServer
 
         protected override bool SupportsIndexInclude => true;
 
+        // System-versioned (temporal) tables need SQL Server 2016+
+        public override bool SupportsSystemVersioning => true;
+
+        // The period of a system-versioned table is in UTC
+        public override DateTime ToSystemTime(DateTime time) =>
+            time.Kind == DateTimeKind.Local ? time.ToUniversalTime() : time;
+
+        protected override string GetSystemTimeColumnDefinition(FieldDefinition fieldDef) =>
+            $"{GetQuotedColumnName(fieldDef)} DATETIME2 GENERATED ALWAYS AS ROW {(fieldDef.IsRowStart ? "START" : "END")} NOT NULL";
+
+        // Previous versions are kept in a history table, in the table's schema
+        private string GetHistoryTableName(ModelDefinition modelDef)
+        {
+            var tableRef = new TableRef(modelDef);
+            return GetQuotedName(GetSchemaName(tableRef) ?? DefaultSchema) + "." +
+                   GetQuotedName(modelDef.HistoryTable ?? GetTableNameOnly(tableRef) + "History");
+        }
+
+        protected override string ToSystemVersionedTableStatement(ModelDefinition modelDef, string createTableSql)
+        {
+            GetSystemTimeFields(modelDef, out var rowStart, out var rowEnd);
+            var definitions = "";
+            var startColumn = rowStart != null ? GetQuotedColumnName(rowStart) : GetQuotedName("SysStartTime");
+            var endColumn = rowEnd != null ? GetQuotedColumnName(rowEnd) : GetQuotedName("SysEndTime");
+            if (rowStart == null)
+            {
+                // The period needs columns, which aren't selected unless they're named
+                definitions = $"{startColumn} DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,\n  " +
+                              $"{endColumn} DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,\n  ";
+            }
+            definitions += $"PERIOD FOR SYSTEM_TIME ({startColumn}, {endColumn})";
+
+            return AddToCreateTable(createTableSql, definitions,
+                $" WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = {GetHistoryTableName(modelDef)}))");
+        }
+
+        // A system-versioned table can't be dropped until it stops being versioned, which leaves its history table
+        public override string ToDropTableStatement(ModelDefinition modelDef)
+        {
+            var table = GetQuotedTableName(modelDef);
+            if (!modelDef.IsSystemVersioned)
+                return $"DROP TABLE {table}";
+
+            return $"IF OBJECTPROPERTY(OBJECT_ID({GetQuotedValue(table)}), 'TableTemporalType') = 2 " +
+                   $"ALTER TABLE {table} SET (SYSTEM_VERSIONING = OFF);\n" +
+                   $"DROP TABLE {table};\n" +
+                   $"DROP TABLE IF EXISTS {GetHistoryTableName(modelDef)};";
+        }
+
         // Vectors use the VECTOR type of SQL Server 2025 and Azure SQL
         public override string GetVectorColumnDefinition(int dimensions) => $"VECTOR({dimensions})";
 
@@ -356,6 +405,8 @@ namespace ServiceStack.OrmLite.SqlServer
             // https://msdn.microsoft.com/en-us/library/ms182776.aspx
             if (fieldDef.IsRowVersion)
                 return $"{fieldDef.FieldName} rowversion NOT NULL";
+            if (fieldDef.IsRowStart || fieldDef.IsRowEnd)
+                return GetSystemTimeColumnDefinition(fieldDef);
             if (fieldDef.IsGenerated)
                 return GetGeneratedColumnDefinition(fieldDef);
 

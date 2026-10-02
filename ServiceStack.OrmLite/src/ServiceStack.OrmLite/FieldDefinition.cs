@@ -147,6 +147,16 @@ public class FieldDefinition
     public string Description { get; set; }
 
     /// <summary>
+    /// The time a version of a row of a [SystemVersioned] table is from, which is set by the RDBMS
+    /// </summary>
+    public bool IsRowStart { get; set; }
+
+    /// <summary>
+    /// The time a version of a row of a [SystemVersioned] table was replaced, which is set by the RDBMS
+    /// </summary>
+    public bool IsRowEnd { get; set; }
+
+    /// <summary>
     /// How many values the vectors of a [Vector] column have, or null if it isn't one
     /// </summary>
     public int? VectorDimensions { get; set; }
@@ -254,6 +264,8 @@ public class FieldDefinition
             IndexInclude = IndexInclude,
             CheckEnum = CheckEnum,
             Description = Description,
+            IsRowStart = IsRowStart,
+            IsRowEnd = IsRowEnd,
             VectorDimensions = VectorDimensions,
             VectorDistance = VectorDistance,
             CustomSelect = CustomSelect,
