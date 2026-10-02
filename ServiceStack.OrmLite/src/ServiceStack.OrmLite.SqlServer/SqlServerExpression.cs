@@ -41,15 +41,11 @@ namespace ServiceStack.OrmLite.SqlServer
 
         protected override void ConvertToPlaceholderAndParameter(ref object right)
         {
-            var paramName = NextParamName();
-            var paramValue = right;
-            var parameter = CreateParam(paramName, paramValue);
+            var parameter = AddParam(right);
 
             // Prevents a new plan cache for each different string length. Every string is parameterized as NVARCHAR(max) 
             if (parameter.DbType == System.Data.DbType.String)
                 parameter.Size = -1;
-
-            Params.Add(parameter);
 
             right = parameter.ParameterName;
         }

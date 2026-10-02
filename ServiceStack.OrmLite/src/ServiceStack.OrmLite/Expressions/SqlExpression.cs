@@ -1566,8 +1566,21 @@ namespace ServiceStack.OrmLite
         /// </summary>
         protected string NextParamName() => ParamPrefix + Params.Count;
 
+        // The value of an expression, or how to get it from the arguments of the compiled query that's being built
+        protected object EvaluateValue(Expression expression) => CompiledQueryBuild.Current is { } build
+            ? build.Evaluate(expression)
+            : CachedExpressionCompiler.Evaluate(expression);
+
         public virtual IDbDataParameter AddParam(object value)
         {
+            if (value is CompiledValue compiled)
+            {
+                // Created with its value as it normally is, then created from the argument each time
+                var p = AddParam(compiled.Sample);
+                CompiledQueryBuild.Current.Bind(p, compiled);
+                return p;
+            }
+
             var paramName = NextParamName();
             var paramValue = value;
 
@@ -1924,6 +1937,17 @@ namespace ServiceStack.OrmLite
 
         public virtual object GetValue(object value, Type type)
         {
+            if (value is CompiledValue compiled)
+            {
+                if (skipParameterizationForThisExpression)
+                    throw new NotSupportedException("The argument of a compiled query is used where its value is in the SQL");
+
+                var dialect = DialectProvider;
+                var valueType = type == typeof(CompiledValue) ? null : type;
+                return compiled.Map(x => dialect.GetParamValue(x, valueType ?? x.GetType()))
+                    ?? (object)PartialSqlString.Null;
+            }
+
             if (skipParameterizationForThisExpression)
                 return DialectProvider.GetQuotedValue(value, type);
 
@@ -1969,7 +1993,7 @@ namespace ServiceStack.OrmLite
 
                 if (left is not PartialSqlString && right is not PartialSqlString)
                 {
-                    var result = CachedExpressionCompiler.Evaluate(PreEvaluateBinary(b, left, right));
+                    var result = EvaluateValue(PreEvaluateBinary(b, left, right));
                     return result;
                 }
 
@@ -2042,7 +2066,7 @@ namespace ServiceStack.OrmLite
                 }
                 else if (left is not PartialSqlString && right is not PartialSqlString)
                 {
-                    var evaluatedValue = CachedExpressionCompiler.Evaluate(PreEvaluateBinary(b, left, right));
+                    var evaluatedValue = EvaluateValue(PreEvaluateBinary(b, left, right));
                     var result = VisitConstant(Expression.Constant(evaluatedValue));
                     return result;
                 }
@@ -2298,7 +2322,7 @@ namespace ServiceStack.OrmLite
                 }
             }
 
-            return CachedExpressionCompiler.Evaluate(m);
+            return EvaluateValue(m);
         }
 
         protected bool IsTableColumn(MemberExpression m)
@@ -2372,7 +2396,7 @@ namespace ServiceStack.OrmLite
         
         protected virtual object VisitMemberInit(MemberInitExpression exp)
         {
-            return CachedExpressionCompiler.Evaluate(exp);
+            return EvaluateValue(exp);
         }
 
         protected virtual object VisitNew(NewExpression nex)
@@ -2392,7 +2416,7 @@ namespace ServiceStack.OrmLite
                 return new SelectList(exprs);
             }
 
-            return CachedExpressionCompiler.Evaluate(nex);
+            return EvaluateValue(nex);
         }
 
         bool IsLambdaArg(Expression expr)
@@ -2580,7 +2604,7 @@ namespace ServiceStack.OrmLite
                         if (IsParameterAccess(e))
                             return Visit(e);
 
-                        return CachedExpressionCompiler.Evaluate(u);
+                        return EvaluateValue(u);
                     }
                     break;
             }
@@ -2592,10 +2616,10 @@ namespace ServiceStack.OrmLite
             var arg = e.Arguments[0];
             var oIndex = arg is ConstantExpression constant
                 ? constant.Value
-                : CachedExpressionCompiler.Evaluate(arg);
+                : EvaluateValue(arg);
 
             var index = (int)Convert.ChangeType(oIndex, typeof(int));
-            var oCollection = CachedExpressionCompiler.Evaluate(e.Object);
+            var oCollection = EvaluateValue(e.Object);
 
             if (oCollection is List<object> list)
                 return list[index];
@@ -2773,7 +2797,7 @@ namespace ServiceStack.OrmLite
         {
             try
             {
-                return CachedExpressionCompiler.Evaluate(m);
+                return EvaluateValue(m);
             }
             catch (InvalidOperationException)
             {
@@ -3230,7 +3254,9 @@ namespace ServiceStack.OrmLite
 
             var result = EvaluateExpression(memberExpr);
 
-            var inArgs = Sql.Flatten(result as IEnumerable);
+            var inArgs = result is CompiledValue compiled
+                ? CompiledQueryBuild.Current.ToInArgs(compiled)
+                : Sql.Flatten(result as IEnumerable);
 
             var statement = inArgs.Count > 0
                 ? CreateInListSql(quotedColName, inArgs)
@@ -3757,6 +3783,14 @@ namespace ServiceStack.OrmLite
             if (quotedColName is not PartialSqlString)
                 quotedColName = ConvertToParam(quotedColName);
 
+            if (argValue is CompiledValue compiled)
+            {
+                var inValues = CompiledQueryBuild.Current.ToInArgs(compiled);
+                return inValues.Count == 0
+                    ? FalseLiteral
+                    : CreateInListSql(quotedColName, inValues);
+            }
+
             if (argValue is IEnumerable enumerableArg)
             {
                 var inArgs = Sql.Flatten(enumerableArg);
@@ -3813,11 +3847,17 @@ namespace ServiceStack.OrmLite
             string statement;
 
             var arg = args.Count > 0 ? args[0] : null;
+            if (arg is CompiledValue compiled)
+                return VisitCompiledColumnAccessMethod(m, quotedColName, compiled);
+
             string wildcardArg, escapeSuffix = string.Empty;
             if (AllowEscapeWildcards)
             {
                 wildcardArg = arg != null ? DialectProvider.EscapeWildcards(arg.ToString()) : string.Empty;
-                escapeSuffix = wildcardArg.IndexOf('^') >= 0 ? " escape '^'" : string.Empty;
+                // Compiled queries always have it, as it can't change with the values of their arguments
+                escapeSuffix = wildcardArg.IndexOf('^') >= 0 || (CompiledQueryBuild.Current != null && IsLikeMethod(m))
+                    ? " escape '^'"
+                    : string.Empty;
             }
             else
             {
@@ -3879,6 +3919,38 @@ namespace ServiceStack.OrmLite
                     throw new NotSupportedException();
             }
             return new PartialSqlString(statement);
+        }
+
+        private static bool IsLikeMethod(MethodCallExpression m) =>
+            m.Method.Name is "StartsWith" or "EndsWith" or "Contains";
+
+        // A string method whose value is an argument of a compiled query, which is converted each time it's run
+        private object VisitCompiledColumnAccessMethod(MethodCallExpression m, object quotedColName, CompiledValue arg)
+        {
+            var dialect = DialectProvider;
+            if (m.Method.Name == "Equals")
+            {
+                var value = arg.Map(x => {
+                    var type = x.GetType();
+                    var converter = type != typeof(string) ? dialect.GetConverterBestMatch(type) : null;
+                    return converter != null ? converter.ToDbValue(type, x) : x;
+                });
+                return new PartialSqlString($"{quotedColName}={ConvertToParam(value)}");
+            }
+
+            if (!IsLikeMethod(m))
+                throw new NotSupportedException($"{m.Method.Name}() can't be used with the argument of a compiled query");
+
+            var escape = AllowEscapeWildcards;
+            var upper = !OrmLiteConfig.StripUpperInLike;
+            var prefix = m.Method.Name == "StartsWith" ? "" : "%";
+            var suffix = m.Method.Name == "EndsWith" ? "" : "%";
+            var like = arg.Map(x => {
+                var text = escape ? dialect.EscapeWildcards(x.ToString()) : x.ToString();
+                return prefix + (upper ? text.ToUpper() : text) + suffix;
+            });
+            var column = upper ? $"upper({quotedColName})" : quotedColName.ToString();
+            return new PartialSqlString($"{column} like {ConvertToParam(like)}{(escape ? " escape '^'" : "")}");
         }
 
         protected virtual string ToCast(string quotedColName)

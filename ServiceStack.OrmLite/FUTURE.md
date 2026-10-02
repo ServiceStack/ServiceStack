@@ -45,14 +45,16 @@ SQL Server and MariaDB, which have them natively. Remaining temporal features:
 
 ## 2. Performance
 
-### 2.1 Compiled / Cached Queries (M)
-Expression visiting and SQL generation run on every call. A compiled-query API caches the SQL text once and only re-binds parameters:
-```csharp
-static readonly var ByCustomer = OrmLite.Compile((IDbConnection db, int customerId) =>
-    db.From<Order>().Where(x => x.CustomerId == customerId).OrderByDescending(x => x.Id));
-var orders = db.Select(ByCustomer, 42);
-```
-Prepared-statement reuse (`DbCommand.Prepare()` / `DbBatch`) could be layered on top.
+### 2.1 More Compiled Queries (M)
+`OrmLiteQuery.Compile()` generates the SQL of a typed query once, then only creates db params from its arguments each
+time it's run. Remaining:
+- Reuse SQL on connections with mandatory filters, e.g. `EnsureFilter()`, whose values would be arguments of the SQL.
+  They currently generate their SQL each time, so multi-tenant Apps that use them don't benefit
+- Reuse SQL when `OrmLiteConfig.SqlExpressionSelectFilter` is used, e.g. opted in for filters without values that
+  change, like soft deletes
+- Vector arguments, e.g. `Sql.CosineDistance(x.Embedding, vector)`, and arguments in join conditions
+- Compiled `Update()` and `Delete()` queries
+- Prepared-statement reuse (`DbCommand.Prepare()`) layered on top
 
 ### 2.2 `DbBatch` Support (.NET 6+) (M)
 Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector. The upsert SQL, which `UpsertAll` currently
