@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Threading;
@@ -87,6 +88,78 @@ public static class OrmLiteSqlFormattableApi
     public static int ExecuteNonQuery(this IDbConnection dbConn, SqlFormattable sql) =>
         dbConn.ExecuteNonQuery(dbConn.ToSql(sql, out var dbParams), dbParams);
 
+    /// <summary>
+    /// Returns results of the specified table from a parameterized query into a different model, e.g:
+    /// <para>db.Select&lt;EntityWithId&gt;(typeof(Person), Sql.Fmt($"Age &gt; {age}"))</para>
+    /// </summary>
+    public static List<TModel> Select<TModel>(this IDbConnection dbConn, Type fromTableType, SqlFormattable sql) =>
+        dbConn.Select<TModel>(fromTableType, dbConn.ToSql(sql, out var dbParams), dbParams);
+
+    /// <summary>
+    /// Returns a lazily loaded stream of results from a parameterized query, e.g:
+    /// <para>db.SelectLazy&lt;Person&gt;(Sql.Fmt($"Age &gt; {age}"))</para>
+    /// </summary>
+    public static IEnumerable<T> SelectLazy<T>(this IDbConnection dbConn, SqlFormattable sql) =>
+        dbConn.SelectLazy<T>(dbConn.ToSql(sql, out var dbParams), dbParams);
+
+    /// <summary>
+    /// Returns a lazily loaded stream of the first column from a parameterized query, e.g:
+    /// <para>db.ColumnLazy&lt;string&gt;(Sql.Fmt($"SELECT LastName FROM Person WHERE Age = {age}"))</para>
+    /// </summary>
+    public static IEnumerable<T> ColumnLazy<T>(this IDbConnection dbConn, SqlFormattable sql) =>
+        dbConn.ColumnLazy<T>(dbConn.ToSql(sql, out var dbParams), (object)dbParams);
+
+    /// <summary>
+    /// Returns the distinct first column values in a HashSet from a parameterized query, e.g:
+    /// <para>db.ColumnDistinct&lt;int&gt;(Sql.Fmt($"SELECT Age FROM Person WHERE Age &lt; {age}"))</para>
+    /// </summary>
+    public static HashSet<T> ColumnDistinct<T>(this IDbConnection dbConn, SqlFormattable sql) =>
+        dbConn.ColumnDistinct<T>(dbConn.ToSql(sql, out var dbParams), (object)dbParams);
+
+    /// <summary>
+    /// Returns a Dictionary&lt;K, List&lt;V&gt;&gt; grouping made from the first two columns of a parameterized query, e.g:
+    /// <para>db.Lookup&lt;int, string&gt;(Sql.Fmt($"SELECT Age, LastName FROM Person WHERE Age &lt; {age}"))</para>
+    /// </summary>
+    public static Dictionary<K, List<V>> Lookup<K, V>(this IDbConnection dbConn, SqlFormattable sql) =>
+        dbConn.Lookup<K, V>(dbConn.ToSql(sql, out var dbParams), (object)dbParams);
+
+    /// <summary>
+    /// Returns a Dictionary from the first two columns of a parameterized query, e.g:
+    /// <para>db.Dictionary&lt;int, string&gt;(Sql.Fmt($"SELECT Id, LastName FROM Person WHERE Age &lt; {age}"))</para>
+    /// </summary>
+    public static Dictionary<K, V> Dictionary<K, V>(this IDbConnection dbConn, SqlFormattable sql) =>
+        dbConn.Dictionary<K, V>(dbConn.ToSql(sql, out var dbParams), (object)dbParams);
+
+    /// <summary>
+    /// Returns a list of KeyValuePairs from the first two columns of a parameterized query, e.g:
+    /// <para>db.KeyValuePairs&lt;int, string&gt;(Sql.Fmt($"SELECT Id, LastName FROM Person WHERE Age &lt; {age}"))</para>
+    /// </summary>
+    public static List<KeyValuePair<K, V>> KeyValuePairs<K, V>(this IDbConnection dbConn, SqlFormattable sql) =>
+        dbConn.KeyValuePairs<K, V>(dbConn.ToSql(sql, out var dbParams), (object)dbParams);
+
+    /// <summary>
+    /// Returns the number of rows a parameterized query returns, e.g:
+    /// <para>db.RowCount(Sql.Fmt($"SELECT * FROM Person WHERE Age &gt; {age}"))</para>
+    /// </summary>
+    public static long RowCount(this IDbConnection dbConn, SqlFormattable sql) =>
+        dbConn.RowCount(dbConn.ToSql(sql, out var dbParams), (object)dbParams);
+
+    /// <summary>
+    /// Delete rows matching a parameterized filter, e.g:
+    /// <para>db.Delete&lt;Person&gt;(Sql.Fmt($"Age &gt; {age}"))</para>
+    /// </summary>
+    /// <returns>number of rows deleted</returns>
+    public static int Delete<T>(this IDbConnection dbConn, SqlFormattable sqlFilter) =>
+        dbConn.Delete<T>(dbConn.ToSql(sqlFilter, out var dbParams), (object)dbParams);
+
+    /// <summary>
+    /// Delete rows of the specified table matching a parameterized filter, e.g:
+    /// <para>db.Delete(typeof(Person), Sql.Fmt($"Age &gt; {age}"))</para>
+    /// </summary>
+    /// <returns>number of rows deleted</returns>
+    public static int Delete(this IDbConnection dbConn, Type tableType, SqlFormattable sqlFilter) =>
+        dbConn.Delete(tableType, dbConn.ToSql(sqlFilter, out var dbParams), (object)dbParams);
+
     public static Task<List<T>> SelectAsync<T>(this IDbConnection dbConn, SqlFormattable sql, CancellationToken token = default) =>
         dbConn.SelectAsync<T>(dbConn.ToSql(sql, out var dbParams), dbParams, token);
 
@@ -116,4 +189,28 @@ public static class OrmLiteSqlFormattableApi
 
     public static Task<int> ExecuteNonQueryAsync(this IDbConnection dbConn, SqlFormattable sql, CancellationToken token = default) =>
         dbConn.ExecuteNonQueryAsync(dbConn.ToSql(sql, out var dbParams), dbParams, token);
+
+    public static Task<List<TModel>> SelectAsync<TModel>(this IDbConnection dbConn, Type fromTableType, SqlFormattable sql, CancellationToken token = default) =>
+        dbConn.SelectAsync<TModel>(fromTableType, dbConn.ToSql(sql, out var dbParams), dbParams, token);
+
+    public static Task<HashSet<T>> ColumnDistinctAsync<T>(this IDbConnection dbConn, SqlFormattable sql, CancellationToken token = default) =>
+        dbConn.ColumnDistinctAsync<T>(dbConn.ToSql(sql, out var dbParams), (object)dbParams, token);
+
+    public static Task<Dictionary<K, List<V>>> LookupAsync<K, V>(this IDbConnection dbConn, SqlFormattable sql, CancellationToken token = default) =>
+        dbConn.LookupAsync<K, V>(dbConn.ToSql(sql, out var dbParams), (object)dbParams, token);
+
+    public static Task<Dictionary<K, V>> DictionaryAsync<K, V>(this IDbConnection dbConn, SqlFormattable sql, CancellationToken token = default) =>
+        dbConn.DictionaryAsync<K, V>(dbConn.ToSql(sql, out var dbParams), (object)dbParams, token);
+
+    public static Task<List<KeyValuePair<K, V>>> KeyValuePairsAsync<K, V>(this IDbConnection dbConn, SqlFormattable sql, CancellationToken token = default) =>
+        dbConn.KeyValuePairsAsync<K, V>(dbConn.ToSql(sql, out var dbParams), (object)dbParams, token);
+
+    public static Task<long> RowCountAsync(this IDbConnection dbConn, SqlFormattable sql, CancellationToken token = default) =>
+        dbConn.RowCountAsync(dbConn.ToSql(sql, out var dbParams), (object)dbParams, token);
+
+    public static Task<int> DeleteAsync<T>(this IDbConnection dbConn, SqlFormattable sqlFilter, CancellationToken token = default) =>
+        dbConn.DeleteAsync<T>(dbConn.ToSql(sqlFilter, out var dbParams), (object)dbParams, token);
+
+    public static Task<int> DeleteAsync(this IDbConnection dbConn, Type tableType, SqlFormattable sqlFilter, CancellationToken token = default) =>
+        dbConn.DeleteAsync(tableType, dbConn.ToSql(sqlFilter, out var dbParams), (object)dbParams, token);
 }

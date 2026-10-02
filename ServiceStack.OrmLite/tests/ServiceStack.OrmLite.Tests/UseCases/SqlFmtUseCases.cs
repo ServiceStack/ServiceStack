@@ -182,6 +182,95 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
     }
 
     [Test]
+    public void Raw_SQL_queries_into_collections()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+        var Book = db.TableRef<Book>();
+        var (Id, Title, Author, Year) = db.ColumnRefs<Book>(x => new { x.Id, x.Title, x.Author, x.Year });
+        var authors = new[] { "J.R.R. Tolkien", "Frank Herbert" };
+
+        var distinct = db.ColumnDistinct<string>(Sql.Fmt($"SELECT {Author} FROM {Book} WHERE {Author} IN ({authors})"));
+        Assert.That(distinct, Is.EquivalentTo(authors));
+
+        var lookup = db.Lookup<string, string>(Sql.Fmt($"SELECT {Author}, {Title} FROM {Book} WHERE {Author} IN ({authors})"));
+        Assert.That(lookup["J.R.R. Tolkien"], Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion" }));
+        Assert.That(lookup["Frank Herbert"], Is.EqualTo(new[] { "Dune" }));
+
+        var years = db.Dictionary<string, int>(Sql.Fmt($"SELECT {Title}, {Year} FROM {Book} WHERE {Author} IN ({authors})"));
+        Assert.That(years, Is.EquivalentTo(new Dictionary<string, int> {
+            ["The Hobbit"] = 1937, ["The Silmarillion"] = 1977, ["Dune"] = 1965,
+        }));
+
+        var pairs = db.KeyValuePairs<string, int>(Sql.Fmt($"SELECT {Title}, {Year} FROM {Book} WHERE {Year} < {1950}"));
+        Assert.That(pairs, Is.EqualTo(new[] { new KeyValuePair<string, int>("The Hobbit", 1937) }));
+
+        Assert.That(db.RowCount(Sql.Fmt($"SELECT {Id} FROM {Book} WHERE {Author} IN ({authors})")), Is.EqualTo(3));
+
+        // Results of a table into a different model
+        var summaries = db.Select<BookTitle>(typeof(Book), Sql.Fmt($"{Author} IN ({authors})"));
+        Assert.That(summaries.Map(x => x.Title), Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion", "Dune" }));
+
+        // Lazily loaded streams
+        Assert.That(db.SelectLazy<Book>(Sql.Fmt($"{Author} IN ({authors})")).Map(x => x.Title),
+            Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion", "Dune" }));
+        Assert.That(db.ColumnLazy<string>(Sql.Fmt($"SELECT {Title} FROM {Book} WHERE {Year} < {1950}")).ToList(),
+            Is.EqualTo(new[] { "The Hobbit" }));
+    }
+
+    [Test]
+    public void Delete_rows_matching_a_filter()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+        var (Author, Year) = db.ColumnRefs<Book>(x => new { x.Author, x.Year });
+
+        var malicious = "x' OR '1'='1";
+        Assert.That(db.Delete<Book>(Sql.Fmt($"{Author} = {malicious}")), Is.EqualTo(0));
+
+        Assert.That(db.Delete<Book>(Sql.Fmt($"{Author} = {"J.R.R. Tolkien"}")), Is.EqualTo(2));
+        Assert.That(db.Delete(typeof(Book), Sql.Fmt($"{Year} IN ({new[] { 1965, 1984 }})")), Is.EqualTo(2));
+        Assert.That(db.Count<Book>(), Is.EqualTo(4));
+    }
+
+    [Test]
+    public async Task Async_APIs_into_collections()
+    {
+        using var db = await OpenDbConnectionAsync();
+        Bookstore.Seed(db);
+        var Book = db.TableRef<Book>();
+        var (Id, Title, Author, Year) = db.ColumnRefs<Book>(x => new { x.Id, x.Title, x.Author, x.Year });
+        var authors = new[] { "J.R.R. Tolkien", "Frank Herbert" };
+
+        var distinct = await db.ColumnDistinctAsync<string>(Sql.Fmt($"SELECT {Author} FROM {Book} WHERE {Author} IN ({authors})"));
+        Assert.That(distinct, Is.EquivalentTo(authors));
+
+        var lookup = await db.LookupAsync<string, string>(Sql.Fmt($"SELECT {Author}, {Title} FROM {Book} WHERE {Author} IN ({authors})"));
+        Assert.That(lookup["J.R.R. Tolkien"], Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion" }));
+
+        var years = await db.DictionaryAsync<string, int>(Sql.Fmt($"SELECT {Title}, {Year} FROM {Book} WHERE {Author} IN ({authors})"));
+        Assert.That(years["Dune"], Is.EqualTo(1965));
+        Assert.That(years.Count, Is.EqualTo(3));
+
+        var pairs = await db.KeyValuePairsAsync<string, int>(Sql.Fmt($"SELECT {Title}, {Year} FROM {Book} WHERE {Year} < {1950}"));
+        Assert.That(pairs, Is.EqualTo(new[] { new KeyValuePair<string, int>("The Hobbit", 1937) }));
+
+        Assert.That(await db.RowCountAsync(Sql.Fmt($"SELECT {Id} FROM {Book} WHERE {Author} IN ({authors})")), Is.EqualTo(3));
+
+        var summaries = await db.SelectAsync<BookTitle>(typeof(Book), Sql.Fmt($"{Author} IN ({authors})"));
+        Assert.That(summaries.Map(x => x.Title), Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion", "Dune" }));
+
+        var titles = new List<string>();
+        await foreach (var title in db.ColumnLazyAsync<string>(Sql.Fmt($"SELECT {Title} FROM {Book} WHERE {Author} IN ({authors})")))
+            titles.Add(title);
+        Assert.That(titles, Is.EquivalentTo(new[] { "The Hobbit", "The Silmarillion", "Dune" }));
+
+        Assert.That(await db.DeleteAsync<Book>(Sql.Fmt($"{Author} = {"J.R.R. Tolkien"}")), Is.EqualTo(2));
+        Assert.That(await db.DeleteAsync(typeof(Book), Sql.Fmt($"{Year} IN ({new[] { 1965, 1984 }})")), Is.EqualTo(2));
+        Assert.That(await db.CountAsync<Book>(), Is.EqualTo(4));
+    }
+
+    [Test]
     public async Task Async_APIs()
     {
         using var db = await OpenDbConnectionAsync();
@@ -268,4 +357,10 @@ public class SqlFmtUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
         Assert.Throws<FormatException>(() => Sql.Fmt($"Created = {date:yyyy-MM-dd}").ToSql(DialectProvider, out _));
         Assert.Throws<FormatException>(() => Sql.Fmt($"Name = {"x",10}").ToSql(DialectProvider, out _));
     }
+}
+
+public class BookTitle
+{
+    public int Id { get; set; }
+    public string Title { get; set; }
 }

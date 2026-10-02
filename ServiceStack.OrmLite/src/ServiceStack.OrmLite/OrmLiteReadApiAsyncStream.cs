@@ -63,6 +63,14 @@ public static class OrmLiteReadApiAsyncStream
         }, token);
 
     /// <summary>
+    /// Returns an async stream of the first column's values using interpolated SQL where each value is sent as a db param, e.g:
+    /// <para>await foreach (var name in db.ColumnLazyAsync&lt;string&gt;(Sql.Fmt($"SELECT LastName FROM Person WHERE Age &gt; {age}"))) ...</para>
+    /// </summary>
+    public static IAsyncEnumerable<T> ColumnLazyAsync<T>(this IDbConnection dbConn, SqlFormattable sql,
+        CancellationToken token = default) =>
+        dbConn.ColumnLazyAsync<T>(sql.ToSql(dbConn.GetDialectProvider(), out var dbParams), dbParams, token);
+
+    /// <summary>
     /// Executes the async stream with a command created from the connection's exec filter, which is disposed
     /// after the stream completes or is disposed early.
     /// </summary>
