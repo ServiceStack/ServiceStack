@@ -44,6 +44,23 @@ public interface IOrmLiteDialectProvider
     int MaxInListParams { get; set; }
 
     /// <summary>
+    /// Whether InsertAll, UpdateAll, UpsertAll and SaveAll send their statements together with an ADO.NET DbBatch
+    /// when the driver supports it, instead of a round trip for each row. Enabled by default.
+    /// </summary>
+    bool UseDbBatch { get; set; }
+
+    /// <summary>
+    /// The most statements that are sent together when UseDbBatch is enabled, 1000 by default
+    /// </summary>
+    int BatchSize { get; set; }
+
+    /// <summary>
+    /// Whether the driver returns the rows affected by each statement of a DbBatch, which UpdateAll needs to know
+    /// if a row with a RowVersion was updated
+    /// </summary>
+    bool SupportsBatchRowsAffected { get; }
+
+    /// <summary>
     /// Converts an UPDATE or DELETE statement into one that also returns the affected rows, e.g. with RETURNING or
     /// OUTPUT, with all their columns or only the returnFields. Throws NotSupportedException if the RDBMS doesn't
     /// support it.

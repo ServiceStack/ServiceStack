@@ -56,9 +56,16 @@ time it's run. Remaining:
 - Compiled `Update()` and `Delete()` queries
 - Prepared-statement reuse (`DbCommand.Prepare()`) layered on top
 
-### 2.2 `DbBatch` Support (.NET 6+) (M)
-Use ADO.NET `DbBatch` for `InsertAll`, `UpdateAll`, `DeleteAll`, `SaveAll` and `UpsertAll`. This cuts one round-trip per row to one per batch on providers that support it: Npgsql, SqlClient and MySqlConnector. The upsert SQL, which `UpsertAll` currently
-generates for each row, would then be prepared once for each distinct set of insert fields.
+### 2.2 More `DbBatch` Support (M)
+`InsertAll`, `UpdateAll`, `UpsertAll` and `SaveAll` send their statements together with an ADO.NET `DbBatch` on
+Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
+- Batch the rows that read a result back, by reading a result set for each statement: new `[AutoIncrement]` rows in
+  `SaveAll` and `UpsertAll`, `[ReturnOnInsert]` columns and row versions
+- Batch `UpsertAll` on connections with filters or rules, which use an existence check for each row
+- Batches in OrmLite's diagnostics events, the dialect's `OnBeforeExecuteNonQuery` hooks and results filters, which
+  turn batching off when they're used
+- Name the row that failed in the exception, which only SqlClient reports
+- Prepare the SQL once for each distinct set of insert fields
 
 ---
 

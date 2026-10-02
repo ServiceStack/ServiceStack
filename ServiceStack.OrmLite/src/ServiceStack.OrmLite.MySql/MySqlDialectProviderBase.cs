@@ -655,6 +655,9 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 	}
 
 	// MariaDB 10.3+ has system-versioned tables, MySQL doesn't
+	// MySqlConnector doesn't return the rows affected by each statement of a batch
+	public override bool SupportsBatchRowsAffected => false;
+
 	public override bool SupportsSystemVersioning => IsMariaDb == true;
 
 	protected override string GetSystemTimeColumnDefinition(FieldDefinition fieldDef) => SupportsSystemVersioning

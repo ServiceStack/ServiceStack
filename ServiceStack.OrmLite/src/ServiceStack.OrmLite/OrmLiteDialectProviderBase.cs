@@ -37,6 +37,12 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public int MaxInListParams { get; set; } = 1000;
 
+    public bool UseDbBatch { get; set; } = true;
+
+    public int BatchSize { get; set; } = 1000;
+
+    public virtual bool SupportsBatchRowsAffected => true;
+
     public virtual string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null) =>
         throw new NotSupportedException($"{GetType().Name} doesn't support returning rows from UPDATE and DELETE statements");
 

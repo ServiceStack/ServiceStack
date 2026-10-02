@@ -439,19 +439,29 @@ public static class OrmLiteWriteCommandExtensions
 
     internal static int UpdateInternal<T>(this IDbCommand dbCmd, object obj, Action<IDbCommand> commandFilter = null)
     {
+        if (!dbCmd.PrepareUpdate<T>(obj, out var hadRowVersion))
+            return 0;
+
+        return dbCmd.UpdateAndVerify<T>(commandFilter, hadRowVersion);
+    }
+
+    /// <summary>
+    /// Prepare the UPDATE of all fields of the object on the command, returns false if it has no fields to update
+    /// </summary>
+    internal static bool PrepareUpdate<T>(this IDbCommand dbCmd, object obj, out bool hadRowVersion)
+    {
         OrmLiteUtils.AssertNotAnonType<T>();
             
         OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, obj.ToFilterType<T>());
 
         var dialectProvider = dbCmd.GetDialectProvider();
-        var hadRowVersion = dialectProvider.PrepareParameterizedUpdateStatement<T>(dbCmd);
+        hadRowVersion = dialectProvider.PrepareParameterizedUpdateStatement<T>(dbCmd);
         if (string.IsNullOrEmpty(dbCmd.CommandText))
-            return 0;
+            return false;
 
         dbCmd.AddFilterToWhere(typeof(T));
         dbCmd.SetUpdateParameterValues<T>(obj);
-
-        return dbCmd.UpdateAndVerify<T>(commandFilter, hadRowVersion);
+        return true;
     }
 
     /// <summary>
@@ -502,6 +512,7 @@ public static class OrmLiteWriteCommandExtensions
 
             dbCmd.AddFilterToWhere(typeof(T));
 
+            using var batch = OrmLiteBatch.TryCreate(dbCmd, needsRowsAffected: hadRowVersion);
             foreach (var obj in objs)
             {
                 OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, obj);
@@ -510,12 +521,24 @@ public static class OrmLiteWriteCommandExtensions
 
                 commandFilter?.Invoke(dbCmd); //filters can augment SQL & only should be invoked once
                 commandFilter = null;
-                    
+
+                if (batch != null)
+                {
+                    batch.Add(dbCmd);
+                    continue;
+                }
+
                 var rowsUpdated = dbCmd.ExecNonQuery();
                 if (hadRowVersion && rowsUpdated == 0) 
                     throw new OptimisticConcurrencyException();
 
                 count += rowsUpdated;                
+            }
+
+            if (batch != null)
+            {
+                batch.Flush();
+                count = batch.RowsAffected;
             }
 
             dbTrans?.Commit();
@@ -784,6 +807,22 @@ public static class OrmLiteWriteCommandExtensions
         return dbCmd.InsertObject(obj, commandFilter, selectIdentity, enableIdentityInsert);
     }
 
+    /// <summary>
+    /// Prepare the INSERT of the object on the command, for inserts that don't return values
+    /// </summary>
+    internal static void PrepareInsert<T>(this IDbCommand dbCmd, T obj)
+    {
+        OrmLiteUtils.AssertNotAnonType<T>();
+
+        OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
+
+        dbCmd.SetInsertRuleValues<T>(obj);
+        var dialectProvider = dbCmd.GetDialectProvider();
+        dialectProvider.PrepareParameterizedInsertStatement<T>(dbCmd,
+            insertFields: dialectProvider.GetNonDefaultValueInsertFields<T>(obj));
+        dialectProvider.SetParameterValues<T>(dbCmd, obj);
+    }
+
     private static long InsertObject<T>(this IDbCommand dbCmd, T obj, Action<IDbCommand> commandFilter, bool selectIdentity, bool enableIdentityInsert)
     {
         var dialectProvider = dbCmd.GetDialectProvider();
@@ -965,6 +1004,10 @@ public static class OrmLiteWriteCommandExtensions
             }
             try
             {
+                // Inserts that return values are read one at a time
+                using var batch = dialectProvider.HasInsertReturnValues(ModelDefinition<T>.Definition)
+                    ? null
+                    : OrmLiteBatch.TryCreate(dbCmd);
                 foreach (var obj in objs)
                 {
                     OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
@@ -983,8 +1026,18 @@ public static class OrmLiteWriteCommandExtensions
                             shouldInclude: f => f == pkField);
                     }
 
+                    if (batch != null)
+                    {
+                        OrmLiteUtils.AssertNotAnonType<T>();
+                        dialectProvider.SetParameterValues<T>(dbCmd, obj);
+                        commandFilter?.Invoke(dbCmd);
+                        batch.Add(dbCmd);
+                        continue;
+                    }
+
                     InsertInternal<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false);
                 }
+                batch?.Flush();
             }
             finally
             {
@@ -1053,7 +1106,48 @@ public static class OrmLiteWriteCommandExtensions
     {
         OrmLiteUtils.AssertNotAnonType<T>();
         OrmLiteConfig.UpsertFilter?.Invoke(dbCmd, obj);
+        dbCmd.UpsertRow(obj, updateOnly);
+    }
 
+    /// <summary>
+    /// Whether the row is inserted with a new id, which is read back, instead of being upserted
+    /// </summary>
+    internal static bool IsUpsertInsert(FieldDefinition primaryKey, object obj)
+    {
+        if (!primaryKey.AutoIncrement)
+            return false;
+        var id = primaryKey.GetValue(obj);
+        return id == null || Equals(id, primaryKey.FieldType.GetDefaultValue());
+    }
+
+    /// <summary>
+    /// The dialect's upsert statement can be batched when it's used for the table and has no fields to read back
+    /// </summary>
+    internal static OrmLiteBatch CreateUpsertBatch<T>(this IDbCommand dbCmd, ModelDefinition modelDef)
+    {
+        if (modelDef.FieldDefinitions.All(x => !x.IsPrimaryKey))
+            return null;
+        if (dbCmd.GetDialectProvider() is not IOrmLiteUpsertDialectProvider { SupportsUpsert: true }
+            || dbCmd.HasFilters<T>() || dbCmd.HasWriteRules<T>())
+            return null;
+        if (GetUpsertReadBackFields(modelDef).Count > 0)
+            return null;
+        return OrmLiteBatch.TryCreate(dbCmd);
+    }
+
+    /// <summary>
+    /// Prepare the dialect's upsert statement of the row on the command
+    /// </summary>
+    internal static void PrepareUpsert<T>(this IDbCommand dbCmd, T obj, ICollection<string> canonicalUpdateOnly)
+    {
+        var dialectProvider = dbCmd.GetDialectProvider();
+        ((IOrmLiteUpsertDialectProvider)dialectProvider).PrepareParameterizedUpsertStatement<T>(dbCmd,
+            dialectProvider.GetNonDefaultValueInsertFields<T>(obj), canonicalUpdateOnly);
+        dialectProvider.SetParameterValues<T>(dbCmd, obj);
+    }
+
+    private static void UpsertRow<T>(this IDbCommand dbCmd, T obj, ICollection<string> updateOnly)
+    {
         var modelDef = typeof(T).GetModelDefinition();
         var primaryKey = modelDef.FieldDefinitions.FirstOrDefault(x => x.IsPrimaryKey)
             ?? throw new NotSupportedException($"'{typeof(T).Name}' does not have a primary key");
@@ -1176,8 +1270,58 @@ public static class OrmLiteWriteCommandExtensions
         try
         {
             dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
-            foreach (var row in rows)
-                dbCmd.Upsert(row, updateOnly);
+
+            var modelDef = typeof(T).GetModelDefinition();
+            using var batch = dbCmd.CreateUpsertBatch<T>(modelDef);
+            if (batch == null)
+            {
+                foreach (var row in rows)
+                    dbCmd.Upsert(row, updateOnly);
+            }
+            else
+            {
+                var dialectProvider = dbCmd.GetDialectProvider();
+                var primaryKey = modelDef.FieldDefinitions.First(x => x.IsPrimaryKey);
+                var canonicalUpdateOnly = updateOnly == null
+                    ? null
+                    : GetUpsertUpdateFieldDefinitions(modelDef, updateOnly).Map(x => x.Name);
+                var identityInsert = false;
+                try
+                {
+                    foreach (var row in rows)
+                    {
+                        OrmLiteUtils.AssertNotAnonType<T>();
+                        OrmLiteConfig.UpsertFilter?.Invoke(dbCmd, row);
+
+                        if (IsUpsertInsert(primaryKey, row))
+                        {
+                            // Run after the rows before it, without the identity inserts of upserted rows
+                            batch.Flush();
+                            if (identityInsert)
+                            {
+                                dialectProvider.DisableIdentityInsert<T>(dbCmd);
+                                identityInsert = false;
+                            }
+                            dbCmd.UpsertRow(row, updateOnly);
+                            continue;
+                        }
+
+                        if (primaryKey.AutoIncrement && !identityInsert)
+                        {
+                            dialectProvider.EnableIdentityInsert<T>(dbCmd);
+                            identityInsert = true;
+                        }
+                        dbCmd.PrepareUpsert(row, canonicalUpdateOnly);
+                        batch.Add(dbCmd);
+                    }
+                    batch.Flush();
+                }
+                finally
+                {
+                    if (identityInsert)
+                        dialectProvider.DisableIdentityInsert<T>(dbCmd);
+                }
+            }
             dbTrans?.Commit();
         }
         finally
@@ -1322,17 +1466,34 @@ public static class OrmLiteWriteCommandExtensions
         try
         {
             var dialect = dbCmd.Dialect();
+            // Row versions are read back after each row is saved
+            using var batch = modelDef.RowVersion == null ? OrmLiteBatch.TryCreate(dbCmd) : null;
+            var batchInserts = batch != null && !modelDef.HasAutoIncrementId && !dialect.HasInsertReturnValues(modelDef);
             foreach (var row in saveRows)
             {
                 var id = modelDef.GetPrimaryKey(row);
                 if (id != defaultIdValue && existingRowsMap.ContainsKey(id))
                 {
-                    dbCmd.UpdateInternal<T>(row);
+                    if (batch != null)
+                    {
+                        if (dbCmd.PrepareUpdate<T>(row, out _))
+                            batch.Add(dbCmd);
+                    }
+                    else
+                    {
+                        dbCmd.UpdateInternal<T>(row);
+                    }
                 }
                 else
                 {
-                    if (modelDef.HasAutoIncrementId)
+                    if (batchInserts)
                     {
+                        dbCmd.PrepareInsert(row);
+                        batch.Add(dbCmd);
+                    }
+                    else if (modelDef.HasAutoIncrementId)
+                    {
+                        batch?.Flush(); // rows are saved in order, the new id is read back
                         var newId = dbCmd.Insert(row, commandFilter: null, selectIdentity: true);
                         var safeId = dialect.FromDbValue(newId, modelDef.PrimaryKey.FieldType);
                         modelDef.PrimaryKey.SetValue(row, safeId);
@@ -1340,6 +1501,7 @@ public static class OrmLiteWriteCommandExtensions
                     }
                     else
                     {
+                        batch?.Flush();
                         dbCmd.Insert(row, commandFilter: null);
                     }
 
@@ -1348,6 +1510,7 @@ public static class OrmLiteWriteCommandExtensions
 
                 modelDef.RowVersion?.SetValue(row, dbCmd.GetRowVersion(modelDef, id));
             }
+            batch?.Flush();
 
             dbTrans?.Commit();
         }

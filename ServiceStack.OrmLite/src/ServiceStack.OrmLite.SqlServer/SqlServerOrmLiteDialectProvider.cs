@@ -692,24 +692,28 @@ namespace ServiceStack.OrmLite.SqlServer
         public override void EnableIdentityInsert<T>(IDbCommand cmd)
         {
             var tableName = cmd.GetDialectProvider().GetQuotedTableName(ModelDefinition<T>.Definition);
+            cmd.Parameters.Clear(); // a SET that's sent with params only lasts for its statement
             cmd.ExecNonQuery($"SET IDENTITY_INSERT {tableName} ON");
         }
 
         public override Task EnableIdentityInsertAsync<T>(IDbCommand cmd, CancellationToken token=default)
         {
             var tableName = cmd.GetDialectProvider().GetQuotedTableName(ModelDefinition<T>.Definition);
+            cmd.Parameters.Clear(); // a SET that's sent with params only lasts for its statement
             return cmd.ExecNonQueryAsync($"SET IDENTITY_INSERT {tableName} ON", null, token);
         }
 
         public override void DisableIdentityInsert<T>(IDbCommand cmd)
         {
             var tableName = cmd.GetDialectProvider().GetQuotedTableName(ModelDefinition<T>.Definition);
+            cmd.Parameters.Clear(); // a SET that's sent with params only lasts for its statement
             cmd.ExecNonQuery($"SET IDENTITY_INSERT {tableName} OFF");
         }
 
         public override Task DisableIdentityInsertAsync<T>(IDbCommand cmd, CancellationToken token=default)
         {
             var tableName = cmd.GetDialectProvider().GetQuotedTableName(ModelDefinition<T>.Definition);
+            cmd.Parameters.Clear(); // a SET that's sent with params only lasts for its statement
             return cmd.ExecNonQueryAsync($"SET IDENTITY_INSERT {tableName} OFF", null, token);
         }
 

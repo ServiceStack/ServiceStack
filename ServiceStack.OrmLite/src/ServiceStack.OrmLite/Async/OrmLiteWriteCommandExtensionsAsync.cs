@@ -85,17 +85,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
     internal static async Task<int> UpdateInternalAsync<T>(this IDbCommand dbCmd, object obj, CancellationToken token, Action<IDbCommand> commandFilter=null)
     {
-        OrmLiteUtils.AssertNotAnonType<T>();
-            
-        OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, obj.ToFilterType<T>());
-
-        var dialectProvider = dbCmd.GetDialectProvider();
-        var hadRowVersion = dialectProvider.PrepareParameterizedUpdateStatement<T>(dbCmd);
-        if (string.IsNullOrEmpty(dbCmd.CommandText))
+        if (!dbCmd.PrepareUpdate<T>(obj, out var hadRowVersion))
             return 0;
-
-        dbCmd.AddFilterToWhere(typeof(T));
-        dbCmd.SetUpdateParameterValues<T>(obj);
 
         return await dbCmd.UpdateAndVerifyAsync<T>(commandFilter, hadRowVersion, token).ConfigAwait();
     }
@@ -136,6 +127,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
         using (dbTrans)
         {
+            using var batch = OrmLiteBatch.TryCreate(dbCmd, needsRowsAffected: hadRowVersion);
             foreach (var obj in objs)
             {
                 OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, obj);
@@ -144,6 +136,12 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
                 commandFilter?.Invoke(dbCmd); //filters can augment SQL & only should be invoked once
                 commandFilter = null;
+
+                if (batch != null)
+                {
+                    await batch.AddAsync(dbCmd, token).ConfigAwait();
+                    continue;
+                }
     
                 var rowsUpdated = await dbCmd.ExecNonQueryAsync(token).ConfigAwait();
                         
@@ -151,6 +149,12 @@ internal static class OrmLiteWriteCommandExtensionsAsync
                     throw new OptimisticConcurrencyException();
     
                 count += rowsUpdated;
+            }
+
+            if (batch != null)
+            {
+                await batch.FlushAsync(token).ConfigAwait();
+                count = batch.RowsAffected;
             }
 
             dbTrans?.Commit();
@@ -516,6 +520,10 @@ internal static class OrmLiteWriteCommandExtensionsAsync
             }
             try
             {
+                // Inserts that return values are read one at a time
+                using var batch = dialectProvider.HasInsertReturnValues(ModelDefinition<T>.Definition)
+                    ? null
+                    : OrmLiteBatch.TryCreate(dbCmd);
                 foreach (var obj in objs)
                 {
                     OrmLiteConfig.InsertFilter?.Invoke(dbCmd, obj);
@@ -534,8 +542,18 @@ internal static class OrmLiteWriteCommandExtensionsAsync
                             shouldInclude: f => f == pkField);
                     }
 
+                    if (batch != null)
+                    {
+                        dialectProvider.SetParameterValues<T>(dbCmd, obj);
+                        commandFilter?.Invoke(dbCmd);
+                        await batch.AddAsync(dbCmd, token).ConfigAwait();
+                        continue;
+                    }
+
                     await InsertInternalAsync<T>(dialectProvider, dbCmd, obj, commandFilter, selectIdentity:false, token);
                 }
+                if (batch != null)
+                    await batch.FlushAsync(token).ConfigAwait();
             }
             finally
             {
@@ -544,10 +562,12 @@ internal static class OrmLiteWriteCommandExtensionsAsync
                     await dialectProvider.DisableIdentityInsertAsync<T>(dbCmd, token);
                 }
             }
+            // Only rows that were all inserted are committed
+            dbTrans?.Commit();
         }
         finally
         {
-            dbTrans?.Commit();
+            dbTrans?.Dispose();
         }
     }
 
@@ -556,12 +576,17 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         return SaveAllAsync(dbCmd, objs, token);
     }
 
-    internal static async Task UpsertAsync<T>(this IDbCommand dbCmd, T obj,
+    internal static Task UpsertAsync<T>(this IDbCommand dbCmd, T obj,
         ICollection<string> updateOnly, CancellationToken token)
     {
         OrmLiteUtils.AssertNotAnonType<T>();
         OrmLiteConfig.UpsertFilter?.Invoke(dbCmd, obj);
+        return dbCmd.UpsertRowAsync(obj, updateOnly, token);
+    }
 
+    private static async Task UpsertRowAsync<T>(this IDbCommand dbCmd, T obj,
+        ICollection<string> updateOnly, CancellationToken token)
+    {
         var modelDef = typeof(T).GetModelDefinition();
         var primaryKey = modelDef.FieldDefinitions.FirstOrDefault(x => x.IsPrimaryKey)
             ?? throw new NotSupportedException($"'{typeof(T).Name}' does not have a primary key");
@@ -664,8 +689,58 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         try
         {
             dbCmd.Transaction ??= dbTrans = dbCmd.Connection.BeginTransaction();
-            foreach (var row in rows)
-                await dbCmd.UpsertAsync(row, updateOnly, token).ConfigAwait();
+
+            var modelDef = typeof(T).GetModelDefinition();
+            using var batch = dbCmd.CreateUpsertBatch<T>(modelDef);
+            if (batch == null)
+            {
+                foreach (var row in rows)
+                    await dbCmd.UpsertAsync(row, updateOnly, token).ConfigAwait();
+            }
+            else
+            {
+                var dialectProvider = dbCmd.GetDialectProvider();
+                var primaryKey = modelDef.FieldDefinitions.First(x => x.IsPrimaryKey);
+                var canonicalUpdateOnly = updateOnly == null
+                    ? null
+                    : OrmLiteWriteCommandExtensions.GetUpsertUpdateFieldDefinitions(modelDef, updateOnly).Map(x => x.Name);
+                var identityInsert = false;
+                try
+                {
+                    foreach (var row in rows)
+                    {
+                        OrmLiteUtils.AssertNotAnonType<T>();
+                        OrmLiteConfig.UpsertFilter?.Invoke(dbCmd, row);
+
+                        if (OrmLiteWriteCommandExtensions.IsUpsertInsert(primaryKey, row))
+                        {
+                            // Run after the rows before it, without the identity inserts of upserted rows
+                            await batch.FlushAsync(token).ConfigAwait();
+                            if (identityInsert)
+                            {
+                                await dialectProvider.DisableIdentityInsertAsync<T>(dbCmd, token).ConfigAwait();
+                                identityInsert = false;
+                            }
+                            await dbCmd.UpsertRowAsync(row, updateOnly, token).ConfigAwait();
+                            continue;
+                        }
+
+                        if (primaryKey.AutoIncrement && !identityInsert)
+                        {
+                            await dialectProvider.EnableIdentityInsertAsync<T>(dbCmd, token).ConfigAwait();
+                            identityInsert = true;
+                        }
+                        dbCmd.PrepareUpsert(row, canonicalUpdateOnly);
+                        await batch.AddAsync(dbCmd, token).ConfigAwait();
+                    }
+                    await batch.FlushAsync(token).ConfigAwait();
+                }
+                finally
+                {
+                    if (identityInsert)
+                        await dialectProvider.DisableIdentityInsertAsync<T>(dbCmd, token).ConfigAwait();
+                }
+            }
             dbTrans?.Commit();
         }
         finally
@@ -767,17 +842,35 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
         using (dbTrans)
         {
+            // Row versions are read back after each row is saved
+            using var batch = modelDef.RowVersion == null ? OrmLiteBatch.TryCreate(dbCmd) : null;
+            var batchInserts = batch != null && !modelDef.HasAutoIncrementId && !dialectProvider.HasInsertReturnValues(modelDef);
             foreach (var row in saveRows)
             {
                 var id = modelDef.GetPrimaryKey(row);
                 if (id != defaultIdValue && existingRowsMap.ContainsKey(id))
                 {
-                    await dbCmd.UpdateInternalAsync<T>(row, token).ConfigAwait();
+                    if (batch != null)
+                    {
+                        if (dbCmd.PrepareUpdate<T>(row, out _))
+                            await batch.AddAsync(dbCmd, token).ConfigAwait();
+                    }
+                    else
+                    {
+                        await dbCmd.UpdateInternalAsync<T>(row, token).ConfigAwait();
+                    }
                 }
                 else
                 {
-                    if (modelDef.HasAutoIncrementId)
+                    if (batchInserts)
                     {
+                        dbCmd.PrepareInsert(row);
+                        await batch.AddAsync(dbCmd, token).ConfigAwait();
+                    }
+                    else if (modelDef.HasAutoIncrementId)
+                    {
+                        if (batch != null)
+                            await batch.FlushAsync(token).ConfigAwait(); // rows are saved in order, the new id is read back
                         var newId = await dbCmd.InsertAsync(row, commandFilter:null, selectIdentity:true, enableIdentityInsert: false, token: token).ConfigAwait();
                         var safeId = dialectProvider.FromDbValue(newId, modelDef.PrimaryKey.FieldType);
                         modelDef.PrimaryKey.SetValue(row, safeId);
@@ -785,6 +878,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
                     }
                     else
                     {
+                        if (batch != null)
+                            await batch.FlushAsync(token).ConfigAwait();
                         await dbCmd.InsertAsync(row, commandFilter:null, selectIdentity:false, enableIdentityInsert: false, token:token).ConfigAwait();
                     }
 
@@ -793,6 +888,8 @@ internal static class OrmLiteWriteCommandExtensionsAsync
 
                 modelDef.RowVersion?.SetValue(row, await dbCmd.GetRowVersionAsync(modelDef, id, token).ConfigAwait());
             }
+            if (batch != null)
+                await batch.FlushAsync(token).ConfigAwait();
 
             dbTrans?.Commit();
         }
