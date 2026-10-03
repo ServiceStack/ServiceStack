@@ -450,12 +450,11 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
     }
 
     [Test]
-    public void Arguments_in_join_conditions_generate_their_SQL_each_time()
+    public void Arguments_in_join_conditions_are_db_params()
     {
         using var db = OpenDbConnection();
         Bookstore.Seed(db);
 
-        // Values in a join condition are in the SQL. Filter the joined table with Where<BookReview>() to reuse it
         var query = OrmLiteQuery.Compile<Book, int>((q, rating) => q
             .Join<BookReview>((b, r) => b.Id == r.BookId && r.Rating >= rating)
             .OrderBy(b => b.Title));
@@ -463,9 +462,18 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
         Assert.That(Titles(db.Select(query, 5)), Is.EqualTo(new[] { "Dune", "The Hobbit" }));
         Assert.That(Titles(db.Select(query, 4)), Is.EqualTo(new[] { "Dune", "The Hobbit", "The Hobbit" }));
         Assert.That(Titles(db.Select(query, 5)), Is.EqualTo(new[] { "Dune", "The Hobbit" }));
+        AssertSameSql(query.Bind(db, 4), db.From<Book>()
+            .Join<BookReview>((b, r) => b.Id == r.BookId && r.Rating >= 4)
+            .OrderBy(b => b.Title));
 
-        Assert.That(query.CachedStatements, Is.EqualTo(0));
-        Assert.That(query.NotCachedReason, Is.Not.Null);
+        Assert.That(query.CachedStatements, Is.EqualTo(1));
+        Assert.That(query.NotCachedReason, Is.Null);
+
+        // So is the value of a typed query's join condition, which can't change its SQL
+        var malicious = "x' OR '1'='1";
+        var q = db.From<Book>().Join<BookReview>((b, r) => b.Id == r.BookId && r.Reviewer == malicious);
+        Assert.That(q.ToSelectStatement(), Does.Not.Contain("1'='1"));
+        Assert.That(db.Select(q), Is.Empty);
     }
 
     [Test]

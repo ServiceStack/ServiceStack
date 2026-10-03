@@ -44,16 +44,6 @@ SQL Server and MariaDB, which have them natively. Remaining temporal features:
 
 ## 2. Performance
 
-### 2.1 More Compiled Queries (M)
-`OrmLiteQuery.Compile()` generates the SQL of a typed query once, then only creates db params from its arguments each
-time it's run. Remaining:
-- Reuse SQL when `OrmLiteConfig.SqlExpressionSelectFilter` is used, e.g. opted in for filters without values that
-  change, like soft deletes
-- Vector arguments, e.g. `Sql.CosineDistance(x.Embedding, vector)`, and arguments in join conditions
-- Compiled `UPDATE` statements: `UpdateOnly()` and `UpdateAdd()` reuse the SQL of a compiled query's `WHERE` clause,
-  but generate their `SET` clause each time, with the connection's write rules
-- Prepared-statement reuse (`DbCommand.Prepare()`) layered on top
-
 ### 2.2 More `DbBatch` Support (M)
 `InsertAll`, `UpdateAll`, `UpsertAll` and `SaveAll` send their statements together with an ADO.NET `DbBatch` on
 Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
@@ -126,6 +116,14 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
   user-supplied filters, `OrderBySafe()` covers dynamic sorting, and `ColumnRef` / `Sql.Fmt()` cover hand-written
   dynamic queries.
 - **Slow query log, N+1 detection and parameter redaction in logs:** reconsider if users ask for them.
+- **Compiling the SET clause of compiled `UPDATE` statements:** `UpdateOnly()` and `UpdateAdd()` reuse the SQL of a
+  compiled query's `WHERE` clause. Their `SET` clause is a few columns and db params, and would need write rules'
+  values, e.g. `ModifiedBy`, to be bound for each run.
+- **Reusing compiled SQL with `OrmLiteConfig.SqlExpressionSelectFilter`:** FilterSets add conditions like soft deletes
+  to each connection's queries, which compiled queries reuse their SQL with.
+- **Calling `DbCommand.Prepare()`:** OrmLite creates a command for each statement, and drivers that keep prepared
+  statements for a connection prepare them by themselves, e.g. Npgsql's `Max Auto Prepare`, while SQL Server reuses
+  the plans of parameterized SQL.
 - **Sparse vectors:** only PostgreSQL's pgvector has them (`sparsevec`), which would need a C# type of their own.
   Reconsider if users ask for them.
 - **Recognizing JSON for each property:** PostgreSQL's dialect always stores complex types as JSON, so `[PgSqlJsonB]`

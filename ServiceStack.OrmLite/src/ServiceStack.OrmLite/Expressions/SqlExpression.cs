@@ -1900,13 +1900,10 @@ namespace ServiceStack.OrmLite
             }
         }
 
-        protected virtual object VisitJoin(Expression exp)
-        {
-            skipParameterizationForThisExpression = true;
-            var visitedExpression = Visit(exp);
-            skipParameterizationForThisExpression = false;
-            return visitedExpression;
-        }
+        /// <summary>
+        /// A join condition, whose values are db params like the WHERE conditions', so its SQL is the same for every value
+        /// </summary>
+        protected virtual object VisitJoin(Expression exp) => Visit(exp);
 
         protected virtual object VisitLambda(LambdaExpression lambda)
         {
@@ -3384,12 +3381,10 @@ namespace ServiceStack.OrmLite
                 nameof(Sql.L2Distance) => VectorDistance.L2,
                 _ => VectorDistance.NegativeInnerProduct,
             };
-            // Vectors to compare with have the precision of the column they're compared with
-            var precision = VectorFieldOf(m.Arguments[0])?.VectorPrecision
-                ?? VectorFieldOf(m.Arguments[1])?.VectorPrecision
-                ?? VectorPrecision.Single;
+            // Vectors to compare with have the dimensions and precision of the column they're compared with
+            var column = VectorFieldOf(m.Arguments[0]) ?? VectorFieldOf(m.Arguments[1]);
             return new PartialSqlString(DialectProvider.ToVectorDistance(distance,
-                VisitVectorOperand(m.Arguments[0], precision), VisitVectorOperand(m.Arguments[1], precision)));
+                VisitVectorOperand(m.Arguments[0], column), VisitVectorOperand(m.Arguments[1], column)));
         }
 
         // The [Vector] column of an operand, if it's one
@@ -3405,8 +3400,9 @@ namespace ServiceStack.OrmLite
         }
 
         // A vector column, or a vector that's sent as a db param
-        private string VisitVectorOperand(Expression expression, VectorPrecision precision)
+        private string VisitVectorOperand(Expression expression, FieldDefinition column)
         {
+            var precision = column?.VectorPrecision ?? VectorPrecision.Single;
             // A float[] converted to a ReadOnlyMemory<float> for the distance methods, or the other way around
             while (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
                 expression = convert.Operand;
@@ -3414,12 +3410,25 @@ namespace ServiceStack.OrmLite
             if (value is PartialSqlString sql)
                 return sql.Text;
 
-            var vector = Converters.VectorConverter.ToFloats(value)
-                ?? throw new ArgumentNullException(nameof(expression), "The vector to compare with is null");
             var converter = DialectProvider.VectorConverter;
-            var p = AddParam(converter.ToDbValue(typeof(float[]), vector));
+            IDbDataParameter p;
+            float[] vector;
+            if (value is CompiledValue compiled)
+            {
+                // The argument of a compiled query, whose db param is created from its vector each time it's run
+                vector = Converters.VectorConverter.ToFloats(compiled.Sample);
+                var dbValue = compiled.Map(x => converter.ToDbValue(typeof(float[]), Converters.VectorConverter.ToFloats(x)))
+                    ?? throw new ArgumentNullException(nameof(expression), "The vector to compare with is empty");
+                p = AddParam(dbValue);
+            }
+            else
+            {
+                vector = Converters.VectorConverter.ToFloats(value)
+                    ?? throw new ArgumentNullException(nameof(expression), "The vector to compare with is null");
+                p = AddParam(converter.ToDbValue(typeof(float[]), vector));
+            }
             converter.InitDbParam(p, typeof(float[]));
-            return DialectProvider.ToVectorParam(p.ParameterName, vector.Length, precision);
+            return DialectProvider.ToVectorParam(p.ParameterName, column?.VectorDimensions ?? vector.Length, precision);
         }
 
         protected virtual object VisitSqlMethodCall(MethodCallExpression m)

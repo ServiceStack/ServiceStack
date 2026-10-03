@@ -271,6 +271,28 @@ public class VectorUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
     }
 
     // Classes that vectors are read into need [Vector] too
+    static readonly CompiledQuery<Passage, float[]> MostSimilar = OrmLiteQuery.Compile<Passage, float[]>((q, vector) => q
+        .OrderBy(x => Sql.CosineDistance(x.Embedding, vector))
+        .Take(2));
+
+    [Test]
+    public void Compile_queries_of_similar_rows()
+    {
+        using var db = OpenVectorDb();
+
+        Assert.That(db.Select(MostSimilar, AboutDragons).Map(x => x.Text),
+            Is.EqualTo(new[] { "Smaug guards his hoard", "The dwarves reclaim Erebor" }));
+        Assert.That(db.Select(MostSimilar, AboutSpace).Map(x => x.Text),
+            Is.EqualTo(new[] { "The pale blue dot", "Spice is mined on Arrakis" }));
+
+        // The same SQL for every vector, which is a db param
+        Assert.That(MostSimilar.NotCachedReason, Is.Null);
+        Assert.That(MostSimilar.CachedStatements, Is.GreaterThan(0));
+        var bound = MostSimilar.Bind(db, AboutSpace);
+        Assert.That(bound.ToSelectStatement(), Is.EqualTo(db.From<Passage>()
+            .OrderBy(x => Sql.CosineDistance(x.Embedding, AboutSpace)).Take(2).ToSelectStatement()));
+    }
+
     public class PassageVector
     {
         public int Id { get; set; }
