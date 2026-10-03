@@ -16,11 +16,10 @@ Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
 
 ### 1.1 More JSON Queries (M)
 Complex type properties stored as JSON are queried directly, e.g. `x.Address.City == "London"`,
-`x.Tags.Contains("vip")`, `x.Lines.Count` and `x.Lines[0].Quantity`, and JSON in `string` columns with `Sql.Json<T>()`.
-Remaining JSON features:
-- Matching the items of a list by a condition, e.g. `x.Lines.Any(l => l.Sku == "A-1" && l.Quantity > 1)`
+`x.Tags.Contains("vip")`, `x.Lines.Count`, `x.Lines[0].Quantity` and conditions on a list's items with
+`x.Lines.Any(l => l.Sku == "A-1" && l.Quantity > 1)`, `All()` and `Count()`, and JSON in `string` columns with
+`Sql.Json<T>()`. Remaining JSON features:
 - `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes of a JSON property
-- Recognizing JSON by property, e.g. `[PgSqlJsonB]` columns and custom JSON serializers when the dialect doesn't use JSON
 - PostgreSQL's native arrays, e.g. `x.Aliases.Contains("Al")` on a `string[]` column as `= ANY(aliases)`
 
 ### 1.2 More Vector Support (S/M)
@@ -89,8 +88,8 @@ and the `migrate.new` App Task writes the next migration to the App's migrations
 
 ### 4.1 More Retries (S)
 A `RetryPolicy`, global in `OrmLiteConfig` or for each dialect, runs statements and connections again after a
-temporary error, and `db.RunInTransaction()` runs a whole transaction again. SQLite doesn't retry. The APIs that write many rows in a transaction of their own, e.g. `InsertAll`, are run again
-as a whole. Remaining:
+temporary error, and `db.RunInTransaction()` runs a whole transaction again. SQLite doesn't retry. The APIs that
+write many rows in a transaction of their own, e.g. `InsertAll`, are run again as a whole. Remaining:
 - Retry queries that fail while reading their rows, before any are returned
 - Retry queries run with OrmLite's Dapper APIs
 
@@ -127,3 +126,6 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
   user-supplied filters, `OrderBySafe()` covers dynamic sorting, and `ColumnRef` / `Sql.Fmt()` cover hand-written
   dynamic queries.
 - **Slow query log, N+1 detection and parameter redaction in logs:** reconsider if users ask for them.
+- **Recognizing JSON for each property:** PostgreSQL's dialect always stores complex types as JSON, so `[PgSqlJsonB]`
+  columns are already queried, and JSON from custom serializers, e.g. SQL Server's `[SqlJson]` types, is queried with
+  `Sql.Json(x.Address).City`.

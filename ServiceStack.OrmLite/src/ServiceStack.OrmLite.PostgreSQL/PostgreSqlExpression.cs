@@ -58,6 +58,15 @@ public class PostgreSqlExpression<T> : SqlExpression<T>
     private static string JsonItem(object json, JsonPathExpression path) =>
         $"jsonb_path_query_first(CAST({json} AS jsonb), CAST({path} AS jsonpath))";
 
+    // The rows of the items of an array, which are jsonb
+    protected override string JsonArrayItemsFrom(object json, JsonPathExpression path, string alias) =>
+        $"jsonb_path_query(CAST({json} AS jsonb), CAST({JsonArrayItemsPath(path)} AS jsonpath)) " +
+        $"AS {alias}({DialectProvider.GetQuotedName("value")})";
+
+    private string JsonArrayItemsPath(JsonPathExpression path) => path.Value != null
+        ? QuoteJsonPath(path.Value + "[*]")
+        : throw new NotSupportedException("Conditions on the items of JSON arrays need a constant JSON path.");
+
     protected override object VisitIsJsonMethod(object json) =>
         new PartialSqlString($"({json} IS JSON)");
 

@@ -1908,6 +1908,9 @@ namespace ServiceStack.OrmLite
         {
             if (originalLambda == null)
                 originalLambda = lambda;
+
+            if (sep == " " && TryVisitJsonBoolean(lambda.Body, out var jsonBoolean))
+                return jsonBoolean;
             
             if (lambda.Body.NodeType == ExpressionType.MemberAccess && sep == " ")
             {
@@ -1968,7 +1971,11 @@ namespace ServiceStack.OrmLite
             var operand = BindOperant(b.NodeType);   //sep= " " ??
             if (operand is "AND" or "OR")
             {
-                if (IsBooleanComparison(b.Left))
+                if (TryVisitJsonBoolean(b.Left, out var jsonLeft))
+                {
+                    left = jsonLeft;
+                }
+                else if (IsBooleanComparison(b.Left))
                 {
                     left = VisitMemberAccess((MemberExpression) b.Left);
                     if (left is PartialSqlString)
@@ -1982,7 +1989,11 @@ namespace ServiceStack.OrmLite
                 }
                 else left = Visit(b.Left);
 
-                if (IsBooleanComparison(b.Right))
+                if (TryVisitJsonBoolean(b.Right, out var jsonRight))
+                {
+                    right = jsonRight;
+                }
+                else if (IsBooleanComparison(b.Right))
                 {
                     right = VisitMemberAccess((MemberExpression) b.Right);
                     if (right is PartialSqlString)
@@ -2740,6 +2751,10 @@ namespace ServiceStack.OrmLite
                 return false;
             }
 
+            // A value in a JSON document, e.g. x.Address.City.StartsWith("L") or t.StartsWith("v") of an array's item
+            if (IsTypedJsonValue(m.Object))
+                return true;
+
             if (m.Object is MethodCallExpression methCallExp)
                 return IsColumnAccess(methCallExp);
 
@@ -3494,6 +3509,8 @@ namespace ServiceStack.OrmLite
 
         private object VisitJsonDocument(Expression expression)
         {
+            if (expression is ParameterExpression item && jsonItems != null && jsonItems.TryGetValue(item, out var alias))
+                return new PartialSqlString(JsonArrayItemDocument(alias));
             var value = Visit(expression);
             return value is PartialSqlString ? value : new PartialSqlString(ConvertToParam(value));
         }
@@ -3561,9 +3578,22 @@ namespace ServiceStack.OrmLite
         private object JsonMethodNotSupported(string methodName) => throw new NotSupportedException(
             $"{DialectProvider.GetType().Name} does not support Sql.{methodName}().");
 
+        // The parameters of lambdas whose argument is an item of a JSON array, e.g. l in x.Lines.Any(l => l.Sku == "A-1"),
+        // with the alias of the array's rows
+        private Dictionary<ParameterExpression, string> jsonItems;
+        private int jsonItemAliases;
+
         private bool TryVisitTypedJsonAccess(Expression expression, out object result)
         {
             result = null;
+            if (expression is ParameterExpression item && jsonItems != null && jsonItems.TryGetValue(item, out var itemAlias))
+            {
+                // An item that's a scalar, e.g. t in x.Tags.Any(t => t.StartsWith("v"))
+                result = VisitJsonArrayItemValue(itemAlias, item.Type);
+                return true;
+            }
+            if (TryVisitJsonArrayPredicate(expression, out result))
+                return true;
             if (TryVisitTypedJsonArrayOperation(expression, out result))
                 return true;
 
@@ -3579,6 +3609,126 @@ namespace ServiceStack.OrmLite
                 : VisitJsonQueryMethod(json, path, expression.Type);
             return true;
         }
+
+        /// <summary>
+        /// Any(), All() and Count() of a JSON array, with or without a predicate on its items, e.g.
+        /// x.Lines.Any(l => l.Sku == "A-1" &amp;&amp; l.Quantity > 1), as a subquery of the array's rows
+        /// </summary>
+        private bool TryVisitJsonArrayPredicate(Expression expression, out object result)
+        {
+            result = null;
+            if (expression is not MethodCallExpression call || call.Method.DeclaringType != typeof(Enumerable)
+                || call.Method.Name is not (nameof(Enumerable.Any) or nameof(Enumerable.All) or nameof(Enumerable.Count))
+                || call.Arguments.Count is < 1 or > 2)
+                return false;
+
+            var source = UnwrapSpanConversion(call.Arguments[0]);
+            if (!IsJsonArrayType(source.Type))
+                return false;
+            var pathParts = new List<string>();
+            if (!TryCollectTypedJsonPath(source, pathParts, out var document))
+                return false;
+
+            AssertJsonDocument(document);
+            var json = VisitJsonDocument(GetJsonDocument(document));
+            var path = JsonPath("$" + string.Concat(pathParts));
+
+            if (call.Arguments.Count == 1)
+            {
+                // Any() and Count() of the whole array
+                var length = VisitJsonArrayLengthMethod(json, path);
+                result = call.Method.Name == nameof(Enumerable.Any)
+                    ? new PartialSqlString($"({length} > 0)")
+                    : length;
+                return true;
+            }
+
+            if (call.Arguments[1] is not LambdaExpression predicate || predicate.Parameters.Count != 1)
+                return false;
+
+            var alias = "j" + jsonItemAliases++;
+            var from = JsonArrayItemsFrom(json, path, alias);
+            (jsonItems ??= new())[predicate.Parameters[0]] = alias;
+            string condition;
+            try
+            {
+                condition = ToJsonItemCondition(predicate.Body);
+            }
+            finally
+            {
+                jsonItems.Remove(predicate.Parameters[0]);
+            }
+
+            result = call.Method.Name switch {
+                nameof(Enumerable.Any) => new PartialSqlString($"EXISTS (SELECT 1 FROM {from} WHERE {condition})"),
+                // Items whose condition is unknown, e.g. null, aren't a match
+                nameof(Enumerable.All) => new PartialSqlString(
+                    $"NOT EXISTS (SELECT 1 FROM {from} WHERE (CASE WHEN {condition} THEN 1 ELSE 0 END) = 0)"),
+                _ => new PartialSqlString($"(SELECT COUNT(*) FROM {from} WHERE {condition})"),
+            };
+            return true;
+        }
+
+        // Whether the expression is a value in a JSON document or an item of a JSON array, which is SQL, not a C# value
+        private bool IsTypedJsonValue(Expression expression)
+        {
+            while (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                expression = convert.Operand;
+            if (expression is ParameterExpression item)
+                return jsonItems?.ContainsKey(item) == true;
+            if (expression is not MemberExpression)
+                return false;
+            var pathParts = new List<string>();
+            return TryCollectTypedJsonPath(expression, pathParts, out _) && pathParts.Count > 0;
+        }
+
+        // A condition on an item, which can be a boolean property or item, e.g. l => l.Shipped
+        private string ToJsonItemCondition(Expression body)
+        {
+            if (TryVisitJsonBoolean(body, out var boolean))
+                return boolean.ToString();
+            var condition = Visit(body);
+            return WhereExpressionToString(condition);
+        }
+
+        /// <summary>
+        /// A boolean property of a JSON document, or a boolean item of a JSON array, as a condition, e.g.
+        /// x.Address.Country.InEu or l.Shipped
+        /// </summary>
+        private bool TryVisitJsonBoolean(Expression expression, out PartialSqlString result)
+        {
+            result = null;
+            if (expression is UnaryExpression { NodeType: ExpressionType.Not } not && TryVisitJsonBoolean(not.Operand, out var operand))
+            {
+                result = new PartialSqlString($"(NOT {operand})");
+                return true;
+            }
+            if (expression is not (MemberExpression or ParameterExpression)
+                || (Nullable.GetUnderlyingType(expression.Type) ?? expression.Type) != typeof(bool)
+                || !TryVisitTypedJsonAccess(expression, out var value))
+                return false;
+            result = new PartialSqlString($"({value}={GetQuotedTrueValue()})");
+            return true;
+        }
+
+        /// <summary>
+        /// The rows of the items of a JSON array for a subquery, e.g. json_each(doc, '$.Lines') AS j0, whose items are read
+        /// with VisitJsonArrayItemDocument() and VisitJsonArrayItemValue()
+        /// </summary>
+        protected virtual string JsonArrayItemsFrom(object json, JsonPathExpression path, string alias) =>
+            throw new NotSupportedException(
+                $"{DialectProvider.GetType().Name} does not support conditions on the items of JSON arrays.");
+
+        /// <summary>
+        /// An item of a JSON array as a JSON document, whose properties are read with JSON paths
+        /// </summary>
+        protected virtual string JsonArrayItemDocument(string alias) => alias + "." + DialectProvider.GetQuotedName("value");
+
+        /// <summary>
+        /// An item of a JSON array that's a scalar, e.g. a string of a List&lt;string&gt;
+        /// </summary>
+        protected virtual object VisitJsonArrayItemValue(string alias, Type type) =>
+            VisitJsonValueMethod(new PartialSqlString(JsonArrayItemDocument(alias)), JsonPath("$"), type);
 
         private bool TryVisitTypedJsonArrayOperation(Expression expression, out object result)
         {
@@ -3690,6 +3840,11 @@ namespace ServiceStack.OrmLite
         private bool TryCollectTypedJsonPath(Expression expression, List<string> pathParts, out Expression document)
         {
             document = null;
+            if (expression is ParameterExpression item && jsonItems?.ContainsKey(item) == true)
+            {
+                document = item;
+                return true;
+            }
             if (expression is UnaryExpression unary &&
                 (unary.NodeType == ExpressionType.Convert || unary.NodeType == ExpressionType.ConvertChecked))
                 return TryCollectTypedJsonPath(unary.Operand, pathParts, out document);

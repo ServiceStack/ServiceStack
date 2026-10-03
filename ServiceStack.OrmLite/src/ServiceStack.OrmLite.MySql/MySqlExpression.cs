@@ -56,6 +56,15 @@ public class MySqlExpression<T>(IOrmLiteDialectProvider dialectProvider) : SqlEx
 
     private static string JsonItem(object json, JsonPathExpression path) => $"JSON_EXTRACT({json}, {path})";
 
+    // The rows of the items of an array, as JSON. Needs MySQL 8.0.4 or MariaDB 10.6.
+    protected override string JsonArrayItemsFrom(object json, JsonPathExpression path, string alias)
+    {
+        if (path.Value == null)
+            throw new NotSupportedException("Conditions on the items of JSON arrays need a constant JSON path.");
+        return $"JSON_TABLE({json}, {QuoteJsonPath(path.Value + "[*]")} " +
+               $"COLUMNS ({DialectProvider.GetQuotedName("value")} JSON PATH '$')) AS {alias}";
+    }
+
     protected override object VisitIsJsonMethod(object json) =>
         new PartialSqlString($"JSON_VALID({json})");
 

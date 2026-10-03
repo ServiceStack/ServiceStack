@@ -140,9 +140,21 @@ namespace ServiceStack.OrmLite.SqlServer
             return BooleanJsonExpression($"({scalar} = 1)", scalar);
         }
 
-        protected override object VisitJsonValueMethod(object json, JsonPathExpression path, Type returnType)
+        protected override object VisitJsonValueMethod(object json, JsonPathExpression path, Type returnType) =>
+            JsonTypedValue($"JSON_VALUE({json}, {path})", returnType);
+
+        // OPENJSON() returns the rows of an array, with the text of each item and its JSON type
+        protected override string JsonArrayItemsFrom(object json, JsonPathExpression path, string alias) =>
+            $"OPENJSON({json}, {path}) AS {alias}";
+
+        protected override string JsonArrayItemDocument(string alias) => alias + ".[value]";
+
+        // Objects and arrays aren't scalar values, as JSON_VALUE() returns them
+        protected override object VisitJsonArrayItemValue(string alias, Type type) =>
+            JsonTypedValue($"CASE WHEN {alias}.[type] NOT IN (4,5) THEN {alias}.[value] END", type);
+
+        private object JsonTypedValue(string value, Type returnType)
         {
-            var value = $"JSON_VALUE({json}, {path})";
             var type = Nullable.GetUnderlyingType(returnType) ?? returnType;
             if (type == typeof(string) || type.IsEnum)
                 return JsonScalar(value, returnType);

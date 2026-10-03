@@ -41,6 +41,7 @@ public class JsonColumnUseCases(DialectContext context) : OrmLiteProvidersTestBa
     {
         public string Sku { get; set; }
         public int Quantity { get; set; }
+        public bool Shipped { get; set; }
     }
 
     public class Purchase
@@ -86,12 +87,12 @@ public class JsonColumnUseCases(DialectContext context) : OrmLiteProvidersTestBa
             new Shopper {
                 Name = "Alice", Tags = ["vip", "beta"],
                 Address = new() { City = "London", Country = new() { Code = "UK" } },
-                Lines = [new() { Sku = "A-1", Quantity = 2 }, new() { Sku = "B-2", Quantity = 1 }],
+                Lines = [new() { Sku = "A-1", Quantity = 2 }, new() { Sku = "B-2", Quantity = 1, Shipped = true }],
             },
             new Shopper {
                 Name = "Bob", Tags = ["new"],
                 Address = new() { City = "Paris", Country = new() { Code = "FR", InEu = true } },
-                Lines = [new() { Sku = "A-1", Quantity = 1 }],
+                Lines = [new() { Sku = "A-1", Quantity = 1, Shipped = true }],
             },
             new Shopper {
                 Name = "Carol", Tags = [],
@@ -115,6 +116,10 @@ public class JsonColumnUseCases(DialectContext context) : OrmLiteProvidersTestBa
         var code = "FR";
         var french = db.Select<Shopper>(x => x.Address.Country.Code == code && x.Address.City != "Lyon");
         Assert.That(french.Map(x => x.Name), Is.EqualTo(new[] { "Bob" }));
+
+        // With the text functions of other properties
+        Assert.That(db.Select<Shopper>(x => x.Address.City.StartsWith("Lon")).Map(x => x.Name),
+            Is.EquivalentTo(new[] { "Alice", "Carol" }));
 
         // Rows are read back with their complex types
         Assert.That(french[0].Address.Country.InEu);
@@ -167,6 +172,82 @@ public class JsonColumnUseCases(DialectContext context) : OrmLiteProvidersTestBa
         // The first line of each basket
         var firstLine = db.Select<Shopper>(x => x.Lines[0].Sku == "A-1" && x.Lines[0].Quantity >= 2);
         Assert.That(firstLine.Map(x => x.Name), Is.EqualTo(new[] { "Alice" }));
+    }
+
+    [Test]
+    public void Find_rows_whose_list_has_an_item_matching_a_condition()
+    {
+        using var db = OpenSeededDb();
+        List<string> Names(System.Linq.Expressions.Expression<Func<Shopper, bool>> where) =>
+            db.Select(db.From<Shopper>().Where(where).OrderBy(x => x.Id)).Map(x => x.Name);
+
+        // The conditions of each item are checked together, unlike x.Lines[0]
+        Assert.That(Names(x => x.Lines.Any(l => l.Sku == "A-1" && l.Quantity > 1)), Is.EqualTo(new[] { "Alice" }));
+        Assert.That(Names(x => x.Lines.Any(l => l.Sku == "A-1")), Is.EqualTo(new[] { "Alice", "Bob" }));
+        Assert.That(Names(x => !x.Lines.Any(l => l.Sku == "A-1")), Is.EqualTo(new[] { "Carol", "Dave" }));
+
+        // Captured values are db params, and conditions can use the row's columns
+        var sku = "B-2";
+        Assert.That(Names(x => x.Lines.Any(l => l.Sku == sku)), Is.EqualTo(new[] { "Alice" }));
+        Assert.That(Names(x => x.Lines.Any(l => l.Quantity == x.Id)), Is.EqualTo(new[] { "Alice" }));
+
+        // Boolean properties, and the text functions of other properties
+        Assert.That(Names(x => x.Lines.Any(l => l.Shipped)), Is.EqualTo(new[] { "Alice", "Bob" }));
+        Assert.That(Names(x => x.Lines.Any(l => !l.Shipped && l.Quantity >= 2)), Is.EqualTo(new[] { "Alice" }));
+        Assert.That(Names(x => x.Lines.Any(l => l.Sku.StartsWith("B"))), Is.EqualTo(new[] { "Alice" }));
+
+        // Rows whose list is empty or missing have no item that doesn't match
+        Assert.That(Names(x => x.Lines.All(l => l.Shipped)), Is.EqualTo(new[] { "Bob", "Carol", "Dave" }));
+        Assert.That(Names(x => x.Lines.Count(l => l.Quantity >= 1) == 2), Is.EqualTo(new[] { "Alice" }));
+
+        // Without a condition
+        Assert.That(Names(x => x.Lines.Any()), Is.EqualTo(new[] { "Alice", "Bob" }));
+        Assert.That(Names(x => x.Lines.Count() == 1), Is.EqualTo(new[] { "Bob" }));
+    }
+
+    [Test]
+    public void Find_rows_whose_list_of_values_has_a_value_matching_a_condition()
+    {
+        using var db = OpenSeededDb();
+        List<string> Names(System.Linq.Expressions.Expression<Func<Shopper, bool>> where) =>
+            db.Select(db.From<Shopper>().Where(where).OrderBy(x => x.Id)).Map(x => x.Name);
+
+        Assert.That(Names(x => x.Tags.Any(t => t.StartsWith("v"))), Is.EqualTo(new[] { "Alice" }));
+        Assert.That(Names(x => x.Tags.Any(t => t == "new" || t == "beta")), Is.EqualTo(new[] { "Alice", "Bob" }));
+        Assert.That(Names(x => x.Tags.Any() && x.Tags.All(t => t != "vip")), Is.EqualTo(new[] { "Bob" }));
+
+        var malicious = "1=1 OR 1";
+        var q = db.From<Shopper>().Where(x => x.Tags.Any(t => t == malicious));
+        Assert.That(db.Select(q), Is.Empty);
+        Assert.That(q.ToSelectStatement(), Does.Not.Contain(malicious));
+    }
+
+    [Test]
+    public void Filter_by_boolean_properties_of_a_complex_type()
+    {
+        using var db = OpenSeededDb();
+
+        Assert.That(db.Select<Shopper>(x => x.Address.Country.InEu).Map(x => x.Name), Is.EqualTo(new[] { "Bob" }));
+        Assert.That(db.Select<Shopper>(x => x.Address.Country.InEu && x.Name == "Bob").Map(x => x.Name),
+            Is.EqualTo(new[] { "Bob" }));
+        Assert.That(db.Select<Shopper>(x => x.Name == "Alice" || x.Address.Country.InEu).Map(x => x.Name),
+            Is.EquivalentTo(new[] { "Alice", "Bob" }));
+    }
+
+    static readonly CompiledQuery<Shopper, string> BySku = OrmLiteQuery.Compile<Shopper, string>(
+        (q, sku) => q.Where(x => x.Lines.Any(l => l.Sku == sku)).OrderBy(x => x.Id));
+
+    [Test]
+    public async Task Item_conditions_in_compiled_and_async_queries()
+    {
+        using var db = OpenSeededDb();
+
+        Assert.That(db.Select(BySku, "A-1").Map(x => x.Name), Is.EqualTo(new[] { "Alice", "Bob" }));
+        Assert.That(db.Select(BySku, "B-2").Map(x => x.Name), Is.EqualTo(new[] { "Alice" }));
+        Assert.That(BySku.NotCachedReason, Is.Null);
+
+        var shipped = await db.SelectAsync<Shopper>(x => x.Lines.Any(l => l.Shipped && l.Sku == "A-1"));
+        Assert.That(shipped.Map(x => x.Name), Is.EqualTo(new[] { "Bob" }));
     }
 
     [Test]
@@ -224,6 +305,7 @@ public class JsonColumnUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(nested!.Message, Does.Contain("UseJson"));
         Assert.Throws<NotSupportedException>(() => db.From<Shopper>().Where(x => x.Tags.Contains("vip")));
         Assert.Throws<NotSupportedException>(() => db.From<Shopper>().Where(x => x.Lines.Count > 1));
+        Assert.Throws<NotSupportedException>(() => db.From<Shopper>().Where(x => x.Lines.Any(l => l.Sku == "A-1")));
         Assert.Throws<NotSupportedException>(() => db.From<Shopper>().OrderBy(x => x.Address.City));
 
         // The columns themselves are used as they always were
