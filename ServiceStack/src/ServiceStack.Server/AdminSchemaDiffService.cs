@@ -53,6 +53,11 @@ public class AdminSchemaDiffResponse : IHasResponseStatus
     public List<string> Warnings { get; set; } = [];
 
     /// <summary>
+    /// The tables of models that weren't compared, as set by OrmLiteConfig.SchemaDiff, e.g. AspNetUsers
+    /// </summary>
+    public List<string> Ignored { get; set; } = [];
+
+    /// <summary>
     /// The class name and namespace of the migration
     /// </summary>
     public string? MigrationName { get; set; }
@@ -114,9 +119,10 @@ public class AdminSchemaDiffService : Service
             : dbFactory.Open(AdminDatabaseFeature.ConfigureDb);
 
         var diff = db.GetSchemaDiff(modelTypes.ToArray());
+        var dialect = db.GetDialectProvider();
 
         return new AdminSchemaDiffResponse {
-            Models = modelTypes.Map(x => x.Name),
+            Models = modelTypes.Where(x => !OrmLiteConfig.SchemaDiff.IsIgnored(x, dialect)).Map(x => x.Name),
             Results = diff.Changes.Map(x => new AdminSchemaChange {
                 Type = x.Type.ToString(),
                 Model = x.ModelType.Name,
@@ -129,6 +135,7 @@ public class AdminSchemaDiffService : Service
                 IsDestructive = x.IsDestructive ? true : null,
             }),
             Warnings = diff.Warnings,
+            Ignored = diff.Ignored,
             MigrationName = migrationName,
             MigrationNamespace = migrationNamespace,
             Migration = diff.HasChanges

@@ -468,4 +468,69 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
             "public ServiceStack.OrmLite.Tests.UseCases.SchemaDiffUseCases.InvoiceStatus Status { get; set; }"));
         Assert.That(source, Does.Not.Contain("namespace "));
     }
+
+    // A table that's managed by ASP.NET Core Identity, not OrmLite
+    [Alias("AspNetUserTokens")]
+    public class IdentityToken
+    {
+        public string Id { get; set; }
+        public string Value { get; set; }
+    }
+
+    [Alias("LegacyOrders")]
+    public class LegacyOrder
+    {
+        public int Id { get; set; }
+    }
+
+    [Test]
+    public void Ignores_tables_that_are_not_managed_by_OrmLite()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<IdentityToken>();
+        db.DropTable<LegacyOrder>();
+
+        // AspNet* tables are ignored by default, whose table name is after [Alias]
+        var diff = db.GetSchemaDiff(typeof(IdentityToken), typeof(LegacyOrder));
+        Assert.That(diff.Changes.Map(x => x.ModelType), Is.EqualTo(new[] { typeof(LegacyOrder) }));
+        Assert.That(diff.Ignored.Single(), Is.EqualTo("AspNetUserTokens").IgnoreCase.Or.EqualTo("asp_net_user_tokens"));
+        Assert.That(diff.ToString(), Does.EndWith("Ignored: " + diff.Ignored[0]));
+
+        // Ignore other tables by name or type
+        var options = new SchemaDiffOptions();
+        options.IgnoreTables.Add("legacy*");
+        diff = db.GetSchemaDiff(options, typeof(IdentityToken), typeof(LegacyOrder));
+        Assert.That(diff.HasChanges, Is.False);
+        Assert.That(diff.Ignored.Count, Is.EqualTo(2));
+        Assert.That(diff.ToString(), Does.StartWith("No schema differences"));
+
+        options = new SchemaDiffOptions { IgnoreTables = [] };
+        options.IgnoreTypes.Add(typeof(LegacyOrder));
+        diff = db.GetSchemaDiff(options, typeof(IdentityToken), typeof(LegacyOrder));
+        Assert.That(diff.Changes.Map(x => x.ModelType), Is.EqualTo(new[] { typeof(IdentityToken) }));
+        Assert.That(diff.Ignored.Count, Is.EqualTo(1));
+
+        // Without rules, nothing is ignored
+        diff = db.GetSchemaDiff(new SchemaDiffOptions { IgnoreTables = [] }, typeof(IdentityToken), typeof(LegacyOrder));
+        Assert.That(diff.Changes.Count, Is.EqualTo(2));
+        Assert.That(diff.Ignored, Is.Empty);
+    }
+
+    [Test]
+    public void Ignored_table_names_match_ignoring_case_where_star_matches_any_characters()
+    {
+        var options = new SchemaDiffOptions { IgnoreTables = ["AspNet*", "*_audit", "tmp*import*", "Exact"] };
+        Assert.That(options.IsIgnoredTable("AspNetUsers"));
+        Assert.That(options.IsIgnoredTable("aspnetroles"));
+        Assert.That(options.IsIgnoredTable("AspNet"));
+        Assert.That(options.IsIgnoredTable("order_audit"));
+        Assert.That(options.IsIgnoredTable("tmp_import"));
+        Assert.That(options.IsIgnoredTable("TMP_orders_IMPORT_2024"));
+        Assert.That(options.IsIgnoredTable("exact"));
+        Assert.That(options.IsIgnoredTable("Users"), Is.False);
+        Assert.That(options.IsIgnoredTable("MyAspNetUsers"), Is.False);
+        Assert.That(options.IsIgnoredTable("audit_order"), Is.False);
+        Assert.That(options.IsIgnoredTable("tmp_orders"), Is.False);
+        Assert.That(options.IsIgnoredTable("Exactly"), Is.False);
+    }
 }

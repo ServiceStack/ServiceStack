@@ -259,6 +259,12 @@ public static class OrmLiteConfig
     /// </summary>
     public static OrmLiteRetryPolicy RetryPolicy { get; set; }
 
+    /// <summary>
+    /// The tables that GetSchemaDiff() doesn't compare, which ignores the tables of ASP.NET Core Identity and
+    /// EF Core's migrations by default, e.g. AspNetUsers
+    /// </summary>
+    public static SchemaDiffOptions SchemaDiff { get; set; } = new();
+
     public static bool ThrowOnError { get; set; } = true;
 
     public static Func<string, string> SanitizeFieldNameForParamNameFn = fieldName =>

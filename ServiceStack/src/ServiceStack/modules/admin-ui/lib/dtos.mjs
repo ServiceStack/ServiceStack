@@ -2774,7 +2774,7 @@ export class AdminSchemaChange {
     isDestructive;
 }
 export class AdminSchemaDiffResponse {
-    /** @param {{models?:string[],results?:AdminSchemaChange[],warnings?:string[],migrationName?:string,migrationNamespace?:string,migration?:string,responseStatus?:ResponseStatus}} [init] */
+    /** @param {{models?:string[],results?:AdminSchemaChange[],warnings?:string[],ignored?:string[],migrationName?:string,migrationNamespace?:string,migration?:string,responseStatus?:ResponseStatus}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {string[]} */
     models = [];
@@ -2782,6 +2782,8 @@ export class AdminSchemaDiffResponse {
     results = [];
     /** @type {string[]} */
     warnings = [];
+    /** @type {string[]} */
+    ignored = [];
     /** @type {?string} */
     migrationName;
     /** @type {?string} */

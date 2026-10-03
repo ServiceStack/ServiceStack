@@ -94,6 +94,70 @@ public class SchemaChange
 }
 
 /// <summary>
+/// The tables that GetSchemaDiff() doesn't compare, e.g. tables that aren't managed by OrmLite
+/// </summary>
+public class SchemaDiffOptions
+{
+    /// <summary>
+    /// Tables that aren't compared, by their name in the database after [Alias], ignoring case. A * matches any
+    /// characters, e.g. Legacy*. Ignores the tables of ASP.NET Core Identity and EF Core's migrations by default.
+    /// </summary>
+    public List<string> IgnoreTables { get; set; } = ["AspNet*", "__EFMigrationsHistory"];
+
+    /// <summary>
+    /// Models whose tables aren't compared
+    /// </summary>
+    public List<Type> IgnoreTypes { get; set; } = [];
+
+    /// <summary>
+    /// Whether the table of a model isn't compared
+    /// </summary>
+    public bool IsIgnored(Type modelType, IOrmLiteDialectProvider dialect)
+    {
+        if (IgnoreTypes.Contains(modelType))
+            return true;
+        var modelDef = modelType.GetModelDefinition();
+        // The name of the model's table, and the name in the database after the dialect's naming strategy
+        return IsIgnoredTable(modelDef.ModelName)
+            || IsIgnoredTable(dialect.UnquotedTable(new TableRef(modelDef)));
+    }
+
+    /// <summary>
+    /// Whether a table isn't compared, by its name
+    /// </summary>
+    public bool IsIgnoredTable(string table)
+    {
+        foreach (var pattern in IgnoreTables)
+        {
+            if (Matches(table, pattern))
+                return true;
+        }
+        return false;
+    }
+
+    private static bool Matches(string table, string pattern)
+    {
+        if (pattern.IndexOf('*') == -1)
+            return string.Equals(table, pattern, StringComparison.OrdinalIgnoreCase);
+        var parts = pattern.Split('*');
+        if (!table.StartsWith(parts[0], StringComparison.OrdinalIgnoreCase)
+            || !table.EndsWith(parts[parts.Length - 1], StringComparison.OrdinalIgnoreCase))
+            return false;
+        // Each part between *s is after the part before it
+        var pos = parts[0].Length;
+        var end = table.Length - parts[parts.Length - 1].Length;
+        for (var i = 1; i < parts.Length - 1; i++)
+        {
+            var index = table.IndexOf(parts[i], pos, StringComparison.OrdinalIgnoreCase);
+            if (index == -1 || index + parts[i].Length > end)
+                return false;
+            pos = index + parts[i].Length;
+        }
+        return pos <= end;
+    }
+}
+
+/// <summary>
 /// The differences between models and their tables in a database
 /// </summary>
 public class SchemaDiff
@@ -108,6 +172,11 @@ public class SchemaDiff
     /// </summary>
     public List<string> Warnings { get; set; } = [];
 
+    /// <summary>
+    /// The tables of models that weren't compared, as set by SchemaDiffOptions, e.g. AspNetUsers
+    /// </summary>
+    public List<string> Ignored { get; set; } = [];
+
     public bool HasChanges => Changes.Count > 0;
 
     /// <summary>
@@ -117,8 +186,9 @@ public class SchemaDiff
     /// </summary>
     public override string ToString()
     {
+        var ignored = Ignored.Count > 0 ? $"Ignored: {string.Join(", ", Ignored)}" : null;
         if (Changes.Count == 0 && Warnings.Count == 0)
-            return "No schema differences";
+            return ignored != null ? "No schema differences\n" + ignored : "No schema differences";
 
         var sb = StringBuilderCache.Allocate();
         foreach (var table in Changes.GroupBy(x => x.Table))
@@ -138,6 +208,8 @@ public class SchemaDiff
         }
         foreach (var warning in Warnings)
             sb.AppendLine("Warning: " + warning);
+        if (ignored != null)
+            sb.AppendLine(ignored);
         return StringBuilderCache.ReturnAndFree(sb).TrimEnd();
     }
 
@@ -164,7 +236,14 @@ public static class OrmLiteSchemaDiffApi
     /// <para>var diff = db.GetSchemaDiff(typeof(Order), typeof(Customer));</para>
     /// <para>if (diff.HasChanges) log.Warn(diff.ToString());</para>
     /// </summary>
-    public static SchemaDiff GetSchemaDiff(this IDbConnection db, params Type[] modelTypes)
+    public static SchemaDiff GetSchemaDiff(this IDbConnection db, params Type[] modelTypes) =>
+        db.GetSchemaDiff(OrmLiteConfig.SchemaDiff, modelTypes);
+
+    /// <summary>
+    /// The differences between models and their tables, ignoring the tables of options instead of
+    /// OrmLiteConfig.SchemaDiff
+    /// </summary>
+    public static SchemaDiff GetSchemaDiff(this IDbConnection db, SchemaDiffOptions options, params Type[] modelTypes)
     {
         var diff = new SchemaDiff();
         var dialect = db.GetDialectProvider();
@@ -174,6 +253,11 @@ public static class OrmLiteSchemaDiffApi
             var modelDef = modelType.GetModelDefinition();
             var tableRef = new TableRef(modelDef);
             var table = dialect.UnquotedTable(tableRef);
+            if (options != null && options.IsIgnored(modelType, dialect))
+            {
+                diff.Ignored.Add(table);
+                continue;
+            }
 
             if (!dialect.DoesTableExist(db, tableRef))
             {

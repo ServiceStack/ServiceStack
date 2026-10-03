@@ -55,6 +55,16 @@ public class SchemaDiffCategory
 
 public class QuerySchemaDiffCategories : QueryDb<SchemaDiffCategory> {}
 
+// A table of ASP.NET Core Identity, which isn't compared as it isn't managed by OrmLite
+[Alias("AspNetSchemaDiffUsers")]
+public class SchemaDiffUser
+{
+    public string? Id { get; set; }
+    public string? UserName { get; set; }
+}
+
+public class QuerySchemaDiffUsers : QueryDb<SchemaDiffUser> {}
+
 // A model of another database that isn't used by an AutoQuery API
 [NamedConnection(AdminSchemaDiffAppHostTests.Reports)]
 public class SchemaDiffReport
@@ -68,6 +78,7 @@ public class SchemaDiffServices : Service
 {
     public object Any(QuerySchemaDiffProducts request) => new QueryResponse<SchemaDiffProduct>();
     public object Any(QuerySchemaDiffCategories request) => new QueryResponse<SchemaDiffCategory>();
+    public object Any(QuerySchemaDiffUsers request) => new QueryResponse<SchemaDiffUser>();
 }
 
 /// <summary>
@@ -156,6 +167,8 @@ public class AdminSchemaDiffAppHostTests
         // The models of the default connection, not the model of the reports database
         Assert.That(response.Models, Is.EqualTo(new[] { nameof(SchemaDiffCategory), nameof(SchemaDiffProduct) }));
         Assert.That(response.Warnings, Is.Empty);
+        // AspNet* tables aren't compared
+        Assert.That(response.Ignored, Is.EqualTo(new[] { "AspNetSchemaDiffUsers" }));
 
         // SchemaDiffCategory is the same as its table
         Assert.That(response.Results.Map(x => x.Model), Is.All.EqualTo(nameof(SchemaDiffProduct)));
