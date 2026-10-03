@@ -19,7 +19,7 @@ jobs:
         image: postgres
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: test
+          POSTGRES_PASSWORD: p@55wOrd
           POSTGRES_DB: test
         ports:
           - 48303:5432
@@ -138,7 +138,7 @@ jobs:
         if: success() || failure()
         env:
           ORMLITE_DIALECT: MySql
-          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT
+          MYSQL_CONNECTION: Server=localhost;Port=48205;Database=test;UID=root;Password=Test!tesT;AllowLoadLocalInfile=true;Convert Zero Datetime=True
         run: dotnet test --framework net10.0 ./ServiceStack.OrmLite.Tests/ServiceStack.OrmLite.Tests.csproj --logger 'trx;LogFileName=results.trx'
 
       - name: Test Report
