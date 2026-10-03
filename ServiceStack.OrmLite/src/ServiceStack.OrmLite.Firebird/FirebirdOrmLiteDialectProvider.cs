@@ -501,7 +501,7 @@ namespace ServiceStack.OrmLite.Firebird
             var fieldNames = fieldName.Split(',')
                 .Map(x => NamingStrategy.GetColumnName(x.LeftPart(' ')));
 
-            return $"CREATE {(isUnique ? "UNIQUE" : "")} INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({string.Join(",", fieldNames.ToArray())}); \n";
+            return $"CREATE {(isUnique ? "UNIQUE " : "")}INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({string.Join(",", fieldNames.ToArray())}); \n";
         }
 
         public static string RowVersionTriggerFormat = "{0}RowVersionUpdateTrigger";

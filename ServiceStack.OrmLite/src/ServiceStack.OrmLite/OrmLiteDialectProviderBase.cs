@@ -2461,7 +2461,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         bool isCombined = false, FieldDefinition fieldDef = null)
     {
         fieldDef ??= modelDef.GetFieldDefinition(fieldName);
-        return $"CREATE {(isUnique ? "UNIQUE" : "")}" +
+        return "CREATE" + (isUnique ? " UNIQUE" : "") +
                (fieldDef?.IsClustered == true ? " CLUSTERED" : "") +
                (fieldDef?.IsNonClustered == true ? " NONCLUSTERED" : "") +
                $" INDEX {indexName} ON {GetQuotedTableName(modelDef)} " +
@@ -2610,7 +2610,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             (unique ? "uidx" : "idx") + "_" + sourceDef.ModelName + "_" + fieldDef.FieldName :
             indexName);
 
-        string command = $"CREATE {(unique ? "UNIQUE" : "")} " +
+        string command = $"CREATE {(unique ? "UNIQUE " : "")}" +
                          $"INDEX {name} ON {GetQuotedTableName(sourceDef)}" +
                          $"({GetQuotedColumnName(fieldDef)});";
         return command;

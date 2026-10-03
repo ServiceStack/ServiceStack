@@ -685,9 +685,9 @@ namespace ServiceStack.OrmLite.Oracle
         protected override string ToCreateIndexStatement(bool isUnique, string indexName, ModelDefinition modelDef, string fieldName,
             bool isCombined = false, FieldDefinition fieldDef = null)
         {
-            var unique = isUnique ? "UNIQUE" : "";
+            var unique = isUnique ? "UNIQUE " : "";
             var field = isCombined ? fieldName : GetQuotedColumnName(fieldName);
-            return $"CREATE {unique} INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({field}) \n";
+            return $"CREATE {unique}INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({field}) \n";
         }
 
         public override string ToExistStatement(Type fromTableType,

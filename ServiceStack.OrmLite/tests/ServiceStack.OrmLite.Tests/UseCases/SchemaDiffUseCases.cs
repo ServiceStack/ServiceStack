@@ -298,7 +298,7 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         var index = diff.Changes.Single(x => x.Type == SchemaChangeType.CreateIndex);
         Assert.That(index.Name, Is.EqualTo("idx_invoice_customerid").IgnoreCase);
-        Assert.That(index.Sql, Does.StartWith("CREATE"));
+        Assert.That(index.Sql, Does.StartWith("CREATE INDEX") | Does.StartWith("CREATE NONCLUSTERED INDEX"));
 
         Assert.That(diff.Changes.Count, Is.EqualTo(5));
         Assert.That(diff.Warnings, Is.Empty);
