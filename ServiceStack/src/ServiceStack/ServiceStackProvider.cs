@@ -208,7 +208,9 @@ public class ServiceStackProvider(IHttpRequest request, IResolver resolver = nul
     /// <summary>
     /// The DB connection for queries that can read from a read replica, configured like Db, see Service.ReadDb
     /// </summary>
-    public virtual IDbConnection ReadDb => readDb ??= HostContext.AppHost.GetReadOnlyDbConnection(Request);
+    public virtual IDbConnection ReadDb => db is ServiceStack.Data.IHasDbWrites { HasWrites: true }
+        ? db
+        : readDb ??= HostContext.AppHost.GetReadOnlyDbConnection(Request);
 
     private IRedisClient redis;
     public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);

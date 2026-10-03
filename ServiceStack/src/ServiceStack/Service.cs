@@ -92,9 +92,12 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters, IAs
     /// <summary>
     /// The DB connection for queries that can read from a read replica, e.g. reports, lists and dashboards. It's the
     /// read replica of Db's connection, or the same database when there isn't one, configured by the AppHost's
-    /// DbConnectionRequestFilters like Db. A replica can be behind the primary, so read what was just written from Db.
+    /// DbConnectionRequestFilters like Db. It can't write. A replica can be behind the primary, so once the request
+    /// writes, its reads use the primary to see what it wrote.
     /// </summary>
-    public virtual IDbConnection ReadDb => readDb ??= HostContext.AppHost.GetReadOnlyDbConnection(Request);
+    public virtual IDbConnection ReadDb => db is ServiceStack.Data.IHasDbWrites { HasWrites: true }
+        ? db
+        : readDb ??= HostContext.AppHost.GetReadOnlyDbConnection(Request);
 
     private IRedisClient? redis;
     public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);

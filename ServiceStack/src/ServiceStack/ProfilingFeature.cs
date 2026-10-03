@@ -842,6 +842,8 @@ public sealed class ProfilerDiagnosticObserver(ProfilingFeature feature) :
         {
             to.Command = e.Command.CommandText;
             to.NamedConnection = e.NamedConnection;
+            if (e.IsReadReplica)
+                to.IsReadReplica = true;
             to.Message = to.Command.LeftPart(' ');
             to.NamedArgs = new();
             foreach (IDbDataParameter p in e.Command.Parameters)
@@ -1352,6 +1354,10 @@ public class DiagnosticEntry
     /// The OrmLite named connection the command was run on, null for the default connection
     /// </summary>
     public string? NamedConnection { get; set; }
+    /// <summary>
+    /// Whether the command was run on a read replica
+    /// </summary>
+    public bool? IsReadReplica { get; set; }
     public string? UserAuthId { get; set; }
     public string? SessionId { get; set; }
     /// <summary>

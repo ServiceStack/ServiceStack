@@ -852,6 +852,8 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         };
     }
 
+    public virtual string ToReadOnlySessionStatement(bool readOnly) => null;
+
     public virtual void InitConnection(IDbConnection dbConn)
     {
         if (dbConn is OrmLiteConnection ormLiteConn)

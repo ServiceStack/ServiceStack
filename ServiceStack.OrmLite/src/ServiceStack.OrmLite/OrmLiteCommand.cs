@@ -58,9 +58,13 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
 
     private bool CanRetry => !SkipRetry && DialectProvider.RetryPolicy != null;
 
-    public int ExecuteNonQuery() => !CanRetry
-        ? ExecuteNonQueryOnce()
-        : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteNonQueryOnce);
+    public int ExecuteNonQuery()
+    {
+        dbConn.OnExecute(this, isNonQuery: true);
+        return !CanRetry
+            ? ExecuteNonQueryOnce()
+            : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteNonQueryOnce);
+    }
 
     private int ExecuteNonQueryOnce()
     {
@@ -85,9 +89,13 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         }
     }
 
-    public IDataReader ExecuteReader() => !CanRetry
-        ? ExecuteReaderOnce()
-        : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteReaderOnce);
+    public IDataReader ExecuteReader()
+    {
+        dbConn.OnExecute(this, isNonQuery: false);
+        return !CanRetry
+            ? ExecuteReaderOnce()
+            : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteReaderOnce);
+    }
 
     private IDataReader ExecuteReaderOnce()
     {
@@ -97,9 +105,13 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         return ret;
     }
 
-    public IDataReader ExecuteReader(CommandBehavior behavior) => !CanRetry
-        ? ExecuteReaderOnce(behavior)
-        : OrmLiteRetryExec.Execute(this, DialectProvider, () => ExecuteReaderOnce(behavior));
+    public IDataReader ExecuteReader(CommandBehavior behavior)
+    {
+        dbConn.OnExecute(this, isNonQuery: false);
+        return !CanRetry
+            ? ExecuteReaderOnce(behavior)
+            : OrmLiteRetryExec.Execute(this, DialectProvider, () => ExecuteReaderOnce(behavior));
+    }
 
     private IDataReader ExecuteReaderOnce(CommandBehavior behavior)
     {
@@ -109,9 +121,13 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         return ret;
     }
 
-    public object? ExecuteScalar() => !CanRetry
-        ? ExecuteScalarOnce()
-        : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteScalarOnce);
+    public object? ExecuteScalar()
+    {
+        dbConn.OnExecute(this, isNonQuery: false);
+        return !CanRetry
+            ? ExecuteScalarOnce()
+            : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteScalarOnce);
+    }
 
     private object? ExecuteScalarOnce()
     {

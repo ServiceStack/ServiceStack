@@ -74,6 +74,12 @@ public interface IOrmLiteDialectProvider
     bool SupportsRetries { get; }
 
     /// <summary>
+    /// The statement that makes the rest of a connection's session read-only, or read-write again, or null when the
+    /// database doesn't have one, e.g. SQL Server, whose read-only connections OrmLite checks instead
+    /// </summary>
+    string ToReadOnlySessionStatement(bool readOnly);
+
+    /// <summary>
     /// Whether an error of the driver is temporary, and if it is, whether the database confirmed the statement
     /// wasn't applied
     /// </summary>

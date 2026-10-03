@@ -1012,7 +1012,9 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
     /// </summary>
     public IDbConnection GetQueryDb(Type fromType, IRequest? req = null)
     {
-        if (!UseReadReplica)
+        var useReadReplica = (req?.Dto?.GetType().FirstAttribute<ReadReplicaAttribute>()
+            ?? fromType.FirstAttribute<ReadReplicaAttribute>())?.Enabled ?? UseReadReplica;
+        if (!useReadReplica)
             return GetDb(fromType, req);
 
         var namedConnection = GetDbNamedConnection(fromType, req);

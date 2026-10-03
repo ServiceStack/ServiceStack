@@ -35,6 +35,7 @@ public static class Keywords
     public const string Route = "__route";
     public const string InvokeVerb = "__verb";
     public const string DbInfo = "__dbinfo";
+    public const string DbConnections = "__dbconnections"; // the DB connections opened for a request
     public const string CacheInfo = "__cacheinfo";
     public const string ApiKey = "__apikey";
     public const string Session = "__session";

@@ -299,6 +299,7 @@ internal static class OrmLiteRetryExec
     // Only the statements of a dialect with a policy create the closures of a retry
     internal static Task<int> ExecNonQueryWithRetryAsync(this IDbCommand dbCmd, CancellationToken token)
     {
+        (dbCmd as OrmLiteCommand)?.OrmLiteConnection.OnExecute(dbCmd, isNonQuery: true);
         var dialect = dbCmd.GetDialectProvider();
         return dialect.RetryPolicy == null
             ? dialect.ExecuteNonQueryAsync(dbCmd, token)
@@ -310,6 +311,7 @@ internal static class OrmLiteRetryExec
 
     internal static Task<IDataReader> ExecReaderWithRetryAsync(this IDbCommand dbCmd, CancellationToken token)
     {
+        (dbCmd as OrmLiteCommand)?.OrmLiteConnection.OnExecute(dbCmd, isNonQuery: false);
         var dialect = dbCmd.GetDialectProvider();
         return dialect.RetryPolicy == null
             ? dialect.ExecuteReaderAsync(dbCmd, token)
@@ -321,6 +323,7 @@ internal static class OrmLiteRetryExec
 
     internal static Task<object> ExecScalarWithRetryAsync(this IDbCommand dbCmd, CancellationToken token)
     {
+        (dbCmd as OrmLiteCommand)?.OrmLiteConnection.OnExecute(dbCmd, isNonQuery: false);
         var dialect = dbCmd.GetDialectProvider();
         return dialect.RetryPolicy == null
             ? dialect.ExecuteScalarAsync(dbCmd, token)

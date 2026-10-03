@@ -303,19 +303,30 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended, IDbReadOnl
     public OrmLiteConnectionFactory ReadReplica { get; set; }
 
     /// <summary>
-    /// Register a read replica of this connection, which uses its dialect. OpenReadOnlyDbConnection() opens it.
+    /// Open this connection when its read replica can't be opened, so reads keep working while it's unavailable,
+    /// which is logged as a warning
     /// </summary>
-    public virtual void RegisterReadReplica(string connectionString) =>
+    public bool ReadReplicaFallback { get; set; }
+
+    /// <summary>
+    /// Register a read replica of this connection, which uses its dialect. OpenReadOnlyDbConnection() opens it, or this
+    /// connection when it can't be opened and fallbackToPrimary.
+    /// </summary>
+    public virtual void RegisterReadReplica(string connectionString, bool fallbackToPrimary = false)
+    {
         ReadReplica = CreateReadReplica(this, connectionString);
+        ReadReplicaFallback = fallbackToPrimary;
+    }
 
     /// <summary>
     /// Register a read replica of a named connection, which uses its dialect. OpenReadOnlyDbConnection(namedConnection)
-    /// opens it.
+    /// opens it, or the named connection when it can't be opened and fallbackToPrimary.
     /// </summary>
-    public virtual void RegisterReadReplica(string namedConnection, string connectionString)
+    public virtual void RegisterReadReplica(string namedConnection, string connectionString, bool fallbackToPrimary = false)
     {
         var primary = GetNamedConnection(namedConnection);
         primary.ReadReplica = CreateReadReplica(primary, connectionString);
+        primary.ReadReplicaFallback = fallbackToPrimary;
     }
 
     private static OrmLiteConnectionFactory CreateReadReplica(OrmLiteConnectionFactory primary, string connectionString) =>
@@ -324,11 +335,6 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended, IDbReadOnl
             ConnectionFilter = primary.ConnectionFilter,
             OnDispose = primary.OnDispose,
         };
-
-    // A connection of this read replica of a named connection, which has its name
-    private IDbConnection CreateReplicaConnection(string namedConnection) => AutoDisposeConnection
-        ? DialectProvider.CreateOrmLiteConnection(this, namedConnection)
-        : CreateDbConnection();
 
     private static OrmLiteConnectionFactory GetNamedConnection(string namedConnection)
     {
@@ -339,62 +345,115 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended, IDbReadOnl
             : throw new KeyNotFoundException("No factory registered is named " + namedConnection);
     }
 
+    // A read-only connection of this primary or replica, with the name of its named connection. Shared connections,
+    // e.g. SQLite :memory:, are the same connection for every open, so they aren't made read-only.
+    private IDbConnection CreateReadOnlyConnection(string namedConnection, bool isReplica)
+    {
+        if (ConnectionString == null)
+            throw new ArgumentNullException("ConnectionString", "ConnectionString must be set");
+        if (!AutoDisposeConnection)
+            return OrmLiteConnection.OpenShared();
+
+        var connection = DialectProvider.CreateOrmLiteConnection(this, namedConnection);
+        connection.IsReadOnly = true;
+        connection.IsReadReplica = isReplica;
+        return connection;
+    }
+
+    private static IDbConnection OpenReadOnly(OrmLiteConnectionFactory primary, string namedConnection,
+        Action<IDbConnection> configure)
+    {
+        if (primary.ReadReplica is { } replica)
+        {
+            try
+            {
+                return OpenOrDispose(replica.CreateReadOnlyConnection(namedConnection, isReplica: true), configure);
+            }
+            catch (Exception e) when (primary.ReadReplicaFallback)
+            {
+                LogReplicaFallback(namedConnection, e);
+            }
+        }
+        return OpenOrDispose(primary.CreateReadOnlyConnection(namedConnection, isReplica: false), configure);
+    }
+
+    private static async Task<IDbConnection> OpenReadOnlyAsync(OrmLiteConnectionFactory primary, string namedConnection,
+        Action<IDbConnection> configure, CancellationToken token)
+    {
+        if (primary.ReadReplica is { } replica)
+        {
+            try
+            {
+                return await OpenOrDisposeAsync(replica.CreateReadOnlyConnection(namedConnection, isReplica: true),
+                    replica.DialectProvider, configure, token).ConfigAwait();
+            }
+            catch (Exception e) when (primary.ReadReplicaFallback && !token.IsCancellationRequested)
+            {
+                LogReplicaFallback(namedConnection, e);
+            }
+        }
+        return await OpenOrDisposeAsync(primary.CreateReadOnlyConnection(namedConnection, isReplica: false),
+            primary.DialectProvider, configure, token).ConfigAwait();
+    }
+
+    private static void LogReplicaFallback(string namedConnection, Exception e) =>
+        OrmLiteLog.Log.Warn((namedConnection != null ? $"The read replica of {namedConnection}" : "The read replica") +
+            " can't be opened, reading from its primary instead: " + e.Message, e);
+
     /// <summary>
-    /// Open a connection for queries that can read from a replica: its read replica when one is registered, otherwise
-    /// this connection. A replica can be behind the primary, so read what was just written from the primary.
+    /// Open a read-only connection for queries that can read from a replica: its read replica when one is registered,
+    /// otherwise this connection. Statements that write are rejected on both, so writes fail the same way with and
+    /// without a replica. A replica can be behind the primary, so read what was just written from the primary.
     /// </summary>
     public virtual IDbConnection OpenReadOnlyDbConnection() => OpenReadOnlyDbConnection((Action<IDbConnection>)null);
 
     /// <summary>
-    /// Open a connection for queries that can read from a replica, configured before it's opened
+    /// Open a read-only connection for queries that can read from a replica, configured before it's opened
     /// </summary>
     public virtual IDbConnection OpenReadOnlyDbConnection(Action<IDbConnection> configure) =>
-        ReadReplica != null ? ReadReplica.OpenDbConnection(configure) : OpenDbConnection(configure);
+        OpenReadOnly(this, null, configure);
 
     /// <summary>
-    /// Open a connection for queries that can read from a replica: the named connection's read replica when one is
-    /// registered, otherwise the named connection
+    /// Open a read-only connection for queries that can read from a replica: the named connection's read replica when
+    /// one is registered, otherwise the named connection
     /// </summary>
     public virtual IDbConnection OpenReadOnlyDbConnection(string namedConnection) =>
         OpenReadOnlyDbConnection(namedConnection, null);
 
     /// <summary>
-    /// Open a connection of a named connection for queries that can read from a replica, configured before it's opened
+    /// Open a read-only connection of a named connection for queries that can read from a replica, configured before
+    /// it's opened
     /// </summary>
     public virtual IDbConnection OpenReadOnlyDbConnection(string namedConnection, Action<IDbConnection> configure) =>
-        GetNamedConnection(namedConnection).ReadReplica is { } replica
-            ? OpenOrDispose(replica.CreateReplicaConnection(namedConnection), configure)
-            : OpenDbConnection(namedConnection, configure);
+        OpenReadOnly(GetNamedConnection(namedConnection), namedConnection, configure);
 
     /// <summary>
-    /// Open a connection for queries that can read from a replica: its read replica when one is registered, otherwise
-    /// this connection
+    /// Open a read-only connection for queries that can read from a replica: its read replica when one is registered,
+    /// otherwise this connection
     /// </summary>
     public virtual Task<IDbConnection> OpenReadOnlyDbConnectionAsync(CancellationToken token = default) =>
         OpenReadOnlyDbConnectionAsync((Action<IDbConnection>)null, token);
 
     /// <summary>
-    /// Open a connection for queries that can read from a replica, configured before it's opened
+    /// Open a read-only connection for queries that can read from a replica, configured before it's opened
     /// </summary>
     public virtual Task<IDbConnection> OpenReadOnlyDbConnectionAsync(Action<IDbConnection> configure,
-        CancellationToken token = default) => ReadReplica != null
-        ? ReadReplica.OpenDbConnectionAsync(configure, token)
-        : OpenDbConnectionAsync(configure, token);
+        CancellationToken token = default) => OpenReadOnlyAsync(this, null, configure, token);
 
     /// <summary>
-    /// Open a connection for queries that can read from a replica: the named connection's read replica when one is
-    /// registered, otherwise the named connection
+    /// Open a read-only connection for queries that can read from a replica: the named connection's read replica when
+    /// one is registered, otherwise the named connection
     /// </summary>
     public virtual Task<IDbConnection> OpenReadOnlyDbConnectionAsync(string namedConnection, CancellationToken token = default) =>
         OpenReadOnlyDbConnectionAsync(namedConnection, null, token);
 
     /// <summary>
-    /// Open a connection of a named connection for queries that can read from a replica, configured before it's opened
+    /// Open a read-only connection of a named connection for queries that can read from a replica, configured before
+    /// it's opened
     /// </summary>
     public virtual Task<IDbConnection> OpenReadOnlyDbConnectionAsync(string namedConnection, Action<IDbConnection> configure,
-        CancellationToken token = default) => GetNamedConnection(namedConnection).ReadReplica is { } replica
-        ? OpenOrDisposeAsync(replica.CreateReplicaConnection(namedConnection), replica.DialectProvider, configure, token)
-        : OpenDbConnectionAsync(namedConnection, configure, token);
+        CancellationToken token = default) =>
+        OpenReadOnlyAsync(GetNamedConnection(namedConnection), namedConnection, configure, token);
 }
 
 public static class OrmLiteConnectionFactoryExtensions
@@ -619,14 +678,16 @@ public static class OrmLiteConnectionFactoryExtensions
     /// <summary>
     /// Register a read replica of the main connection, which OpenReadOnlyDbConnection() opens
     /// </summary>
-    public static void RegisterReadReplica(this IDbConnectionFactory dbFactory, string connectionString) =>
-        ((OrmLiteConnectionFactory)dbFactory).RegisterReadReplica(connectionString);
+    public static void RegisterReadReplica(this IDbConnectionFactory dbFactory, string connectionString,
+        bool fallbackToPrimary = false) =>
+        ((OrmLiteConnectionFactory)dbFactory).RegisterReadReplica(connectionString, fallbackToPrimary);
 
     /// <summary>
     /// Register a read replica of a named connection, which OpenReadOnlyDbConnection(namedConnection) opens
     /// </summary>
-    public static void RegisterReadReplica(this IDbConnectionFactory dbFactory, string namedConnection, string connectionString) =>
-        ((OrmLiteConnectionFactory)dbFactory).RegisterReadReplica(namedConnection, connectionString);
+    public static void RegisterReadReplica(this IDbConnectionFactory dbFactory, string namedConnection,
+        string connectionString, bool fallbackToPrimary = false) =>
+        ((OrmLiteConnectionFactory)dbFactory).RegisterReadReplica(namedConnection, connectionString, fallbackToPrimary);
 
     /// <summary>
     /// Open a connection for queries that can read from a replica: the read replica when one is registered,

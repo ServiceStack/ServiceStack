@@ -1191,6 +1191,10 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         return Unwrap(db).OpenAsync(token);
     }
 
+    public override string ToReadOnlySessionStatement(bool readOnly) => readOnly
+        ? "SET SESSION CHARACTERISTICS AS TRANSACTION READ ONLY"
+        : "SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE";
+
     public override Task<IDataReader> ExecuteReaderAsync(IDbCommand cmd, CancellationToken token = default)
     {
         return Unwrap(cmd).ExecuteReaderAsync(token).Then(x => (IDataReader)x);

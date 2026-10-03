@@ -156,7 +156,7 @@ export const Profiling = {
                      v-href="identifierHref(k, row[k])" @click.stop
                      :title="row[k]" class="text-blue-600 hover:underline">{{ valueFmt(row[k], k) }}</a>
                   <span v-else-if="k === 'command'" :title="row[k]" class="font-mono text-xs">{{ sqlFmt(row[k]) }}</span>
-                  <span v-else-if="k === 'namedConnection' && !row[k]" class="text-gray-400">default</span>
+                  <span v-else-if="k === 'namedConnection'" :class="row[k] ? '' : 'text-gray-400'">{{ row[k] || 'default' }}<span v-if="row.isReadReplica" class="ml-1 text-xs text-indigo-600">replica</span></span>
                   <span v-else :title="apiValueTitle(row[k],k)">{{ valueFmt(row[k], k) }}</span>
                 </td>
               </tr>
@@ -229,7 +229,7 @@ export const Profiling = {
                       </div>
                       <div v-if="selected.command && selected.source === 'OrmLite'" class="min-w-0">
                         <dt class="text-xs text-gray-500">Connection</dt>
-                        <dd class="mt-0.5 text-gray-700">{{ selected.namedConnection || 'default' }}</dd>
+                        <dd class="mt-0.5 text-gray-700">{{ selected.namedConnection || 'default' }}<span v-if="selected.isReadReplica" class="ml-1 text-xs text-indigo-600">replica</span></dd>
                       </div>
                       <div v-if="selected.operation" class="min-w-0">
                         <dt class="text-xs text-gray-500">Operation</dt>

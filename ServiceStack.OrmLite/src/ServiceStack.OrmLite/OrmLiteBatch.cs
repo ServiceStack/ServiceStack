@@ -71,6 +71,7 @@ internal sealed class OrmLiteBatch : IDisposable
     // Copies the statement that's prepared on the command, which is then prepared for the next row
     private void AddCommand(IDbCommand dbCmd)
     {
+        (dbCmd as OrmLiteCommand)?.OrmLiteConnection.OnExecute(dbCmd, isNonQuery: true);
         OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
 
         if (Log.IsDebugEnabled)

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -163,5 +164,131 @@ public class ReadReplicaUseCases
         // FilterSets are used by the replica's connections the same way
         db.UseFilters(DatabaseFilters.For("primary"));
         Assert.That(db.Select<ReplicaItem>(), Is.Empty);
+    }
+
+    [Test]
+    public void Read_only_connections_reject_writes_on_SQLite()
+    {
+        var dbFactory = new OrmLiteConnectionFactory(CreateDatabase("primary"), SqliteDialect.Provider,
+            setGlobalDialectProvider: false);
+
+        using (var db = dbFactory.OpenReadOnlyDbConnection())
+        {
+            Assert.That(DatabaseOf(db), Is.EqualTo("primary"));
+            Assert.Catch(() => db.Insert(new ReplicaItem { Id = 2, Database = "written" }));
+        }
+
+        // The pooled connection is read-write again
+        using (var db = dbFactory.OpenDbConnection())
+        {
+            db.Insert(new ReplicaItem { Id = 2, Database = "written" });
+            Assert.That(db.Count<ReplicaItem>(), Is.EqualTo(2));
+        }
+    }
+
+    [Test]
+    public void Connections_say_if_theyre_read_only_and_to_a_replica()
+    {
+        var dbFactory = new OrmLiteConnectionFactory(CreateDatabase("primary"), SqliteDialect.Provider,
+            setGlobalDialectProvider: false);
+        dbFactory.RegisterReadReplica(CreateDatabase("replica"));
+
+        using (var db = (OrmLiteConnection)dbFactory.OpenReadOnlyDbConnection())
+        {
+            Assert.That(db.IsReadOnly, Is.True);
+            Assert.That(db.IsReadReplica, Is.True);
+            Assert.That(((OrmLiteConnection)db.WithoutFilters()).IsReadOnly, Is.True);
+        }
+        using (var db = (OrmLiteConnection)dbFactory.OpenDbConnection())
+        {
+            Assert.That(db.IsReadOnly, Is.False);
+            Assert.That(db.IsReadReplica, Is.False);
+        }
+    }
+
+    [Test]
+    public async Task Falls_back_to_the_primary_when_the_replica_cant_be_opened()
+    {
+        // A database that doesn't exist, which SQLite would otherwise create
+        var missing = $"Data Source={Path.Combine(Path.GetTempPath(), "missing-" + Guid.NewGuid().ToString("N") + ".sqlite")};Mode=ReadOnly";
+        var dbFactory = new OrmLiteConnectionFactory(CreateDatabase("primary"), SqliteDialect.Provider,
+            setGlobalDialectProvider: false);
+
+        dbFactory.RegisterReadReplica(missing);
+        Assert.Catch(() => dbFactory.OpenReadOnlyDbConnection());
+
+        dbFactory.RegisterReadReplica(missing, fallbackToPrimary: true);
+        using (var db = (OrmLiteConnection)dbFactory.OpenReadOnlyDbConnection())
+        {
+            Assert.That(DatabaseOf(db), Is.EqualTo("primary"));
+            Assert.That(db.IsReadReplica, Is.False);
+            Assert.That(db.IsReadOnly, Is.True); // still can't write
+        }
+        using (var db = await dbFactory.OpenReadOnlyDbConnectionAsync())
+            Assert.That(DatabaseOf(db), Is.EqualTo("primary"));
+
+        // Named connections too
+        var reporting = RegisterConnection(dbFactory, CreateDatabase("reporting"));
+        dbFactory.RegisterReadReplica(reporting, missing, fallbackToPrimary: true);
+        using (var db = dbFactory.OpenReadOnlyDbConnection(reporting))
+            Assert.That(DatabaseOf(db), Is.EqualTo("reporting"));
+    }
+
+    [Test]
+    public void Read_replica_connections_reject_writes()
+    {
+        // e.g. in development, where the replica is another database that isn't read-only
+        var dbFactory = new OrmLiteConnectionFactory(CreateDatabase("primary"), SqliteDialect.Provider,
+            setGlobalDialectProvider: false);
+        dbFactory.RegisterReadReplica(CreateDatabase("replica"));
+
+        using (var db = dbFactory.OpenReadOnlyDbConnection())
+        {
+            Assert.That(DatabaseOf(db), Is.EqualTo("replica"));
+            Assert.Catch(() => db.Insert(new ReplicaItem { Id = 2, Database = "written" }));
+        }
+        using (var db = dbFactory.OpenDbConnection())
+        {
+            db.Insert(new ReplicaItem { Id = 2, Database = "written" });
+            Assert.That(db.Count<ReplicaItem>(), Is.EqualTo(2));
+        }
+    }
+
+    class DiagnosticObserver : IObserver<KeyValuePair<string, object>>
+    {
+        public readonly List<OrmLiteDiagnosticEvent> Events = [];
+        public void OnNext(KeyValuePair<string, object> e)
+        {
+            if (e.Value is OrmLiteDiagnosticEvent { Command: not null } ormLiteEvent)
+                lock (Events) Events.Add(ormLiteEvent);
+        }
+        public void OnCompleted() {}
+        public void OnError(Exception error) {}
+    }
+
+    [Test]
+    public void Diagnostic_events_say_if_the_command_ran_on_a_read_replica()
+    {
+        var dbFactory = new OrmLiteConnectionFactory(CreateDatabase("primary"), SqliteDialect.Provider,
+            setGlobalDialectProvider: false);
+        dbFactory.RegisterReadReplica(CreateDatabase("replica"));
+
+        var observer = new DiagnosticObserver();
+        using (Diagnostics.OrmLite.Subscribe(observer))
+        {
+            using (var db = dbFactory.OpenReadOnlyDbConnection())
+                db.Select<ReplicaItem>(x => x.Database == "from-replica");
+            using (var db = dbFactory.OpenDbConnection())
+                db.Select<ReplicaItem>(x => x.Database == "from-primary");
+        }
+
+        List<OrmLiteDiagnosticEvent> events;
+        lock (observer.Events) events = observer.Events.ToList();
+        var replica = events.Where(x => x.Command.Parameters.Cast<IDbDataParameter>().Any(p => "from-replica".Equals(p.Value))).ToList();
+        var primary = events.Where(x => x.Command.Parameters.Cast<IDbDataParameter>().Any(p => "from-primary".Equals(p.Value))).ToList();
+        Assert.That(replica, Is.Not.Empty);
+        Assert.That(replica.All(x => x.IsReadReplica));
+        Assert.That(primary, Is.Not.Empty);
+        Assert.That(primary.All(x => !x.IsReadReplica));
     }
 }

@@ -220,6 +220,10 @@ public class OrmLiteDiagnosticEvent : DiagnosticEvent
     /// The named connection the command was run on, or null for the default connection
     /// </summary>
     public string? NamedConnection { get; set; }
+    /// <summary>
+    /// Whether the command was run on a read replica
+    /// </summary>
+    public bool IsReadReplica { get; set; }
     public IDbConnection? Connection { get; set; }
     public IDbCommand? Command { get; set; }
     public IsolationLevel? IsolationLevel { get; set; }

@@ -97,8 +97,9 @@ as a whole. Remaining:
 ### 4.2 More Read Replicas (S)
 `dbFactory.OpenReadOnlyDbConnection()` opens the read replica of a connection registered with `AddReadReplica()`, or the
 primary when it doesn't have one. ServiceStack Services read from it with `ReadDb`, `Request.OpenReadOnlyDb()` and
-AutoQuery's `UseReadReplica`. Remaining:
-- Read your own writes: route a request's reads to the primary after it writes, e.g. for a few seconds per user
+AutoQuery's `UseReadReplica`. Read-only connections can't write, a request reads from the primary once it writes,
+and a replica that can't be opened can fall back to its primary. Remaining:
+- Read your own writes across requests: read from the primary for a few seconds after a user writes
 
 ---
 

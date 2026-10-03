@@ -1123,6 +1123,12 @@ public abstract partial class ServiceStackHost
         if (req == null || db == null)
             return db;
 
+        // Kept so the request's reads can see what it wrote, see HasDbWrites()
+        if (req.Items.TryGetValue(Keywords.DbConnections, out var existing) && existing is List<IDbConnection> connections)
+            connections.Add(db);
+        else
+            req.Items[Keywords.DbConnections] = new List<IDbConnection> { db };
+
         try
         {
             OnDbConnectionRequest(db, req);
@@ -1243,7 +1249,25 @@ public abstract partial class ServiceStackHost
     }
 
     public virtual IDbConnection GetReadOnlyDbConnection(IRequest req, Action<IDbConnection> configure) =>
-        ApplyDbConnectionRequestFilters(OpenReadOnlyDbConnection(req, configure), req);
+        HasDbWrites(req)
+            ? GetDbConnection(req, configure)
+            : ApplyDbConnectionRequestFilters(OpenReadOnlyDbConnection(req, configure), req);
+
+    /// <summary>
+    /// Whether a connection opened for the request has written, after which its reads use the primary instead of a
+    /// read replica, so they see what it wrote
+    /// </summary>
+    public virtual bool HasDbWrites(IRequest req)
+    {
+        if (req?.GetItem(Keywords.DbConnections) is not List<IDbConnection> connections)
+            return false;
+        foreach (var db in connections)
+        {
+            if (db is IHasDbWrites { HasWrites: true })
+                return true;
+        }
+        return false;
+    }
 
     // The read replica of the connection OpenDbConnection(req) opens
     private IDbConnection OpenReadOnlyDbConnection(IRequest req, Action<IDbConnection> configure)
@@ -1284,7 +1308,9 @@ public abstract partial class ServiceStackHost
     }
 
     public virtual async Task<IDbConnection> GetReadOnlyDbConnectionAsync(IRequest req, Action<IDbConnection> configure) =>
-        ApplyDbConnectionRequestFilters(await OpenReadOnlyDbConnectionAsync(req, configure).ConfigAwait(), req);
+        HasDbWrites(req)
+            ? await GetDbConnectionAsync(req, configure).ConfigAwait()
+            : ApplyDbConnectionRequestFilters(await OpenReadOnlyDbConnectionAsync(req, configure).ConfigAwait(), req);
 
     private async Task<IDbConnection> OpenReadOnlyDbConnectionAsync(IRequest req, Action<IDbConnection> configure)
     {
@@ -1321,7 +1347,7 @@ public abstract partial class ServiceStackHost
                 hasTag.Tag = connName;
         }
 
-        if (Container.TryResolve<IDbConnectionFactory>() is not IDbReadOnlyConnectionFactory dbFactory)
+        if (HasDbWrites(req) || Container.TryResolve<IDbConnectionFactory>() is not IDbReadOnlyConnectionFactory dbFactory)
             return GetDbConnection(namedConnection, req);
         return ApplyDbConnectionRequestFilters(namedConnection == null
             ? dbFactory.OpenReadOnlyDbConnection(withTag)

@@ -30,11 +30,12 @@ public class OrmLiteConfigurationBuilder(IDbConnectionFactory dbFactory)
 
     /// <summary>
     /// Register a read replica of the main connection, e.g. a PostgreSQL standby, which uses its dialect and
-    /// dbFactory.OpenReadOnlyDbConnection() opens
+    /// dbFactory.OpenReadOnlyDbConnection() opens, or the main connection when it can't be opened and fallbackToPrimary
     /// </summary>
-    public OrmLiteConfigurationBuilder AddReadReplica(string? connectionString)
+    public OrmLiteConfigurationBuilder AddReadReplica(string? connectionString, bool fallbackToPrimary = false)
     {
-        DbFactory.RegisterReadReplica(connectionString ?? throw new ArgumentNullException(nameof(connectionString)));
+        DbFactory.RegisterReadReplica(connectionString ?? throw new ArgumentNullException(nameof(connectionString)),
+            fallbackToPrimary);
         return this;
     }
 
@@ -42,10 +43,11 @@ public class OrmLiteConfigurationBuilder(IDbConnectionFactory dbFactory)
     /// Register a read replica of a named connection, which uses its dialect and
     /// dbFactory.OpenReadOnlyDbConnection(namedConnection) opens
     /// </summary>
-    public OrmLiteConfigurationBuilder AddReadReplica(string namedConnection, string? connectionString)
+    public OrmLiteConfigurationBuilder AddReadReplica(string namedConnection, string? connectionString,
+        bool fallbackToPrimary = false)
     {
         DbFactory.RegisterReadReplica(namedConnection,
-            connectionString ?? throw new ArgumentNullException(nameof(connectionString)));
+            connectionString ?? throw new ArgumentNullException(nameof(connectionString)), fallbackToPrimary);
         return this;
     }
 }

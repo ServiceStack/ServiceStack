@@ -31,6 +31,13 @@ public class ReplicaRow
 
 public class QueryReplicaRows : QueryDb<ReplicaRow> {}
 
+[ReadReplica(false)] // e.g. an API that has to read what was just written
+public class QueryPrimaryReplicaRows : QueryDb<ReplicaRow> {}
+
+public class WriteWithReadDb : IPost, IReturnVoid {}
+
+public class WriteThenRead : IPost, IReturn<ReplicaDatabasesResponse> {}
+
 /// <summary>
 /// The same table in the reporting database
 /// </summary>
@@ -81,6 +88,28 @@ public class ReplicaServices : Service
             OpenReadOnlyDb = Databases(openReadOnlyDb),
             OpenReadOnlyDbAsync = Databases(openReadOnlyDbAsync),
         };
+    }
+
+    public void Any(WriteWithReadDb request) => ReadDb.Insert(new ReplicaRow { Database = "written" });
+
+    // Once the request writes, its reads use the primary to see what it wrote
+    public object Any(WriteThenRead request)
+    {
+        var before = Databases(ReadDb);
+        var id = (int)Db.Insert(new ReplicaRow { Database = "written" }, selectIdentity: true);
+        try
+        {
+            using var openReadOnlyDb = Request.OpenReadOnlyDb();
+            return new ReplicaDatabasesResponse {
+                Db = before,
+                ReadDb = Databases(ReadDb),
+                OpenReadOnlyDb = Databases(openReadOnlyDb),
+            };
+        }
+        finally
+        {
+            Db.DeleteById<ReplicaRow>(id);
+        }
     }
 
     public object Any(GetOpenedReportingDatabases request)
@@ -270,5 +299,47 @@ public class ReadReplicaAppHostTests
         // Filters can tell which database they're configuring
         lock (ConfiguredConnections)
             Assert.That(ConfiguredConnections, Is.EqualTo(new[] { Reporting, Reporting, Reporting }));
+    }
+
+    [Test]
+    public void ReadDb_cant_write()
+    {
+        using var client = CreateClient(1);
+        Assert.Throws<WebServiceException>(() => client.Post(new WriteWithReadDb()));
+        using var replica = dbFactory.ReadReplica.OpenDbConnection();
+        Assert.That(replica.Select<ReplicaRow>(x => x.Database == "written"), Is.Empty);
+    }
+
+    [Test]
+    public void Reads_use_the_primary_after_the_request_writes()
+    {
+        using var client = CreateClient(1);
+        var response = client.Post(new WriteThenRead());
+        Assert.That(response.Db, Is.EqualTo(new[] { "replica" })); // ReadDb before the write
+        Assert.That(response.ReadDb, Is.EquivalentTo(new[] { "primary", "written" }));
+        Assert.That(response.OpenReadOnlyDb, Is.EquivalentTo(new[] { "primary", "written" }));
+    }
+
+    [Test]
+    public void AutoQuery_APIs_can_opt_out_of_the_read_replica()
+    {
+        using var client = CreateClient(1);
+        Assert.That(client.Get(new QueryPrimaryReplicaRows()).Results.Map(x => x.Database), Is.EqualTo(new[] { "primary" }));
+        Assert.That(client.Get(new QueryReplicaRows()).Results.Map(x => x.Database), Is.EqualTo(new[] { "replica" }));
+    }
+
+    [Test]
+    public void Profiling_says_if_a_command_ran_on_a_read_replica()
+    {
+        using var db = dbFactory.OpenReadOnlyDbConnection();
+        using var cmd = db.CreateCommand();
+        cmd.CommandText = "SELECT 1";
+        var feature = new ProfilerDiagnosticObserver(new ProfilingFeature());
+        Assert.That(feature.ToDiagnosticEntry(new OrmLiteDiagnosticEvent {
+            Command = cmd, IsReadReplica = true,
+        }).IsReadReplica, Is.True);
+        Assert.That(feature.ToDiagnosticEntry(new OrmLiteDiagnosticEvent {
+            Command = cmd,
+        }).IsReadReplica, Is.Null);
     }
 }

@@ -118,6 +118,10 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     /// </summary>
     public override bool SupportsRetries => false;
 
+    public override string ToReadOnlySessionStatement(bool readOnly) => readOnly
+        ? "PRAGMA query_only = ON"
+        : "PRAGMA query_only = OFF";
+
     protected virtual bool ShouldReturnOnInsert(ModelDefinition modelDef, FieldDefinition fieldDef) =>
         fieldDef.ReturnOnInsert || (fieldDef.IsPrimaryKey && fieldDef.AutoIncrement && HasInsertReturnValues(modelDef));
 
