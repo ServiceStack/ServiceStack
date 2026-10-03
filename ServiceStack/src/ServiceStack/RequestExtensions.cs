@@ -21,6 +21,35 @@ namespace ServiceStack;
 
 public static class RequestExtensions
 {
+    /// <summary>
+    /// Open the DB connection the Request uses, configured by the AppHost's DbConnectionRequestFilters, e.g. with the
+    /// request's tenant. The caller disposes it:
+    /// <para>using var db = Request.OpenDb();</para>
+    /// </summary>
+    public static System.Data.IDbConnection OpenDb(this IRequest req) =>
+        HostContext.AppHost.GetDbConnection(req ?? throw new ArgumentNullException(nameof(req)));
+
+    /// <summary>
+    /// Open the DB connection the Request uses, configured by the AppHost's DbConnectionRequestFilters
+    /// </summary>
+    public static Task<System.Data.IDbConnection> OpenDbAsync(this IRequest req) =>
+        HostContext.AppHost.GetDbConnectionAsync(req ?? throw new ArgumentNullException(nameof(req)));
+
+    /// <summary>
+    /// Open the DB connection for the Request's queries that can read from a read replica: the read replica of the
+    /// connection it uses, or that connection when it doesn't have one, configured by the AppHost's
+    /// DbConnectionRequestFilters. A replica can be behind the primary, so read what was just written from OpenDb().
+    /// <para>using var db = Request.OpenReadOnlyDb();</para>
+    /// </summary>
+    public static System.Data.IDbConnection OpenReadOnlyDb(this IRequest req) =>
+        HostContext.AppHost.GetReadOnlyDbConnection(req ?? throw new ArgumentNullException(nameof(req)));
+
+    /// <summary>
+    /// Open the DB connection for the Request's queries that can read from a read replica, see OpenReadOnlyDb()
+    /// </summary>
+    public static Task<System.Data.IDbConnection> OpenReadOnlyDbAsync(this IRequest req) =>
+        HostContext.AppHost.GetReadOnlyDbConnectionAsync(req ?? throw new ArgumentNullException(nameof(req)));
+
     public static AuthUserSession ReloadSession(this IRequest request)
     {
         return request.GetSession() as AuthUserSession;

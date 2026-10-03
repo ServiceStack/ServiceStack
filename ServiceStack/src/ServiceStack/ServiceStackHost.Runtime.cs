@@ -1224,6 +1224,110 @@ public abstract partial class ServiceStackHost
         return await dbExtended.OpenDbConnectionAsync().ConfigAwait();
     }
 
+    /// <summary>
+    /// The DB connection for queries of a Request that can read from a read replica, e.g. a PostgreSQL standby. It's
+    /// the read replica of the connection <see cref="GetDbConnection(IRequest)"/> returns, or that connection when it
+    /// doesn't have one, with the same <see cref="DbConnectionRequestFilters"/> applied.
+    /// A replica can be behind the primary, so read what the request writes from GetDbConnection().
+    /// </summary>
+    public virtual IDbConnection GetReadOnlyDbConnection(IRequest req = null)
+    {
+        void withTag(IDbConnection db)
+        {
+            var tagName = req?.Dto?.GetType().Name ?? req?.PathInfo;
+            if (tagName != null && db is IHasTag { Tag: null } hasTag)
+                hasTag.Tag = tagName;
+        }
+
+        return GetReadOnlyDbConnection(req, withTag);
+    }
+
+    public virtual IDbConnection GetReadOnlyDbConnection(IRequest req, Action<IDbConnection> configure) =>
+        ApplyDbConnectionRequestFilters(OpenReadOnlyDbConnection(req, configure), req);
+
+    // The read replica of the connection OpenDbConnection(req) opens
+    private IDbConnection OpenReadOnlyDbConnection(IRequest req, Action<IDbConnection> configure)
+    {
+        if (Container.TryResolve<IDbConnectionFactory>() is not IDbReadOnlyConnectionFactory dbFactory)
+            return OpenDbConnection(req, configure);
+
+        if (req != null)
+        {
+            if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
+            {
+                // A connection string doesn't have a read replica
+                if (connInfo.ConnectionString != null)
+                    return OpenDbConnection(req, configure);
+                if (connInfo.NamedConnection != null)
+                    return dbFactory.OpenReadOnlyDbConnection(connInfo.NamedConnection, configure);
+            }
+            else if (req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>() is { } namedConnectionAttr)
+            {
+                return dbFactory.OpenReadOnlyDbConnection(namedConnectionAttr.Name, configure);
+            }
+        }
+        return dbFactory.OpenReadOnlyDbConnection(configure);
+    }
+
+    /// <summary>
+    /// The DB connection for queries of a Request that can read from a read replica, see GetReadOnlyDbConnection()
+    /// </summary>
+    public virtual async Task<IDbConnection> GetReadOnlyDbConnectionAsync(IRequest req = null)
+    {
+        void withTag(IDbConnection db)
+        {
+            var tagName = req?.Dto?.GetType().Name ?? req?.PathInfo;
+            if (tagName != null && db is IHasTag { Tag: null } hasTag)
+                hasTag.Tag = tagName;
+        }
+        return await GetReadOnlyDbConnectionAsync(req, withTag).ConfigAwait();
+    }
+
+    public virtual async Task<IDbConnection> GetReadOnlyDbConnectionAsync(IRequest req, Action<IDbConnection> configure) =>
+        ApplyDbConnectionRequestFilters(await OpenReadOnlyDbConnectionAsync(req, configure).ConfigAwait(), req);
+
+    private async Task<IDbConnection> OpenReadOnlyDbConnectionAsync(IRequest req, Action<IDbConnection> configure)
+    {
+        if (Container.TryResolve<IDbConnectionFactory>() is not IDbReadOnlyConnectionFactory dbFactory)
+            return await OpenDbConnectionAsync(req, configure).ConfigAwait();
+
+        if (req != null)
+        {
+            if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
+            {
+                if (connInfo.ConnectionString != null)
+                    return await OpenDbConnectionAsync(req, configure).ConfigAwait();
+                if (connInfo.NamedConnection != null)
+                    return await dbFactory.OpenReadOnlyDbConnectionAsync(connInfo.NamedConnection, configure).ConfigAwait();
+            }
+            else if (req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>() is { } namedConnectionAttr)
+            {
+                return await dbFactory.OpenReadOnlyDbConnectionAsync(namedConnectionAttr.Name, configure).ConfigAwait();
+            }
+        }
+        return await dbFactory.OpenReadOnlyDbConnectionAsync(configure).ConfigAwait();
+    }
+
+    /// <summary>
+    /// The named connection's read replica, or the named connection when it doesn't have one, configured by the
+    /// <see cref="DbConnectionRequestFilters"/> when it's for a Request, like GetDbConnection(namedConnection, req)
+    /// </summary>
+    public virtual IDbConnection GetReadOnlyDbConnection(string namedConnection, IRequest req = null)
+    {
+        void withTag(IDbConnection db)
+        {
+            var connName = req?.Dto?.GetType().Name ?? req?.PathInfo;
+            if (connName != null && db is IHasTag { Tag: null } hasTag)
+                hasTag.Tag = connName;
+        }
+
+        if (Container.TryResolve<IDbConnectionFactory>() is not IDbReadOnlyConnectionFactory dbFactory)
+            return GetDbConnection(namedConnection, req);
+        return ApplyDbConnectionRequestFilters(namedConnection == null
+            ? dbFactory.OpenReadOnlyDbConnection(withTag)
+            : dbFactory.OpenReadOnlyDbConnection(namedConnection, withTag), req);
+    }
+
     public virtual IDbConnection GetDbConnection(string namedConnection, IRequest req = null)
     {
         void withTag(IDbConnection db)
@@ -1235,16 +1339,19 @@ public abstract partial class ServiceStackHost
         return GetDbConnection(namedConnection, req, withTag);
     }
 
+    /// <summary>
+    /// Opens the named connection, configured by the <see cref="DbConnectionRequestFilters"/> when it's for a Request.
+    /// Filters can check the connection's OrmLiteConnection.NamedConnection to configure each database differently.
+    /// </summary>
     public virtual IDbConnection GetDbConnection(string namedConnection, IRequest req, Action<IDbConnection> configure)
     {
         var dbFactory = Container.TryResolve<IDbConnectionFactory>();
         if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
             throw new NotSupportedException($"{dbFactory.GetType().Name} does not implement IDbConnectionFactoryExtended");
         
-        if (namedConnection == null) 
-            return dbExtended.OpenDbConnection(configure);
-            
-        return dbExtended.OpenDbConnection(namedConnection, configure);
+        return ApplyDbConnectionRequestFilters(namedConnection == null
+            ? dbExtended.OpenDbConnection(configure)
+            : dbExtended.OpenDbConnection(namedConnection, configure), req);
     }
 
     public virtual async Task<IDbConnection> GetDbConnectionAsync(string namedConnection, IRequest req = null)
@@ -1264,10 +1371,9 @@ public abstract partial class ServiceStackHost
         if (dbFactory is not IDbConnectionFactoryExtended dbExtended)
             throw new NotSupportedException($"{dbFactory.GetType().Name} does not implement IDbConnectionFactoryExtended");
         
-        if (namedConnection == null) 
-            return await dbExtended.OpenDbConnectionAsync(configure).ConfigAwait();
-            
-        return await dbExtended.OpenDbConnectionAsync(namedConnection,configure).ConfigAwait();
+        return ApplyDbConnectionRequestFilters(namedConnection == null
+            ? await dbExtended.OpenDbConnectionAsync(configure).ConfigAwait()
+            : await dbExtended.OpenDbConnectionAsync(namedConnection, configure).ConfigAwait(), req);
     }
 
     public virtual string GetDbNamedConnection(IRequest req, object dto=null)

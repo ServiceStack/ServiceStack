@@ -204,6 +204,12 @@ public class ServiceStackProvider(IHttpRequest request, IResolver resolver = nul
     private IDbConnection db;
     public virtual IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
 
+    private IDbConnection readDb;
+    /// <summary>
+    /// The DB connection for queries that can read from a read replica, configured like Db, see Service.ReadDb
+    /// </summary>
+    public virtual IDbConnection ReadDb => readDb ??= HostContext.AppHost.GetReadOnlyDbConnection(Request);
+
     private IRedisClient redis;
     public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
         
@@ -285,6 +291,7 @@ public class ServiceStackProvider(IHttpRequest request, IResolver resolver = nul
     public virtual void Dispose()
     {
         db?.Dispose();
+        readDb?.Dispose();
         redis?.Dispose();
         messageProducer?.Dispose();
         using (authRepository as IDisposable) {}

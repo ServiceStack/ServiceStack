@@ -80,10 +80,21 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters, IAs
     /// </summary>
     public virtual MemoryCacheClient LocalCache => localCache ??= HostContext.AppHost.GetMemoryCacheClient(Request);
 
-    public virtual IDbConnection OpenDbConnection(string namedConnection) => HostContext.AppHost.GetDbConnection(namedConnection);
+    /// <summary>
+    /// Open a named connection, configured by the AppHost's DbConnectionRequestFilters like Db
+    /// </summary>
+    public virtual IDbConnection OpenDbConnection(string namedConnection) => HostContext.AppHost.GetDbConnection(namedConnection, Request);
 
     private IDbConnection? db;
     public virtual IDbConnection Db => db ??= HostContext.AppHost.GetDbConnection(Request);
+
+    private IDbConnection? readDb;
+    /// <summary>
+    /// The DB connection for queries that can read from a read replica, e.g. reports, lists and dashboards. It's the
+    /// read replica of Db's connection, or the same database when there isn't one, configured by the AppHost's
+    /// DbConnectionRequestFilters like Db. A replica can be behind the primary, so read what was just written from Db.
+    /// </summary>
+    public virtual IDbConnection ReadDb => readDb ??= HostContext.AppHost.GetReadOnlyDbConnection(Request);
 
     private IRedisClient? redis;
     public virtual IRedisClient Redis => redis ??= HostContext.AppHost.GetRedisClient(Request);
@@ -213,6 +224,7 @@ public class Service : IService, IServiceBase, IDisposable, IServiceFilters, IAs
         hasDisposed = true;
         using (authRepository as IDisposable) { }
         db?.Dispose();
+        readDb?.Dispose();
         redis?.Dispose();
         messageProducer?.Dispose();
         RequestContext.Instance.ReleaseDisposables();

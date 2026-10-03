@@ -66,6 +66,11 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
     public bool? EnableWriterLock { get; set; }
     public string UseNamedConnection { get; set; }
     /// <summary>
+    /// Run the queries of AutoQuery APIs on the read replica of their connection, when it has one. AutoQuery CRUD
+    /// APIs write to the primary. A replica can be behind the primary, so a query can miss a row that was just written.
+    /// </summary>
+    public bool UseReadReplica { get; set; }
+    /// <summary>
     /// Whether to create implicit AutoQuery UI references based on field naming conventions
     /// </summary>
     public bool ImplicitReferences { get; set; } = true;
@@ -191,6 +196,7 @@ public partial class AutoQueryFeature : IPlugin, IConfigureServices, IPostConfig
         StartsWithConventions = StartsWithConventions,
         EndsWithConventions = EndsWithConventions,
         UseNamedConnection = UseNamedConnection,
+        UseReadReplica = UseReadReplica,
         EnableWriterLock = EnableWriterLock.GetValueOrDefault(),
     };
 
@@ -721,7 +727,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
     public virtual object Exec<From>(IQueryDb<From> dto)
     {
         SqlExpression<From> q;
-        using var db = AutoQuery.GetDb<From>(Request);
+        using var db = AutoQuery.GetQueryDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
             var reqParams = Request != null
@@ -739,7 +745,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
     public virtual async Task<object> ExecAsync<From>(IQueryDb<From> dto)
     {
         SqlExpression<From> q;
-        using var db = AutoQuery.GetDb<From>(Request);
+        using var db = AutoQuery.GetQueryDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
             var reqParams = Request != null
@@ -757,7 +763,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
     public virtual object Exec<From, Into>(IQueryDb<From, Into> dto)
     {
         SqlExpression<From> q;
-        using var db = AutoQuery.GetDb<From>(Request);
+        using var db = AutoQuery.GetQueryDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
             var reqParams = Request != null
@@ -775,7 +781,7 @@ public abstract partial class AutoQueryServiceBase(IAutoQueryDb autoQuery) : Ser
     public virtual async Task<object> ExecAsync<From, Into>(IQueryDb<From, Into> dto)
     {
         SqlExpression<From> q;
-        using var db = AutoQuery.GetDb<From>(Request);
+        using var db = AutoQuery.GetQueryDb<From>(Request);
         using (Profiler.Current.Step("AutoQuery.CreateQuery"))
         {
             var reqParams = Request != null
@@ -820,6 +826,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
     public Dictionary<string, QueryDbFieldAttribute>? EndsWithConventions { get; set; }
 
     public string? UseNamedConnection { get; set; }
+    public bool UseReadReplica { get; set; }
     public bool EnableWriterLock { get; set; }
     public QueryFilterDelegate? GlobalQueryFilter { get; set; }
     public Dictionary<Type, QueryFilterDelegate>? QueryFilters { get; set; }
@@ -999,9 +1006,38 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
             ?? throw new InvalidOperationException("IDbConnectionFactory is not configured");
     }
 
+    /// <summary>
+    /// The DB connection to run the queries of AutoQuery APIs with, which is the read replica of GetDb()'s connection
+    /// when UseReadReplica is enabled
+    /// </summary>
+    public IDbConnection GetQueryDb(Type fromType, IRequest? req = null)
+    {
+        if (!UseReadReplica)
+            return GetDb(fromType, req);
+
+        var namedConnection = GetDbNamedConnection(fromType, req);
+        if (HostContext.AppHost != null)
+        {
+            return namedConnection != null
+                ? HostContext.AppHost.GetReadOnlyDbConnection(namedConnection, req)
+                : HostContext.AppHost.GetReadOnlyDbConnection(req);
+        }
+        var dbFactory = DbFactory ?? HostContext.TryResolve<IDbConnectionFactory>()
+            ?? throw new InvalidOperationException("IDbConnectionFactory is not configured");
+        if (dbFactory is IDbReadOnlyConnectionFactory readOnly)
+        {
+            return namedConnection != null
+                ? readOnly.OpenReadOnlyDbConnection(namedConnection, null)
+                : readOnly.OpenReadOnlyDbConnection(configure: null);
+        }
+        return GetDb(fromType, req);
+    }
+
+    public IDbConnection GetQueryDb<From>(IRequest? req = null) => GetQueryDb(typeof(From), req);
+
     public SqlExpression<From> CreateQuery<From>(IQueryDb<From> dto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null)
     {
-        using (db == null ? db = GetDb<From>(req) : null)
+        using (db == null ? db = GetQueryDb<From>(req) : null)
         {
             var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
             var q = typedQuery.CreateQuery(db);
@@ -1011,7 +1047,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
     public QueryResponse<From> Execute<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
-        using (db == null ? db = GetDb<From>(req) : null)
+        using (db == null ? db = GetQueryDb<From>(req) : null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return ResponseFilter(db, typedQuery.Execute<From>(db, query), query, model);
@@ -1020,7 +1056,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
     public async Task<QueryResponse<From>> ExecuteAsync<From>(IQueryDb<From> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
-        using (db == null ? db = GetDb<From>(req) : null)
+        using (db == null ? db = GetQueryDb<From>(req) : null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return ResponseFilter(db, await typedQuery.ExecuteAsync<From>(db, query).ConfigAwait(), query, model);
@@ -1029,7 +1065,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
     public SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest? req = null, IDbConnection? db = null)
     {
-        using (db == null ? db = GetDb<From>(req) : null)
+        using (db == null ? db = GetQueryDb<From>(req) : null)
         {
             var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
             var q = typedQuery.CreateQuery(db);
@@ -1039,7 +1075,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
     public QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
-        using (db == null ? db = GetDb<From>(req) : null)
+        using (db == null ? db = GetQueryDb<From>(req) : null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return ResponseFilter(db, typedQuery.Execute<Into>(db, query), query, model);
@@ -1048,7 +1084,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
 
     public async Task<QueryResponse<Into>> ExecuteAsync<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query, IRequest? req = null, IDbConnection? db = null)
     {
-        using (db == null ? db = GetDb<From>(req) : null)
+        using (db == null ? db = GetQueryDb<From>(req) : null)
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return ResponseFilter(db, await typedQuery.ExecuteAsync<Into>(db, query).ConfigAwait(), query, model);
@@ -1059,7 +1095,7 @@ public partial class AutoQuery : IAutoQueryDb, IAutoQueryOptions
     {
         var requestDtoType = requestDto.GetType();
         var fromType = GetFromType(requestDtoType);
-        using (db == null ? db = GetDb(fromType) : null)
+        using (db == null ? db = GetQueryDb(fromType) : null)
         {
             var typedQuery = GetTypedQuery(requestDtoType, fromType);
             var q = typedQuery.CreateQuery(db);
@@ -1151,7 +1187,7 @@ internal class GenericAutoQueryDb<From, Into> : GenericAutoQueryDb
 {
     public override IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection? db = null)
     {
-        var useDb = db ?? autoQuery.GetDb(request.GetType(), null);
+        var useDb = db ?? autoQuery.GetQueryDb(request.GetType(), null);
         using (db == null ? useDb : null)
         {
             var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
@@ -1162,7 +1198,7 @@ internal class GenericAutoQueryDb<From, Into> : GenericAutoQueryDb
 
     public override async Task<IQueryResponse> ExecuteObjectAsync(AutoQuery autoQuery, IQueryDb request, ISqlExpression query, IDbConnection? db = null)
     {
-        var useDb = db ?? autoQuery.GetDb(request.GetType(), null);
+        var useDb = db ?? autoQuery.GetQueryDb(request.GetType(), null);
         using (db == null ? useDb : null)
         {
             var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
@@ -1781,6 +1817,13 @@ public static class AutoQueryExtensions
     {
         return autoQuery.CreateQuery(model, request?.GetRequestParams() ?? [], request, db);
     }
+
+    /// <summary>
+    /// The DB connection to run the queries of AutoQuery APIs with, the read replica of GetDb()'s connection when
+    /// AutoQueryFeature.UseReadReplica is enabled
+    /// </summary>
+    public static IDbConnection GetQueryDb<From>(this IAutoQueryDb autoQuery, IRequest? req = null) =>
+        autoQuery is AutoQuery aq ? aq.GetQueryDb(typeof(From), req) : autoQuery.GetDb<From>(req);
 
     public static IDbConnection GetDb<From>(this IAutoQueryDb autoQuery, IQueryDb<From> dto, IRequest? req = null) => 
         autoQuery.GetDb(typeof(From), req);

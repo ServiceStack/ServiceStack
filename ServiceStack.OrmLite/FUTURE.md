@@ -96,9 +96,9 @@ as a whole. Remaining:
 
 ### 4.2 More Read Replicas (S)
 `dbFactory.OpenReadOnlyDbConnection()` opens the read replica of a connection registered with `AddReadReplica()`, or the
-primary when it doesn't have one. Remaining:
-- A read-only `Db` in ServiceStack Services, configured by the AppHost's `DbConnectionRequestFilters` like `Db`, so
-  multi-tenant Apps can read from replicas with their tenant's filters
+primary when it doesn't have one. ServiceStack Services read from it with `ReadDb`, `Request.OpenReadOnlyDb()` and
+AutoQuery's `UseReadReplica`. Remaining:
+- Read your own writes: route a request's reads to the primary after it writes, e.g. for a few seconds per user
 
 ---
 

@@ -35,3 +35,14 @@ public interface IDbConnectionFactoryExtended : IDbConnectionFactory
 
     IDbConnection Use(IDbConnection connection, IDbTransaction trans=null);
 }
+/// <summary>
+/// A connection factory with read replicas, which opens a connection's read replica for queries that can read from
+/// one, or the connection itself when it doesn't have one, e.g. OrmLiteConnectionFactory
+/// </summary>
+public interface IDbReadOnlyConnectionFactory : IDbConnectionFactory
+{
+    IDbConnection OpenReadOnlyDbConnection(Action<IDbConnection> configure);
+    IDbConnection OpenReadOnlyDbConnection(string namedConnection, Action<IDbConnection> configure);
+    Task<IDbConnection> OpenReadOnlyDbConnectionAsync(Action<IDbConnection> configure, CancellationToken token = default);
+    Task<IDbConnection> OpenReadOnlyDbConnectionAsync(string namedConnection, Action<IDbConnection> configure, CancellationToken token = default);
+}

@@ -95,10 +95,17 @@ public class ReadReplicaUseCases
         var archive = RegisterConnection(dbFactory, CreateDatabase("archive"));
         dbFactory.RegisterReadReplica(reporting, CreateDatabase("reporting-replica"));
 
+        // Its connections have the name of the named connection, e.g. for filters that configure each database
         using (var db = dbFactory.OpenReadOnlyDbConnection(reporting))
+        {
             Assert.That(DatabaseOf(db), Is.EqualTo("reporting-replica"));
+            Assert.That(((OrmLiteConnection)db).NamedConnection, Is.EqualTo(reporting));
+        }
         using (var db = await dbFactory.OpenReadOnlyDbConnectionAsync(reporting))
+        {
             Assert.That(DatabaseOf(db), Is.EqualTo("reporting-replica"));
+            Assert.That(((OrmLiteConnection)db).NamedConnection, Is.EqualTo(reporting));
+        }
         using (var db = dbFactory.OpenDbConnection(reporting))
             Assert.That(DatabaseOf(db), Is.EqualTo("reporting"));
 
@@ -106,7 +113,10 @@ public class ReadReplicaUseCases
         using (var db = dbFactory.OpenReadOnlyDbConnection(archive))
             Assert.That(DatabaseOf(db), Is.EqualTo("archive"));
         using (var db = dbFactory.OpenReadOnlyDbConnection())
+        {
             Assert.That(DatabaseOf(db), Is.EqualTo("primary"));
+            Assert.That(((OrmLiteConnection)db).NamedConnection, Is.Null);
+        }
 
         Assert.Throws<KeyNotFoundException>(() => dbFactory.OpenReadOnlyDbConnection("not-registered"));
         Assert.Throws<KeyNotFoundException>(() => dbFactory.RegisterReadReplica("not-registered", "replica.sqlite"));
