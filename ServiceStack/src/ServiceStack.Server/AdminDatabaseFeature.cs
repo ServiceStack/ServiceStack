@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Logging;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
@@ -45,6 +46,12 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
     /// The namespace of the migration the Schema Diff writes, defaults to the namespace of the App's migrations
     /// </summary>
     public string? MigrationNamespace { get; set; }
+
+    /// <summary>
+    /// Log the Schema Diff of each database when the App starts, a warning with the differences when its tables
+    /// aren't the same as their models. It's compared in the background, and not when running App Tasks.
+    /// </summary>
+    public bool LogSchemaDiff { get; set; }
 
     public void Configure(IServiceCollection services)
     {
@@ -118,6 +125,57 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
 
     public void Register(IAppHost appHost)
     {
+        // Not before App Tasks like migrations, when the differences would be out of date
+        if (LogSchemaDiff && !AppTasks.IsRunAsAppTask())
+            appHost.AfterInitCallbacks.Add(host => Task.Run(() => LogSchemaDiffs(host)));
+    }
+
+    /// <summary>
+    /// Log the differences between the models and tables of each database, which are the models the Schema Diff
+    /// compares
+    /// </summary>
+    public void LogSchemaDiffs(IAppHost appHost, ILog? log = null)
+    {
+        log ??= LogManager.GetLogger(typeof(AdminDatabaseFeature));
+        var dbFactory = appHost.TryResolve<IDbConnectionFactory>();
+        if (dbFactory == null)
+            return;
+
+        var namedConnections = new List<string?> { null };
+        namedConnections.AddRange(dbFactory.GetNamedConnections().Keys);
+        foreach (var namedConnection in namedConnections)
+        {
+            var dbName = namedConnection ?? "main";
+            try
+            {
+                var modelTypes = GetModelTypes(appHost, namedConnection);
+                if (modelTypes.Count == 0)
+                    continue;
+
+                using var db = namedConnection != null
+                    ? dbFactory.Open(namedConnection, ConfigureDb)
+                    : dbFactory.Open(ConfigureDb);
+                var diff = db.GetSchemaDiff(modelTypes.ToArray());
+                if (diff.HasChanges)
+                {
+                    log.Warn($"Schema Diff: the tables of the {dbName} database aren't the same as their models\n{diff}");
+                    continue;
+                }
+
+                var compared = modelTypes.Count - diff.Ignored.Count;
+                var message = $"Schema Diff: the tables of the {dbName} database are the same as their models " +
+                              $"({compared} {(compared == 1 ? "model" : "models")})";
+                if (diff.Ignored.Count > 0)
+                    message += $", ignored {string.Join(", ", diff.Ignored)}";
+                log.Info(message);
+                foreach (var warning in diff.Warnings)
+                    log.Warn($"Schema Diff of the {dbName} database: {warning}");
+            }
+            catch (Exception e)
+            {
+                log.Error($"Schema Diff: couldn't compare the models of the {dbName} database with their tables", e);
+            }
+        }
     }
 
     private static List<SchemaInfo> ToSchemaTables(Dictionary<string, List<string>> schemasMap)

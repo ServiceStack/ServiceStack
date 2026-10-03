@@ -1,3 +1,5 @@
+using System.Text;
+using ServiceStack.Logging;
 #nullable enable
 
 using System;
@@ -243,6 +245,36 @@ public class AdminSchemaDiffAppHostTests
             Assert.That(api.Response!.Models, Is.EqualTo(new[] { nameof(SchemaDiffReport) }));
             Assert.That(api.Response!.Results, Is.Empty);
             Assert.That(api.Response!.Migration, Is.Null);
+        }
+        finally
+        {
+            using var db = dbFactory.OpenDbConnection(Reports);
+            db.DropTable<SchemaDiffReport>();
+        }
+    }
+
+    [Test]
+    public void Logs_the_schema_diff_of_each_database()
+    {
+        var dbFactory = HostContext.Resolve<IDbConnectionFactory>();
+        using (var db = dbFactory.OpenDbConnection(Reports))
+        {
+            db.CreateTable<SchemaDiffReport>();
+        }
+        try
+        {
+            var logs = new StringBuilder();
+            HostContext.AppHost.GetPlugin<AdminDatabaseFeature>()
+                .LogSchemaDiffs(HostContext.AppHost, new StringBuilderLog(typeof(AdminDatabaseFeature), logs));
+            var text = logs.ToString();
+
+            // A warning with the differences of the main database
+            Assert.That(text, Does.Contain("WARN: Schema Diff: the tables of the main database aren't the same as their models"));
+            Assert.That(text, Does.Contain("+ Stock"));
+            Assert.That(text, Does.Contain("Ignored: AspNetSchemaDiffUsers"));
+            // The reports database is the same as its model
+            Assert.That(text, Does.Contain("INFO: Schema Diff: the tables of the reports database are the same as their models (1 model)"));
+            Assert.That(text, Does.Not.Contain("ERROR"));
         }
         finally
         {
