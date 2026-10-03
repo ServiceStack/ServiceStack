@@ -83,20 +83,16 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 - Rebuild a SQLite table to alter its columns
 - Oracle and Firebird, which haven't been tested and don't compare indexes
 
-### 3.2 Database-First Model Generation (M)
-Replace the legacy T4 templates with a `dotnet` tool (or `x` tool command) that generates OrmLite POCOs from an existing database, reusing the dialect catalog queries.
-
 ---
 
 ## 4. Resilience
 
-### 4.1 Transient-Fault Retry Policies (S/M)
-```csharp
-dbFactory.RetryPolicy = OrmLiteRetry.Exponential(maxRetries: 3)
-    .Handle(SqlServerTransient.IsTransient)   // deadlocks (1205), Azure throttling, failover
-    .Handle(PostgresTransient.IsTransient);   // serialization failures (40001), connection resets
-```
-Retries would only apply outside explicit transactions, or re-run a whole `db.InTransaction(fn)` block. Serializable isolation and cloud databases make this important.
+### 4.1 More Retries (S)
+A `RetryPolicy` on the dialect runs statements and connections again after a temporary error, and
+`db.RunInTransaction()` runs a whole transaction again. Remaining:
+- Retry the APIs that write many rows in a transaction of their own, e.g. `InsertAll`, as a whole
+- Retry queries that fail while reading their rows, before any are returned
+- Retry queries run with OrmLite's Dapper APIs
 
 ### 4.2 Read/Write Connection Routing (S)
 Named connections exist, but routing is manual. An `OpenReadOnlyDbConnection()` (or `db.ReadReplica()`) convention would pick a replica connection string automatically, falling back to the primary when no replica is configured.
@@ -115,6 +111,9 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 
 ## Considered and Not Planned
 
+- **Database-first model generation:** [okai](https://docs.servicestack.net/autoquery/okai-db) already generates
+  data models, AutoQuery APIs and migrations from an existing database's tables, and
+  [AutoGen](https://docs.servicestack.net/autoquery/autogen) creates AutoQuery APIs for them at runtime.
 - **OpenTelemetry `ActivitySource` spans:** OrmLite's diagnostic events already appear in ServiceStack's Profiling UI
   with trace ids, and ADO.NET providers like Npgsql and SqlClient emit their own database spans.
 - **Sending large collections in raw SQL as a single array or JSON param:** it requires rewriting user-written SQL,

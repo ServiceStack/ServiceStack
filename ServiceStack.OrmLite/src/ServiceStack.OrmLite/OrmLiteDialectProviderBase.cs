@@ -43,6 +43,16 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual bool SupportsBatchRowsAffected => true;
 
+    public OrmLiteRetryPolicy RetryPolicy { get; set; }
+
+    /// <summary>
+    /// Recognizes a lost connection, dialects override it to recognize their driver's temporary errors
+    /// </summary>
+    public virtual TransientError GetTransientError(Exception ex) =>
+        ex is System.Data.Common.DbException && OrmLiteRetryExec.IsConnectionLost(ex)
+            ? TransientError.MaybeApplied
+            : TransientError.None;
+
     public virtual string ToReturningStatement(string sql, ModelDefinition modelDef, bool isDelete, ICollection<FieldDefinition> returnFields = null) =>
         throw new NotSupportedException($"{GetType().Name} doesn't support returning rows from UPDATE and DELETE statements");
 

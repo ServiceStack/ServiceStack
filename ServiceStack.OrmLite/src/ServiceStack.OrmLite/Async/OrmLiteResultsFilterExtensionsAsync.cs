@@ -31,7 +31,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
+        return dbCmd.WithLog(dbCmd.ExecNonQueryWithRetryAsync(token));
     }
 
     public static Task<int> ExecNonQueryAsync(this IDbCommand dbCmd, string sql, Dictionary<string, object> dict, CancellationToken token = default)
@@ -49,7 +49,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
+        return dbCmd.WithLog(dbCmd.ExecNonQueryWithRetryAsync(token));
     }
 
     public static Task<int> ExecNonQueryAsync(this IDbCommand dbCmd, CancellationToken token = default)
@@ -62,7 +62,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
+        return dbCmd.WithLog(dbCmd.ExecNonQueryWithRetryAsync(token));
     }
 
     public static Task<List<T>> ConvertToListAsync<T>(this IDbCommand dbCmd)
@@ -185,7 +185,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.GetScalar(dbCmd).InTask();
 
-        return dbCmd.GetDialectProvider().ExecuteScalarAsync(dbCmd, token);
+        return dbCmd.ExecScalarWithRetryAsync(token);
     }
 
     public static Task<object> ScalarAsync(this IDbCommand dbCmd, string sql, CancellationToken token)
@@ -196,7 +196,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.GetScalar(dbCmd).InTask();
 
-        return dbCmd.GetDialectProvider().ExecuteScalarAsync(dbCmd, token);
+        return dbCmd.ExecScalarWithRetryAsync(token);
     }
 
     public static Task<long> ExecLongScalarAsync(this IDbCommand dbCmd)

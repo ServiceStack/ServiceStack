@@ -1123,6 +1123,36 @@ namespace ServiceStack.OrmLite.SqlServer
         
         protected DbConnection Unwrap(IDbConnection db) => (DbConnection)db.ToDbConnection();
 
+        /// <summary>
+        /// Errors where SQL Server confirmed the statement wasn't applied: deadlock and snapshot update conflict
+        /// victims, In-Memory OLTP conflicts and Azure SQL throttling, failovers and resource limits
+        /// </summary>
+        public static HashSet<int> NotAppliedErrors { get; } = [
+            1205, 3960, 4060, 4221, 10928, 10929, 40501, 40613, 41301, 41302, 41305, 41325, 41839, 49918, 49919, 49920,
+        ];
+
+        /// <summary>
+        /// Errors where the connection was lost, so the statement may have been applied
+        /// </summary>
+        public static HashSet<int> ConnectionLostErrors { get; } = [
+            64, 121, 233, 10053, 10054, 10060, 40197,
+        ];
+
+        public override TransientError GetTransientError(Exception ex)
+        {
+            if (ex is SqlException sqlEx)
+            {
+                foreach (SqlError error in sqlEx.Errors)
+                {
+                    if (NotAppliedErrors.Contains(error.Number))
+                        return TransientError.NotApplied;
+                    if (ConnectionLostErrors.Contains(error.Number))
+                        return TransientError.MaybeApplied;
+                }
+            }
+            return base.GetTransientError(ex);
+        }
+
         protected DbCommand Unwrap(IDbCommand cmd) => (DbCommand)cmd.ToDbCommand();
 
         protected DbDataReader Unwrap(IDataReader reader) => (DbDataReader)reader;

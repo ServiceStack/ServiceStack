@@ -237,10 +237,14 @@ public class OrmLiteConnection
         if (dbConn.State == ConnectionState.Broken)
             dbConn.Close();
 
-        if (dbConn.State == ConnectionState.Closed)
+        if (dbConn.State != ConnectionState.Closed)
+            return;
+
+        for (var retry = 1; ; retry++)
         {
             var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(this);
             Exception? e = null;
+            TimeSpan delay;
             try
             {
                 dbConn.Open();
@@ -249,11 +253,14 @@ public class OrmLiteConnection
                     dbConnection = Factory.ConnectionFilter(dbConn);
 
                 DialectProvider.InitConnection(this);
+                return;
             }
             catch (Exception ex)
             {
                 e = ex;
-                throw;
+                if (!(DialectProvider.RetryPolicy is { } policy
+                      && OrmLiteRetryExec.ShouldRetryOpen(policy, DialectProvider, ex, retry, out delay)))
+                    throw;
             }
             finally
             {
@@ -262,6 +269,9 @@ public class OrmLiteConnection
                 else
                     Diagnostics.OrmLite.WriteConnectionOpenAfter(id, this);
             }
+            if (dbConn.State != ConnectionState.Closed)
+                dbConn.Close();
+            Thread.Sleep(delay);
         }
     }
 
@@ -277,10 +287,14 @@ public class OrmLiteConnection
         if (dbConn.State == ConnectionState.Broken)
             dbConn.Close();
 
-        if (dbConn.State == ConnectionState.Closed)
+        if (dbConn.State != ConnectionState.Closed)
+            return;
+
+        for (var retry = 1; ; retry++)
         {
             var id = Diagnostics.OrmLite.WriteConnectionOpenBefore(this);
             Exception? e = null;
+            TimeSpan delay;
             try
             {
                 await DialectProvider.OpenAsync(dbConn, token).ConfigAwait();
@@ -289,11 +303,14 @@ public class OrmLiteConnection
                     dbConnection = Factory.ConnectionFilter(dbConn);
 
                 DialectProvider.InitConnection(this);
+                return;
             }
             catch (Exception ex)
             {
                 e = ex;
-                throw;
+                if (!(DialectProvider.RetryPolicy is { } policy
+                      && OrmLiteRetryExec.ShouldRetryOpen(policy, DialectProvider, ex, retry, out delay)))
+                    throw;
             }
             finally
             {
@@ -302,6 +319,9 @@ public class OrmLiteConnection
                 else
                     Diagnostics.OrmLite.WriteConnectionOpenAfter(id, this);
             }
+            if (dbConn.State != ConnectionState.Closed)
+                dbConn.Close();
+            await Task.Delay(delay, token).ConfigAwait();
         }
     }
 

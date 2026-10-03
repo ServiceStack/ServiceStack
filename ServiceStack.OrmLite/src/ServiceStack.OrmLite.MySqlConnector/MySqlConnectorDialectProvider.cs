@@ -15,6 +15,17 @@ public class MySqlConnectorDialectProvider : MySqlDialectProviderBase<MySqlConne
 {
     public static MySqlConnectorDialectProvider Instance = new();
 
+    public override TransientError GetTransientError(Exception ex)
+    {
+        if (ex is MySqlException myEx)
+        {
+            var kind = GetTransientError((int)myEx.ErrorCode);
+            if (kind != TransientError.None)
+                return kind;
+        }
+        return base.GetTransientError(ex);
+    }
+
     private const string TextColumnDefinition = "TEXT";
 
     public MySqlConnectorDialectProvider()

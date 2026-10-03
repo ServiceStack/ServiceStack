@@ -61,6 +61,18 @@ public interface IOrmLiteDialectProvider
     bool SupportsBatchRowsAffected { get; }
 
     /// <summary>
+    /// When statements and connections that fail with a temporary error are run again, e.g. after a deadlock,
+    /// throttling or a lost connection. Not retried when null, the default.
+    /// </summary>
+    OrmLiteRetryPolicy RetryPolicy { get; set; }
+
+    /// <summary>
+    /// Whether an error of the driver is temporary, and if it is, whether the database confirmed the statement
+    /// wasn't applied
+    /// </summary>
+    TransientError GetTransientError(Exception ex);
+
+    /// <summary>
     /// Converts an UPDATE or DELETE statement into one that also returns the affected rows, e.g. with RETURNING or
     /// OUTPUT, with all their columns or only the returnFields. Throws NotSupportedException if the RDBMS doesn't
     /// support it.

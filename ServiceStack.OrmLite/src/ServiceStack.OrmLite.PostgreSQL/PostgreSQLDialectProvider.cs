@@ -1153,6 +1153,34 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     protected DbConnection Unwrap(IDbConnection db) => (DbConnection)db.ToDbConnection();
 
+    /// <summary>
+    /// SQLSTATEs where PostgreSQL confirmed the statement wasn't applied: serialization failures, deadlocks, locks
+    /// that weren't available and connections that couldn't be made
+    /// </summary>
+    public static HashSet<string> NotAppliedErrors { get; } = [
+        "40001", "40P01", "55P03", "53300", "53400", "57P03", "08001", "08004",
+    ];
+
+    /// <summary>
+    /// SQLSTATEs where the connection was lost, so the statement may have been applied
+    /// </summary>
+    public static HashSet<string> ConnectionLostErrors { get; } = [
+        "08000", "08003", "08006", "57P01", "57P02",
+    ];
+
+    public override TransientError GetTransientError(Exception ex)
+    {
+        if (ex is PostgresException pgEx)
+        {
+            if (NotAppliedErrors.Contains(pgEx.SqlState))
+                return TransientError.NotApplied;
+            if (ConnectionLostErrors.Contains(pgEx.SqlState))
+                return TransientError.MaybeApplied;
+            return TransientError.None;
+        }
+        return base.GetTransientError(ex);
+    }
+
     protected DbCommand Unwrap(IDbCommand cmd) => (DbCommand)cmd.ToDbCommand();
 
     protected DbDataReader Unwrap(IDataReader reader) => (DbDataReader)reader;

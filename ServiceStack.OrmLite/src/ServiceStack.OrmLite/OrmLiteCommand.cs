@@ -51,7 +51,18 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
     public TimeSpan GetElapsedTime() => Stopwatch.GetElapsedTime(StartTimestamp, EndTimestamp);
 #endif
     
-    public int ExecuteNonQuery()
+    /// <summary>
+    /// Set while the dialect runs the statement for an async API, which retries it
+    /// </summary>
+    internal bool SkipRetry;
+
+    private bool CanRetry => !SkipRetry && DialectProvider.RetryPolicy != null;
+
+    public int ExecuteNonQuery() => !CanRetry
+        ? ExecuteNonQueryOnce()
+        : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteNonQueryOnce);
+
+    private int ExecuteNonQueryOnce()
     {
         StartTimestamp = Stopwatch.GetTimestamp();
         DialectProvider.OnBeforeExecuteNonQuery?.Invoke(this);
@@ -74,7 +85,11 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         }
     }
 
-    public IDataReader ExecuteReader()
+    public IDataReader ExecuteReader() => !CanRetry
+        ? ExecuteReaderOnce()
+        : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteReaderOnce);
+
+    private IDataReader ExecuteReaderOnce()
     {
         StartTimestamp = Stopwatch.GetTimestamp();
         var ret = dbCmd.ExecuteReader();
@@ -82,7 +97,11 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         return ret;
     }
 
-    public IDataReader ExecuteReader(CommandBehavior behavior)
+    public IDataReader ExecuteReader(CommandBehavior behavior) => !CanRetry
+        ? ExecuteReaderOnce(behavior)
+        : OrmLiteRetryExec.Execute(this, DialectProvider, () => ExecuteReaderOnce(behavior));
+
+    private IDataReader ExecuteReaderOnce(CommandBehavior behavior)
     {
         StartTimestamp = Stopwatch.GetTimestamp();
         var ret = dbCmd.ExecuteReader(behavior);
@@ -90,7 +109,11 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         return ret;
     }
 
-    public object? ExecuteScalar()
+    public object? ExecuteScalar() => !CanRetry
+        ? ExecuteScalarOnce()
+        : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteScalarOnce);
+
+    private object? ExecuteScalarOnce()
     {
         StartTimestamp = Stopwatch.GetTimestamp();
         var ret = dbCmd.ExecuteScalar();

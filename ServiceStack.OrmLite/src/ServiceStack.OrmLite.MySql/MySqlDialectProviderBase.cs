@@ -17,6 +17,29 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 
     private const string TextColumnDefinition = "TEXT";
 
+    /// <summary>
+    /// Errors where MySQL confirmed the statement wasn't applied: deadlock victims and connections that couldn't
+    /// be made
+    /// </summary>
+    public static HashSet<int> NotAppliedErrors { get; } = [
+        1040, 1042, 1203, 1213, 2002, 2003,
+    ];
+
+    /// <summary>
+    /// Errors where the connection was lost, so the statement may have been applied
+    /// </summary>
+    public static HashSet<int> ConnectionLostErrors { get; } = [
+        1053, 1158, 1159, 1160, 1161, 1927, 2006, 2013, 4031,
+    ];
+
+    /// <summary>
+    /// Whether a MySQL error number is a temporary error
+    /// </summary>
+    protected static TransientError GetTransientError(int errorNumber) =>
+        NotAppliedErrors.Contains(errorNumber) ? TransientError.NotApplied
+        : ConnectionLostErrors.Contains(errorNumber) ? TransientError.MaybeApplied
+        : TransientError.None;
+
 	public MySqlDialectProviderBase()
 	{
 		base.AutoIncrementDefinition = "AUTO_INCREMENT";

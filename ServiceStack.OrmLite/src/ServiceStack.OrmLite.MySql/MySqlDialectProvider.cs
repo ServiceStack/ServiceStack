@@ -15,6 +15,17 @@ public class MySqlDialectProvider : MySqlDialectProviderBase<MySqlDialectProvide
 {
     public static MySqlDialectProvider Instance = new();
 
+    public override TransientError GetTransientError(Exception ex)
+    {
+        if (ex is MySqlException myEx)
+        {
+            var kind = GetTransientError(myEx.Number);
+            if (kind != TransientError.None)
+                return kind;
+        }
+        return base.GetTransientError(ex);
+    }
+
     private const string TextColumnDefinition = "TEXT";
 
     public override IDbConnection CreateConnection(string connectionString, Dictionary<string, string> options)

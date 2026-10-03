@@ -28,6 +28,15 @@ namespace ServiceStack.OrmLite.Sqlite
             return new SQLiteConnection(connectionString);
         }
 
+        /// <summary>
+        /// SQLITE_BUSY and SQLITE_LOCKED, where the database was locked by another connection and the statement
+        /// wasn't applied
+        /// </summary>
+        public override TransientError GetTransientError(Exception ex) =>
+            ex is SQLiteException { ResultCode: var code } && ((int)code & 0xFF) is 5 or 6
+                ? TransientError.NotApplied
+                : base.GetTransientError(ex);
+
         public override IDbDataParameter CreateParam()
         {
             return new SQLiteParameter();

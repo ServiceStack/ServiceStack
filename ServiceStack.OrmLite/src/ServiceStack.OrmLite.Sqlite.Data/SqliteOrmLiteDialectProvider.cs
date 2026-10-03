@@ -22,6 +22,15 @@ public class SqliteOrmLiteDialectProvider : SqliteOrmLiteDialectProviderBase
         return new SqliteConnection(connectionString);
     }
 
+    /// <summary>
+    /// SQLITE_BUSY and SQLITE_LOCKED, where the database was locked by another connection and the statement
+    /// wasn't applied
+    /// </summary>
+    public override TransientError GetTransientError(Exception ex) =>
+        ex is SqliteException { SqliteErrorCode: 5 or 6 }
+            ? TransientError.NotApplied
+            : base.GetTransientError(ex);
+
     public override IDbDataParameter CreateParam()
     {
         return new SqliteParameter();

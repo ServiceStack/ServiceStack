@@ -46,7 +46,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd).InTask();
 
-        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
+        return dbCmd.WithLog(dbCmd.ExecNonQueryWithRetryAsync(token));
     }
 
     internal static Task<int> ExecuteSqlAsync(this IDbCommand dbCmd, string sql, object anonType, CancellationToken token) =>
@@ -70,7 +70,7 @@ internal static class OrmLiteWriteCommandExtensionsAsync
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd).InTask();
 
-        return dbCmd.WithLog(dbCmd.GetDialectProvider().ExecuteNonQueryAsync(dbCmd, token));
+        return dbCmd.WithLog(dbCmd.ExecNonQueryWithRetryAsync(token));
     }
 
     internal static Task<int> UpdateAsync<T>(this IDbCommand dbCmd, T obj, CancellationToken token, Action<IDbCommand> commandFilter = null)

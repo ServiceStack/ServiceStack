@@ -85,7 +85,7 @@ public static class OrmLiteCompiledQueryApi
             dbCmd.SetParameters(query.Params);
             var result = OrmLiteConfig.ResultsFilter != null
                 ? OrmLiteConfig.ResultsFilter.GetScalar(dbCmd)
-                : await dbCmd.GetDialectProvider().ExecuteScalarAsync(dbCmd, token).ConfigAwait();
+                : await dbCmd.ExecScalarWithRetryAsync(token).ConfigAwait();
             return result != null;
         });
 
