@@ -2531,6 +2531,35 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual string GetDropForeignKeyConstraints(ModelDefinition modelDef) => null;
 
+    public virtual ColumnSchema[] GetSchemaColumns(IDbConnection db, string quotedTable) =>
+        db.GetTableColumns($"SELECT * FROM {quotedTable} WHERE 1=0");
+
+    public virtual ColumnSchema[] GetModelSchemaColumns(IDbConnection db, List<FieldDefinition> fieldDefs)
+    {
+        var tempTable = GetBulkStagingTableName("ormlite_diff_" + Guid.NewGuid().ToString("N"));
+        // Named constraints have to be unique, which the constraints of the model's table already are
+        var columns = fieldDefs.Map(x => GetColumnDefinition(x.DefaultValueConstraint == null
+            ? x
+            : x.Clone(f => {
+                f.ModelDef = x.ModelDef;
+                f.DefaultValueConstraint = null;
+            })));
+        db.ExecuteSql(ToCreateTempTableStatement(tempTable, columns.Join(",\n  ")));
+        try
+        {
+            return GetSchemaColumns(db, tempTable);
+        }
+        finally
+        {
+            db.ExecuteSql(ToDropBulkStagingTableStatement(tempTable));
+        }
+    }
+
+    protected virtual string ToCreateTempTableStatement(string tempTable, string columnDefinitions) =>
+        $"CREATE TEMPORARY TABLE {tempTable} (\n  {columnDefinitions}\n)";
+
+    public virtual List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef) => null;
+
     public virtual string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
         $"ALTER TABLE {QuoteTable(tableRef)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
 

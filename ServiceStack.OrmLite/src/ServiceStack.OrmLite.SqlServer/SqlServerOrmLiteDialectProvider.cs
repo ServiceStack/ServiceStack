@@ -492,6 +492,13 @@ namespace ServiceStack.OrmLite.SqlServer
         // A temporary table of the connection
         protected override string GetBulkStagingTableName(string name) => GetQuotedName("#" + name);
 
+        protected override string ToCreateTempTableStatement(string tempTable, string columnDefinitions) =>
+            $"CREATE TABLE {tempTable} (\n  {columnDefinitions}\n)";
+
+        public override List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef) => db.Column<string>(
+            "SELECT name FROM sys.indexes WHERE object_id = OBJECT_ID({0}) AND name IS NOT NULL"
+                .SqlFmt(this, QuoteTable(tableRef)));
+
         // UNION ALL stops the staging table inheriting the IDENTITY of the table's column, so it can be given values
         protected override string ToCreateBulkStagingTableStatement(ModelDefinition modelDef, string stagingTable, List<FieldDefinition> fieldDefs)
         {

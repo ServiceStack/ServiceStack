@@ -2,7 +2,7 @@ import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue"
 import { useClient, useFormatters, useMetadata, useUtils } from "@servicestack/vue"
 import { ApiResult, createUrl, flatMap, humanify, mapGet, omit, map, queryString, combinePaths, appendQueryString } from "@servicestack/client"
 import { keydown } from "app"
-import { AdminDatabase } from "dtos"
+import { AdminDatabase, AdminSchemaDiff } from "dtos"
 import { prettyJson } from "core"
 export const Database = {
     template:`
@@ -22,12 +22,130 @@ export const Database = {
       </div>
     </section>
     <section v-else>
-        <div v-if="!routes.table" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 items-start">
+        <div v-if="routes.op === 'diff'">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol role="list" class="flex items-center space-x-4">
+                    <li title="All Databases">
+                        <div>
+                            <a v-href="{ db:'', schema:'', table:'', show:'', skip:'', op:'' }" class="text-gray-400 hover:text-gray-500">
+                                <svg class="flex-shrink-0 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+                                </svg>
+                                <span class="sr-only">Home</span>
+                            </a>
+                        </div>
+                    </li>
+                    <li :title="routes.db + ' database'">
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                            </svg>
+                            <span class="ml-4 text-sm font-medium text-gray-500">{{dbAlias(routes.db)}}</span>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <svg class="flex-shrink-0 h-5 w-5 text-gray-300" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                                <path d="M5.555 17.776l8-16 .894.448-8 16-.894-.448z" />
+                            </svg>
+                            <span class="ml-4 text-sm font-medium text-gray-700" aria-current="page">Schema Diff</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+            <div class="mt-4 flex flex-wrap items-center gap-x-3 gap-y-2">
+                <div class="text-lg text-gray-900">
+                    <span v-if="diffLoading">Comparing models with their tables...</span>
+                    <span v-else-if="diff && diff.results.length">{{diff.results.length}} {{ diff.results.length === 1 ? 'difference' : 'differences' }} in {{diffGroups.length}} of {{diff.models.length}} models</span>
+                    <span v-else-if="diff">{{diff.models.length}} {{ diff.models.length === 1 ? 'model' : 'models' }} compared</span>
+                </div>
+                <button type="button" @click="loadDiff" title="Compare again" :disabled="diffLoading"
+                        class="inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+                    <span>Refresh</span>
+                </button>
+            </div>
+            <ErrorSummary class="mt-4" :status="diffApi.error" />
+            <Loading v-if="diffLoading" class="pt-4" />
+            <div v-else-if="diff" class="mt-4">
+                <div v-if="!diff.models.length" class="max-w-3xl">
+                    <Alert type="info">No models were found for this database</Alert>
+                    <p class="mt-4 text-sm text-gray-600">
+                        The data models of your AutoQuery APIs are compared with their tables.
+                        Add other models to the <b>ModelTypes</b> of the <b>AdminDatabaseFeature</b> plugin.
+                        <a href="https://docs.servicestack.net/admin-ui-database#schema-diff" class="ml-2 whitespace-nowrap font-medium text-blue-700 hover:text-blue-600" target="_blank">
+                           Learn more <span aria-hidden="true">&rarr;</span>
+                        </a>
+                    </p>
+                </div>
+                <div v-else-if="!diff.results.length" class="max-w-3xl">
+                    <AlertSuccess>The tables of this database are the same as their models</AlertSuccess>
+                </div>
+                <div v-else class="grid grid-cols-1 gap-4 xl:grid-cols-2 items-start">
+                    <div class="space-y-4">
+                        <div v-for="group in diffGroups" :key="group.table" class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5">
+                            <div class="flex items-center gap-x-2.5 border-b border-gray-100 bg-gray-50/60 px-4 py-3">
+                                <span class="truncate text-sm font-semibold text-gray-900">{{group.table}}</span>
+                                <span v-if="group.model !== group.table" class="truncate text-xs text-gray-500">{{group.model}}</span>
+                                <span class="ml-auto text-xs tabular-nums text-gray-500">{{group.changes.length}} {{ group.changes.length === 1 ? 'difference' : 'differences' }}</span>
+                            </div>
+                            <div class="divide-y divide-gray-100">
+                                <div v-for="(change,index) in group.changes" :key="index" class="px-4 py-2.5">
+                                    <button type="button" @click="toggleChange(group.table,index)" :aria-expanded="isChangeOpen(group.table,index)"
+                                            class="group flex w-full items-start gap-x-3 text-left">
+                                        <span :class="[changeColor(change), 'w-4 shrink-0 text-center font-mono text-sm font-bold']" :title="change.type">{{changeSymbol(change)}}</span>
+                                        <span class="min-w-0 flex-1">
+                                            <span class="flex flex-wrap items-center gap-x-2">
+                                                <span class="text-sm font-medium text-gray-900">{{changeTitle(change)}}</span>
+                                                <span v-if="change.isDestructive && change.sql" title="Can lose data or fail with the rows of the table"
+                                                      class="inline-flex items-center rounded-md bg-red-50 px-1.5 py-0.5 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">destructive</span>
+                                            </span>
+                                            <span class="block text-sm text-gray-500 break-words">{{changeDetail(change)}}</span>
+                                        </span>
+                                        <svg v-if="change.sql" :class="[isChangeOpen(group.table,index) ? 'rotate-90 text-gray-500' : 'text-gray-400','mt-0.5 h-4 w-4 shrink-0 transform transition-transform duration-150 group-hover:text-gray-500']" viewBox="0 0 20 20" aria-hidden="true">
+                                            <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
+                                        </svg>
+                                    </button>
+                                    <div v-if="change.sql && isChangeOpen(group.table,index)" class="group relative mt-2 ml-7">
+                                        <CopyIcon class="absolute right-0 opacity-0 transition-opacity group-hover:opacity-100" :text="change.sql" />
+                                        <pre class="whitespace-pre-wrap break-words pr-8 text-sm"><code class="language-sql" v-highlightjs="change.sql"></code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5">
+                        <div class="flex items-center gap-x-2.5 border-b border-gray-100 bg-gray-50/60 px-4 py-2">
+                            <span class="truncate text-sm font-semibold text-gray-900">{{diff.migrationName}}.cs</span>
+                            <button type="button" @click="copyMigration" title="Copy the migration"
+                                    class="ml-auto inline-flex items-center px-2.5 py-1.5 border border-gray-300 shadow-sm text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg v-if="copiedMigration" class="w-5 h-5 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <svg v-else class="w-5 h-5 mr-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g fill="none"><path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.242a2 2 0 0 0-.602-1.43L16.083 2.57A2 2 0 0 0 14.685 2H10a2 2 0 0 0-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 18v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+                                <span>{{ copiedMigration ? 'Copied' : 'Copy' }}</span>
+                            </button>
+                        </div>
+                        <p class="border-b border-gray-100 px-4 py-2 text-sm text-gray-500">
+                            A migration that makes the database the same as its models. Review it before adding it to your migrations:
+                            columns that aren't in a model may have been renamed, so they're only dropped by code that's commented out.
+                        </p>
+                        <div class="overflow-x-auto p-4">
+                            <pre class="text-sm"><code class="language-csharp" v-highlightjs="diff.migration"></code></pre>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="diff.warnings.length" class="mt-4 max-w-3xl space-y-2">
+                    <Alert v-for="warning in diff.warnings" type="warn">{{warning}}</Alert>
+                </div>
+            </div>
+        </div>
+        <div v-else-if="!routes.table" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 items-start">
             <nav v-for="db in databases" class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-gray-900/5" aria-label="Tables">
                 <div class="flex items-center gap-x-2.5 border-b border-gray-100 bg-gray-50/60 px-4 py-3">
                     <svg class="h-5 w-5 shrink-0 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"><ellipse cx="12" cy="6" rx="8" ry="3"></ellipse><path d="M4 6v6a8 3 0 0 0 16 0V6"></path><path d="M4 12v6a8 3 0 0 0 16 0v-6"></path></g></svg>
                     <span class="truncate text-sm font-semibold text-gray-900">{{db.alias || db.name}}</span>
                     <span class="ml-auto text-xs tabular-nums text-gray-500">{{ db.schemas.reduce((n,x) => n + (x.tables?.length || 0), 0) }} tables</span>
+                    <a v-href="{ db:db.name, schema:'', table:'', show:'', skip:'', op:'diff' }" title="Compare models with their tables"
+                       class="whitespace-nowrap text-xs font-medium text-indigo-600 hover:text-indigo-800">Schema Diff</a>
                 </div>
                 <div class="py-2">
                     <div v-for="schema in db.schemas">
@@ -334,6 +452,59 @@ export const Database = {
         /** @type{Ref<{column?:string,topLeft?:{x:number,y:number}}>} */
         const showFilters = ref()
         const showQueryPrefs = ref(false)
+        /** @type {Ref<ApiResult<AdminSchemaDiffResponse>>} */
+        const diffApi = ref(new ApiResult())
+        const diffLoading = ref(false)
+        const diffDb = ref(null)
+        const diff = computed(() => diffApi.value?.response)
+        /** The changes of each table, in the order they're applied */
+        const diffGroups = computed(() => {
+            const to = []
+            ;(diff.value?.results || []).forEach(change => {
+                let group = to.find(x => x.table === change.table)
+                if (!group) to.push(group = { table:change.table, model:change.model, changes:[] })
+                group.changes.push(change)
+            })
+            return to
+        })
+        const openChanges = ref({})
+        const copiedMigration = ref(false)
+        async function loadDiff() {
+            diffLoading.value = true
+            diffDb.value = routes.db
+            openChanges.value = {}
+            diffApi.value = await client.api(new AdminSchemaDiff({ db:routes.db }))
+            diffLoading.value = false
+        }
+        function toggleChange(table,index) {
+            const key = `${table}:${index}`
+            openChanges.value[key] = !openChanges.value[key]
+        }
+        function isChangeOpen(table,index) { return !!openChanges.value[`${table}:${index}`] }
+        function changeSymbol(change) {
+            return change.type === 'AlterColumn' ? '~' : change.type === 'DropColumn' ? '-' : '+'
+        }
+        function changeColor(change) {
+            return change.type === 'AlterColumn' ? 'text-amber-600' : change.type === 'DropColumn' ? 'text-red-600' : 'text-green-600'
+        }
+        function changeTitle(change) {
+            return change.type === 'CreateTable' ? 'Create table' : change.name
+        }
+        function changeDetail(change) {
+            switch (change.type) {
+                case 'CreateTable': return `The table of ${change.model} isn't in the database`
+                case 'AddColumn': return `Add column: ${change.modelColumn}`
+                case 'AlterColumn': return `${change.databaseColumn} \u2192 ${change.modelColumn}` + (change.sql ? '' : " (can't be altered in this database)")
+                case 'DropColumn': return `Not in ${change.model}: ${change.databaseColumn}`
+                case 'CreateIndex': return 'Add index'
+                default: return change.description
+            }
+        }
+        function copyMigration() {
+            copiedMigration.value = true
+            copyText(diff.value.migration)
+            setTimeout(() => copiedMigration.value = false, 3000)
+        }
         const prefs = ref(refreshPrefs())
         const hasPrefs = computed(() => settings.hasPrefs(routes.dbTable()))
         const selected = computed(() => routes.show && results.value.find(x => x.id === routes.show))
@@ -496,6 +667,10 @@ export const Database = {
         
         async function update() {
             skip.value = parseInt(routes.skip) || 0
+            if (routes.op === 'diff') {
+                if (diffDb.value !== routes.db || !diffApi.value.response) await loadDiff()
+                return
+            }
             if (routes.table) {
                 prefs.value = refreshPrefs()
                 if ((columnsMap[routes.dbTable()] || []).length === 0) {
@@ -573,6 +748,19 @@ export const Database = {
             lastState,
             columnsMap,
             copied,
+            diffApi,
+            diffLoading,
+            diff,
+            diffGroups,
+            copiedMigration,
+            loadDiff,
+            toggleChange,
+            isChangeOpen,
+            changeSymbol,
+            changeColor,
+            changeTitle,
+            changeDetail,
+            copyMigration,
             collapsed,
             plugin,
             databases,

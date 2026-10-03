@@ -426,9 +426,48 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         throw new NotImplementedException("Schemas are not supported by sqlite");
     }
 
+    // Columns are read from the table's definition, which has their declared type and if they allow nulls
+    public override ColumnSchema[] GetSchemaColumns(IDbConnection db, string quotedTable)
+    {
+        var columns = db.SqlList<Dictionary<string, object>>($"PRAGMA table_xinfo({quotedTable})");
+        return columns.Map(column => {
+            var to = new ColumnSchema {
+                ColumnName = column["name"]?.ToString(),
+                ColumnOrdinal = Convert.ToInt32(column["cid"]),
+                DataTypeName = column["type"]?.ToString(),
+                DataType = typeof(object),
+                ColumnSize = -1,
+                // A primary key is only reported as not null when it's declared as NOT NULL
+                AllowDBNull = Convert.ToInt32(column["notnull"]) == 0 && Convert.ToInt32(column["pk"]) == 0,
+                IsKey = Convert.ToInt32(column["pk"]) > 0,
+                DefaultValue = column["dflt_value"],
+            };
+            // VARCHAR(50) or DECIMAL(18,2)
+            var size = to.DataTypeName?.RightPart('(').LeftPart(')').Split(',');
+            if (to.DataTypeName?.EndsWith(")") == true && int.TryParse(size[0].Trim(), out var first))
+            {
+                to.DataTypeName = to.DataTypeName.LeftPart('(').Trim();
+                if (size.Length == 2 && int.TryParse(size[1].Trim(), out var scale))
+                {
+                    to.NumericPrecision = first;
+                    to.NumericScale = scale;
+                }
+                else
+                {
+                    to.ColumnSize = first;
+                }
+            }
+            return to;
+        }).ToArray();
+    }
+
+    public override List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef) => db.Column<string>(
+        "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name = {0} COLLATE NOCASE".SqlFmt(this, UnquotedTable(tableRef)));
+
     public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
-        var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0}"
+        // The names of tables aren't case sensitive
+        var sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name = {0} COLLATE NOCASE"
             .SqlFmt(this, UnquotedTable(tableRef));
 
         dbCmd.CommandText = sql;

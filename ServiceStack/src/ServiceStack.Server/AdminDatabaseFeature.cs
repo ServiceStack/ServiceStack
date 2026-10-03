@@ -30,11 +30,91 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
     /// </summary>
     public int RunQueryLimit { get; set; } = 20;
 
+    /// <summary>
+    /// Models that are compared with their tables in the Schema Diff, in addition to the data models of the App's
+    /// AutoQuery APIs. Models with a [NamedConnection] are compared with the tables of its database.
+    /// </summary>
+    public List<Type> ModelTypes { get; set; } = [];
+
+    /// <summary>
+    /// Choose the models that are compared with their tables in the Schema Diff
+    /// </summary>
+    public Func<Type, bool>? ModelTypesFilter { get; set; }
+
+    /// <summary>
+    /// The namespace of the migration the Schema Diff writes, defaults to the namespace of the App's migrations
+    /// </summary>
+    public string? MigrationNamespace { get; set; }
+
     public void Configure(IServiceCollection services)
     {
         services.RegisterService(typeof(AdminDatabaseService));
         services.RegisterService(typeof(AdminQueryService));
+        services.RegisterService(typeof(AdminSchemaDiffService));
     }
+
+    /// <summary>
+    /// The models of a database: the data models of the App's AutoQuery APIs and ModelTypes that use its named
+    /// connection. Models that AutoGen generates from the tables of a database, and the models of ServiceStack's
+    /// plugins which create their own tables, are only included when they're in ModelTypes.
+    /// </summary>
+    public List<Type> GetModelTypes(IAppHost appHost, string? namedConnection)
+    {
+        var to = new List<Type>();
+        void Add(Type? modelType, string? dtoConnection)
+        {
+            if (modelType == null || modelType.Assembly.IsDynamic || to.Contains(modelType))
+                return;
+            var connection = dtoConnection ?? modelType.FirstAttribute<NamedConnectionAttribute>()?.Name;
+            if (connection != namedConnection)
+                return;
+            if (ModelTypesFilter != null && !ModelTypesFilter(modelType))
+                return;
+            to.Add(modelType);
+        }
+
+        foreach (var modelType in ModelTypes)
+        {
+            Add(modelType, null);
+        }
+        foreach (var op in appHost.Metadata.Operations)
+        {
+            var modelType = op.DataModelType;
+            if (modelType?.Assembly.GetName().Name?.StartsWith("ServiceStack") == true
+                && modelType.Assembly != appHost.GetType().Assembly)
+                continue;
+            Add(modelType, op.RequestType.FirstAttribute<NamedConnectionAttribute>()?.Name);
+        }
+        return to.OrderBy(x => x.Name).ToList();
+    }
+
+    private static List<Type> GetMigrationTypes(IAppHost appHost)
+    {
+        var assemblies = new List<System.Reflection.Assembly> { appHost.GetType().Assembly };
+        assemblies.AddRange(appHost.ServiceAssemblies);
+        return assemblies.Distinct()
+            .SelectMany(x => x.GetTypes())
+            .Where(x => x.IsClass && !x.IsAbstract && typeof(MigrationBase).IsAssignableFrom(x))
+            .ToList();
+    }
+
+    /// <summary>
+    /// The name of the migration after the App's last migration, e.g. Migration1005 after Migration1004
+    /// </summary>
+    public string GetNextMigrationName(IAppHost appHost)
+    {
+        var last = 999;
+        foreach (var type in GetMigrationTypes(appHost))
+        {
+            if (type.Name.StartsWith("Migration") && int.TryParse(type.Name.Substring("Migration".Length), out var number))
+                last = Math.Max(last, number);
+        }
+        return "Migration" + (last + 1);
+    }
+
+    public string GetMigrationNamespace(IAppHost appHost) => MigrationNamespace
+        ?? GetMigrationTypes(appHost).OrderByDescending(x => x.Name).FirstOrDefault()?.Namespace
+        ?? (appHost.GetType().Namespace is { } ns ? ns + ".Migrations" : "Migrations");
 
     public void Register(IAppHost appHost)
     {
@@ -69,11 +149,13 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
             feature.ExcludeRequestDtoTypes.Add(typeof(AdminDatabase));
             feature.ExcludeRequestDtoTypes.Add(typeof(AdminExplainQuery));
             feature.ExcludeRequestDtoTypes.Add(typeof(AdminRunQuery));
+            feature.ExcludeRequestDtoTypes.Add(typeof(AdminSchemaDiff));
         });
         appHost.ConfigurePlugin<ProfilingFeature>(feature =>
         {
             feature.ExcludeRequestDtoTypes.Add(typeof(AdminExplainQuery));
             feature.ExcludeRequestDtoTypes.Add(typeof(AdminRunQuery));
+            feature.ExcludeRequestDtoTypes.Add(typeof(AdminSchemaDiff));
             // Explaining or re-running a profiled query isn't profiled
             feature.ExcludeTags.Add(nameof(AdminDatabaseFeature));
         });

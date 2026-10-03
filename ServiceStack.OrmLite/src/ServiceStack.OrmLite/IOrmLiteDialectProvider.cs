@@ -370,6 +370,22 @@ public interface IOrmLiteDialectProvider
     //DDL
     string GetDropForeignKeyConstraints(ModelDefinition modelDef);
 
+    /// <summary>
+    /// The columns of a table as they're reported by the database, e.g. their type, size and if they allow nulls
+    /// </summary>
+    ColumnSchema[] GetSchemaColumns(IDbConnection db, string quotedTable);
+
+    /// <summary>
+    /// The columns the fields of a model are created with, as they're reported by the database, which are read
+    /// from a temporary table that's created with them
+    /// </summary>
+    ColumnSchema[] GetModelSchemaColumns(IDbConnection db, List<FieldDefinition> fieldDefs);
+
+    /// <summary>
+    /// The names of the indexes of a table, or null if they can't be read
+    /// </summary>
+    List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef);
+
     string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn);

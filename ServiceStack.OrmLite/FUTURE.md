@@ -71,13 +71,17 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 
 ## 3. Schema and Migrations
 
-### 3.1 Schema Diff and Migration Scaffolding (L)
-Compare `ModelDefinition`s against the live schema (columns, types, nullability, indexes, foreign keys) and emit:
-```csharp
-var diff = db.GetSchemaDiff<Order>();      // added/removed/changed columns & indexes
-db.ApplySchemaDiff(diff, allowDestructive: false);
-```
-The existing `Migrator` could also generate a new migration class from the diff. This bridges the gap between `CreateTableIfNotExists` and hand-written migrations.
+### 3.1 More Schema Diff (M)
+`db.GetSchemaDiff(types)` finds the differences between models and their tables (tables, columns and indexes),
+`diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Remaining:
+- Compare default values, foreign keys, check and unique constraints, primary keys and the columns of indexes
+- Indexes that are in the database and not in the model
+- Find more of the models of an App, e.g. the types that `CreateTable` was called with. The Database Admin UI's
+  Schema Diff compares the data models of AutoQuery APIs and `AdminDatabaseFeature.ModelTypes`
+- A command that writes the next migration to the migrations folder, e.g. `npm run migrate:new` or an App Task
+- Detect likely renames: a column that's not in the model and a new property of the same type
+- Rebuild a SQLite table to alter its columns
+- Oracle and Firebird, which haven't been tested and don't compare indexes
 
 ### 3.2 Database-First Model Generation (M)
 Replace the legacy T4 templates with a `dotnet` tool (or `x` tool command) that generates OrmLite POCOs from an existing database, reusing the dialect catalog queries.

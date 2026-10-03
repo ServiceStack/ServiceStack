@@ -717,6 +717,16 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
             : "SELECT relname, reltuples FROM pg_class JOIN pg_catalog.pg_namespace n ON n.oid = pg_class.relnamespace WHERE relkind = 'r' AND nspname = {0}".SqlFmt(this, schemaName);
     }
 
+    public override List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef)
+    {
+        var schema = GetSchemaName(tableRef);
+        var sql = "SELECT indexname FROM pg_indexes WHERE lower(tablename) = {0}".SqlFmt(this, GetTableNameOnly(tableRef).ToLower())
+            + (schema != null
+                ? " AND lower(schemaname) = {0}".SqlFmt(this, schema.ToLower())
+                : " AND schemaname = current_schema()");
+        return db.Column<string>(sql);
+    }
+
     public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
         var sql = DoesTableExistSql(dbCmd, tableRef);

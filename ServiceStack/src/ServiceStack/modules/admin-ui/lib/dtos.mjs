@@ -2751,6 +2751,59 @@ export class AdminRunQuery {
     getMethod() { return 'POST' }
     createResponse() { return new AdminRunQueryResponse() }
 }
+export class AdminSchemaChange {
+    /** @param {{type?:string,model?:string,table?:string,name?:string,modelColumn?:string,databaseColumn?:string,description?:string,sql?:string,isDestructive?:boolean}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    type;
+    /** @type {string} */
+    model;
+    /** @type {string} */
+    table;
+    /** @type {?string} */
+    name;
+    /** @type {?string} */
+    modelColumn;
+    /** @type {?string} */
+    databaseColumn;
+    /** @type {string} */
+    description;
+    /** @type {?string} */
+    sql;
+    /** @type {?boolean} */
+    isDestructive;
+}
+export class AdminSchemaDiffResponse {
+    /** @param {{models?:string[],results?:AdminSchemaChange[],warnings?:string[],migrationName?:string,migrationNamespace?:string,migration?:string,responseStatus?:ResponseStatus}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string[]} */
+    models = [];
+    /** @type {AdminSchemaChange[]} */
+    results = [];
+    /** @type {string[]} */
+    warnings = [];
+    /** @type {?string} */
+    migrationName;
+    /** @type {?string} */
+    migrationNamespace;
+    /** @type {?string} */
+    migration;
+    /** @type {?ResponseStatus} */
+    responseStatus;
+}
+export class AdminSchemaDiff {
+    /** @param {{db?:string,migration?:string,namespace?:string}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    db;
+    /** @type {?string} */
+    migration;
+    /** @type {?string} */
+    namespace;
+    getTypeName() { return 'AdminSchemaDiff' }
+    getMethod() { return 'GET' }
+    createResponse() { return new AdminSchemaDiffResponse() }
+}
 export class ViewCommands {
     /** @param {{include?:string[],skip?:number,take?:number}} [init] */
     constructor(init) { Object.assign(this, init) }

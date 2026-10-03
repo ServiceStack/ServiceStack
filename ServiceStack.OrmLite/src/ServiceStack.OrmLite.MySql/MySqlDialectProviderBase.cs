@@ -513,6 +513,10 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 			: "SELECT table_name, table_rows FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema = DATABASE() AND table_name LIKE {0}".SqlFmt(this, NamingStrategy.GetSchemaName(schema)  + "\\_%");
 	}
         
+	public override List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef) => db.Column<string>(
+		"SELECT DISTINCT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
+			.SqlFmt(UnquotedTable(tableRef), db.Database));
+
 	public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
 	{
 		var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
