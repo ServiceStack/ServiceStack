@@ -521,6 +521,90 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
     }
 
     [Test]
+    public void Write_rules_and_filters_of_other_tables_dont_stop_SQL_being_reused()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        // Write rules only change inserts and updates, and the filter is for another table
+        db.OnInsert<Book>(x => x.Author, "Unknown");
+        db.EnsureFilter<BookReview>(x => x.Rating >= 4);
+
+        var query = OrmLiteQuery.Compile<Book, int>((q, since) => q.Where(x => x.Year >= since).OrderBy(x => x.Year));
+        foreach (var since in new[] { 1970, 1980 })
+        {
+            Assert.That(Titles(db.Select(query, since)),
+                Is.EqualTo(Titles(db.Select(db.From<Book>().Where(x => x.Year >= since).OrderBy(x => x.Year)))));
+        }
+        Assert.That(query.CachedStatements, Is.EqualTo(1));
+        Assert.That(query.NotCachedReason, Is.Null);
+    }
+
+    [Test]
+    public void Filters_of_joined_tables_are_applied_each_time()
+    {
+        static CompiledQuery<Book, int> Compile() => OrmLiteQuery.Compile<Book, int>((q, rating) => q
+            .Join<BookReview>((b, r) => b.Id == r.BookId)
+            .Where<BookReview>(r => r.Rating >= rating)
+            .OrderBy(b => b.Title));
+        static List<string> Expected(IDbConnection db, int rating) => Titles(db.Select(db.From<Book>()
+            .Join<BookReview>((b, r) => b.Id == r.BookId)
+            .Where<BookReview>(r => r.Rating >= rating)
+            .OrderBy(b => b.Title)));
+        // A connection that filters the reviews to a reviewer's. Each is opened on its own, as SQLite's :memory:
+        // connections are shared and keep their filters until they're disposed.
+        IDbConnection OpenReviewer(string reviewer)
+        {
+            var db = OpenDbConnection();
+            db.EnsureFilter<BookReview>(r => r.Reviewer == reviewer);
+            return db;
+        }
+
+        var query = Compile();
+        List<string> all;
+        using (var db = OpenDbConnection())
+        {
+            Bookstore.Seed(db);
+            // Its SQL is kept on a connection that doesn't filter its tables
+            all = Titles(db.Select(query, 1));
+            Assert.That(all, Is.EqualTo(Expected(db, 1)));
+            Assert.That(query.CachedStatements, Is.EqualTo(1));
+        }
+
+        // It isn't used on connections that filter the joined table, whose filters have values of their own
+        List<string> aliceTitles, bobTitles;
+        using (var alice = OpenReviewer("Alice"))
+        {
+            aliceTitles = Titles(alice.Select(query, 1));
+            Assert.That(aliceTitles, Is.EqualTo(Expected(alice, 1)));
+            Assert.That(Titles(alice.Select(query, 1)), Is.EqualTo(aliceTitles));
+        }
+        using (var bob = OpenReviewer("Bob"))
+        {
+            bobTitles = Titles(bob.Select(query, 1));
+            Assert.That(bobTitles, Is.EqualTo(Expected(bob, 1)));
+        }
+        Assert.That(aliceTitles, Is.Not.Empty);
+        Assert.That(aliceTitles, Is.Not.EqualTo(all));
+        Assert.That(aliceTitles, Is.Not.EqualTo(bobTitles));
+
+        using (var db = OpenDbConnection())
+            Assert.That(Titles(db.Select(query, 1)), Is.EqualTo(all));
+        Assert.That(query.CachedStatements, Is.EqualTo(1));
+
+        // Nor is it kept when it's first run on a connection that filters the joined table
+        var other = Compile();
+        using (var alice = OpenReviewer("Alice"))
+        {
+            Assert.That(Titles(alice.Select(other, 1)), Is.EqualTo(aliceTitles));
+            Assert.That(other.CachedStatements, Is.EqualTo(0));
+        }
+        using (var db = OpenDbConnection())
+            Assert.That(Titles(db.Select(other, 1)), Is.EqualTo(all));
+        Assert.That(other.CachedStatements, Is.EqualTo(1));
+    }
+
+    [Test]
     public void Arguments_are_sent_as_db_params()
     {
         using var db = OpenDbConnection();

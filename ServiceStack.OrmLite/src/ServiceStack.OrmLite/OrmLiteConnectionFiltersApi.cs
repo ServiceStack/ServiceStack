@@ -237,6 +237,7 @@ public static class OrmLiteConnectionFiltersApi
 
     internal static SqlExpression<T> WithFilters<T>(this SqlExpression<T> q, OrmLiteConnectionFilters filters)
     {
+        CompiledQueryBuild.FilterTable(typeof(T));
         if (filters.IsEmpty)
             return q;
         q.ConnectionFilters = filters; // for filters of joined tables

@@ -159,15 +159,7 @@ public sealed class OrmLiteConnectionFilters
         if (ensureFilters.Length == 0)
             return [];
 
-        var filterFns = ensureFiltersByTable.GetOrAdd(typeof(T), _ => {
-            var to = new List<Func<LambdaExpression?>>();
-            foreach (var filter in ensureFilters)
-            {
-                if (filter.Type.IsAssignableFrom(typeof(T)))
-                    to.Add(filter.For(typeof(T)));
-            }
-            return to.ToArray();
-        });
+        var filterFns = GetFilterFns(typeof(T));
         if (filterFns.Length == 0)
             return [];
 
@@ -179,6 +171,23 @@ public sealed class OrmLiteConnectionFilters
         }
         return typed.ToArray();
     }
+
+    private Func<LambdaExpression?>[] GetFilterFns(Type tableType) =>
+        ensureFiltersByTable.GetOrAdd(tableType, _ => {
+            var to = new List<Func<LambdaExpression?>>();
+            foreach (var filter in ensureFilters)
+            {
+                if (filter.Type.IsAssignableFrom(tableType))
+                    to.Add(filter.For(tableType));
+            }
+            return to.ToArray();
+        });
+
+    /// <summary>
+    /// Whether filters are registered for the table, which includes filter functions that may return no filter.
+    /// Unlike HasEnsureFilters, it doesn't call filter functions.
+    /// </summary>
+    internal bool MayFilter(Type tableType) => ensureFilters.Length > 0 && GetFilterFns(tableType).Length > 0;
 
     /// <summary>
     /// Whether any filters currently apply to the table

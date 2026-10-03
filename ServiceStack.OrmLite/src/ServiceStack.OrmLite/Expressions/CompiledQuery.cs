@@ -328,8 +328,10 @@ namespace ServiceStack.OrmLite
         internal string GetSql(IDbConnection db, object[] args, int kind, Type into,
             Func<SqlExpression<T>, string> toSql, out List<IDbDataParameter> sqlParams, out HashSet<string> onlyFields)
         {
-            // Filters have values of their own that aren't arguments, e.g. the tenant of the request
-            if (db.GetFilters().IsEmpty
+            // Filters have values of their own that aren't arguments, e.g. the tenant of the request, so a query is
+            // only reused when none of the connection's filters apply to its tables. Write rules don't change queries.
+            var filters = db.GetFilters();
+            if (!filters.MayFilter(typeof(T))
                 && OrmLiteConfig.SqlExpressionSelectFilter == null && OrmLiteConfig.SqlExpressionInitFilter == null)
             {
                 var state = GetState(db.GetDialectProvider());
@@ -343,9 +345,9 @@ namespace ServiceStack.OrmLite
                     state.Statements.TryGetValue(new StatementKey(key, kind, into), out statement);
 
                 if (statement == null && !state.IsFull)
-                    return Compile(state, db, args, kind, into, toSql, out sqlParams, out onlyFields);
+                    return Compile(state, db, filters, args, kind, into, toSql, out sqlParams, out onlyFields);
 
-                if (statement?.Sql != null)
+                if (statement?.Sql != null && !IsFiltered(statement.FilterTables, filters))
                 {
                     sqlParams = statement.CreateParams(state, args, lists);
                     if (sqlParams != null)
@@ -360,6 +362,19 @@ namespace ServiceStack.OrmLite
             sqlParams = q.Params;
             onlyFields = q.OnlyFields;
             return sql;
+        }
+
+        // Whether the connection has filters for any of the tables
+        private static bool IsFiltered(IEnumerable<Type> tables, OrmLiteConnectionFilters filters)
+        {
+            if (tables == null)
+                return false;
+            foreach (var table in tables)
+            {
+                if (filters.MayFilter(table))
+                    return true;
+            }
+            return false;
         }
 
         private static readonly object NullArg = new();
@@ -396,8 +411,9 @@ namespace ServiceStack.OrmLite
 
         // Generates the SQL as it's normally generated, to run the query with, and again without the values of
         // its arguments. The second is kept for the next time it's run if it's the same as the first.
-        private string Compile(DialectState state, IDbConnection db, object[] args, int kind, Type into,
-            Func<SqlExpression<T>, string> toSql, out List<IDbDataParameter> sqlParams, out HashSet<string> onlyFields)
+        private string Compile(DialectState state, IDbConnection db, OrmLiteConnectionFilters filters, object[] args,
+            int kind, Type into, Func<SqlExpression<T>, string> toSql, out List<IDbDataParameter> sqlParams,
+            out HashSet<string> onlyFields)
         {
             lock (state)
             {
@@ -405,6 +421,10 @@ namespace ServiceStack.OrmLite
                 var q = Run(normal, db, toSql, out var sql);
                 sqlParams = q.Params;
                 onlyFields = q.OnlyFields;
+
+                // A joined or sub query table is filtered on this connection, so its SQL has the filter's values
+                if (IsFiltered(normal.FilterTables, filters))
+                    return sql;
 
                 Statement statement = null;
                 string reason = null;
@@ -415,6 +435,13 @@ namespace ServiceStack.OrmLite
                     if (bound.HasNullValue)
                         return sql; // SQL for a null isn't SQL for a value, generate it again next time
                     statement = Statement.Create(state, bound, boundQuery, boundSql, sql, q.Params, out reason);
+                    if (statement != null && (normal.FilterTables != null || bound.FilterTables != null))
+                    {
+                        // Kept so the statement isn't reused on connections that filter any of its tables
+                        var tables = new HashSet<Type>(normal.FilterTables ?? []);
+                        tables.UnionWith(bound.FilterTables ?? []);
+                        statement.FilterTables = tables.ToArray();
+                    }
                 }
                 catch (Exception e)
                 {
@@ -557,6 +584,7 @@ namespace ServiceStack.OrmLite
 
             internal string Sql;
             internal HashSet<string> OnlyFields;
+            internal Type[] FilterTables; // the tables filters are applied to, without filters on this connection
             private ParamTemplate[] templates;
             private int[] listSizes; // of the collection arguments the SQL has db params for
 
@@ -782,6 +810,18 @@ namespace ServiceStack.OrmLite
     internal sealed class CompiledQueryBuild
     {
         [ThreadStatic] internal static CompiledQueryBuild Current;
+
+        // The tables the query's SQL would have the connection's filters for, including joined and sub query tables
+        internal HashSet<Type> FilterTables;
+
+        /// <summary>
+        /// Record a table the connection's filters are applied to, while a compiled query is built
+        /// </summary>
+        internal static void FilterTable(Type tableType)
+        {
+            if (Current is { } build && tableType != null)
+                (build.FilterTables ??= []).Add(tableType);
+        }
 
         internal readonly object[] Args;
         internal readonly bool[] UsedInSql;  // arguments whose value was read to generate the SQL

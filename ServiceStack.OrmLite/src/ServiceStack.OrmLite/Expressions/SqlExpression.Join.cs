@@ -211,6 +211,7 @@ namespace ServiceStack.OrmLite
         /// </summary>
         private string AddJoinedTableFilter(string sqlExpr, ModelDefinition joinDef, string alias)
         {
+            CompiledQueryBuild.FilterTable(joinDef?.ModelType);
             if (ConnectionFilters == null || ConnectionFilters.IsEmpty || joinDef?.ModelType == null)
                 return sqlExpr;
             var condition = ConnectionFilters.ToFilterCondition(DialectProvider, joinDef.ModelType, alias, paramPrefix: "",

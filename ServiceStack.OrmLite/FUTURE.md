@@ -48,8 +48,9 @@ SQL Server and MariaDB, which have them natively. Remaining temporal features:
 ### 2.1 More Compiled Queries (M)
 `OrmLiteQuery.Compile()` generates the SQL of a typed query once, then only creates db params from its arguments each
 time it's run. Remaining:
-- Reuse SQL on connections with mandatory filters, e.g. `EnsureFilter()`, whose values would be arguments of the SQL.
-  They currently generate their SQL each time, so multi-tenant Apps that use them don't benefit
+- Reuse SQL of tables with mandatory filters, e.g. `EnsureFilter()`, whose values would be arguments of the SQL.
+  Queries of other tables and connections with only write rules reuse their SQL, but queries of filtered tables
+  generate it each time, e.g. a tenant's tables in multi-tenant Apps
 - Reuse SQL when `OrmLiteConfig.SqlExpressionSelectFilter` is used, e.g. opted in for filters without values that
   change, like soft deletes
 - Vector arguments, e.g. `Sql.CosineDistance(x.Embedding, vector)`, and arguments in join conditions
