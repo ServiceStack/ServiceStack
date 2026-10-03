@@ -43,7 +43,24 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual bool SupportsBatchRowsAffected => true;
 
-    public OrmLiteRetryPolicy RetryPolicy { get; set; }
+    private OrmLiteRetryPolicy retryPolicy;
+    /// <summary>
+    /// Null when nothing is retried, e.g. with OrmLiteRetry.None, so statements skip retrying as they do without a
+    /// policy
+    /// </summary>
+    public OrmLiteRetryPolicy RetryPolicy
+    {
+        get
+        {
+            if (!SupportsRetries)
+                return null;
+            var policy = retryPolicy ?? OrmLiteConfig.RetryPolicy;
+            return policy?.MaxRetries > 0 ? policy : null;
+        }
+        set => retryPolicy = value;
+    }
+
+    public virtual bool SupportsRetries => true;
 
     /// <summary>
     /// Recognizes a lost connection, dialects override it to recognize their driver's temporary errors

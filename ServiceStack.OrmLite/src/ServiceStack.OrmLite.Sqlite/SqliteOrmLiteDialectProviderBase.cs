@@ -112,6 +112,12 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override bool SupportsSchema => false;
     public override bool SupportsConcurrentWrites => false;
 
+    /// <summary>
+    /// Its drivers already wait for a lock to be released until the command times out, and an embedded database
+    /// doesn't lose its connection, so retries would only wait longer
+    /// </summary>
+    public override bool SupportsRetries => false;
+
     protected virtual bool ShouldReturnOnInsert(ModelDefinition modelDef, FieldDefinition fieldDef) =>
         fieldDef.ReturnOnInsert || (fieldDef.IsPrimaryKey && fieldDef.AutoIncrement && HasInsertReturnValues(modelDef));
 

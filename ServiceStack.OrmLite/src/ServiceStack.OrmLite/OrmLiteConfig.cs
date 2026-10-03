@@ -253,6 +253,12 @@ public static class OrmLiteConfig
 
     public static Action<IDbCommand, Exception> ExceptionFilter { get; set; }
 
+    /// <summary>
+    /// When statements and connections that fail with a temporary error are run again, for every dialect without a
+    /// RetryPolicy of its own that supports retries. Not retried when null, the default.
+    /// </summary>
+    public static OrmLiteRetryPolicy RetryPolicy { get; set; }
+
     public static bool ThrowOnError { get; set; } = true;
 
     public static Func<string, string> SanitizeFieldNameForParamNameFn = fieldName =>

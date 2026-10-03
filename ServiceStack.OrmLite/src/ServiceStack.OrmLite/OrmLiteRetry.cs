@@ -41,6 +41,12 @@ public static class OrmLiteRetry
     /// </summary>
     public static OrmLiteRetryPolicy Exponential(int maxRetries = 3, TimeSpan? delay = null, TimeSpan? maxDelay = null) =>
         new(maxRetries, delay ?? TimeSpan.FromMilliseconds(50), maxDelay ?? TimeSpan.FromSeconds(2));
+
+    /// <summary>
+    /// Don't retry, e.g. to not retry a dialect when there's a global OrmLiteConfig.RetryPolicy.
+    /// A dialect with it runs statements as it does without a policy.
+    /// </summary>
+    public static OrmLiteRetryPolicy None { get; } = new(0, TimeSpan.Zero, TimeSpan.Zero);
 }
 
 /// <summary>

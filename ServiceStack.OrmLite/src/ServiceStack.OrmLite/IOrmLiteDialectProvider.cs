@@ -62,9 +62,16 @@ public interface IOrmLiteDialectProvider
 
     /// <summary>
     /// When statements and connections that fail with a temporary error are run again, e.g. after a deadlock,
-    /// throttling or a lost connection. Not retried when null, the default.
+    /// throttling or a lost connection. Uses OrmLiteConfig.RetryPolicy when it's not set, use OrmLiteRetry.None to
+    /// not retry this dialect. Null when nothing is retried: without a policy, with one that doesn't retry, e.g.
+    /// OrmLiteRetry.None, or when the dialect doesn't support retries.
     /// </summary>
     OrmLiteRetryPolicy RetryPolicy { get; set; }
+
+    /// <summary>
+    /// Whether the dialect retries temporary errors, when it has a RetryPolicy or there's a global one
+    /// </summary>
+    bool SupportsRetries { get; }
 
     /// <summary>
     /// Whether an error of the driver is temporary, and if it is, whether the database confirmed the statement

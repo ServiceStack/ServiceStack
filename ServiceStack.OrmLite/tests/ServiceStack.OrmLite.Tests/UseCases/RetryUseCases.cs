@@ -64,8 +64,15 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
     [TearDown]
     public void TearDown()
     {
+        OrmLiteConfig.RetryPolicy = null;
         DialectProvider.RetryPolicy = null;
         DialectProvider.OnBeforeExecuteNonQuery = null;
+    }
+
+    private void IgnoreIfRetriesNotSupported()
+    {
+        if (!DialectProvider.SupportsRetries)
+            Assert.Ignore($"{DialectProvider.GetType().Name} doesn't retry");
     }
 
     [Test]
@@ -85,6 +92,7 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
     [Test]
     public void Retries_a_statement_that_the_database_did_not_apply()
     {
+        IgnoreIfRetriesNotSupported();
         DialectProvider.RetryPolicy = CreatePolicy()
             .Handle(e => e is FakeTransientException, TransientError.NotApplied);
         FailInserts(2);
@@ -97,8 +105,58 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
     }
 
     [Test]
+    public void Uses_the_global_policy_unless_the_dialect_has_its_own()
+    {
+        IgnoreIfRetriesNotSupported();
+        OrmLiteConfig.RetryPolicy = CreatePolicy()
+            .Handle(e => e is FakeTransientException, TransientError.NotApplied);
+        FailInserts(1);
+
+        using var db = OpenDbConnection();
+        db.Insert(new RetryItem { Name = "A" });
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+
+        // Don't retry this dialect
+        DialectProvider.RetryPolicy = OrmLiteRetry.None;
+        Assert.That(DialectProvider.RetryPolicy, Is.Null); // runs statements as it does without a policy
+        FailInserts(1);
+        Assert.Throws<FakeTransientException>(() => db.Insert(new RetryItem { Name = "B" }));
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+        Assert.That(db.Select<RetryItem>().Map(x => x.Name), Is.EqualTo(new[] { "A" }));
+    }
+
+    [Test]
+    public void Dialects_that_do_not_support_retries_ignore_every_policy()
+    {
+        if (DialectProvider.SupportsRetries)
+            Assert.Ignore($"{DialectProvider.GetType().Name} retries");
+
+        OrmLiteConfig.RetryPolicy = CreatePolicy()
+            .Handle(e => e is FakeTransientException, TransientError.NotApplied);
+        DialectProvider.RetryPolicy = CreatePolicy()
+            .Handle(e => e is FakeTransientException, TransientError.NotApplied);
+        Assert.That(DialectProvider.RetryPolicy, Is.Null);
+
+        FailInserts(1);
+        using var db = OpenDbConnection();
+        Assert.Throws<FakeTransientException>(() => db.Insert(new RetryItem { Name = "A" }));
+
+        // Runs once, in a transaction
+        var attempts = 0;
+        Assert.Throws<FakeTransientException>(() => db.RunInTransaction(() => {
+            attempts++;
+            db.Insert(new RetryItem { Name = "A" });
+            throw new FakeTransientException();
+        }));
+        Assert.That(attempts, Is.EqualTo(1));
+        Assert.That(retries, Is.Empty);
+        Assert.That(db.Count<RetryItem>(), Is.EqualTo(0));
+    }
+
+    [Test]
     public void Throws_the_error_after_the_last_retry()
     {
+        IgnoreIfRetriesNotSupported();
         DialectProvider.RetryPolicy = CreatePolicy(maxRetries: 2)
             .Handle(e => e is FakeTransientException, TransientError.NotApplied);
         FailInserts(10);
@@ -142,6 +200,7 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
     [Test]
     public void RunInTransaction_runs_the_whole_transaction_again()
     {
+        IgnoreIfRetriesNotSupported();
         DialectProvider.RetryPolicy = CreatePolicy()
             .Handle(e => e is FakeTransientException, TransientError.NotApplied);
 
@@ -167,6 +226,7 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
     [Test]
     public async Task RunInTransactionAsync_runs_the_whole_transaction_again()
     {
+        IgnoreIfRetriesNotSupported();
         DialectProvider.RetryPolicy = CreatePolicy()
             .Handle(e => e is FakeTransientException, TransientError.NotApplied);
 
@@ -221,6 +281,7 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
     [Test]
     public void Retries_opening_a_connection()
     {
+        IgnoreIfRetriesNotSupported();
         if (!DbFactory.AutoDisposeConnection)
             Assert.Ignore("Shared connections are only opened once");
 
