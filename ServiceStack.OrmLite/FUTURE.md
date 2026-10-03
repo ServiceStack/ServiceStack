@@ -76,11 +76,10 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 `diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Tables that aren't
 managed by OrmLite are ignored with `OrmLiteConfig.SchemaDiff` (`AspNet*` by default), and
 `AdminDatabaseFeature.LogSchemaDiff` logs the differences when an App starts. The Admin UI compares the data models
-of AutoQuery APIs and the App's models of the tables migrations create, found by `Migrator.GetMigrationTables()`.
-Remaining:
+of AutoQuery APIs and the App's models of the tables migrations create, found by `Migrator.GetMigrationTables()`,
+and the `migrate.new` App Task writes the next migration to the App's migrations. Remaining:
 - Compare default values, foreign keys, check and unique constraints, primary keys and the columns of indexes
 - Indexes that are in the database and not in the model
-- A command that writes the next migration to the migrations folder, e.g. `npm run migrate:new` or an App Task
 - Detect likely renames: a column that's not in the model and a new property of the same type
 - Rebuild a SQLite table to alter its columns
 - Oracle and Firebird, which haven't been tested and don't compare indexes

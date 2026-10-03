@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -54,6 +55,11 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
     public bool IncludeMigrationModels { get; set; } = true;
 
     /// <summary>
+    /// The folder that the migrate.new App Task writes migrations to, relative to the App's content root
+    /// </summary>
+    public string MigrationsPath { get; set; } = "Migrations";
+
+    /// <summary>
     /// Log the Schema Diff of each database when the App starts, a warning with the differences when its tables
     /// aren't the same as their models. It's compared in the background, and not when running App Tasks.
     /// </summary>
@@ -64,6 +70,54 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
         services.RegisterService(typeof(AdminDatabaseService));
         services.RegisterService(typeof(AdminQueryService));
         services.RegisterService(typeof(AdminSchemaDiffService));
+
+        // Write the migration of a database's Schema Diff to the App's migrations, e.g:
+        // dotnet run --AppTasks=migrate.new           (the main database)
+        // dotnet run --AppTasks=migrate.new:reports   (a named connection)
+        AppTasks.Register("migrate.new", args => WriteMigration(HostContext.AppHost, args.FirstOrDefault()));
+    }
+
+    /// <summary>
+    /// Write the migration of a database's Schema Diff to the App's migrations, see MigrationsPath, named after the
+    /// App's last migration. Returns the path of the file, or null when the database is the same as its models.
+    /// The migration is a guide to review, which is compiled with a warning until it's reviewed.
+    /// </summary>
+    public string? WriteMigration(IAppHost appHost, string? namedConnection = null)
+    {
+        var log = LogManager.GetLogger(typeof(AdminDatabaseFeature));
+        var dbName = namedConnection is null or "" or "main" ? null : namedConnection;
+        var dbFactory = appHost.Resolve<IDbConnectionFactory>();
+        if (dbName != null && !dbFactory.GetNamedConnections().ContainsKey(dbName))
+            throw new ArgumentException($"There's no '{dbName}' named connection", nameof(namedConnection));
+
+        // App Tasks run before AutoQuery has registered its APIs, so their data models are read from the App's DTOs
+        var modelTypes = GetModelTypes(appHost, dbName, scanRequestTypes: true);
+        using var db = dbName != null
+            ? dbFactory.Open(dbName, ConfigureDb)
+            : dbFactory.Open(ConfigureDb);
+        var diff = db.GetSchemaDiff(modelTypes.ToArray());
+        if (!diff.HasChanges)
+        {
+            log.Info($"Schema Diff: the tables of the {dbName ?? "main"} database are the same as their models, no migration was written");
+            return null;
+        }
+
+        var name = GetNextMigrationName(appHost);
+        var source = diff.ToMigration(name, GetMigrationNamespace(appHost));
+        if (dbName != null)
+        {
+            source = source.Replace($"public class {name} : MigrationBase",
+                $"[NamedConnection(\"{dbName}\")]\npublic class {name} : MigrationBase");
+        }
+
+        var dir = Path.IsPathRooted(MigrationsPath) ? MigrationsPath : Path.Combine(appHost.MapProjectPath("~/"), MigrationsPath);
+        Directory.CreateDirectory(dir);
+        var path = Path.Combine(dir, name + ".cs");
+        if (File.Exists(path))
+            throw new InvalidOperationException($"{path} already exists");
+        File.WriteAllText(path, source);
+        log.Info($"Schema Diff: wrote {path}, a guide to review before running it\n{diff}");
+        return path;
     }
 
     /// <summary>
@@ -71,7 +125,11 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
     /// connection. Models that AutoGen generates from the tables of a database, and the models of ServiceStack's
     /// plugins which create their own tables, are only included when they're in ModelTypes.
     /// </summary>
-    public List<Type> GetModelTypes(IAppHost appHost, string? namedConnection)
+    public List<Type> GetModelTypes(IAppHost appHost, string? namedConnection) =>
+        GetModelTypes(appHost, namedConnection, scanRequestTypes: false);
+
+    // When scanRequestTypes, the data models of AutoQuery APIs are read from the App's DTOs instead of its APIs
+    internal List<Type> GetModelTypes(IAppHost appHost, string? namedConnection, bool scanRequestTypes)
     {
         var to = new List<Type>();
         void Add(Type? modelType, string? dtoConnection)
@@ -90,13 +148,17 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
         {
             Add(modelType, null);
         }
-        foreach (var op in appHost.Metadata.Operations)
+        var requestTypes = scanRequestTypes
+            ? GetAppAssemblies(appHost).SelectMany(GetLoadableTypes)
+                .Where(x => x.IsClass && !x.IsAbstract && !x.IsGenericTypeDefinition)
+            : appHost.Metadata.Operations.Select(x => x.RequestType);
+        foreach (var requestType in requestTypes)
         {
-            var modelType = op.DataModelType;
+            var modelType = AutoCrudOperation.GetModelType(requestType);
             if (modelType?.Assembly.GetName().Name?.StartsWith("ServiceStack") == true
                 && modelType.Assembly != appHost.GetType().Assembly)
                 continue;
-            Add(modelType, op.RequestType.FirstAttribute<NamedConnectionAttribute>()?.Name);
+            Add(modelType, requestType.FirstAttribute<NamedConnectionAttribute>()?.Name);
         }
         if (IncludeMigrationModels)
         {
@@ -125,20 +187,37 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
         if (migrationAssemblies.Length == 0)
             return migrationTables = [];
 
-        // The App's assemblies and the assemblies of its APIs, e.g. its ServiceModel project
-        var modelAssemblies = new List<System.Reflection.Assembly> { appHost.GetType().Assembly };
-        modelAssemblies.AddRange(appHost.ServiceAssemblies);
+        return migrationTables = Migrator.GetMigrationTables(migrationAssemblies, GetAppAssemblies(appHost));
+    }
+
+    // The App's assemblies and the assemblies of its APIs, e.g. its ServiceModel project
+    private static System.Reflection.Assembly[] GetAppAssemblies(IAppHost appHost)
+    {
+        var assemblies = new List<System.Reflection.Assembly> { appHost.GetType().Assembly };
+        assemblies.AddRange(appHost.ServiceAssemblies);
         foreach (var op in appHost.Metadata.Operations)
         {
-            modelAssemblies.Add(op.RequestType.Assembly);
+            assemblies.Add(op.RequestType.Assembly);
             if (op.ResponseType != null)
-                modelAssemblies.Add(op.ResponseType.Assembly);
+                assemblies.Add(op.ResponseType.Assembly);
         }
-        var appAssemblies = modelAssemblies.Distinct()
+        return assemblies.Distinct()
             .Where(x => !x.IsDynamic && x.GetName().Name?.StartsWith("ServiceStack") != true
                 || x == appHost.GetType().Assembly)
             .ToArray();
-        return migrationTables = Migrator.GetMigrationTables(migrationAssemblies, appAssemblies);
+    }
+
+    // The types of an assembly that can be loaded, without those whose dependencies are missing
+    private static IEnumerable<Type> GetLoadableTypes(System.Reflection.Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (System.Reflection.ReflectionTypeLoadException e)
+        {
+            return e.Types.Where(x => x != null)!;
+        }
     }
 
     private static List<Type> GetMigrationTypes(IAppHost appHost)
