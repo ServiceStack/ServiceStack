@@ -163,8 +163,10 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
                 }
 
                 var compared = modelTypes.Count - diff.Ignored.Count;
-                var message = $"Schema Diff: the tables of the {dbName} database are the same as their models " +
-                              $"({compared} {(compared == 1 ? "model" : "models")})";
+                var message = compared == 0
+                    ? $"Schema Diff: no models of the {dbName} database were compared"
+                    : $"Schema Diff: the tables of the {dbName} database are the same as their models " +
+                      $"({compared} {(compared == 1 ? "model" : "models")})";
                 if (diff.Ignored.Count > 0)
                     message += $", ignored {string.Join(", ", diff.Ignored)}";
                 log.Info(message);

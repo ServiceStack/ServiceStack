@@ -149,7 +149,8 @@ public class GenerateCrudServicesTests
         // "\nexpectedApis:".Print();
         // expectedApis.PrintDump();
 
-        var exclude = new []{ nameof(QueryCaseInsensitiveOrderBy) };
+        // APIs of other fixtures in this assembly
+        var exclude = new []{ nameof(QueryCaseInsensitiveOrderBy), nameof(QuerySchemaDiffCategories), nameof(QuerySchemaDiffProducts) };
         var apisWithTableNames = HostContext.AppHost.Metadata.GetOperationDtos()
             .Select(x => x.Name)
             .Where(x => NorthwindTables.Any(table => x.Contains(table) || x.Contains(Words.Pluralize(table)))
