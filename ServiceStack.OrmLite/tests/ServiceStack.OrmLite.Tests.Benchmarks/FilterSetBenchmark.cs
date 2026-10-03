@@ -239,7 +239,7 @@ public class FilterSetBenchmark
         return Ready(q.SelectInto<WorkspaceKey>(QueryType.Select), q.Params);
     }
 
-    // 5. Compiled queries reuse their SQL on connections without filters of their tables
+    // 5. Compiled queries reuse their SQL, with the values of the connection's filters as db params
 
     [Benchmark(Baseline = true), BenchmarkCategory("5. Compiled by Id")]
     public int Compiled_Plain()

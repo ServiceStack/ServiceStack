@@ -102,6 +102,45 @@ namespace ServiceStack.OrmLite
             return dbCmd;
         }
 
+        /// <summary>
+        /// Update the fields of the rows matching a compiled query, which reuses the SQL of its WHERE clause
+        /// </summary>
+        internal static IDbCommand InitUpdateOnly<T>(this IDbCommand dbCmd, Expression<Func<T>> updateFields, BoundQuery<T> where)
+        {
+            if (updateFields == null)
+                throw new ArgumentNullException(nameof(updateFields));
+            if (where == null)
+                throw new ArgumentNullException(nameof(where));
+
+            OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.EvalFactoryFn());
+
+            var whereExpression = where.ToWhereExpression(); // creates its db params
+            dbCmd.AddParams(where.Params);
+
+            var updateFieldValues = dbCmd.WithUpdateRuleValues<T>(updateFields.AssignedValues());
+            dbCmd.GetDialectProvider().PrepareUpdateRowStatement<T>(dbCmd, updateFieldValues, whereExpression);
+            return dbCmd;
+        }
+
+        /// <summary>
+        /// Add to the fields of the rows matching a compiled query, which reuses the SQL of its WHERE clause
+        /// </summary>
+        internal static IDbCommand InitUpdateAdd<T>(this IDbCommand dbCmd, Expression<Func<T>> updateFields, BoundQuery<T> where)
+        {
+            if (updateFields == null)
+                throw new ArgumentNullException(nameof(updateFields));
+            if (where == null)
+                throw new ArgumentNullException(nameof(where));
+
+            OrmLiteConfig.UpdateFilter?.Invoke(dbCmd, updateFields.EvalFactoryFn());
+
+            var whereExpression = where.ToWhereExpression(); // creates its db params
+            dbCmd.AddParams(where.Params);
+
+            dbCmd.PrepareUpdateRowAddStatement<T>(updateFields.AssignedValues(), whereExpression);
+            return dbCmd;
+        }
+
         internal static int UpdateOnly<T>(this IDbCommand dbCmd,
             Expression<Func<T>> updateFields,
             string whereExpression,

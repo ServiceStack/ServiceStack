@@ -169,6 +169,18 @@ namespace ServiceStack.OrmLite
         internal string ToExistsStatement() =>
             GetSql(CompiledQueryBase<T>.ExistsKind, null, CompiledQueryBase<T>.ToExists);
 
+        /// <summary>
+        /// DELETE statement of the rows the query matches
+        /// </summary>
+        public string ToDeleteStatement() =>
+            GetSql(CompiledQueryBase<T>.DeleteKind, null, CompiledQueryBase<T>.ToDelete);
+
+        /// <summary>
+        /// WHERE clause of the query, e.g. for UPDATE statements
+        /// </summary>
+        public string ToWhereExpression() =>
+            GetSql(CompiledQueryBase<T>.WhereKind, null, CompiledQueryBase<T>.ToWhere);
+
         private string GetSql(int kind, Type into, Func<SqlExpression<T>, string> toSql)
         {
             var sql = query.GetSql(db, args, kind, into, toSql, out var sqlParams, out var onlyFields);
@@ -197,11 +209,15 @@ namespace ServiceStack.OrmLite
         internal const int StatementKind = 3; // ToSelectStatement(QueryType)
         internal const int CountKind = 6;
         internal const int ExistsKind = 7;
-        private const int Kinds = 8;
+        internal const int DeleteKind = 8;
+        internal const int WhereKind = 9;
+        private const int Kinds = 10;
 
         internal static readonly Func<SqlExpression<T>, string> ToCount = q => q.ToCountStatement();
         internal static readonly Func<SqlExpression<T>, string> ToExists =
             q => q.CloneForExists().ToSelectStatement(QueryType.Scalar);
+        internal static readonly Func<SqlExpression<T>, string> ToDelete = q => q.ToDeleteRowStatement();
+        internal static readonly Func<SqlExpression<T>, string> ToWhere = q => q.WhereExpression;
 
         private static readonly Func<SqlExpression<T>, string>[] ToStatements = [
             q => q.ToSelectStatement(QueryType.Select),
@@ -328,25 +344,20 @@ namespace ServiceStack.OrmLite
         internal string GetSql(IDbConnection db, object[] args, int kind, Type into,
             Func<SqlExpression<T>, string> toSql, out List<IDbDataParameter> sqlParams, out HashSet<string> onlyFields)
         {
-            // Filters have values of their own that aren't arguments, e.g. the tenant of the request, so a query is
-            // only reused when none of the connection's filters apply to its tables. Write rules don't change queries.
             var filters = db.GetFilters();
-            if (!filters.MayFilter(typeof(T))
-                && OrmLiteConfig.SqlExpressionSelectFilter == null && OrmLiteConfig.SqlExpressionInitFilter == null)
+            if (OrmLiteConfig.SqlExpressionSelectFilter == null && OrmLiteConfig.SqlExpressionInitFilter == null)
             {
                 var state = GetState(db.GetDialectProvider());
                 List<object>[] lists = null;
                 var key = MakeKey(state.Modes, args, ref lists);
-                var isDefault = key == null && (into == null || into == typeof(T));
+                var statementKey = new StatementKey(key, kind, into);
                 Statement statement;
-                if (isDefault)
+                if (key == null && (into == null || into == typeof(T)))
                     statement = state.Defaults[kind];
                 else
-                    state.Statements.TryGetValue(new StatementKey(key, kind, into), out statement);
+                    state.Statements.TryGetValue(statementKey, out statement);
 
-                if (statement == null && !state.IsFull)
-                    return Compile(state, db, filters, args, kind, into, toSql, out sqlParams, out onlyFields);
-
+                // The statement of connections that don't filter its tables
                 if (statement?.Sql != null && !IsFiltered(statement.FilterTables, filters))
                 {
                     sqlParams = statement.CreateParams(state, args, lists);
@@ -355,6 +366,33 @@ namespace ServiceStack.OrmLite
                         onlyFields = statement.OnlyFields;
                         return statement.Sql;
                     }
+                }
+                else if (!filters.IsEmpty && state.Filtered.TryGetValue(new FilteredKey(statementKey, filters.Shape), out var group))
+                {
+                    // The statement for the SQL the connection's filters have with the values of their scopes
+                    var filterKey = group.Choose(filters, state.Dialect, args, out var filterArgs);
+                    if (filterKey != null)
+                    {
+                        if (!group.Statements.TryGetValue(filterKey, out var filtered))
+                        {
+                            if (!state.IsFull)
+                                return Compile(state, db, filters, args, kind, into, toSql, out sqlParams, out onlyFields);
+                        }
+                        else if (filtered.Sql != null)
+                        {
+                            sqlParams = filtered.CreateParams(state, filterArgs, lists);
+                            if (sqlParams != null)
+                            {
+                                onlyFields = filtered.OnlyFields;
+                                return filtered.Sql;
+                            }
+                        }
+                    }
+                }
+                else if (!state.IsFull && (statement == null || IsFiltered(statement.FilterTables, filters)))
+                {
+                    // Not built yet, or not with the filters of this connection
+                    return Compile(state, db, filters, args, kind, into, toSql, out sqlParams, out onlyFields);
                 }
             }
 
@@ -410,7 +448,8 @@ namespace ServiceStack.OrmLite
         }
 
         // Generates the SQL as it's normally generated, to run the query with, and again without the values of
-        // its arguments. The second is kept for the next time it's run if it's the same as the first.
+        // its arguments. The second is kept for the next time it's run if it's the same as the first. A query of
+        // tables the connection filters is kept for its filters and the SQL they have with the values of their scopes.
         private string Compile(DialectState state, IDbConnection db, OrmLiteConnectionFilters filters, object[] args,
             int kind, Type into, Func<SqlExpression<T>, string> toSql, out List<IDbDataParameter> sqlParams,
             out HashSet<string> onlyFields)
@@ -422,10 +461,6 @@ namespace ServiceStack.OrmLite
                 sqlParams = q.Params;
                 onlyFields = q.OnlyFields;
 
-                // A joined or sub query table is filtered on this connection, so its SQL has the filter's values
-                if (IsFiltered(normal.FilterTables, filters))
-                    return sql;
-
                 Statement statement = null;
                 string reason = null;
                 var bound = new CompiledQueryBuild(args, state.Modes, bind: true);
@@ -434,14 +469,18 @@ namespace ServiceStack.OrmLite
                     var boundQuery = Run(bound, db, toSql, out var boundSql);
                     if (bound.HasNullValue)
                         return sql; // SQL for a null isn't SQL for a value, generate it again next time
-                    statement = Statement.Create(state, bound, boundQuery, boundSql, sql, q.Params, out reason);
-                    if (statement != null && (normal.FilterTables != null || bound.FilterTables != null))
+                    // Kept so the statement isn't reused on connections that filter any of its tables
+                    Type[] filterTables = null;
+                    if (normal.FilterTables != null || bound.FilterTables != null)
                     {
-                        // Kept so the statement isn't reused on connections that filter any of its tables
                         var tables = new HashSet<Type>(normal.FilterTables ?? []);
                         tables.UnionWith(bound.FilterTables ?? []);
-                        statement.FilterTables = tables.ToArray();
+                        filterTables = tables.ToArray();
                     }
+                    if (!SameFilterUses(normal.FilterUses, bound.FilterUses))
+                        reason = "The connection's filters are applied differently each time";
+                    else
+                        statement = Statement.Create(state, bound, boundQuery, boundSql, sql, q.Params, filterTables, out reason);
                 }
                 catch (Exception e)
                 {
@@ -472,6 +511,28 @@ namespace ServiceStack.OrmLite
 
                 List<object>[] lists = null;
                 var key = MakeKey(modes, args, ref lists);
+                if (bound.FilterUses.Count > 0)
+                {
+                    // Kept for the connection's filters, with the SQL each had with the values of its scope
+                    var group = state.Filtered.GetOrAdd(new FilteredKey(new StatementKey(key, kind, into), filters.Shape),
+                        _ => new FilterGroup(bound.FilterUses.ToArray()));
+                    var filterKey = FilterGroup.KeyOf(bound.FilterUses);
+                    if (filterKey == null)
+                    {
+                        NotCachedReason = "A filter of the connection is translated for each statement, see FilterSet.NotCachedReasons";
+                    }
+                    else if (state.Cached >= OrmLiteQuery.MaxCachedStatements)
+                    {
+                        state.IsFull = true;
+                        NotCachedReason = $"The query has more than {OrmLiteQuery.MaxCachedStatements} SQL statements";
+                    }
+                    else if (group.Statements.TryAdd(filterKey, statement) && statement.Sql != null)
+                    {
+                        state.Cached++;
+                    }
+                    return sql;
+                }
+
                 if (key == null && (into == null || into == typeof(T)))
                 {
                     if (state.Defaults[kind] == null && statement.Sql != null)
@@ -496,6 +557,74 @@ namespace ServiceStack.OrmLite
             }
         }
 
+        // Whether both builds applied the same filters with the same SQL
+        private static bool SameFilterUses(List<FilterUse> a, List<FilterUse> b)
+        {
+            if (a.Count != b.Count)
+                return false;
+            for (var i = 0; i < a.Count; i++)
+            {
+                if (a[i].Rule != b[i].Rule || !ReferenceEquals(a[i].Sql, b[i].Sql))
+                    return false;
+            }
+            return true;
+        }
+
+        internal readonly struct FilteredKey(StatementKey key, object shape) : IEquatable<FilteredKey>
+        {
+            private readonly StatementKey key = key;
+            private readonly object shape = shape;
+
+            public bool Equals(FilteredKey other) => key.Equals(other.key) && Equals(shape, other.shape);
+            public override bool Equals(object obj) => obj is FilteredKey other && Equals(other);
+            public override int GetHashCode() => key.GetHashCode() * 31 + shape.GetHashCode();
+        }
+
+        /// <summary>
+        /// The statements of a query for connections that use the same filters, for each combination of the SQL the
+        /// filters have with the values of their scopes
+        /// </summary>
+        internal sealed class FilterGroup(FilterUse[] uses)
+        {
+            private readonly FilterUse[] uses = uses;
+            internal readonly ConcurrentDictionary<VariantKey, Statement> Statements = new();
+
+            // The SQL each filter has with the values of its scope, or null if it can't be kept
+            internal static VariantKey KeyOf(List<FilterUse> uses)
+            {
+                var parts = new object[uses.Count];
+                for (var i = 0; i < parts.Length; i++)
+                {
+                    if ((parts[i] = uses[i].Sql) == null)
+                        return null;
+                }
+                return new VariantKey(parts);
+            }
+
+            // Chooses the SQL of each filter with the scope of the connection, with the arguments of the statement
+            // followed by the values of each filter's db params
+            internal VariantKey Choose(OrmLiteConnectionFilters filters, IOrmLiteDialectProvider dialect, object[] args,
+                out object[] filterArgs)
+            {
+                filterArgs = null;
+                var parts = new object[uses.Length];
+                var to = new object[args.Length + uses.Length];
+                args.CopyTo(to, 0);
+                for (var i = 0; i < uses.Length; i++)
+                {
+                    var use = uses[i];
+                    if (!filters.TryGetScope(use.Rule, out var scope))
+                        return null;
+                    var choice = use.Choose(scope, dialect);
+                    if ((parts[i] = choice.Sql) == null)
+                        return null;
+                    to[args.Length + i] = choice.Values;
+                }
+                filterArgs = to;
+                return new VariantKey(parts);
+            }
+        }
+
         internal sealed class DialectState(IOrmLiteDialectProvider dialect, int argsCount)
         {
             internal readonly IOrmLiteDialectProvider Dialect = dialect;
@@ -503,6 +632,7 @@ namespace ServiceStack.OrmLite
             internal volatile ArgMode[] Modes = new ArgMode[argsCount];
             internal readonly Statement[] Defaults = new Statement[Kinds];
             internal readonly ConcurrentDictionary<StatementKey, Statement> Statements = new();
+            internal readonly ConcurrentDictionary<FilteredKey, FilterGroup> Filtered = new();
             internal volatile bool IsFull;
             internal int Cached;
 
@@ -565,28 +695,40 @@ namespace ServiceStack.OrmLite
                 ((key?.GetHashCode() ?? 0) * 31 + kind) * 31 + (into?.GetHashCode() ?? 0);
         }
 
-        internal sealed class ParamTemplate
+        internal sealed class ParamTemplate(IDbDataParameter param, string name,
+            Func<object[], List<object>[], object> getValue, Type valueType,
+            DbType? dbType = null, int? size = null, byte? precision = null, byte? scale = null)
         {
-            internal IDbDataParameter Param;       // a param that's the same each time
-            internal string Name;                  // or a param for the value of an argument
-            internal Func<object[], List<object>[], object> GetValue;
-            internal Type ValueType;
-            internal int? Size;
-            internal DbType? DbType;
-            internal byte? Precision;
-            internal byte? Scale;
+            internal readonly IDbDataParameter Param = param; // a param that's the same each time
+            internal readonly string Name = name;             // or a param for the value of an argument
+            internal readonly Func<object[], List<object>[], object> GetValue = getValue;
+            internal readonly Type ValueType = valueType;
+            internal readonly DbType? DbType = dbType;
+            internal readonly int? Size = size;
+            internal readonly byte? Precision = precision;
+            internal readonly byte? Scale = scale;
         }
 
         internal sealed class Statement
         {
             // Kept so SQL that can't be reused isn't generated twice each time
-            internal static readonly Statement NotCached = new();
+            internal static readonly Statement NotCached = new(null, null, null, null, null);
 
-            internal string Sql;
-            internal HashSet<string> OnlyFields;
-            internal Type[] FilterTables; // the tables filters are applied to, without filters on this connection
-            private ParamTemplate[] templates;
-            private int[] listSizes; // of the collection arguments the SQL has db params for
+            internal readonly string Sql;
+            internal readonly HashSet<string> OnlyFields;
+            internal readonly Type[] FilterTables; // the tables filters are applied to, without filters on this connection
+            private readonly ParamTemplate[] templates;
+            private readonly int[] listSizes; // of the collection arguments the SQL has db params for
+
+            private Statement(string sql, HashSet<string> onlyFields, Type[] filterTables, ParamTemplate[] templates,
+                int[] listSizes)
+            {
+                Sql = sql;
+                OnlyFields = onlyFields;
+                FilterTables = filterTables;
+                this.templates = templates;
+                this.listSizes = listSizes;
+            }
 
             // Returns null if the values can't be used with the SQL, e.g. a null needs IS NULL
             internal List<IDbDataParameter> CreateParams(DialectState state, object[] args, List<object>[] lists)
@@ -640,7 +782,7 @@ namespace ServiceStack.OrmLite
 
             // Returns null with the reason if the SQL and db params aren't what's normally generated
             internal static Statement Create(DialectState state, CompiledQueryBuild build, SqlExpression<T> q,
-                string sql, string normalSql, List<IDbDataParameter> normalParams, out string reason)
+                string sql, string normalSql, List<IDbDataParameter> normalParams, Type[] filterTables, out string reason)
             {
                 reason = null;
                 if (sql != normalSql)
@@ -672,16 +814,11 @@ namespace ServiceStack.OrmLite
 
                     if (!build.Bound.TryGetValue(p, out var value))
                     {
-                        templates[i] = new ParamTemplate { Param = p };
+                        templates[i] = new ParamTemplate(p, null, null, null);
                         continue;
                     }
 
                     bound++;
-                    var template = new ParamTemplate {
-                        Name = p.ParameterName,
-                        GetValue = value.GetValue,
-                        ValueType = value.Sample.GetType(),
-                    };
                     // Changes made to the db param after it was created are made each time
                     var created = state.CreateParam(p.ParameterName, value.Sample);
                     if (!ValueEquals(created.Value, p.Value))
@@ -689,15 +826,11 @@ namespace ServiceStack.OrmLite
                         reason = $"The db param {p.ParameterName} isn't created from the value of its argument";
                         return null;
                     }
-                    if (created.DbType != p.DbType)
-                        template.DbType = p.DbType;
-                    if (created.Size != p.Size)
-                        template.Size = p.Size;
-                    if (created.Precision != p.Precision)
-                        template.Precision = p.Precision;
-                    if (created.Scale != p.Scale)
-                        template.Scale = p.Scale;
-                    templates[i] = template;
+                    templates[i] = new ParamTemplate(null, p.ParameterName, value.GetValue, value.Sample.GetType(),
+                        created.DbType != p.DbType ? p.DbType : null,
+                        created.Size != p.Size ? p.Size : null,
+                        created.Precision != p.Precision ? p.Precision : null,
+                        created.Scale != p.Scale ? p.Scale : null);
                 }
 
                 if (bound != build.Bound.Count)
@@ -720,12 +853,7 @@ namespace ServiceStack.OrmLite
                     listSizes[i] = build.Lists[i].Count;
                 }
 
-                return new Statement {
-                    Sql = sql,
-                    OnlyFields = q.OnlyFields,
-                    templates = templates,
-                    listSizes = listSizes,
-                };
+                return new Statement(sql, q.OnlyFields, filterTables, templates, listSizes);
             }
 
             private static bool ValueEquals(object a, object b)
@@ -829,6 +957,8 @@ namespace ServiceStack.OrmLite
         internal readonly List<object>[] Lists;
         internal readonly Dictionary<IDbDataParameter, CompiledValue> Bound;
         internal bool HasNullValue; // a value from the arguments was null, which has its own SQL
+        internal readonly List<FilterUse> FilterUses = []; // the connection's filters applied to the query
+        internal bool IsBinding => bind;
         private readonly bool[] useValue;
         private readonly bool bind;
         private int evaluating;

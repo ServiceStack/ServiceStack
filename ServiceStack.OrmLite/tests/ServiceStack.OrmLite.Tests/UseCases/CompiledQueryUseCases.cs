@@ -546,7 +546,7 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
         f.Filter<BookReview>((r, reviewer) => r.Reviewer == reviewer));
 
     [Test]
-    public void Filters_of_joined_tables_are_applied_each_time()
+    public void Filters_of_joined_tables_are_applied_with_each_connections_values()
     {
         static CompiledQuery<Book, int> Compile() => OrmLiteQuery.Compile<Book, int>((q, rating) => q
             .Join<BookReview>((b, r) => b.Id == r.BookId)
@@ -576,7 +576,8 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
             Assert.That(query.CachedStatements, Is.EqualTo(1));
         }
 
-        // It isn't used on connections that filter the joined table, whose filters have values of their own
+        // Connections that filter the joined table have a statement of their own, with their filters' values as db
+        // params, which every connection using the same FilterSets shares
         List<string> aliceTitles, bobTitles;
         using (var alice = OpenReviewer("Alice"))
         {
@@ -584,10 +585,15 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
             Assert.That(aliceTitles, Is.EqualTo(Expected(alice, 1)));
             Assert.That(Titles(alice.Select(query, 1)), Is.EqualTo(aliceTitles));
         }
+        Assert.That(query.CachedStatements, Is.EqualTo(2));
         using (var bob = OpenReviewer("Bob"))
         {
             bobTitles = Titles(bob.Select(query, 1));
             Assert.That(bobTitles, Is.EqualTo(Expected(bob, 1)));
+            AssertSameSql(query.Bind(bob, 1), bob.From<Book>()
+                .Join<BookReview>((b, r) => b.Id == r.BookId)
+                .Where<BookReview>(r => r.Rating >= 1)
+                .OrderBy(b => b.Title));
         }
         Assert.That(aliceTitles, Is.Not.Empty);
         Assert.That(aliceTitles, Is.Not.EqualTo(all));
@@ -595,18 +601,51 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
 
         using (var db = OpenDbConnection())
             Assert.That(Titles(db.Select(query, 1)), Is.EqualTo(all));
-        Assert.That(query.CachedStatements, Is.EqualTo(1));
+        Assert.That(query.CachedStatements, Is.EqualTo(2));
+        Assert.That(query.NotCachedReason, Is.Null);
 
-        // Nor is it kept when it's first run on a connection that filters the joined table
+        // Or when it's first run on a connection that filters the joined table
         var other = Compile();
         using (var alice = OpenReviewer("Alice"))
         {
             Assert.That(Titles(alice.Select(other, 1)), Is.EqualTo(aliceTitles));
-            Assert.That(other.CachedStatements, Is.EqualTo(0));
+            Assert.That(other.CachedStatements, Is.EqualTo(1));
         }
         using (var db = OpenDbConnection())
             Assert.That(Titles(db.Select(other, 1)), Is.EqualTo(all));
-        Assert.That(other.CachedStatements, Is.EqualTo(1));
+        Assert.That(other.CachedStatements, Is.EqualTo(2));
+    }
+
+    [Test]
+    public async Task Compiled_queries_update_and_delete_the_rows_they_match()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+        var byAuthor = OrmLiteQuery.Compile<Book, string>((q, author) => q.Where(x => x.Author == author));
+
+        // The same SQL as the typed queries, with the WHERE clause of the compiled query
+        Assert.That(db.UpdateOnly(() => new Book { Available = false }, byAuthor.Bind(db, "J.R.R. Tolkien")), Is.EqualTo(2));
+        var compiledSql = db.GetLastSql();
+        db.UpdateOnly(() => new Book { Available = false }, db.From<Book>().Where(x => x.Author == "J.R.R. Tolkien"));
+        Assert.That(compiledSql, Is.EqualTo(db.GetLastSql()));
+        Assert.That(db.Select<Book>(x => x.Author == "J.R.R. Tolkien").All(x => !x.Available));
+
+        Assert.That(await db.UpdateAddAsync(() => new Book { Price = 1 }, byAuthor.Bind(db, "Frank Herbert")), Is.EqualTo(1));
+        Assert.That(db.Single<Book>(x => x.Title == "Dune").Price, Is.EqualTo(10.99m));
+        Assert.That(await db.UpdateOnlyAsync(() => new Book { Year = 1966 }, byAuthor.Bind(db, "Frank Herbert")), Is.EqualTo(1));
+        Assert.That(db.UpdateAdd(() => new Book { Price = 1 }, byAuthor.Bind(db, "Frank Herbert")), Is.EqualTo(1));
+        Assert.That(db.Single<Book>(x => x.Title == "Dune").Price, Is.EqualTo(11.99m));
+
+        var count = db.Count<Book>();
+        Assert.That(db.Delete(byAuthor, "J.R.R. Tolkien"), Is.EqualTo(2));
+        compiledSql = db.GetLastSql();
+        db.Delete(db.From<Book>().Where(x => x.Author == "J.R.R. Tolkien"));
+        Assert.That(compiledSql, Is.EqualTo(db.GetLastSql()));
+        Assert.That(await db.DeleteAsync(byAuthor, "Frank Herbert"), Is.EqualTo(1));
+        Assert.That(db.Count<Book>(), Is.EqualTo(count - 3));
+
+        Assert.That(byAuthor.CachedStatements, Is.EqualTo(2)); // the WHERE clause and the DELETE statement
+        Assert.That(byAuthor.NotCachedReason, Is.Null);
     }
 
     [Test]

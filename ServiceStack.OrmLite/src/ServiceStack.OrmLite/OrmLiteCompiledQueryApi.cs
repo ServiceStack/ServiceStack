@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -88,6 +90,139 @@ public static class OrmLiteCompiledQueryApi
                 : await dbCmd.ExecScalarWithRetryAsync(token).ConfigAwait();
             return result != null;
         });
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches. E.g:
+    /// <para>db.Delete(query.Bind(db, customerId))</para>
+    /// </summary>
+    public static int Delete<T>(this IDbConnection dbConn, BoundQuery<T> where, Action<IDbCommand> commandFilter = null) =>
+        dbConn.Exec(dbCmd => {
+            var sql = where.ToDeleteStatement();
+            return dbCmd.ExecuteSql(sql, where.Params, commandFilter);
+        });
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches. E.g:
+    /// <para>db.DeleteAsync(query.Bind(db, customerId))</para>
+    /// </summary>
+    public static Task<int> DeleteAsync<T>(this IDbConnection dbConn, BoundQuery<T> where,
+        Action<IDbCommand> commandFilter = null, CancellationToken token = default) =>
+        dbConn.Exec(dbCmd => {
+            var sql = where.ToDeleteStatement();
+            return dbCmd.ExecuteSqlAsync(sql, where.Params, commandFilter, token);
+        });
+
+    /// <summary>
+    /// Update the fields of the rows a compiled query with its arguments matches, reusing the SQL of its WHERE
+    /// clause. E.g:
+    /// <para>db.UpdateOnly(() => new Order { Status = OrderStatus.Shipped }, query.Bind(db, orderId))</para>
+    /// </summary>
+    public static int UpdateOnly<T>(this IDbConnection dbConn, Expression<Func<T>> updateFields, BoundQuery<T> where,
+        Action<IDbCommand> commandFilter = null) => dbConn.Exec(dbCmd => {
+            OrmLiteUtils.AssertNotAnonType<T>();
+            var cmd = dbCmd.InitUpdateOnly(updateFields, where);
+            commandFilter?.Invoke(cmd);
+            return cmd.ExecNonQuery();
+        });
+
+    /// <summary>
+    /// Update the fields of the rows a compiled query with its arguments matches, reusing the SQL of its WHERE clause
+    /// </summary>
+    public static Task<int> UpdateOnlyAsync<T>(this IDbConnection dbConn, Expression<Func<T>> updateFields,
+        BoundQuery<T> where, Action<IDbCommand> commandFilter = null, CancellationToken token = default) =>
+        dbConn.Exec(dbCmd => {
+            OrmLiteUtils.AssertNotAnonType<T>();
+            var cmd = dbCmd.InitUpdateOnly(updateFields, where);
+            commandFilter?.Invoke(cmd);
+            return cmd.ExecNonQueryAsync(token);
+        });
+
+    /// <summary>
+    /// Add to the fields of the rows a compiled query with its arguments matches, reusing the SQL of its WHERE
+    /// clause. E.g:
+    /// <para>db.UpdateAdd(() => new Product { Stock = -quantity }, query.Bind(db, productId))</para>
+    /// </summary>
+    public static int UpdateAdd<T>(this IDbConnection dbConn, Expression<Func<T>> updateFields, BoundQuery<T> where,
+        Action<IDbCommand> commandFilter = null) => dbConn.Exec(dbCmd => {
+            var cmd = dbCmd.InitUpdateAdd(updateFields, where);
+            commandFilter?.Invoke(cmd);
+            return cmd.ExecNonQuery();
+        });
+
+    /// <summary>
+    /// Add to the fields of the rows a compiled query with its arguments matches, reusing the SQL of its WHERE clause
+    /// </summary>
+    public static Task<int> UpdateAddAsync<T>(this IDbConnection dbConn, Expression<Func<T>> updateFields,
+        BoundQuery<T> where, Action<IDbCommand> commandFilter = null, CancellationToken token = default) =>
+        dbConn.Exec(dbCmd => {
+            var cmd = dbCmd.InitUpdateAdd(updateFields, where);
+            commandFilter?.Invoke(cmd);
+            return cmd.ExecNonQueryAsync(token);
+        });
+
+    /// <summary>
+    /// Delete the rows a compiled query matches
+    /// </summary>
+    public static int Delete<T>(this IDbConnection dbConn, CompiledQuery<T> query) =>
+        dbConn.Delete(query.Bind(dbConn));
+
+    /// <summary>
+    /// Delete the rows a compiled query matches
+    /// </summary>
+    public static Task<int> DeleteAsync<T>(this IDbConnection dbConn, CompiledQuery<T> query, CancellationToken token = default) =>
+        dbConn.DeleteAsync(query.Bind(dbConn), token: token);
+
+    /// <summary>
+    /// Delete the rows a compiled query with its argument matches. E.g:
+    /// <para>db.Delete(query, customerId)</para>
+    /// </summary>
+    public static int Delete<T, T1>(this IDbConnection dbConn, CompiledQuery<T, T1> query, T1 arg1) =>
+        dbConn.Delete(query.Bind(dbConn, arg1));
+
+    /// <summary>
+    /// Delete the rows a compiled query with its argument matches
+    /// </summary>
+    public static Task<int> DeleteAsync<T, T1>(this IDbConnection dbConn, CompiledQuery<T, T1> query, T1 arg1,
+        CancellationToken token = default) => dbConn.DeleteAsync(query.Bind(dbConn, arg1), token: token);
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches
+    /// </summary>
+    public static int Delete<T, T1, T2>(this IDbConnection dbConn, CompiledQuery<T, T1, T2> query, T1 arg1, T2 arg2) =>
+        dbConn.Delete(query.Bind(dbConn, arg1, arg2));
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches
+    /// </summary>
+    public static Task<int> DeleteAsync<T, T1, T2>(this IDbConnection dbConn, CompiledQuery<T, T1, T2> query,
+        T1 arg1, T2 arg2, CancellationToken token = default) =>
+        dbConn.DeleteAsync(query.Bind(dbConn, arg1, arg2), token: token);
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches
+    /// </summary>
+    public static int Delete<T, T1, T2, T3>(this IDbConnection dbConn, CompiledQuery<T, T1, T2, T3> query,
+        T1 arg1, T2 arg2, T3 arg3) => dbConn.Delete(query.Bind(dbConn, arg1, arg2, arg3));
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches
+    /// </summary>
+    public static Task<int> DeleteAsync<T, T1, T2, T3>(this IDbConnection dbConn, CompiledQuery<T, T1, T2, T3> query,
+        T1 arg1, T2 arg2, T3 arg3, CancellationToken token = default) =>
+        dbConn.DeleteAsync(query.Bind(dbConn, arg1, arg2, arg3), token: token);
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches
+    /// </summary>
+    public static int Delete<T, T1, T2, T3, T4>(this IDbConnection dbConn, CompiledQuery<T, T1, T2, T3, T4> query,
+        T1 arg1, T2 arg2, T3 arg3, T4 arg4) => dbConn.Delete(query.Bind(dbConn, arg1, arg2, arg3, arg4));
+
+    /// <summary>
+    /// Delete the rows a compiled query with its arguments matches
+    /// </summary>
+    public static Task<int> DeleteAsync<T, T1, T2, T3, T4>(this IDbConnection dbConn,
+        CompiledQuery<T, T1, T2, T3, T4> query, T1 arg1, T2 arg2, T3 arg3, T4 arg4, CancellationToken token = default) =>
+        dbConn.DeleteAsync(query.Bind(dbConn, arg1, arg2, arg3, arg4), token: token);
 
     // 0 arguments
 

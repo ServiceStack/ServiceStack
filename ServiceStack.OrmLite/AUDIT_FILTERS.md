@@ -251,6 +251,14 @@ MySqlConnector, and a full test suite run.
 7. ✅ **Filter SQL translated once**: each filter's SQL is reused by every connection that uses its set, with
    conditions that only read the scope decided in C#, e.g. `s.WorkspaceId == null || x.RefIdStr == s.WorkspaceId`
    has no SQL for the null case. `FilterSetBenchmark` measures the time filters add to each statement.
+8. ✅ **Compiled queries on filtered tables**: a compiled query keeps a statement for each combination of the
+   FilterSets a connection uses (`OrmLiteConnectionFilters.Shape`) and the SQL their filters have with the values of
+   their scopes. The filters applied while it's built are recorded (`FilterUse`) and chosen again with the scopes of
+   the connection it's run with, with their values passed as extra arguments.
+9. ✅ **Filter SQL applied directly, collections and compiled writes**: joined tables, recursive CTEs and the
+   commands OrmLite builds add a filter's SQL and db params to theirs, without translating it in another query.
+   Collections in filters have SQL for each size. Compiled queries `Delete()` the rows they match, and
+   `UpdateOnly()` / `UpdateAdd()` them with their `WHERE` clause. The cached SQL and statements are immutable.
 
 ## Docs
 

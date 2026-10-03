@@ -214,12 +214,11 @@ namespace ServiceStack.OrmLite
             CompiledQueryBuild.FilterTable(joinDef?.ModelType);
             if (ConnectionFilters == null || ConnectionFilters.IsEmpty || joinDef?.ModelType == null)
                 return sqlExpr;
-            var condition = ConnectionFilters.ToFilterCondition(DialectProvider, joinDef.ModelType, alias, paramPrefix: "",
-                out var filterParams);
+            // Its db params are added to the query's
+            var condition = ConnectionFilters.ToFilterCondition(DialectProvider, joinDef.ModelType, alias, ParamPrefix, Params);
             if (condition == null)
                 return sqlExpr;
 
-            condition = AddRenamedParams(filterParams, condition);
             if (string.IsNullOrEmpty(sqlExpr))
             {
                 Ensure(condition);

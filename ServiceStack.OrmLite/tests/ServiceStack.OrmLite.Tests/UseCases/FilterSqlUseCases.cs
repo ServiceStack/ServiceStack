@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace ServiceStack.OrmLite.Tests.UseCases;
@@ -177,12 +178,12 @@ public class FilterSqlUseCases(DialectContext context) : OrmLiteProvidersTestBas
         Assert.That(NoteFilters.NotCachedReasons, Is.Empty);
     }
 
-    // A db param for each value of a collection, so its SQL changes with the collection's size
+    // A db param for each value of a collection, so it has SQL for each size of the collection
     static readonly FilterSet<TenantScope> OrderIdFilters = FilterSet.Create<TenantScope>(f =>
         f.Filter<TenantOrder>((x, s) => s.OrderIds.Contains(x.Id)));
 
     [Test]
-    public void Filters_whose_SQL_cant_be_reused_are_translated_for_each_statement()
+    public void Collections_have_SQL_for_each_size()
     {
         using (var seed = OpenDbConnection())
             Tenants.Seed(seed);
@@ -193,8 +194,35 @@ public class FilterSqlUseCases(DialectContext context) : OrmLiteProvidersTestBas
 
         scope.OrderIds = [2, 3, 4];
         Assert.That(db.Select<TenantOrder>().Map(x => x.Id), Is.EquivalentTo(new[] { 2, 3, 4 }));
+        scope.OrderIds = [3, 4];
+        Assert.That(db.Select<TenantOrder>().Map(x => x.Id), Is.EquivalentTo(new[] { 3, 4 }));
+        scope.OrderIds = [];
+        Assert.That(db.Select<TenantOrder>(), Is.Empty);
+        Assert.That(OrderIdFilters.NotCachedReasons, Is.Empty);
+    }
 
-        Assert.That(OrderIdFilters.NotCachedReasons.Single(), Does.StartWith("Filter TenantOrder for TenantOrder: "));
+    public class NameScope
+    {
+        public string Prefix { get; set; }
+    }
+
+    // LIKE has an ESCAPE when the text has wildcards, so its SQL changes with the value
+    static readonly FilterSet<NameScope> NameFilters = FilterSet.Create<NameScope>(f =>
+        f.Filter<TenantCustomer>((x, s) => x.Name.StartsWith(s.Prefix)));
+
+    [Test]
+    public void Filters_whose_SQL_cant_be_reused_are_translated_for_each_statement()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var scope = new NameScope { Prefix = "G" };
+        using var db = OpenDbConnection().UseFilters(NameFilters.For(scope));
+        Assert.That(db.Select<TenantCustomer>().Map(x => x.Name), Is.EqualTo(new[] { "Globex" }));
+        scope.Prefix = "In";
+        Assert.That(db.Select<TenantCustomer>().Map(x => x.Name), Is.EqualTo(new[] { "Initech" }));
+
+        Assert.That(NameFilters.NotCachedReasons.Single(), Does.StartWith("Filter TenantCustomer for TenantCustomer: "));
     }
 
     [Test]
@@ -209,9 +237,162 @@ public class FilterSqlUseCases(DialectContext context) : OrmLiteProvidersTestBas
             .Where<TenantCustomer>(c => c.Name != "Acme");
         Assert.That(db.Select(q).Map(x => x.Id), Is.EquivalentTo(new[] { 2, 3 }));
 
+        // The joined table's filter params are added to the query's: the order's tenant, the customer's and the name
+        var sql = q.ToSelectStatement();
+        Assert.That(q.Params.Map(x => x.Value), Is.EqualTo(new object[] { 1, 1, "Acme" }));
+        Assert.That(q.Params.All(p => sql.Contains(p.ParameterName)));
+
         Assert.That(db.UpdateOnly(() => new TenantOrder { Total = 1 }, where: x => x.Total > 60), Is.EqualTo(2));
         Assert.That(db.Delete<TenantOrder>(x => x.Total == 1), Is.EqualTo(2));
         Assert.That(db.Count<TenantOrder>(), Is.EqualTo(1));
         Assert.That(TenantFilters.NotCachedReasons, Is.Empty);
+    }
+
+    static void AssertSameSql<T>(BoundQuery<T> compiled, SqlExpression<T> query)
+    {
+        Assert.That(compiled.SelectInto<T>(), Is.EqualTo(query.SelectInto<T>()));
+        Assert.That(compiled.Params.Map(x => x.ParameterName), Is.EqualTo(query.Params.Map(x => x.ParameterName)));
+        Assert.That(compiled.Params.Map(x => x.Value), Is.EqualTo(query.Params.Map(x => x.Value)));
+        Assert.That(compiled.Params.Map(x => x.DbType), Is.EqualTo(query.Params.Map(x => x.DbType)));
+    }
+
+    [Test]
+    public void Compiled_queries_reuse_their_SQL_on_filtered_tables()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var query = OrmLiteQuery.Compile<TenantOrder, decimal>((q, min) => q.Where(x => x.Total >= min).OrderBy(x => x.Id));
+        foreach (var (tenantId, expected) in new[] { (1, new[] { 1, 3 }), (2, new[] { 4 }), (1, new[] { 1, 3 }) })
+        {
+            using var db = OpenDbConnection().UseFilters(TenantFilters.For(new TenantScope { TenantId = tenantId }));
+            Assert.That(db.Select(query, 60m).Map(x => x.Id), Is.EqualTo(expected));
+            AssertSameSql(query.Bind(db, 60m), db.From<TenantOrder>().Where(x => x.Total >= 60m).OrderBy(x => x.Id));
+        }
+
+        // One statement for every tenant, with its TenantId as a db param
+        Assert.That(query.CachedStatements, Is.EqualTo(1));
+        Assert.That(query.NotCachedReason, Is.Null);
+    }
+
+    [Test]
+    public void Compiled_queries_have_a_statement_for_each_case_of_a_scope_condition()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var query = OrmLiteQuery.Compile<TenantCustomer>(q => q.OrderBy(x => x.Id));
+        var scope = new TenantScope();
+        using var db = OpenDbConnection().UseFilters(TenantFilters.For(scope));
+
+        // s.TenantId == null || x.TenantId == s.TenantId
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 1, 2, 3 }));
+        scope.TenantId = 2;
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 3 }));
+        AssertSameSql(query.Bind(db), db.From<TenantCustomer>().OrderBy(x => x.Id));
+        scope.TenantId = 1;
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 1, 2 }));
+        scope.TenantId = null;
+        Assert.That(db.Count(query.Bind(db)), Is.EqualTo(3));
+
+        Assert.That(query.CachedStatements, Is.EqualTo(3)); // all customers, one tenant's customers and the count
+        Assert.That(query.NotCachedReason, Is.Null);
+    }
+
+    [Test]
+    public void Compiled_queries_read_the_scope_for_each_statement()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var query = OrmLiteQuery.Compile<TenantOrder>(q => q.OrderBy(x => x.Id));
+        var scope = new TenantScope();
+        using var db = OpenDbConnection().UseFilters(TenantFilters.For(scope));
+
+        // Ensure's AssertTenantId() throws until the tenant is known
+        Assert.Throws<InvalidOperationException>(() => db.Select(query));
+        scope.TenantId = 2;
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 4 }));
+        scope.TenantId = 1;
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 1, 2, 3 }));
+        Assert.That(query.CachedStatements, Is.EqualTo(1));
+    }
+
+    [Test]
+    public void Compiled_queries_have_a_statement_for_each_size_of_a_filters_collection()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var query = OrmLiteQuery.Compile<TenantOrder>(q => q.OrderBy(x => x.Id));
+        var scope = new TenantScope { OrderIds = [1, 2] };
+        using var db = OpenDbConnection().UseFilters(OrderIdFilters.For(scope));
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 1, 2 }));
+        scope.OrderIds = [3, 4];
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 3, 4 }));
+        AssertSameSql(query.Bind(db), db.From<TenantOrder>().OrderBy(x => x.Id));
+        scope.OrderIds = [1, 3, 4];
+        Assert.That(db.Select(query).Map(x => x.Id), Is.EqualTo(new[] { 1, 3, 4 }));
+
+        Assert.That(query.CachedStatements, Is.EqualTo(2)); // for 2 and 3 values
+        Assert.That(query.NotCachedReason, Is.Null);
+    }
+
+    [Test]
+    public void Compiled_queries_with_filters_whose_SQL_cant_be_reused_generate_it_each_time()
+    {
+        using (var seed = OpenDbConnection())
+            Tenants.Seed(seed);
+
+        var query = OrmLiteQuery.Compile<TenantCustomer>(q => q.OrderBy(x => x.Id));
+        var scope = new NameScope { Prefix = "G" };
+        using var db = OpenDbConnection().UseFilters(NameFilters.For(scope));
+        Assert.That(db.Select(query).Map(x => x.Name), Is.EqualTo(new[] { "Globex" }));
+        scope.Prefix = "In";
+        Assert.That(db.Select(query).Map(x => x.Name), Is.EqualTo(new[] { "Initech" }));
+
+        Assert.That(query.CachedStatements, Is.EqualTo(0));
+        Assert.That(query.NotCachedReason, Does.Contain("FilterSet.NotCachedReasons"));
+    }
+
+    [Test]
+    public async Task Compiled_updates_and_deletes_apply_the_connections_filters_and_rules()
+    {
+        using (var seed = OpenDbConnection())
+        {
+            seed.DropAndCreateTable<TenantInvoice>();
+            seed.InsertAll(new List<TenantInvoice> {
+                new() { TenantId = 1, Customer = "Acme", Total = 100, CreatedBy = "seed", CreatedDate = Invoices.Created },
+                new() { TenantId = 1, Customer = "Globex", Total = 50, CreatedBy = "seed", CreatedDate = Invoices.Created },
+                new() { TenantId = 2, Customer = "Initech", Total = 500, CreatedBy = "seed", CreatedDate = Invoices.Created },
+            });
+        }
+        var byMinTotal = OrmLiteQuery.Compile<TenantInvoice, decimal>((q, min) => q.Where(x => x.Total >= min));
+
+        using (var db = OpenDbConnection().ForUser(1, "alice"))
+        {
+            // Only the tenant's rows, with the audit columns of its user
+            Assert.That(db.UpdateOnly(() => new TenantInvoice { Reminders = 1 }, byMinTotal.Bind(db, 0m)), Is.EqualTo(2));
+            var compiledSql = db.GetLastSql();
+            db.UpdateOnly(() => new TenantInvoice { Reminders = 1 }, db.From<TenantInvoice>().Where(x => x.Total >= 0m));
+            Assert.That(compiledSql, Is.EqualTo(db.GetLastSql()));
+        }
+        using (var db = OpenDbConnection().ForUser(2, "bob"))
+        {
+            Assert.That(await db.UpdateAddAsync(() => new TenantInvoice { Reminders = 2 }, byMinTotal.Bind(db, 0m)), Is.EqualTo(1));
+            Assert.That(db.Single<TenantInvoice>(x => x.Customer == "Initech").ModifiedBy, Is.EqualTo("bob"));
+            Assert.That(await db.DeleteAsync(byMinTotal, 0m), Is.EqualTo(1));
+        }
+        using (var db = OpenDbConnection())
+        {
+            var rows = db.Select<TenantInvoice>(x => x.TenantId == 1);
+            Assert.That(rows.Map(x => x.Reminders), Is.EqualTo(new[] { 1, 1 }));
+            Assert.That(rows.All(x => x.ModifiedBy == "alice" && x.ModifiedDate == Invoices.Modified && x.CreatedBy == "seed"));
+            Assert.That(db.Count<TenantInvoice>(x => x.TenantId == 2), Is.EqualTo(0));
+        }
+
+        // The WHERE clause and the DELETE statement, shared by every tenant
+        Assert.That(byMinTotal.CachedStatements, Is.EqualTo(2));
+        Assert.That(byMinTotal.NotCachedReason, Is.Null);
     }
 }

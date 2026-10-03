@@ -162,44 +162,39 @@ public static class OrmLiteConnectionFiltersApi
     }
 
     /// <summary>
-    /// The table's filters as a SQL condition with columns prefixed by the table, or alias, with params named with
-    /// paramPrefix, or null if no filters apply to the table
+    /// The table's filters as a SQL condition with columns prefixed by the table, or alias, with their db params named
+    /// with paramPrefix added to dbParams, or null if no filters apply to the table
     /// </summary>
-    internal static string ToFilterCondition(this OrmLiteConnectionFilters filters, IOrmLiteDialectProvider dialect,
-        Type tableType, string? alias, string paramPrefix, out List<IDbDataParameter> filterParams)
+    internal static string? ToFilterCondition(this OrmLiteConnectionFilters filters, IOrmLiteDialectProvider dialect,
+        Type tableType, string? alias, string paramPrefix, List<IDbDataParameter> dbParams)
     {
-        filterParams = [];
         if (filters.IsEmpty)
-            return null!;
+            return null;
         var fn = FilterConditionFns.GetOrAdd(tableType, type =>
             (FilterConditionFn)Delegate.CreateDelegate(typeof(FilterConditionFn),
                 typeof(OrmLiteConnectionFiltersApi).GetMethod(nameof(ToFilterConditionFor),
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
                     .MakeGenericMethod(type)));
-        return fn(filters, dialect, alias, paramPrefix, out filterParams);
+        return fn(filters, dialect, alias, paramPrefix, dbParams);
     }
 
-    private delegate string FilterConditionFn(OrmLiteConnectionFilters filters, IOrmLiteDialectProvider dialect,
-        string? alias, string paramPrefix, out List<IDbDataParameter> filterParams);
+    private delegate string? FilterConditionFn(OrmLiteConnectionFilters filters, IOrmLiteDialectProvider dialect,
+        string? alias, string paramPrefix, List<IDbDataParameter> dbParams);
 
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, FilterConditionFn> FilterConditionFns = new();
 
-    private static string ToFilterConditionFor<T>(OrmLiteConnectionFilters filters, IOrmLiteDialectProvider dialect,
-        string? alias, string paramPrefix, out List<IDbDataParameter> filterParams)
+    // Combined as Ensure() combines them, later filters first
+    private static string? ToFilterConditionFor<T>(OrmLiteConnectionFilters filters, IOrmLiteDialectProvider dialect,
+        string? alias, string paramPrefix, List<IDbDataParameter> dbParams)
     {
-        filterParams = [];
-        var ensureFilters = filters.GetTableFilters<T>();
-        if (ensureFilters.Length == 0)
-            return null!;
-
-        var q = dialect.SqlExpression<T>();
-        q.ParamPrefix = paramPrefix;
-        if (alias != null)
-            q.SetTableAlias(alias);
-        foreach (var filter in ensureFilters)
-            q.EnsureConnectionFilter(filter);
-        filterParams = q.Params;
-        return q.EnsureExpression;
+        string? condition = null;
+        foreach (var filter in filters.GetTableFilters<T>())
+        {
+            var sql = filter.ToSql(dialect, alias, paramPrefix, dbParams);
+            if (sql != null)
+                condition = condition == null ? sql : sql + " AND " + condition;
+        }
+        return condition;
     }
 
     /// <summary>
@@ -211,8 +206,9 @@ public static class OrmLiteConnectionFiltersApi
         var filters = dbCmd.GetFilters();
         if (filters.IsEmpty)
             return null;
+        var filterParams = new List<IDbDataParameter>();
         var condition = filters.ToFilterCondition(dbCmd.GetDialectProvider(), tableType, alias: null,
-            FilterParamPrefix, out var filterParams);
+            FilterParamPrefix, filterParams);
         if (condition == null)
             return null;
 

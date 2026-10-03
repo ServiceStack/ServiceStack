@@ -32,6 +32,63 @@ public sealed class OrmLiteConnectionFilters
     public bool IsEmpty => ensureFilters.Length == 0 && writeRules.Length == 0;
 
     /// <summary>
+    /// The sets the connection uses, without their scopes. Connections with the same shape have the same filters for
+    /// each table, so compiled queries keep their SQL for each shape.
+    /// </summary>
+    internal object Shape => shape ??= new FiltersShape(sets);
+    private FiltersShape? shape;
+
+    /// <summary>
+    /// The scope the connection uses the rule's set with
+    /// </summary>
+    internal bool TryGetScope(FilterRule rule, out object? scope)
+    {
+        foreach (var filter in ensureFilters)
+        {
+            if (filter.Rule == rule)
+            {
+                scope = filter.Scope;
+                return true;
+            }
+        }
+        scope = null;
+        return false;
+    }
+
+    private sealed class FiltersShape : IEquatable<FiltersShape>
+    {
+        private readonly object[] sets;
+        private readonly int hash;
+
+        public FiltersShape(BoundFilterSet[] bound)
+        {
+            sets = new object[bound.Length];
+            var h = 17;
+            for (var i = 0; i < bound.Length; i++)
+            {
+                sets[i] = bound[i].Set;
+                h = h * 31 + System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(sets[i]);
+            }
+            hash = h;
+        }
+
+        public bool Equals(FiltersShape? other)
+        {
+            if (other == null || other.hash != hash || other.sets.Length != sets.Length)
+                return false;
+            for (var i = 0; i < sets.Length; i++)
+            {
+                if (!ReferenceEquals(sets[i], other.sets[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        public override bool Equals(object? obj) => Equals(obj as FiltersShape);
+        public override int GetHashCode() => hash;
+    }
+
+    /// <summary>
     /// Whether the connection has any Ensure, OnInsert or OnUpdate rules
     /// </summary>
     public bool HasWriteRules => writeRules.Length > 0;

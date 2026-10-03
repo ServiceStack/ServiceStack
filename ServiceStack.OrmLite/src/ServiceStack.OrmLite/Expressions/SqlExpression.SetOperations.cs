@@ -144,6 +144,12 @@ namespace ServiceStack.OrmLite
             {
                 var pClone = DialectProvider.CreateParam().PopulateWith(p);
                 pClone.ParameterName = DialectProvider.GetParam(NextParamName());
+                // The clone is created from the argument of a compiled query that's being built, instead of the param
+                if (CompiledQueryBuild.Current is { IsBinding: true } build && build.Bound.TryGetValue(p, out var value))
+                {
+                    build.Bound.Remove(p);
+                    build.Bind(pClone, value);
+                }
                 renames[StripParamPrefix(p.ParameterName)] = pClone.ParameterName;
                 Params.Add(pClone);
                 addedTo?.Add(pClone);

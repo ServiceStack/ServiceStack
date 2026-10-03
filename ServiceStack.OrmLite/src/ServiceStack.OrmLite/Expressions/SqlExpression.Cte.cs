@@ -234,12 +234,9 @@ namespace ServiceStack.OrmLite
 
             // Filter the rows added by the recursive step with the connection's filters, so it can't walk into
             // filtered out rows
-            List<IDbDataParameter> recursiveFilterParams = null;
             CompiledQueryBuild.FilterTable(typeof(T));
             var recursiveFilter = ConnectionFilters?.ToFilterCondition(DialectProvider, typeof(T), ChildAlias,
-                paramPrefix: "", out recursiveFilterParams);
-            if (recursiveFilter != null)
-                recursiveFilter = AddRenamedParams(recursiveFilterParams, recursiveFilter);
+                ParamPrefix, Params);
 
             var columnNames = new StringBuilder();
             foreach (var fieldDef in modelDef.FieldDefinitions)

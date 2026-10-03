@@ -24,7 +24,31 @@ internal sealed class ConnectionFilter<T>(FilterTemplate<T> template, object? sc
     /// The filter's SQL for the query, with its db params added to the query, or null if it doesn't apply to rows
     /// with the values of the scope, e.g. f.Filter&lt;T&gt;((x, s) =&gt; s.IsAdmin || x.OwnerId == s.UserId) for admins
     /// </summary>
-    public string? ToSql(SqlExpression<T> q) => template.ToSql(q, scope, this);
+    public string? ToSql(SqlExpression<T> q) =>
+        template.ToSql(q.DialectProvider, q.TableAlias, q.ParamPrefix, q.Params, scope, this, q.RenderConnectionFilter);
+
+    /// <summary>
+    /// The filter's SQL for the table in SQL OrmLite builds, e.g. a joined table or a command's WHERE clause, with its
+    /// db params named with paramPrefix added to dbParams
+    /// </summary>
+    public string? ToSql(IOrmLiteDialectProvider dialect, string? alias, string paramPrefix, List<IDbDataParameter> dbParams) =>
+        template.ToSql(dialect, alias, paramPrefix, dbParams, scope, this,
+            filter => Render(dialect, alias, paramPrefix, dbParams, filter));
+
+    // Translates the filter for this statement, continuing the names of the db params
+    private static string Render(IOrmLiteDialectProvider dialect, string? alias, string paramPrefix,
+        List<IDbDataParameter> dbParams, LambdaExpression filter)
+    {
+        var q = dialect.SqlExpression<T>();
+        q.ParamPrefix = paramPrefix;
+        q.Params = new List<IDbDataParameter>(dbParams);
+        if (alias != null)
+            q.SetTableAlias(alias);
+        var sql = q.RenderConnectionFilter(filter);
+        for (var i = dbParams.Count; i < q.Params.Count; i++)
+            dbParams.Add(q.Params[i]);
+        return sql;
+    }
 }
 
 /// <summary>
@@ -90,17 +114,64 @@ internal sealed class FilterTemplate<T>
         return Expression.Lambda<Func<T, bool>>(body!, row);
     }
 
-    internal string? ToSql(SqlExpression<T> q, object? scope, ConnectionFilter<T> filter)
+    internal string? ToSql(IOrmLiteDialectProvider dialect, string? alias, string paramPrefix,
+        List<IDbDataParameter> dbParams, object? scope, ConnectionFilter<T> filter, Func<LambdaExpression, string> render)
+    {
+        var choice = Choose(scope, dialect, alias);
+        var build = CompiledQueryBuild.Current;
+        var useIndex = build?.FilterUses.Count ?? 0;
+
+        string? sql;
+        if (choice.Sql == FilterChoice.Skip)
+        {
+            sql = null;
+        }
+        else if (choice.Sql == FilterChoice.False)
+        {
+            sql = SqlExpression<T>.FalseLiteral;
+        }
+        else
+        {
+            // A compiled query that's being built creates the db params of the filter's values from the scope of the
+            // connection it's run with, see CompiledQueryBase.GetSql()
+            Action<IDbDataParameter, Func<object?[], object?>, object>? bind = build is { IsBinding: true }
+                ? (p, getValue, value) => build.Bind(p, new CompiledValue(
+                    (args, _) => getValue((object?[])args[build.Args.Length + useIndex]), value))
+                : null;
+            sql = choice.Sql is RenderedSql rendered
+                ? rendered.Apply(dialect, paramPrefix, dbParams, choice.Values!, bind)
+                : null;
+            if (sql == null)
+            {
+                sql = choice.Variant is Variant variant
+                    ? render(Expression.Lambda<Func<T, bool>>(variant.WithScope(scope), row))
+                    : render(filter.Bound);
+                choice = default; // translated for this statement, so a compiled query can't keep its SQL
+            }
+        }
+
+        if (build != null)
+        {
+            var template = this;
+            build.FilterUses.Add(new FilterUse(rule, choice.Sql, (s, d) => template.Choose(s, d, alias)));
+        }
+        return sql;
+    }
+
+    /// <summary>
+    /// The SQL of the filter for the values of the scope, or null in Sql when it's translated for each statement
+    /// </summary>
+    internal FilterChoice Choose(object? scope, IOrmLiteDialectProvider dialect, string? alias)
     {
         if (root == null || OrmLiteConfig.SqlExpressionInitFilter != null)
-            return q.RenderConnectionFilter(filter.Bound);
+            return default;
 
         ulong bits = 0;
         var result = root.Eval(scope, ref bits);
         if (result == true)
-            return null;
+            return new FilterChoice(FilterChoice.Skip, null, null);
         if (result == false)
-            return SqlExpression<T>.FalseLiteral;
+            return new FilterChoice(FilterChoice.False, null, null);
 
         var variant = variants.GetOrAdd(bits, b => new Variant(this, b));
         var values = new object?[slots.Count];
@@ -112,8 +183,7 @@ internal sealed class FilterTemplate<T>
                 nulls |= 1UL << i;
         }
 
-        var dialect = q.DialectProvider;
-        var key = (dialect, q.TableAlias, nulls);
+        var key = (dialect, alias, nulls, CollectionSizes(variant, values));
         if (!variant.Rendered.TryGetValue(key, out var sql))
         {
             if (rendered >= MaxRendered)
@@ -123,14 +193,24 @@ internal sealed class FilterTemplate<T>
             }
             else
             {
-                sql = Render(variant, dialect, q.TableAlias, values, scope) ?? RenderedSql.NotCached;
+                sql = Render(variant, dialect, alias, values, scope) ?? RenderedSql.NotCached;
                 if (variant.Rendered.TryAdd(key, sql))
                     System.Threading.Interlocked.Increment(ref rendered);
             }
         }
+        return new FilterChoice(ReferenceEquals(sql, RenderedSql.NotCached) ? null : sql, values, variant);
+    }
 
-        return sql.Apply(q, values)
-            ?? q.RenderConnectionFilter(Expression.Lambda<Func<T, bool>>(variant.WithScope(scope), row));
+    // The sizes of the collections it uses, which have a db param for each of their values, e.g. s.Ids.Contains(x.Id)
+    private static string? CollectionSizes(Variant variant, object?[] values)
+    {
+        StringBuilder? sb = null;
+        foreach (var slot in variant.Slots)
+        {
+            if (values[slot] is System.Collections.IEnumerable and not string && CompiledQueryBuild.ToList(values[slot]) is { } list)
+                (sb ??= new StringBuilder()).Append(slot).Append(':').Append(list.Count).Append(',');
+        }
+        return sb?.ToString();
     }
 
     // Translates the variant with the values of the scope, then again with the values as the arguments of a compiled
@@ -328,7 +408,7 @@ internal sealed class FilterTemplate<T>
         private readonly FilterTemplate<T> template;
         public readonly Expression Folded;
         public readonly int[] Slots; // the values of the scope it uses
-        public readonly ConcurrentDictionary<(IOrmLiteDialectProvider, string?, ulong), RenderedSql> Rendered = new();
+        public readonly ConcurrentDictionary<(IOrmLiteDialectProvider, string?, ulong, string?), RenderedSql> Rendered = new();
 
         public Variant(FilterTemplate<T> template, ulong bits)
         {
@@ -467,51 +547,108 @@ internal sealed class FilterTemplate<T>
 }
 
 /// <summary>
+/// The SQL a filter has for the values of a scope, with the values of its db params
+/// </summary>
+internal readonly struct FilterChoice(object? sql, object?[]? values, object? variant)
+{
+    /// <summary>
+    /// The filter doesn't apply to rows with the values of the scope
+    /// </summary>
+    public static readonly object Skip = new();
+
+    /// <summary>
+    /// No rows match the filter with the values of the scope
+    /// </summary>
+    public static readonly object False = new();
+
+    /// <summary>
+    /// A RenderedSql, Skip or False, or null when the filter is translated for each statement
+    /// </summary>
+    public readonly object? Sql = sql;
+    public readonly object?[]? Values = values;
+    public readonly object? Variant = variant;
+}
+
+/// <summary>
+/// A filter applied to a compiled query that's being built, to choose its SQL again with the scope of the connection
+/// the query is run with
+/// </summary>
+internal sealed class FilterUse(FilterRule rule, object? sql, Func<object?, IOrmLiteDialectProvider, FilterChoice> choose)
+{
+    public FilterRule Rule { get; } = rule;
+
+    /// <summary>
+    /// The SQL the filter had when the query was built, null if it was translated for the statement
+    /// </summary>
+    public object? Sql { get; } = sql;
+
+    public FilterChoice Choose(object? scope, IOrmLiteDialectProvider dialect) => choose(scope, dialect);
+}
+
+/// <summary>
 /// The SQL of a filter that's kept, with the values of its db params read from the scope for each statement
 /// </summary>
 internal sealed class RenderedSql
 {
     // Kept so SQL that can't be reused isn't checked again each time
-    public static readonly RenderedSql NotCached = new([], []);
+    public static readonly RenderedSql NotCached = new([], [], [], false, false);
 
     private readonly string[] parts;   // the SQL between its db params
     private readonly int[] paramAt;    // the db param after each part
-    private FilterParam[] dbParams = [];
-    private bool isMySqlConnector;
+    private readonly FilterParam[] dbParams;
+    private readonly bool isMySqlConnector;
+    private readonly bool usesLists;   // a collection of the scope has a db param for each of its values
 
-    private RenderedSql(string[] parts, int[] paramAt)
+    private RenderedSql(string[] parts, int[] paramAt, FilterParam[] dbParams, bool isMySqlConnector, bool usesLists)
     {
         this.parts = parts;
         this.paramAt = paramAt;
+        this.dbParams = dbParams;
+        this.isMySqlConnector = isMySqlConnector;
+        this.usesLists = usesLists;
     }
 
-    private sealed class FilterParam
+    private sealed class FilterParam(IDbDataParameter? param, Func<object[], List<object>[], object>? getValue,
+        Type? valueType, DbType? dbType, int? size, byte? precision, byte? scale)
     {
-        public IDbDataParameter? Param;                      // a db param that's the same each time
-        public Func<object[], List<object>[], object>? GetValue; // or a db param for a value of the scope
-        public Type? ValueType;
-        public DbType? DbType;
-        public int? Size;
-        public byte? Precision;
-        public byte? Scale;
+        public readonly IDbDataParameter? Param = param;                        // a db param that's the same each time
+        public readonly Func<object[], List<object>[], object>? GetValue = getValue; // or one for a value of the scope
+        public readonly Type? ValueType = valueType;
+        public readonly DbType? DbType = dbType;
+        public readonly int? Size = size;
+        public readonly byte? Precision = precision;
+        public readonly byte? Scale = scale;
+    }
+
+    // The values of the scope's collections that have a db param for each of their values
+    private List<object>[]? ToLists(object?[] values)
+    {
+        if (!usesLists)
+            return null;
+        var lists = new List<object>[values.Length];
+        for (var i = 0; i < values.Length; i++)
+            lists[i] = CompiledQueryBuild.ToList(values[i])!;
+        return lists;
     }
 
     /// <summary>
     /// Adds the filter's SQL to the query, with db params for its values, or returns null if the values can't be
     /// used with the SQL, e.g. a value of a different type
     /// </summary>
-    public string? Apply<T>(SqlExpression<T> q, object?[] values)
+    public string? Apply(IOrmLiteDialectProvider dialect, string paramPrefix, List<IDbDataParameter> to,
+        object?[] values, Action<IDbDataParameter, Func<object?[], object?>, object>? bind = null)
     {
         if (ReferenceEquals(this, NotCached))
             return null;
 
-        var dialect = q.DialectProvider;
+        var lists = ToLists(values);
         var created = new IDbDataParameter[dbParams.Length];
-        var start = q.Params.Count;
+        var raw = bind != null ? new object[dbParams.Length] : null;
+        var start = to.Count;
         for (var i = 0; i < dbParams.Length; i++)
         {
             var template = dbParams[i];
-            var name = dialect.GetParam(q.ParamPrefix + (start + i));
+            var name = dialect.GetParam(paramPrefix + (start + i));
             if (template.Param != null)
             {
                 var p = dialect.CreateParam();
@@ -521,13 +658,23 @@ internal sealed class RenderedSql
                 continue;
             }
 
-            var value = template.GetValue!(values!, null!);
+            var value = template.GetValue!(values!, lists!);
             if (value == null || value.GetType() != template.ValueType)
                 return null;
-            created[i] = CreateParam(dialect, name, value, template);
+            created[i] = CreateParam(dialect, isMySqlConnector, name, value, template);
+            if (raw != null)
+                raw[i] = value;
         }
 
-        q.Params.AddRange(created);
+        to.AddRange(created);
+        if (bind != null)
+        {
+            for (var i = 0; i < dbParams.Length; i++)
+            {
+                if (dbParams[i].GetValue is { } getValue)
+                    bind(created[i], vals => getValue(vals!, ToLists(vals)!), raw![i]);
+            }
+        }
         if (paramAt.Length == 0)
             return parts[0];
         var sb = new StringBuilder(parts[0]);
@@ -537,8 +684,8 @@ internal sealed class RenderedSql
     }
 
     // As SqlExpression.AddParam() creates them
-    private IDbDataParameter CreateParam(IOrmLiteDialectProvider dialect, string name, object value,
-        FilterParam? template)
+    private static IDbDataParameter CreateParam(IOrmLiteDialectProvider dialect, bool isMySqlConnector, string name,
+        object value, FilterParam? template)
     {
         var p = dialect.CreateParam();
         p.ParameterName = name;
@@ -566,12 +713,12 @@ internal sealed class RenderedSql
         List<IDbDataParameter> sqlParams, string normalSql, List<IDbDataParameter> normalParams, out RenderedSql? to)
     {
         to = null;
+        var usesLists = false;
         for (var i = 0; i < build.Args.Length; i++)
         {
             if (build.UsedInSql[i])
                 return "A value of the scope is used in its SQL instead of a db param";
-            if (build.UsedAsList[i])
-                return "A collection of the scope has a db param for each of its values";
+            usesLists |= build.UsedAsList[i];
         }
         if (build.HasNullValue)
             return "A value converted from the scope is null";
@@ -580,7 +727,7 @@ internal sealed class RenderedSql
         if (sqlParams.Count != normalParams.Count)
             return "The db params change with the values of the scope";
 
-        var rendered = new RenderedSql([], []) { isMySqlConnector = dialect.IsMySqlConnector() };
+        var isMySqlConnector = dialect.IsMySqlConnector();
         var templates = new FilterParam[sqlParams.Count];
         var bound = 0;
         for (var i = 0; i < sqlParams.Count; i++)
@@ -592,25 +739,20 @@ internal sealed class RenderedSql
 
             if (!build.Bound.TryGetValue(p, out var value))
             {
-                templates[i] = new FilterParam { Param = p };
+                templates[i] = new FilterParam(p, null, null, null, null, null, null);
                 continue;
             }
 
             bound++;
-            var template = new FilterParam { GetValue = value.GetValue, ValueType = value.Sample.GetType() };
             // Changes made to the db param after it was created are made each time
-            var created = rendered.CreateParam(dialect, p.ParameterName, value.Sample, null);
+            var created = CreateParam(dialect, isMySqlConnector, p.ParameterName, value.Sample, null);
             if (!Equals(created.Value, p.Value))
                 return $"The db param {p.ParameterName} isn't created from the value of the scope";
-            if (created.DbType != p.DbType)
-                template.DbType = p.DbType;
-            if (created.Size != p.Size)
-                template.Size = p.Size;
-            if (created.Precision != p.Precision)
-                template.Precision = p.Precision;
-            if (created.Scale != p.Scale)
-                template.Scale = p.Scale;
-            templates[i] = template;
+            templates[i] = new FilterParam(null, value.GetValue, value.Sample.GetType(),
+                created.DbType != p.DbType ? p.DbType : null,
+                created.Size != p.Size ? p.Size : null,
+                created.Precision != p.Precision ? p.Precision : null,
+                created.Scale != p.Scale ? p.Scale : null);
         }
         if (bound != build.Bound.Count)
             return "The db params of the scope's values are changed by its SQL";
@@ -630,7 +772,7 @@ internal sealed class RenderedSql
                 paramAt[i / 2] = int.Parse(split[i]);
         }
 
-        to = new RenderedSql(parts, paramAt) { dbParams = templates, isMySqlConnector = rendered.isMySqlConnector };
+        to = new RenderedSql(parts, paramAt, templates, isMySqlConnector, usesLists);
         return null;
     }
 }
