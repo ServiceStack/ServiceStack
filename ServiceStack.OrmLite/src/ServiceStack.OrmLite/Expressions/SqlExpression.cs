@@ -420,6 +420,10 @@ namespace ServiceStack.OrmLite
             isSelectExpression = true;
             var selectSql = Visit(fields);
             isSelectExpression = false;
+
+            // A single column, e.g. Select(x => x.Embedding)
+            if (fields is LambdaExpression { Body: var body })
+                selectSql = ToSelectColumn(body, selectSql);
             
             if (!IsSqlClass(selectSql))
             {
@@ -2425,6 +2429,7 @@ namespace ServiceStack.OrmLite
                 {
                     for (var i = 0; i < exprs.Count; ++i)
                     {
+                        exprs[i] = ToSelectColumn(nex.Arguments[i], exprs[i]);
                         exprs[i] = SetAnonTypePropertyNamesForSelectExpression(exprs[i], nex.Arguments[i], nex.Members[i]);
                     }
                 }
@@ -2433,6 +2438,23 @@ namespace ServiceStack.OrmLite
             }
 
             return EvaluateValue(nex);
+        }
+
+        /// <summary>
+        /// A column selected as an item of the select list, which some drivers can't read as it is, e.g. the vectors of
+        /// PostgreSQL, which are selected as text. Columns in other expressions, e.g. a distance, are used as they are.
+        /// </summary>
+        private object ToSelectColumn(Expression expression, object sql)
+        {
+            while (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                expression = convert.Operand;
+            if (sql is not PartialSqlString column || expression is not MemberExpression { Expression: ParameterExpression param } member)
+                return sql;
+            var fieldDef = param.Type.GetModelDefinition()?.GetFieldDefinition(member.Member.Name);
+            if (fieldDef?.VectorDimensions == null)
+                return sql;
+            var select = DialectProvider.ToSelectColumn(fieldDef, column.Text);
+            return select == column.Text ? sql : new PartialSqlString(select);
         }
 
         bool IsLambdaArg(Expression expr)
@@ -3362,13 +3384,32 @@ namespace ServiceStack.OrmLite
                 nameof(Sql.L2Distance) => VectorDistance.L2,
                 _ => VectorDistance.NegativeInnerProduct,
             };
+            // Vectors to compare with have the precision of the column they're compared with
+            var precision = VectorFieldOf(m.Arguments[0])?.VectorPrecision
+                ?? VectorFieldOf(m.Arguments[1])?.VectorPrecision
+                ?? VectorPrecision.Single;
             return new PartialSqlString(DialectProvider.ToVectorDistance(distance,
-                VisitVectorOperand(m.Arguments[0]), VisitVectorOperand(m.Arguments[1])));
+                VisitVectorOperand(m.Arguments[0], precision), VisitVectorOperand(m.Arguments[1], precision)));
+        }
+
+        // The [Vector] column of an operand, if it's one
+        private static FieldDefinition VectorFieldOf(Expression expression)
+        {
+            while (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                expression = convert.Operand;
+            return expression is MemberExpression { Expression: ParameterExpression param } member
+                ? param.Type.GetModelDefinition()?.GetFieldDefinition(member.Member.Name) is { VectorDimensions: not null } fieldDef
+                    ? fieldDef
+                    : null
+                : null;
         }
 
         // A vector column, or a vector that's sent as a db param
-        private string VisitVectorOperand(Expression expression)
+        private string VisitVectorOperand(Expression expression, VectorPrecision precision)
         {
+            // A float[] converted to a ReadOnlyMemory<float> for the distance methods, or the other way around
+            while (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                expression = convert.Operand;
             var value = Visit(expression);
             if (value is PartialSqlString sql)
                 return sql.Text;
@@ -3378,7 +3419,7 @@ namespace ServiceStack.OrmLite
             var converter = DialectProvider.VectorConverter;
             var p = AddParam(converter.ToDbValue(typeof(float[]), vector));
             converter.InitDbParam(p, typeof(float[]));
-            return DialectProvider.ToVectorParam(p.ParameterName, vector.Length);
+            return DialectProvider.ToVectorParam(p.ParameterName, vector.Length, precision);
         }
 
         protected virtual object VisitSqlMethodCall(MethodCallExpression m)

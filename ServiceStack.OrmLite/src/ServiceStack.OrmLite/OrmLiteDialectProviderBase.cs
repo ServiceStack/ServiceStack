@@ -677,7 +677,7 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     /// </summary>
     protected virtual string GetFieldTypeDefinition(FieldDefinition fieldDef) =>
         ResolveFragment(fieldDef.CustomFieldDefinition) ?? (fieldDef.VectorDimensions != null
-            ? GetVectorColumnDefinition(fieldDef.VectorDimensions.Value)
+            ? GetVectorColumnDefinition(fieldDef.VectorDimensions.Value, fieldDef.VectorPrecision)
             : GetColumnTypeDefinition(fieldDef.ColumnType, fieldDef.FieldLength, fieldDef.Scale));
 
     public IOrmLiteConverter VectorConverter { get; set; } = new VectorConverter();
@@ -688,7 +688,20 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     public virtual string GetVectorColumnDefinition(int dimensions) =>
         throw new NotSupportedException($"{GetType().Name} doesn't support [Vector] columns");
 
+    /// <summary>
+    /// The column type of a [Vector] with these dimensions and precision
+    /// </summary>
+    public virtual string GetVectorColumnDefinition(int dimensions, VectorPrecision precision) =>
+        precision == VectorPrecision.Single
+            ? GetVectorColumnDefinition(dimensions)
+            : throw new NotSupportedException($"{GetType().Name} doesn't support half-precision [Vector] columns");
+
     public virtual string ToVectorParam(string param, int dimensions) => param;
+
+    public virtual string ToVectorParam(string param, int dimensions, VectorPrecision precision) =>
+        ToVectorParam(param, dimensions);
+
+    public virtual List<string> ToVectorSearchStatements(VectorSearchOptions options) => [];
 
     public virtual string ToVectorDistance(VectorDistance distance, string vector, string other) =>
         throw new NotSupportedException($"{GetType().Name} doesn't support vector distances");
@@ -702,6 +715,9 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     /// What's selected for a [Vector] column if it can't be read as it is, or null to select the column
     /// </summary>
     protected virtual string GetVectorSelectExpression(string quotedColumn) => null;
+
+    public virtual string ToSelectColumn(FieldDefinition fieldDef, string quotedColumn) =>
+        fieldDef?.VectorDimensions != null ? GetVectorSelectExpression(quotedColumn) ?? quotedColumn : quotedColumn;
 
     protected virtual string GetGeneratedColumnDefinition(FieldDefinition fieldDef)
     {

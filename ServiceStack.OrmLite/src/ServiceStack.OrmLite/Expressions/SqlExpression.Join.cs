@@ -362,7 +362,7 @@ namespace ServiceStack.OrmLite
                                     }
                                     else
                                     {
-                                        sbSelect.Append($"{GetQuotedColumnName(tableDef, matchingField.Name)} AS {SqlColumn(fieldDef)}");
+                                        sbSelect.Append($"{DialectProvider.ToSelectColumn(matchingField, GetQuotedColumnName(tableDef, matchingField.Name))} AS {SqlColumn(fieldDef)}");
                                     }
                                 }
                                 else
@@ -401,11 +401,13 @@ namespace ServiceStack.OrmLite
                                 }
                                 else
                                 {
-                                    sbSelect.Append(tableAlias == null
+                                    var column = tableAlias == null
                                         ? GetQuotedColumnName(tableDef, tableFieldDef.Name)
-                                        : GetQuotedColumnName(tableDef, tableAlias, tableFieldDef.Name));
+                                        : GetQuotedColumnName(tableDef, tableAlias, tableFieldDef.Name);
+                                    var selectColumn = DialectProvider.ToSelectColumn(tableFieldDef, column);
+                                    sbSelect.Append(selectColumn);
 
-                                    if (tableFieldDef.RequiresAlias)
+                                    if (tableFieldDef.RequiresAlias || selectColumn != column)
                                         sbSelect.Append(" AS ").Append(SqlColumn(fieldDef.Name));
                                 }
                             }
@@ -441,7 +443,7 @@ namespace ServiceStack.OrmLite
                                 ? TableAlias
                                 : null;
                                     
-                            sbSelect.Append($"{DialectProvider.GetQuotedColumnName(tableDef, tableAlias, matchingField)} as {SqlColumn(fieldDef.Name)}");
+                            sbSelect.Append($"{DialectProvider.ToSelectColumn(matchingField, DialectProvider.GetQuotedColumnName(tableDef, tableAlias, matchingField))} as {SqlColumn(fieldDef.Name)}");
                             
                             break;
                         }

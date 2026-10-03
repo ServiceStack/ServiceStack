@@ -181,8 +181,11 @@ internal static class OrmLiteConfigExtensions
             if ((isRowStart || isRowEnd) && propertyType != typeof(DateTime))
                 throw new NotSupportedException($"[RowStart] and [RowEnd] are only valid for DateTime properties, {modelType.Name}.{propertyInfo.Name} is a {propertyInfo.PropertyType.Name}");
             var vectorAttr = propertyInfo.FirstAttribute<VectorAttribute>();
-            if (vectorAttr != null && propertyInfo.PropertyType != typeof(float[]))
-                throw new NotSupportedException($"[Vector] is only valid for float[] properties, {modelType.Name}.{propertyInfo.Name} is a {propertyInfo.PropertyType.Name}");
+            if (vectorAttr != null && propertyType != typeof(float[]) && propertyType != typeof(ReadOnlyMemory<float>))
+                throw new NotSupportedException($"[Vector] is only valid for float[] and ReadOnlyMemory<float> properties, {modelType.Name}.{propertyInfo.Name} is a {propertyInfo.PropertyType.Name}");
+            // Rows can be saved before they have a vector, as ReadOnlyMemory<float> is a struct
+            if (vectorAttr != null)
+                isNullable = !propertyInfo.HasAttributeNamed(nameof(RequiredAttribute));
 
             var order = propertyInfoIdx++;
             if (customFieldAttr != null && customFieldAttr.Order != 0)
@@ -196,7 +199,10 @@ internal static class OrmLiteConfigExtensions
                 Name = propertyInfo.Name,
                 Alias = aliasAttr?.Name,
                 FieldType = propertyType,
-                FieldTypeDefaultValue = isNullable ? null : propertyType.GetDefaultValue(),
+                // A struct property whose column is nullable, e.g. a ReadOnlyMemory<float> vector, is its default for NULL
+                FieldTypeDefaultValue = isNullable && (!propertyInfo.PropertyType.IsValueType || isNullableType)
+                    ? null
+                    : propertyType.GetDefaultValue(),
                 TreatAsType = treatAsType,
                 PropertyInfo = propertyInfo,
                 IsNullable = isNullable,
@@ -214,6 +220,8 @@ internal static class OrmLiteConfigExtensions
                 Description = propertyInfo.FirstAttribute<DescriptionAttribute>()?.Description,
                 VectorDimensions = vectorAttr?.Dimensions,
                 VectorDistance = vectorAttr?.Distance ?? VectorDistance.Cosine,
+                VectorPrecision = vectorAttr?.Precision ?? VectorPrecision.Single,
+                VectorIndex = vectorAttr,
                 IsRowVersion = isRowVersion,
                 // The times of a row's version are set by the RDBMS
                 IgnoreOnInsert = propertyInfo.HasAttributeCached<IgnoreOnInsertAttribute>() || isRowStart || isRowEnd,

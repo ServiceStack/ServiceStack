@@ -351,7 +351,8 @@ public static class OrmLiteWriteCommandExtensions
 
                 if (values != null && values[index] == DBNull.Value)
                 {
-                    value = fieldDef.IsNullable ? null : fieldDef.FieldTypeDefaultValue;
+                    // null, unless the property can't be null
+                    value = fieldDef.FieldTypeDefaultValue;
                     var useValue = dbNullFilter?.Invoke(fieldDef);
                     if (useValue != null)
                         value = useValue;
@@ -363,8 +364,7 @@ public static class OrmLiteWriteCommandExtensions
                     value = converter.GetValue(reader, index, values);
                     if (value == null)
                     {
-                        if (!fieldDef.IsNullable)
-                            value = fieldDef.FieldTypeDefaultValue;
+                        value = fieldDef.FieldTypeDefaultValue;
                         var useValue = dbNullFilter?.Invoke(fieldDef);
                         if (useValue != null)
                             value = useValue;

@@ -749,9 +749,22 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 			return null;
 		if (fieldDef.VectorDistance == VectorDistance.NegativeInnerProduct)
 			throw new NotSupportedException("MariaDB doesn't have an inner product vector distance");
+		var options = fieldDef.VectorIndex;
+		if (options?.IndexType == VectorIndexType.IvfFlat || options?.EfConstruction > 0 || options?.Lists > 0)
+			throw new NotSupportedException("MariaDB's vector indexes are HNSW indexes, whose only option is M");
 
 		var distance = fieldDef.VectorDistance == VectorDistance.Cosine ? "cosine" : "euclidean";
-		return $"CREATE VECTOR INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({GetQuotedColumnName(fieldDef)}) DISTANCE={distance}; \n";
+		var m = options?.M > 0 ? $" M={options.M}" : "";
+		return $"CREATE VECTOR INDEX {indexName} ON {GetQuotedTableName(modelDef)} ({GetQuotedColumnName(fieldDef)}){m} DISTANCE={distance}; \n";
+	}
+
+	// MariaDB's vector indexes are searched with mhnsw_ef_search, MySQL has none
+	public override List<string> ToVectorSearchStatements(VectorSearchOptions options)
+	{
+		var to = new List<string>();
+		if (IsMariaDb == true && options.EfSearch != null)
+			to.Add($"SET SESSION mhnsw_ef_search = {options.EfSearch.Value}");
+		return to;
 	}
 
 	// Column comments are part of their definition

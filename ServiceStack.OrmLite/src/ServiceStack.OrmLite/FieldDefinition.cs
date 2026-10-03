@@ -166,6 +166,16 @@ public class FieldDefinition
     /// </summary>
     public VectorDistance VectorDistance { get; set; }
 
+    /// <summary>
+    /// The precision of the values of a [Vector] column
+    /// </summary>
+    public VectorPrecision VectorPrecision { get; set; }
+
+    /// <summary>
+    /// The options of the vector index of an indexed [Vector] column
+    /// </summary>
+    public VectorAttribute VectorIndex { get; set; }
+
     public string CustomSelect { get; set; }
     public string CustomInsert { get; set; }
     public string CustomUpdate { get; set; }
@@ -268,6 +278,8 @@ public class FieldDefinition
             IsRowEnd = IsRowEnd,
             VectorDimensions = VectorDimensions,
             VectorDistance = VectorDistance,
+            VectorPrecision = VectorPrecision,
+            VectorIndex = VectorIndex,
             CustomSelect = CustomSelect,
             BelongToModelName = BelongToModelName,
             IsReference = IsReference,

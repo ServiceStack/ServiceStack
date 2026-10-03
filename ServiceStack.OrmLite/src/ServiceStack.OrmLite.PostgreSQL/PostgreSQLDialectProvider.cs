@@ -1007,7 +1007,30 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
     // Vectors use the vector type of the pgvector extension: CREATE EXTENSION vector
     public override string GetVectorColumnDefinition(int dimensions) => $"vector({dimensions})";
 
+    // Half-precision vectors use pgvector's halfvec type
+    public override string GetVectorColumnDefinition(int dimensions, VectorPrecision precision) =>
+        precision == VectorPrecision.Half ? $"halfvec({dimensions})" : GetVectorColumnDefinition(dimensions);
+
     public override string ToVectorParam(string param, int dimensions) => param + "::vector";
+
+    public override string ToVectorParam(string param, int dimensions, VectorPrecision precision) =>
+        precision == VectorPrecision.Half ? param + "::halfvec" : ToVectorParam(param, dimensions);
+
+    public override List<string> ToVectorSearchStatements(VectorSearchOptions options)
+    {
+        var to = new List<string>();
+        if (options.EfSearch != null)
+            to.Add($"SET hnsw.ef_search = {options.EfSearch.Value}");
+        if (options.Probes != null)
+            to.Add($"SET ivfflat.probes = {options.Probes.Value}");
+        if (options.IterativeScan != null)
+        {
+            // HNSW returns the rows in order of their distance, IVFFlat only has relaxed_order (pgvector 0.8+)
+            to.Add($"SET hnsw.iterative_scan = {(options.IterativeScan.Value ? "strict_order" : "off")}");
+            to.Add($"SET ivfflat.iterative_scan = {(options.IterativeScan.Value ? "relaxed_order" : "off")}");
+        }
+        return to;
+    }
 
     public override string ToVectorDistance(VectorDistance distance, string vector, string other) =>
         $"({vector} {VectorOperator(distance)} {other})";
@@ -1023,12 +1046,32 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
 
     protected override string ToCreateVectorIndexStatement(ModelDefinition modelDef, FieldDefinition fieldDef, string indexName)
     {
-        var operatorClass = fieldDef.VectorDistance switch {
-            VectorDistance.Cosine => "vector_cosine_ops",
-            VectorDistance.L2 => "vector_l2_ops",
-            _ => "vector_ip_ops",
+        var type = fieldDef.VectorPrecision == VectorPrecision.Half ? "halfvec" : "vector";
+        var operatorClass = type + fieldDef.VectorDistance switch {
+            VectorDistance.Cosine => "_cosine_ops",
+            VectorDistance.L2 => "_l2_ops",
+            _ => "_ip_ops",
         };
-        return $"CREATE INDEX {indexName} ON {GetQuotedTableName(modelDef)} USING hnsw ({GetQuotedColumnName(fieldDef)} {operatorClass}); \n";
+
+        var options = fieldDef.VectorIndex;
+        var with = new List<string>();
+        string method;
+        if (options?.IndexType == VectorIndexType.IvfFlat)
+        {
+            method = "ivfflat";
+            if (options.Lists > 0)
+                with.Add($"lists = {options.Lists}");
+        }
+        else
+        {
+            method = "hnsw";
+            if (options?.M > 0)
+                with.Add($"m = {options.M}");
+            if (options?.EfConstruction > 0)
+                with.Add($"ef_construction = {options.EfConstruction}");
+        }
+        var withSql = with.Count > 0 ? $" WITH ({string.Join(", ", with)})" : "";
+        return $"CREATE INDEX {indexName} ON {GetQuotedTableName(modelDef)} USING {method} ({GetQuotedColumnName(fieldDef)} {operatorClass}){withSql}; \n";
     }
 
     public override void SetParameter(FieldDefinition fieldDef, IDbDataParameter p)

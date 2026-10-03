@@ -22,13 +22,13 @@ Complex type properties stored as JSON are queried directly, e.g. `x.Address.Cit
 - `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes of a JSON property
 - PostgreSQL's native arrays, e.g. `x.Aliases.Contains("Al")` on a `string[]` column as `= ANY(aliases)`
 
-### 1.2 More Vector Support (S/M)
-`[Vector]` columns and `Sql.CosineDistance()`, `Sql.L2Distance()` and `Sql.NegativeInnerProduct()` are supported on
-PostgreSQL (pgvector), SQL Server 2025, MariaDB, MySQL and SQLite (sqlite-vec). Remaining vector features:
-- SQL Server's `DiskANN` vector index, once it's no longer a preview feature that has to be enabled per database
-- Reading vectors in a custom `Select()` on PostgreSQL, which are only read as text when all columns are selected
-- `ReadOnlyMemory<float>` properties, half-precision and sparse vectors
-- Index options, e.g. HNSW `m` and `ef_construction`, and IVFFlat indexes
+### 1.2 More Vector Support (M)
+`[Vector]` `float[]` and `ReadOnlyMemory<float>` columns with `Sql.CosineDistance()`, `Sql.L2Distance()` and
+`Sql.NegativeInnerProduct()` are supported on PostgreSQL (pgvector), SQL Server 2025, MariaDB, MySQL and SQLite
+(sqlite-vec), with HNSW and IVFFlat index options, `db.SetVectorSearch()` and half-precision vectors. Remaining:
+- SQL Server's `DiskANN` vector index, which is only used by queries of its `VECTOR_SEARCH()` table function, so it
+  needs a portable query API, e.g. `q.NearestTo(x => x.Embedding, vector, take: 10)`. It's generally available in
+  Azure SQL, and a preview feature of SQL Server 2025
 
 ### 1.3 More Temporal Tables (M)
 `[SystemVersioned]` tables with `q.AsOf(time)`, `q.VersionsBetween(from, to)` and `q.AllVersions()` are supported by
@@ -126,6 +126,8 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
   user-supplied filters, `OrderBySafe()` covers dynamic sorting, and `ColumnRef` / `Sql.Fmt()` cover hand-written
   dynamic queries.
 - **Slow query log, N+1 detection and parameter redaction in logs:** reconsider if users ask for them.
+- **Sparse vectors:** only PostgreSQL's pgvector has them (`sparsevec`), which would need a C# type of their own.
+  Reconsider if users ask for them.
 - **Recognizing JSON for each property:** PostgreSQL's dialect always stores complex types as JSON, so `[PgSqlJsonB]`
   columns are already queried, and JSON from custom serializers, e.g. SQL Server's `[SqlJson]` types, is queried with
   `Sql.Json(x.Address).City`.

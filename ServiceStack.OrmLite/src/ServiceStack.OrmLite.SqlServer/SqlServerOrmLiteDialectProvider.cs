@@ -359,6 +359,13 @@ namespace ServiceStack.OrmLite.SqlServer
 
         public override string ToVectorParam(string param, int dimensions) => $"CAST({param} AS VECTOR({dimensions}))";
 
+        // Half-precision vectors are a preview feature of SQL Server 2025, which needs PREVIEW_FEATURES to be enabled
+        public override string GetVectorColumnDefinition(int dimensions, VectorPrecision precision) =>
+            precision == VectorPrecision.Half ? $"VECTOR({dimensions}, float16)" : GetVectorColumnDefinition(dimensions);
+
+        public override string ToVectorParam(string param, int dimensions, VectorPrecision precision) =>
+            precision == VectorPrecision.Half ? $"CAST({param} AS VECTOR({dimensions}, float16))" : ToVectorParam(param, dimensions);
+
         public override string ToVectorDistance(VectorDistance distance, string vector, string other)
         {
             var metric = distance switch {

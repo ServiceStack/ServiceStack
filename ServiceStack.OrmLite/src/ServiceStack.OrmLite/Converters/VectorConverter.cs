@@ -16,10 +16,23 @@ public class VectorConverter : OrmLiteConverter
     public override string ColumnDefinition => "BLOB";
     public override DbType DbType => DbType.Binary;
 
+    // An empty vector, e.g. a default ReadOnlyMemory<float>, isn't a vector, as vectors need dimensions
     public override object ToDbValue(Type fieldType, object value) =>
-        value == null ? null : ToBytes(ToFloats(value));
+        ToFloats(value) is { Length: > 0 } vector ? ToBytes(vector) : null;
 
-    public override object FromDbValue(Type fieldType, object value) => ToFloats(value);
+    public override object FromDbValue(Type fieldType, object value) => ToFieldValue(fieldType, ToFloats(value));
+
+    /// <summary>
+    /// The vector as the type of its property: a float[] or a ReadOnlyMemory&lt;float&gt;
+    /// </summary>
+    public static object ToFieldValue(Type fieldType, float[] vector)
+    {
+        if (vector == null)
+            return null;
+        fieldType = Nullable.GetUnderlyingType(fieldType) ?? fieldType;
+        // object, as the float[] would otherwise be converted to a ReadOnlyMemory<float>
+        return fieldType == typeof(ReadOnlyMemory<float>) ? new ReadOnlyMemory<float>(vector) : (object)vector;
+    }
 
     public override string ToQuotedString(Type fieldType, object value) =>
         "'" + ToText(ToFloats(value)) + "'";
@@ -136,5 +149,5 @@ public class VectorTextConverter : VectorConverter
     public override DbType DbType => DbType.String;
 
     public override object ToDbValue(Type fieldType, object value) =>
-        value == null ? null : ToText(ToFloats(value));
+        ToFloats(value) is { Length: > 0 } vector ? ToText(vector) : null;
 }

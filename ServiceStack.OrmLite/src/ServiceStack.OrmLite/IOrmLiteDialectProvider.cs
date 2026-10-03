@@ -80,6 +80,12 @@ public interface IOrmLiteDialectProvider
     string ToReadOnlySessionStatement(bool readOnly);
 
     /// <summary>
+    /// What's selected for a column, which is the column unless the driver can't read it as it is, e.g. the vectors
+    /// of PostgreSQL, which are selected as text
+    /// </summary>
+    string ToSelectColumn(FieldDefinition fieldDef, string quotedColumn);
+
+    /// <summary>
     /// Whether an error of the driver is temporary, and if it is, whether the database confirmed the statement
     /// wasn't applied
     /// </summary>
@@ -351,6 +357,15 @@ public interface IOrmLiteDialectProvider
     /// The SQL for a db param with a vector's value, e.g. cast to the RDBMS's vector type
     /// </summary>
     string ToVectorParam(string param, int dimensions);
+    /// <summary>
+    /// The SQL for a db param with a vector's value, cast to the vector type of a column with the precision
+    /// </summary>
+    string ToVectorParam(string param, int dimensions, VectorPrecision precision);
+    /// <summary>
+    /// The statements that set how this connection searches vector indexes, e.g. PostgreSQL's hnsw.ef_search,
+    /// which are empty where the RDBMS doesn't have them
+    /// </summary>
+    List<string> ToVectorSearchStatements(VectorSearchOptions options);
     /// <summary>
     /// The SQL for the distance of 2 vectors, which are columns or the SQL from ToVectorParam()
     /// </summary>

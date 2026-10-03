@@ -51,6 +51,25 @@ public static partial class Sql
         return -dot;
     }
 
+    /// <summary>
+    /// The cosine distance of a [Vector] column and a vector, e.g. the ReadOnlyMemory&lt;float&gt; of an embedding:
+    /// <para>db.From&lt;Doc&gt;().OrderBy(x => Sql.CosineDistance(x.Embedding, embedding.Vector)).Take(5)</para>
+    /// </summary>
+    public static double CosineDistance(ReadOnlyMemory<float> vector, ReadOnlyMemory<float> other) =>
+        CosineDistance(vector.ToArray(), other.ToArray());
+
+    /// <summary>
+    /// The straight-line (Euclidean) distance of a [Vector] column and a vector
+    /// </summary>
+    public static double L2Distance(ReadOnlyMemory<float> vector, ReadOnlyMemory<float> other) =>
+        L2Distance(vector.ToArray(), other.ToArray());
+
+    /// <summary>
+    /// The inner (dot) product of a [Vector] column and a vector, negated so that smaller is more similar
+    /// </summary>
+    public static double NegativeInnerProduct(ReadOnlyMemory<float> vector, ReadOnlyMemory<float> other) =>
+        NegativeInnerProduct(vector.ToArray(), other.ToArray());
+
     private static void AssertSameLength(float[] vector, float[] other)
     {
         if (vector == null)
