@@ -48,6 +48,12 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
     public string? MigrationNamespace { get; set; }
 
     /// <summary>
+    /// Also compare the App's models of the tables its migrations create or change, which are matched by table name
+    /// to the copies of the models the migrations declare. Enabled by default.
+    /// </summary>
+    public bool IncludeMigrationModels { get; set; } = true;
+
+    /// <summary>
     /// Log the Schema Diff of each database when the App starts, a warning with the differences when its tables
     /// aren't the same as their models. It's compared in the background, and not when running App Tasks.
     /// </summary>
@@ -92,7 +98,47 @@ public class AdminDatabaseFeature : IPlugin, IConfigureServices, Model.IHasStrin
                 continue;
             Add(modelType, op.RequestType.FirstAttribute<NamedConnectionAttribute>()?.Name);
         }
+        if (IncludeMigrationModels)
+        {
+            foreach (var table in GetMigrationTables(appHost))
+            {
+                // When more than one App model has the name of the table, it's only compared when it's already one
+                // of the models, e.g. the data model of an AutoQuery API
+                if (table.ModelType != null)
+                    Add(table.ModelType, table.NamedConnection);
+            }
+        }
         return to.OrderBy(x => x.Name).ToList();
+    }
+
+    private List<MigrationTable>? migrationTables;
+
+    /// <summary>
+    /// The tables of the App's migrations, with the App's model of each table
+    /// </summary>
+    public List<MigrationTable> GetMigrationTables(IAppHost appHost)
+    {
+        if (migrationTables != null)
+            return migrationTables;
+
+        var migrationAssemblies = GetMigrationTypes(appHost).Select(x => x.Assembly).Distinct().ToArray();
+        if (migrationAssemblies.Length == 0)
+            return migrationTables = [];
+
+        // The App's assemblies and the assemblies of its APIs, e.g. its ServiceModel project
+        var modelAssemblies = new List<System.Reflection.Assembly> { appHost.GetType().Assembly };
+        modelAssemblies.AddRange(appHost.ServiceAssemblies);
+        foreach (var op in appHost.Metadata.Operations)
+        {
+            modelAssemblies.Add(op.RequestType.Assembly);
+            if (op.ResponseType != null)
+                modelAssemblies.Add(op.ResponseType.Assembly);
+        }
+        var appAssemblies = modelAssemblies.Distinct()
+            .Where(x => !x.IsDynamic && x.GetName().Name?.StartsWith("ServiceStack") != true
+                || x == appHost.GetType().Assembly)
+            .ToArray();
+        return migrationTables = Migrator.GetMigrationTables(migrationAssemblies, appAssemblies);
     }
 
     private static List<Type> GetMigrationTypes(IAppHost appHost)

@@ -136,9 +136,6 @@ export const Database = {
                 <div v-if="diff.warnings.length" class="mt-4 max-w-3xl space-y-2">
                     <Alert v-for="warning in diff.warnings" type="warn">{{warning}}</Alert>
                 </div>
-                <p v-if="diff.ignored?.length" class="mt-4 max-w-3xl text-sm text-gray-500">
-                    Not compared: {{diff.ignored.join(', ')}}. Tables are ignored by <b>OrmLiteConfig.SchemaDiff</b>.
-                </p>
             </div>
         </div>
         <div v-else-if="!routes.table" class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 items-start">

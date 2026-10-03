@@ -67,6 +67,26 @@ public class SchemaDiffUser
 
 public class QuerySchemaDiffUsers : QueryDb<SchemaDiffUser> {}
 
+// A model that isn't used by an AutoQuery API, which is compared as a migration creates its table
+public class SchemaDiffInvoice
+{
+    public int Id { get; set; }
+    public string? Number { get; set; }
+}
+
+// The migration's copy of the table, as it was when the migration was written
+public class Migration1001 : MigrationBase
+{
+    public class SchemaDiffInvoice
+    {
+        public int Id { get; set; }
+        public string? Number { get; set; }
+    }
+
+    public override void Up() => Db.CreateTable<SchemaDiffInvoice>();
+    public override void Down() => Db.DropTable<SchemaDiffInvoice>();
+}
+
 // A model of another database that isn't used by an AutoQuery API
 [NamedConnection(AdminSchemaDiffAppHostTests.Reports)]
 public class SchemaDiffReport
@@ -115,6 +135,7 @@ public class AdminSchemaDiffAppHostTests
         {
             db.DropAndCreateTable<SchemaDiffProductV1>();
             db.DropAndCreateTable<SchemaDiffCategory>();
+            db.DropAndCreateTable<SchemaDiffInvoice>();
         }
 
         var appHost = new AppHost();
@@ -166,8 +187,9 @@ public class AdminSchemaDiffAppHostTests
         api.ThrowIfError();
         var response = api.Response!;
 
-        // The models of the default connection, not the model of the reports database
-        Assert.That(response.Models, Is.EqualTo(new[] { nameof(SchemaDiffCategory), nameof(SchemaDiffProduct) }));
+        // The models of the default connection, not the model of the reports database. SchemaDiffInvoice is the
+        // App's model of a table its migrations create.
+        Assert.That(response.Models, Is.EqualTo(new[] { nameof(SchemaDiffCategory), nameof(SchemaDiffInvoice), nameof(SchemaDiffProduct) }));
         Assert.That(response.Warnings, Is.Empty);
         // AspNet* tables aren't compared
         Assert.That(response.Ignored, Is.EqualTo(new[] { "AspNetSchemaDiffUsers" }));

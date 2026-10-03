@@ -73,11 +73,13 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 
 ### 3.1 More Schema Diff (M)
 `db.GetSchemaDiff(types)` finds the differences between models and their tables (tables, columns and indexes),
-`diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Remaining:
+`diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Tables that aren't
+managed by OrmLite are ignored with `OrmLiteConfig.SchemaDiff` (`AspNet*` by default), and
+`AdminDatabaseFeature.LogSchemaDiff` logs the differences when an App starts. The Admin UI compares the data models
+of AutoQuery APIs and the App's models of the tables migrations create, found by `Migrator.GetMigrationTables()`.
+Remaining:
 - Compare default values, foreign keys, check and unique constraints, primary keys and the columns of indexes
 - Indexes that are in the database and not in the model
-- Find more of the models of an App, e.g. the types that `CreateTable` was called with. The Database Admin UI's
-  Schema Diff compares the data models of AutoQuery APIs and `AdminDatabaseFeature.ModelTypes`
 - A command that writes the next migration to the migrations folder, e.g. `npm run migrate:new` or an App Task
 - Detect likely renames: a column that's not in the model and a new property of the same type
 - Rebuild a SQLite table to alter its columns
@@ -88,8 +90,8 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 ## 4. Resilience
 
 ### 4.1 More Retries (S)
-A `RetryPolicy` on the dialect runs statements and connections again after a temporary error, and
-`db.RunInTransaction()` runs a whole transaction again. Remaining:
+A `RetryPolicy`, global in `OrmLiteConfig` or for each dialect, runs statements and connections again after a
+temporary error, and `db.RunInTransaction()` runs a whole transaction again. SQLite doesn't retry. Remaining:
 - Retry the APIs that write many rows in a transaction of their own, e.g. `InsertAll`, as a whole
 - Retry queries that fail while reading their rows, before any are returned
 - Retry queries run with OrmLite's Dapper APIs
