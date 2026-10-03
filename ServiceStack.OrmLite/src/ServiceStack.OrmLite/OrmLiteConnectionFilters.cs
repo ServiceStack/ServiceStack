@@ -4,28 +4,27 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using ServiceStack.Logging;
 
 namespace ServiceStack.OrmLite;
 
 /// <summary>
-/// The mandatory filters and write rules of a connection, applied to every statement OrmLite creates for a table
-/// they apply to. Immutable, registering a filter or rule creates a new instance.
+/// The mandatory filters and write rules of a connection, from the FilterSets it uses, applied to every statement
+/// OrmLite creates for a table they apply to. Immutable, using a FilterSet creates a new instance.
 /// </summary>
 public sealed class OrmLiteConnectionFilters
 {
-    public static readonly OrmLiteConnectionFilters Empty = new([], []);
+    public static readonly OrmLiteConnectionFilters Empty = new([], [], []);
 
-    private static readonly ILog Log = LogManager.GetLogger(typeof(OrmLiteConnectionFilters));
-
+    private readonly BoundFilterSet[] sets;
     private readonly EnsureFilterDef[] ensureFilters;
     private readonly ConcurrentDictionary<Type, Func<LambdaExpression?>[]> ensureFiltersByTable = new();
 
     private readonly WriteRuleDef[] writeRules;
     private readonly ConcurrentDictionary<Type, TableWriteRules?> writeRulesByTable = new();
 
-    private OrmLiteConnectionFilters(EnsureFilterDef[] ensureFilters, WriteRuleDef[] writeRules)
+    private OrmLiteConnectionFilters(BoundFilterSet[] sets, EnsureFilterDef[] ensureFilters, WriteRuleDef[] writeRules)
     {
+        this.sets = sets;
         this.ensureFilters = ensureFilters;
         this.writeRules = writeRules;
     }
@@ -33,87 +32,45 @@ public sealed class OrmLiteConnectionFilters
     public bool IsEmpty => ensureFilters.Length == 0 && writeRules.Length == 0;
 
     /// <summary>
-    /// Whether the connection has any EnsureWrites, OnInsert or OnUpdate rules
+    /// Whether the connection has any Ensure, OnInsert or OnUpdate rules
     /// </summary>
     public bool HasWriteRules => writeRules.Length > 0;
 
     /// <summary>
-    /// Adds the filter, unless the same filter with the same captured values is already registered
+    /// Adds the filters and rules of the set with its scope. Using a set again with the same scope is ignored,
+    /// and with a different scope throws, as rows would need to match both.
     /// </summary>
-    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, LambdaExpression predicate)
+    internal OrmLiteConnectionFilters Add(BoundFilterSet bound)
     {
-        var filter = new EnsureFilterDef(type, predicate, null);
-        foreach (var existing in ensureFilters)
+        foreach (var existing in sets)
         {
-            if (existing.Type != type || existing.Predicate == null || existing.Shape != filter.Shape)
+            if (!ReferenceEquals(existing.Set, bound.Set))
                 continue;
-
-            var comparison = CapturedValues.Compare(existing.Values, filter.Values);
-            if (comparison == CapturedValuesComparison.Same)
+            if (ReferenceEquals(existing.Scope, bound.Scope) || Equals(existing.Scope, bound.Scope))
                 return this;
-
-            // The same filter with different values is likely registered twice, e.g. for 2 different tenants
-            if (comparison == CapturedValuesComparison.Different)
-                Log.Warn($"Connection already has the filter {type.Name}: {predicate} with different values, " +
-                         "rows need to match both filters");
-        }
-        return Add(filter);
-    }
-
-    /// <summary>
-    /// Adds the filter function, unless the same function is already registered
-    /// </summary>
-    internal OrmLiteConnectionFilters AddEnsureFilter(Type type, Func<LambdaExpression?> predicateFn)
-    {
-        foreach (var existing in ensureFilters)
-        {
-            if (existing.Type == type && Equals(existing.PredicateFn, predicateFn))
-                return this;
-        }
-        return Add(new EnsureFilterDef(type, null, predicateFn));
-    }
-
-    private OrmLiteConnectionFilters Add(EnsureFilterDef filter)
-    {
-        var filters = new EnsureFilterDef[ensureFilters.Length + 1];
-        ensureFilters.CopyTo(filters, 0);
-        filters[ensureFilters.Length] = filter;
-        return new OrmLiteConnectionFilters(filters, writeRules);
-    }
-
-    /// <summary>
-    /// Adds the rule, unless the same rule with the same value or function is already registered.
-    /// A different EnsureWrites value for the same column throws.
-    /// </summary>
-    internal OrmLiteConnectionFilters AddWriteRule(WriteRuleDef rule)
-    {
-        foreach (var existing in writeRules)
-        {
-            if (existing.RuleType != rule.RuleType || existing.MemberName != rule.MemberName)
-                continue;
-
-            var sameType = existing.Type == rule.Type;
-            if (sameType && existing.HasSameValue(rule))
-                return this;
-
-            // Rules with values that can't be compared, e.g. from different functions, are all applied
-            var appliesToSameTables = sameType || existing.Type.IsAssignableFrom(rule.Type) || rule.Type.IsAssignableFrom(existing.Type);
-            if (!appliesToSameTables || !existing.HasValue || !rule.HasValue || Equals(existing.Value, rule.Value))
-                continue;
-
-            if (rule.RuleType == WriteRuleType.EnsureWrites)
-                throw new InvalidOperationException(
-                    $"Connection already ensures {existing.Type.Name}.{rule.MemberName} is '{existing.Value}', " +
-                    $"it can't also be '{rule.Value}'");
-
-            Log.Warn($"Connection already has an {rule.RuleType} rule setting {existing.Type.Name}.{rule.MemberName} " +
-                     $"to '{existing.Value}', which is replaced by '{rule.Value}'");
+            throw new InvalidOperationException(
+                "The connection already uses this FilterSet with a different scope, rows would need to match both");
         }
 
-        var rules = new WriteRuleDef[writeRules.Length + 1];
-        writeRules.CopyTo(rules, 0);
-        rules[writeRules.Length] = rule;
-        return new OrmLiteConnectionFilters(ensureFilters, rules);
+        var filters = new List<EnsureFilterDef>(ensureFilters);
+        var rules = new List<WriteRuleDef>(writeRules);
+        foreach (var rule in bound.Rules)
+        {
+            if (rule.BindCondition(bound.Scope) is { } condition)
+                filters.Add(new EnsureFilterDef(rule.Type, condition));
+
+            if (rule.ValueFn == null)
+                continue;
+            var scope = bound.Scope;
+            var valueFn = rule.ValueFn;
+            Func<object?> value = () => valueFn(scope);
+            if (rule.RuleType == FilterRuleType.Ensure)
+                rules.Add(new WriteRuleDef(rule.Type, WriteRuleType.EnsureWrites, rule.MemberName!, value));
+            else
+                rules.Add(new WriteRuleDef(rule.Type, rule.RuleType == FilterRuleType.OnInsert
+                    ? WriteRuleType.OnInsert : WriteRuleType.OnUpdate, rule.MemberName!, value));
+        }
+        return new OrmLiteConnectionFilters([..sets, bound], filters.ToArray(), rules.ToArray());
     }
 
     /// <summary>
@@ -151,8 +108,7 @@ public sealed class OrmLiteConnectionFilters
     }
 
     /// <summary>
-    /// The filters that apply to the table, with interface filters rebound to the table's properties.
-    /// Filters registered with a function are resolved on each call.
+    /// The filters that apply to the table, with interface filters rebound to the table's properties
     /// </summary>
     public Expression<Func<T, bool>>[] GetEnsureFilters<T>()
     {
@@ -184,64 +140,27 @@ public sealed class OrmLiteConnectionFilters
         });
 
     /// <summary>
-    /// Whether filters are registered for the table, which includes filter functions that may return no filter.
-    /// Unlike HasEnsureFilters, it doesn't call filter functions.
+    /// Whether filters are registered for the table
     /// </summary>
     internal bool MayFilter(Type tableType) => ensureFilters.Length > 0 && GetFilterFns(tableType).Length > 0;
 
     /// <summary>
-    /// Whether any filters currently apply to the table
+    /// Whether any filters apply to the table
     /// </summary>
     public bool HasEnsureFilters<T>() => GetEnsureFilters<T>().Length > 0;
 
-    private sealed class EnsureFilterDef
+    private sealed class EnsureFilterDef(Type type, LambdaExpression predicate)
     {
-        private readonly LambdaExpression? predicate;
-        private readonly Func<LambdaExpression?>? predicateFn;
-
-        public EnsureFilterDef(Type type, LambdaExpression? predicate, Func<LambdaExpression?>? predicateFn)
-        {
-            Type = type;
-            this.predicate = predicate;
-            this.predicateFn = predicateFn;
-            if (predicate != null)
-            {
-                // Closures are shown by their type, so the same filter from 2 calls has the same shape
-                Shape = predicate.ToString();
-                Values = CapturedValues.Of(predicate);
-            }
-        }
-
-        public Type Type { get; }
-        public LambdaExpression? Predicate => predicate;
-        public Func<LambdaExpression?>? PredicateFn => predicateFn;
+        public Type Type { get; } = type;
 
         /// <summary>
-        /// The filter's expression and the values it captured when it was registered, to detect duplicates
-        /// </summary>
-        public string? Shape { get; }
-        public List<object?> Values { get; } = [];
-
-        /// <summary>
-        /// Resolves the filter for the table: fixed filters are rebound once, filters from a function are rebound
-        /// each time as the function can return a different filter, or null for no filter
+        /// The filter for the table, which is rebound once for tables of an interface or base class
         /// </summary>
         public Func<LambdaExpression?> For(Type tableType)
         {
-            if (predicateFn != null)
-            {
-                return () => predicateFn() is { } filter
-                    ? Rebind(filter, tableType)
-                    : null;
-            }
-
-            var rebound = Rebind(predicate!, tableType);
+            var rebound = tableType == Type ? predicate : TableTypeRebinder.Rebind(predicate, tableType);
             return () => rebound;
         }
-
-        private LambdaExpression Rebind(LambdaExpression filter, Type tableType) => tableType == Type
-            ? filter
-            : TableTypeRebinder.Rebind(filter, tableType);
     }
 }
 
@@ -258,110 +177,6 @@ internal sealed class WriteRuleDef(Type type, WriteRuleType ruleType, string mem
     public WriteRuleType RuleType { get; } = ruleType;
     public string MemberName { get; } = memberName;
     public Func<object?> ValueFn { get; } = valueFn;
-
-    /// <summary>
-    /// The rule's value when it's not from a function, to detect duplicate and conflicting rules
-    /// </summary>
-    public bool HasValue { get; set; }
-    public object? Value { get; set; }
-
-    public bool HasSameValue(WriteRuleDef other) => HasValue
-        ? other.HasValue && Equals(Value, other.Value)
-        : !other.HasValue && Equals(ValueFn, other.ValueFn);
-}
-
-internal enum CapturedValuesComparison
-{
-    Same,
-    Different,
-    Unknown,
-}
-
-/// <summary>
-/// The values an expression captures, e.g. the tenantId in x =&gt; x.TenantId == tenantId, read when it's registered
-/// </summary>
-internal sealed class CapturedValues : ExpressionVisitor
-{
-    private readonly List<object?> values = [];
-
-    public static List<object?> Of(Expression expression)
-    {
-        var visitor = new CapturedValues();
-        visitor.Visit(expression);
-        return visitor.values;
-    }
-
-    /// <summary>
-    /// Whether the values of 2 expressions with the same shape are the same. Different values that aren't simple
-    /// values, e.g. collections, can't be compared.
-    /// </summary>
-    public static CapturedValuesComparison Compare(List<object?> a, List<object?> b)
-    {
-        if (a.Count != b.Count)
-            return CapturedValuesComparison.Unknown;
-
-        var result = CapturedValuesComparison.Same;
-        for (var i = 0; i < a.Count; i++)
-        {
-            if (Equals(a[i], b[i]))
-                continue;
-            if (!IsSimple(a[i]) || !IsSimple(b[i]))
-                return CapturedValuesComparison.Unknown;
-            result = CapturedValuesComparison.Different;
-        }
-        return result;
-    }
-
-    private static bool IsSimple(object? value) =>
-        value == null || value is string || value.GetType().IsValueType;
-
-    protected override Expression VisitMember(MemberExpression node)
-    {
-        if (TryEvaluate(node, out var value))
-        {
-            values.Add(value);
-            return node;
-        }
-        return base.VisitMember(node);
-    }
-
-    protected override Expression VisitConstant(ConstantExpression node)
-    {
-        values.Add(node.Value);
-        return node;
-    }
-
-    // A captured variable is a member of a closure, e.g. value(Closure).tenantId or value(Closure).user.TenantId
-    private static bool TryEvaluate(Expression? expression, out object? value)
-    {
-        value = null;
-        if (expression is ConstantExpression constant)
-        {
-            value = constant.Value;
-            return true;
-        }
-        if (expression is not MemberExpression { Expression: not null } member
-            || !TryEvaluate(member.Expression, out var target) || target == null)
-            return false;
-
-        try
-        {
-            switch (member.Member)
-            {
-                case FieldInfo field:
-                    value = field.GetValue(target);
-                    return true;
-                case PropertyInfo property:
-                    value = property.GetValue(target);
-                    return true;
-            }
-        }
-        catch (Exception)
-        {
-            // treated as a value that can't be compared
-        }
-        return false;
-    }
 }
 
 /// <summary>

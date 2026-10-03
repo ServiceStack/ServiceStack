@@ -510,7 +510,7 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
         Assert.That(db.Select(query, 1970).Count, Is.EqualTo(5));
 
         // Filters have values of their own, so queries on connections that have them generate their SQL each time
-        db.EnsureFilter<Book>(x => x.Available);
+        db.UseFilters(FilterSet.Create(f => f.Filter<Book>(x => x.Available)));
         Assert.That(Titles(db.Select(query, 1970)), Is.EqualTo(new[] {
             "Cosmos", "Neuromancer", "A Brief History of Time", "SPQR" }));
         Assert.That(db.Count(query, 1930), Is.EqualTo(6));
@@ -527,8 +527,10 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
         Bookstore.Seed(db);
 
         // Write rules only change inserts and updates, and the filter is for another table
-        db.OnInsert<Book>(x => x.Author, "Unknown");
-        db.EnsureFilter<BookReview>(x => x.Rating >= 4);
+        db.UseFilters(FilterSet.Create(f => {
+            f.OnInsert<Book>(x => x.Author, () => "Unknown");
+            f.Filter<BookReview>(x => x.Rating >= 4);
+        }));
 
         var query = OrmLiteQuery.Compile<Book, int>((q, since) => q.Where(x => x.Year >= since).OrderBy(x => x.Year));
         foreach (var since in new[] { 1970, 1980 })
@@ -539,6 +541,9 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
         Assert.That(query.CachedStatements, Is.EqualTo(1));
         Assert.That(query.NotCachedReason, Is.Null);
     }
+
+    static readonly FilterSet<string> ReviewerFilters = FilterSet.Create<string>(f =>
+        f.Filter<BookReview>((r, reviewer) => r.Reviewer == reviewer));
 
     [Test]
     public void Filters_of_joined_tables_are_applied_each_time()
@@ -556,7 +561,7 @@ public class CompiledQueryUseCases(DialectContext context) : OrmLiteProvidersTes
         IDbConnection OpenReviewer(string reviewer)
         {
             var db = OpenDbConnection();
-            db.EnsureFilter<BookReview>(r => r.Reviewer == reviewer);
+            db.UseFilters(ReviewerFilters.For(reviewer));
             return db;
         }
 

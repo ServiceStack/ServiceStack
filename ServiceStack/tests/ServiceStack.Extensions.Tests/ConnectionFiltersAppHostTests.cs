@@ -84,14 +84,16 @@ public static class TenantDbExtensions
     /// <summary>
     /// The App's rules for a tenant's user, defined once
     /// </summary>
-    public static IDbConnection ForUser(this IDbConnection db, int tenantId, string userId)
-    {
-        db.EnsureFilter<IHasTenant>(x => x.TenantId == tenantId);
-        db.EnsureWrites<IHasTenant>(x => x.TenantId, tenantId);
-        db.OnInsert<IHasAudit>(x => x.CreatedBy, userId);
-        db.OnWrite<IHasAudit>(x => x.ModifiedBy, userId);
-        return db;
-    }
+    public static IDbConnection ForUser(this IDbConnection db, int tenantId, string userId) =>
+        db.UseFilters(UserRules.For(new TenantUser(tenantId, userId)));
+
+    public record TenantUser(int TenantId, string UserId);
+
+    public static readonly FilterSet<TenantUser> UserRules = FilterSet.Create<TenantUser>(f => {
+        f.Ensure<IHasTenant>(x => x.TenantId, s => s.TenantId);
+        f.OnInsert<IHasAudit>(x => x.CreatedBy, s => s.UserId);
+        f.OnWrite<IHasAudit>(x => x.ModifiedBy, s => s.UserId);
+    });
 }
 
 public class TenantItemServices : Service

@@ -54,7 +54,7 @@ public class OrmLiteConnection
     public object? WriteLock { get; set; }
 
     /// <summary>
-    /// Mandatory filters and write rules applied to statements on this connection, see db.EnsureFilter()
+    /// Mandatory filters and write rules applied to statements on this connection, see db.UseFilters()
     /// </summary>
     public OrmLiteConnectionFilters Filters { get; internal set; } = OrmLiteConnectionFilters.Empty;
 

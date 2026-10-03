@@ -236,7 +236,7 @@ public class BulkUpsertUseCases(DialectContext context) : OrmLiteProvidersTestBa
         SeedProducts(db);
 
         // Tables with connection filters or write rules are upserted a row at a time, so they're applied to each
-        db.OnInsert<Product>(x => x.Stock, () => 7);
+        db.UseFilters(FilterSet.Create(f => f.OnInsert<Product>(x => x.Stock, () => 7)));
 
         db.BulkUpsert(new[] {
             new Product { Id = 2, Name = "Trackball", Price = 35m, Stock = 1, CreatedDate = Synced },

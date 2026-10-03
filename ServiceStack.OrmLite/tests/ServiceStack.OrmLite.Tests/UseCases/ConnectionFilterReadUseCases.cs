@@ -131,7 +131,7 @@ public class ConnectionFilterReadUseCases(DialectContext context) : OrmLiteProvi
     public void Joined_tables_are_filtered_in_their_join_condition()
     {
         using var db = OpenForTenant(1);
-        db.EnsureFilter<TenantCustomer>(c => c.Name != "Globex");
+        db.UseFilters(FilterSet.Create(f => f.Filter<TenantCustomer>(c => c.Name != "Globex")));
 
         // An INNER JOIN only returns orders whose customer matches the filter
         var inner = db.From<TenantOrder>().Join<TenantCustomer>((o, c) => o.CustomerId == c.Id);
@@ -171,7 +171,7 @@ public class ConnectionFilterReadUseCases(DialectContext context) : OrmLiteProvi
     public void Top_rows_of_each_group_are_ranked_after_filtering()
     {
         using var db = OpenForTenant(1);
-        db.EnsureFilter<TenantOrder>(x => !x.IsDeleted);
+        db.UseFilters(FilterSet.Create(f => f.Filter<TenantOrder>(x => !x.IsDeleted)));
 
         var q = db.From<TenantOrder>()
             .OrderByDescending(x => x.Total)
@@ -196,7 +196,7 @@ public class ConnectionFilterReadUseCases(DialectContext context) : OrmLiteProvi
             new() { Id = 3, TenantAuthorId = 1, TenantId = 2, Title = "Other tenant" }, // e.g. inconsistent data
             new() { Id = 4, TenantAuthorId = 2, TenantId = 2, Title = "Bob's book" },
         });
-        db.EnsureFilter<TenantBook>(x => !x.IsDeleted);
+        db.UseFilters(FilterSet.Create(f => f.Filter<TenantBook>(x => !x.IsDeleted)));
 
         var authors = db.LoadSelect(db.From<TenantAuthor>());
         Assert.That(authors.Map(x => x.Name), Is.EqualTo(new[] { "Alice" }));

@@ -121,12 +121,16 @@ public class ApiKeyAuthTests
         }
 
         // An App confining the connections it opens for a request to the request's tenant
+        // The API keys of a tenant
+        static readonly FilterSet<string> TenantApiKeys = FilterSet.Create<string>(f =>
+            f.Filter<ApiKeysFeature.ApiKey>((x, tenant) => x.RefIdStr == tenant));
+
         public override IDbConnection GetDbConnection(IRequest? req, Action<IDbConnection> configure)
         {
             var db = base.GetDbConnection(req, configure);
             var tenant = req?.GetHeader(TenantHeader);
             if (!string.IsNullOrEmpty(tenant))
-                db.EnsureFilter<ApiKeysFeature.ApiKey>(x => x.RefIdStr == tenant);
+                db.UseFilters(TenantApiKeys.For(tenant));
             return db;
         }
     }

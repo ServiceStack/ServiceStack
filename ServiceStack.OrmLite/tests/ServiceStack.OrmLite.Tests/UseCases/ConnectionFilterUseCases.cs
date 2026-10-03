@@ -48,15 +48,27 @@ public static class Tenants
     }
 
     /// <summary>
+    /// Only the rows of the tenant, declared once and used by each connection with the tenant's id
+    /// </summary>
+    public static readonly FilterSet<int> TenantFilters = FilterSet.Create<int>(f =>
+        f.Filter<IHasTenantId>((x, tenantId) => x.TenantId == tenantId));
+
+    /// <summary>
+    /// Orders that haven't been deleted, without a scope
+    /// </summary>
+    public static readonly FilterSet SoftDeletes = FilterSet.Create(f =>
+        f.Filter<TenantOrder>(x => !x.IsDeleted));
+
+    /// <summary>
     /// e.g. an app's extension method to open a connection for a tenant
     /// </summary>
     public static IDbConnection ForTenant(this IDbConnection db, int tenantId) =>
-        db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
+        db.UseFilters(TenantFilters.For(tenantId));
 }
 
 /// <summary>
-/// Mandatory filters registered on a connection are applied to every query created for a table they apply to, either
-/// the table itself or an interface it implements, e.g. to only return a tenant's rows.
+/// The mandatory filters of the FilterSets a connection uses are applied to every query created for a table they apply
+/// to, either the table itself or an interface it implements, e.g. to only return a tenant's rows.
 /// </summary>
 [TestFixtureOrmLite]
 public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProvidersTestBase(context)
@@ -81,36 +93,38 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
             Tenants.Seed(seed);
 
         using var db = OpenDbConnection().ForTenant(1);
-        db.EnsureFilter<TenantOrder>(x => !x.IsDeleted);
+        db.UseFilters(Tenants.SoftDeletes);
 
         Assert.That(db.Select(db.From<TenantOrder>()).Map(x => x.Id), Is.EquivalentTo(new[] { 1, 3 }));
         // The soft delete filter only applies to TenantOrder
         Assert.That(db.Select(db.From<TenantCustomer>()).Count, Is.EqualTo(2));
     }
 
+    public class TenantAccess
+    {
+        public int TenantId { get; set; }
+        public bool IsAdmin { get; set; }
+    }
+
+    // Conditions that only read the scope decide if the rest of the filter applies
+    static readonly FilterSet<TenantAccess> AccessFilters = FilterSet.Create<TenantAccess>(f =>
+        f.Filter<IHasTenantId>((x, s) => s.IsAdmin || x.TenantId == s.TenantId));
+
     [Test]
-    public void Filter_with_a_function_for_filters_that_change()
+    public void Filters_read_the_scope_for_each_statement()
     {
         using (var seed = OpenDbConnection())
             Tenants.Seed(seed);
 
-        var tenantId = 1;
-        var isAdmin = false;
-
-        using var db = OpenDbConnection();
-        // The function is called for each statement, no filter is applied when it returns null
-        db.EnsureFilter<IHasTenantId>(() => {
-            if (isAdmin)
-                return null;
-            return x => x.TenantId == tenantId;
-        });
+        var access = new TenantAccess { TenantId = 1 };
+        using var db = OpenDbConnection().UseFilters(AccessFilters.For(access));
         Assert.That(db.Count<TenantOrder>(), Is.EqualTo(3));
         Assert.That(db.SingleById<TenantOrder>(4), Is.Null);
 
-        tenantId = 2;
+        access.TenantId = 2;
         Assert.That(db.Select<TenantOrder>().Map(x => x.Id), Is.EqualTo(new[] { 4 }));
 
-        isAdmin = true;
+        access.IsAdmin = true;
         Assert.That(db.Count<TenantOrder>(), Is.EqualTo(4));
         Assert.That(db.Count<TenantCustomer>(), Is.EqualTo(3));
     }
@@ -127,6 +141,9 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
         }
     }
 
+    static readonly FilterSet<TenantScope> ScopeFilters = FilterSet.Create<TenantScope>(f =>
+        f.Filter<IHasTenantId>((x, s) => x.TenantId == s.AssertTenantId()));
+
     [Test]
     public void Filter_can_throw_until_its_tenant_is_known()
     {
@@ -134,8 +151,7 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
             Tenants.Seed(seed);
 
         var scope = new TenantScope();
-        using var db = OpenDbConnection();
-        db.EnsureFilter<IHasTenantId>(() => x => x.TenantId == scope.AssertTenantId());
+        using var db = OpenDbConnection().UseFilters(ScopeFilters.For(scope));
 
         // The exception of a method a filter calls is thrown as is, and the method is only called once
         var ex = Assert.Throws<InvalidOperationException>(() => db.Select<TenantOrder>());
@@ -150,17 +166,17 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
     }
 
     [Test]
-    public void Captured_values_of_a_filter_are_read_for_each_statement()
+    public void Rules_cant_use_variables_from_outside_the_rule()
     {
-        using (var seed = OpenDbConnection())
-            Tenants.Seed(seed);
-
+        // Values are read from the scope, so a FilterSet is the same for every connection that uses it
         var tenantId = 1;
-        using var db = OpenDbConnection().EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
-        Assert.That(db.Count<TenantOrder>(), Is.EqualTo(3));
+        var ex = Assert.Throws<ArgumentException>(() => FilterSet.Create<int>(f =>
+            f.Filter<IHasTenantId>((x, s) => x.TenantId == tenantId)));
+        Assert.That(ex.Message, Does.Contain("'tenantId'"));
 
-        tenantId = 2;
-        Assert.That(db.Count<TenantOrder>(), Is.EqualTo(1));
+        Assert.Throws<ArgumentException>(() => FilterSet.Create(f => f.Filter<IHasTenantId>(x => x.TenantId == tenantId)));
+        Assert.Throws<ArgumentException>(() => FilterSet.Create<TenantScope>(f =>
+            f.Ensure<IHasTenantId>(x => x.TenantId, s => tenantId)));
     }
 
     [Test]
@@ -248,15 +264,15 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
     }
 
     [Test]
-    public void Registering_the_same_filter_again_is_ignored()
+    public void Using_a_FilterSet_again_with_the_same_scope_is_ignored()
     {
         using (var seed = OpenDbConnection())
             Tenants.Seed(seed);
 
         // e.g. when a connection is configured more than once
         using var db = OpenDbConnection().ForTenant(1).ForTenant(1);
-        db.EnsureFilter<TenantOrder>(x => !x.IsDeleted);
-        db.EnsureFilter<TenantOrder>(x => !x.IsDeleted);
+        db.UseFilters(Tenants.SoftDeletes);
+        db.UseFilters(Tenants.SoftDeletes);
 
         var filters = db.GetFilters();
         Assert.That(db.From<TenantOrder>().Params.Count, Is.EqualTo(1));
@@ -265,10 +281,9 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
         db.ForTenant(1);
         Assert.That(db.GetFilters(), Is.SameAs(filters));
 
-        // A different value is another filter, which logs a warning as rows need to match both
-        db.ForTenant(2);
-        Assert.That(db.From<TenantOrder>().Params.Count, Is.EqualTo(2));
-        Assert.That(db.Select<TenantOrder>(), Is.Empty);
+        // With a different scope rows would need to match both
+        Assert.Throws<InvalidOperationException>(() => db.ForTenant(2));
+        Assert.That(db.GetFilters(), Is.SameAs(filters));
     }
 
     [Test]
@@ -338,9 +353,9 @@ public class ConnectionFilterUseCases(DialectContext context) : OrmLiteProviders
         using (var seed = OpenDbConnection())
             Tenants.Seed(seed);
 
-        using var db = OpenDbConnection();
         // Interface filters can only use the interface's properties
-        db.EnsureFilter<IHasTenantId>(x => x.ToString() == "1");
+        var filters = FilterSet.Create(f => f.Filter<IHasTenantId>(x => x.ToString() == "1"));
+        using var db = OpenDbConnection().UseFilters(filters);
         Assert.Throws<NotSupportedException>(() => db.From<TenantOrder>());
     }
 }

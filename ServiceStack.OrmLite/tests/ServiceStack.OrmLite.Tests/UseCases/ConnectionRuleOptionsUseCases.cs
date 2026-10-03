@@ -184,7 +184,7 @@ public class ConnectionRuleOptionsUseCases(DialectContext context) : OrmLiteProv
 
         // e.g. a connection for an admin, that sees every tenant and records who is writing
         var adminDb = db.WithoutFilters();
-        adminDb.OnInsert<IAudit>(x => x.CreatedBy, "admin");
+        adminDb.UseFilters(FilterSet.Create(f => f.OnInsert<IAudit>(x => x.CreatedBy, () => "admin")));
         adminDb.Insert(new TenantInvoice { TenantId = 3, Customer = "Globex", CreatedDate = Invoices.Created });
 
         Assert.That(adminDb.Select<TenantInvoice>().Count, Is.EqualTo(3));

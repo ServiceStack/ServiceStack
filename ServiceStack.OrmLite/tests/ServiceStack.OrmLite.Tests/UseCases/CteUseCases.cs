@@ -149,7 +149,7 @@ public class CteUseCases(DialectContext context) : OrmLiteProvidersTestBase(cont
         Bookstore.Seed(db);
 
         // Only books in stock are counted
-        db.EnsureFilter<Book>(x => x.Available);
+        db.UseFilters(FilterSet.Create(f => f.Filter<Book>(x => x.Available)));
 
         var q = db.From<AuthorTotal>()
             .With<AuthorTotal>(AuthorTotals(db))

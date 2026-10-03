@@ -14,144 +14,27 @@ namespace ServiceStack.OrmLite;
 public static class OrmLiteConnectionFiltersApi
 {
     /// <summary>
-    /// Only return rows matching the filter on this connection, for the table type or every table implementing the
-    /// interface, e.g:
-    /// <para>db.EnsureFilter&lt;IHasTenantId&gt;(x =&gt; x.TenantId == tenantId);</para>
-    /// The filter is added to queries with Ensure(), so other conditions can narrow results but never widen them.
+    /// Use the filters and rules of a FilterSet, with the scope they read their values from, e.g:
+    /// <para>db.UseFilters(WorkspaceFilters.For(scope));</para>
+    /// Using a set again with the same scope is ignored, and with a different scope throws.
     /// </summary>
-    public static IDbConnection EnsureFilter<T>(this IDbConnection db, Expression<Func<T, bool>> filter)
+    public static IDbConnection UseFilters(this IDbConnection db, BoundFilterSet filters)
     {
-        if (filter == null)
-            throw new ArgumentNullException(nameof(filter));
+        if (filters == null)
+            throw new ArgumentNullException(nameof(filters));
         var dbConn = db.ToOrmLiteConnection()
-            ?? throw new NotSupportedException("Filters can only be added to connections opened by OrmLite");
-        dbConn.Filters = dbConn.Filters.AddEnsureFilter(typeof(T), filter);
+            ?? throw new NotSupportedException("Filters can only be used by connections opened by OrmLite");
+        dbConn.Filters = dbConn.Filters.Add(filters);
         return db;
     }
 
     /// <summary>
-    /// Only return rows matching the filter returned by the function, which is called for each statement, for filters
-    /// that change during the connection's lifetime. No filter is applied when it returns null, e.g:
-    /// <para>db.EnsureFilter&lt;IHasTenantId&gt;(() =&gt; user.IsAdmin ? null : x =&gt; x.TenantId == user.TenantId);</para>
+    /// Use the filters and rules of a FilterSet without a scope, e.g:
+    /// <para>db.UseFilters(SoftDeletes);</para>
     /// </summary>
-    public static IDbConnection EnsureFilter<T>(this IDbConnection db, Func<Expression<Func<T, bool>>?> filterFn)
-    {
-        if (filterFn == null)
-            throw new ArgumentNullException(nameof(filterFn));
-        var dbConn = db.ToOrmLiteConnection()
-            ?? throw new NotSupportedException("Filters can only be added to connections opened by OrmLite");
-        dbConn.Filters = dbConn.Filters.AddEnsureFilter(typeof(T), filterFn);
-        return db;
-    }
-
-    /// <summary>
-    /// Require the column to have the value in every row written on this connection, for the table type or every
-    /// table implementing the interface, e.g:
-    /// <para>db.EnsureWrites&lt;IHasTenantId&gt;(x =&gt; x.TenantId, tenantId);</para>
-    /// Inserts set the value when it isn't set. Inserts and updates with a different value throw.
-    /// </summary>
-    public static IDbConnection EnsureWrites<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
-        db.AddWriteRule(WriteRuleType.EnsureWrites, field, value);
-
-    /// <summary>
-    /// Require the column to have the value returned by the function, which is called for each row written
-    /// </summary>
-    public static IDbConnection EnsureWrites<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
-        db.AddWriteRule(WriteRuleType.EnsureWrites, field, valueFn);
-
-    /// <summary>
-    /// Always set the column to the value in rows inserted on this connection, for the table type or every table
-    /// implementing the interface, e.g:
-    /// <para>db.OnInsert&lt;IAudit&gt;(x =&gt; x.CreatedBy, userId);</para>
-    /// </summary>
-    public static IDbConnection OnInsert<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
-        db.AddWriteRule(WriteRuleType.OnInsert, field, value);
-
-    /// <summary>
-    /// Always set the column to the value returned by the function in rows inserted on this connection, e.g:
-    /// <para>db.OnInsert&lt;IAudit&gt;(x =&gt; x.CreatedDate, () =&gt; DateTime.UtcNow);</para>
-    /// </summary>
-    public static IDbConnection OnInsert<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
-        db.AddWriteRule(WriteRuleType.OnInsert, field, valueFn);
-
-    /// <summary>
-    /// Always set the column to the value in rows updated on this connection, for the table type or every table
-    /// implementing the interface, e.g:
-    /// <para>db.OnUpdate&lt;IAudit&gt;(x =&gt; x.ModifiedBy, userId);</para>
-    /// </summary>
-    public static IDbConnection OnUpdate<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
-        db.AddWriteRule(WriteRuleType.OnUpdate, field, value);
-
-    /// <summary>
-    /// Always set the column to the value returned by the function in rows updated on this connection, e.g:
-    /// <para>db.OnUpdate&lt;IAudit&gt;(x =&gt; x.ModifiedDate, () =&gt; DateTime.UtcNow);</para>
-    /// </summary>
-    public static IDbConnection OnUpdate<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
-        db.AddWriteRule(WriteRuleType.OnUpdate, field, valueFn);
-
-    /// <summary>
-    /// Always set the column to the value in rows inserted or updated on this connection, the same as registering
-    /// both OnInsert and OnUpdate, e.g:
-    /// <para>db.OnWrite&lt;IAudit&gt;(x =&gt; x.ModifiedBy, userId);</para>
-    /// </summary>
-    public static IDbConnection OnWrite<T>(this IDbConnection db, Expression<Func<T, object?>> field, object? value) =>
-        db.OnInsert(field, value).OnUpdate(field, value);
-
-    /// <summary>
-    /// Always set the column to the value returned by the function in rows inserted or updated on this connection,
-    /// the same as registering both OnInsert and OnUpdate, e.g:
-    /// <para>db.OnWrite&lt;IAudit&gt;(x =&gt; x.ModifiedDate, () =&gt; DateTime.UtcNow);</para>
-    /// </summary>
-    public static IDbConnection OnWrite<T>(this IDbConnection db, Expression<Func<T, object?>> field, Func<object?> valueFn) =>
-        db.OnInsert(field, valueFn).OnUpdate(field, valueFn);
-
-    private static IDbConnection AddWriteRule<T>(this IDbConnection db, WriteRuleType ruleType,
-        Expression<Func<T, object?>> field, object? value) => value is Delegate
-        ? throw new ArgumentException("Use a function that returns the value, like: () => DateTime.UtcNow", nameof(value))
-        : db.AddWriteRule(ruleType, field, () => value, hasValue: true, value);
-
-    private static IDbConnection AddWriteRule<T>(this IDbConnection db, WriteRuleType ruleType,
-        Expression<Func<T, object?>> field, Func<object?> valueFn) =>
-        db.AddWriteRule(ruleType, field, valueFn, hasValue: false, null);
-
-    private static IDbConnection AddWriteRule<T>(this IDbConnection db, WriteRuleType ruleType,
-        Expression<Func<T, object?>> field, Func<object?> valueFn, bool hasValue, object? value)
-    {
-        if (field == null)
-            throw new ArgumentNullException(nameof(field));
-        if (valueFn == null)
-            throw new ArgumentNullException(nameof(valueFn));
-
-        var body = field.Body;
-        while (body is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
-            body = convert.Operand;
-        if (body is not MemberExpression member || member.Expression != field.Parameters[0])
-            throw new ArgumentException("Expected a column like: x => x.TenantId", nameof(field));
-
-        var dbConn = db.ToOrmLiteConnection()
-            ?? throw new NotSupportedException("Rules can only be added to connections opened by OrmLite");
-        dbConn.Filters = dbConn.Filters.AddWriteRule(new WriteRuleDef(typeof(T), ruleType, member.Member.Name, valueFn) {
-            HasValue = hasValue,
-            Value = hasValue ? ToMemberValue(member, value) : null,
-        });
-        return db;
-    }
-
-    // The value as the column's type, so the same value registered as different types, e.g. 1 and 1L, is the same
-    private static object? ToMemberValue(MemberExpression member, object? value)
-    {
-        if (value == null)
-            return null;
-        try
-        {
-            var type = Nullable.GetUnderlyingType(member.Type) ?? member.Type;
-            return type.IsInstanceOfType(value) ? value : value.ConvertTo(type);
-        }
-        catch (Exception)
-        {
-            return value;
-        }
-    }
+    public static IDbConnection UseFilters(this IDbConnection db, FilterSet filters) => filters == null
+        ? throw new ArgumentNullException(nameof(filters))
+        : db.UseFilters(new BoundFilterSet(filters, null, filters.Rules));
 
     /// <summary>
     /// The same connection and transaction without any of its filters or rules, e.g. for admin tasks:

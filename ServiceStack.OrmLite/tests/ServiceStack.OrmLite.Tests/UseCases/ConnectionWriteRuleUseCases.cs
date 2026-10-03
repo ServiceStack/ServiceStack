@@ -74,24 +74,32 @@ public static class Invoices
     public static readonly DateTime Modified = new(2026, 2, 3, 4, 5, 6);
 
     /// <summary>
-    /// e.g. an app's extension method to open a connection for a tenant's user: the tenant's rows are the only rows
-    /// it can read or write, and the rows it writes record who wrote them and when
+    /// The user of a tenant that a connection reads and writes rows for
     /// </summary>
-    public static IDbConnection ForUser(this IDbConnection db, int tenantId, string userId)
-    {
-        db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
-        db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
-        db.OnInsert<IAudit>(x => x.CreatedBy, userId);
-        db.OnInsert<IAudit>(x => x.CreatedDate, () => Created); // e.g. () => DateTime.UtcNow
-        db.OnUpdate<IAudit>(x => x.ModifiedBy, userId);
-        db.OnUpdate<IAudit>(x => x.ModifiedDate, () => Modified);
-        return db;
-    }
+    public record TenantUser(int TenantId, string UserId);
+
+    /// <summary>
+    /// The tenant's rows are the only rows a connection can read or write, and the rows it writes record who wrote
+    /// them and when
+    /// </summary>
+    public static readonly FilterSet<TenantUser> UserRules = FilterSet.Create<TenantUser>(f => {
+        f.Ensure<IHasTenantId>(x => x.TenantId, s => s.TenantId);
+        f.OnInsert<IAudit>(x => x.CreatedBy, s => s.UserId);
+        f.OnInsert<IAudit>(x => x.CreatedDate, _ => Created); // e.g. _ => DateTime.UtcNow
+        f.OnUpdate<IAudit>(x => x.ModifiedBy, s => s.UserId);
+        f.OnUpdate<IAudit>(x => x.ModifiedDate, _ => Modified);
+    });
+
+    /// <summary>
+    /// e.g. an app's extension method to open a connection for a tenant's user
+    /// </summary>
+    public static IDbConnection ForUser(this IDbConnection db, int tenantId, string userId) =>
+        db.UseFilters(UserRules.For(new TenantUser(tenantId, userId)));
 }
 
 /// <summary>
-/// A connection's write rules set columns of every row it writes: EnsureWrites requires a column to have a value,
-/// e.g. the tenant, while OnInsert and OnUpdate always set a column, e.g. for auditing who changed a row and when.
+/// The write rules of a connection's FilterSets set columns of every row it writes: Ensure requires a column to have a
+/// value, e.g. the tenant, while OnInsert and OnUpdate always set a column, e.g. for auditing who changed a row and when.
 /// </summary>
 [TestFixtureOrmLite]
 public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvidersTestBase(context)
@@ -329,21 +337,19 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
         }
     }
 
+    // e.g. to also record who modified a row when it's created, instead of leaving it empty until it's updated
+    static readonly FilterSet<string> WriterRules = FilterSet.Create<string>(f => {
+        f.Ensure<IHasTenantId>(x => x.TenantId, _ => 1);
+        f.OnInsert<IAudit>(x => x.CreatedBy, userId => userId);
+        f.OnInsert<IAudit>(x => x.CreatedDate, _ => Invoices.Created);
+        f.OnWrite<IAudit>(x => x.ModifiedBy, userId => userId);
+        f.OnWrite<IAudit>(x => x.ModifiedDate, _ => Invoices.Modified);
+    });
+
     [Test]
     public void OnWrite_sets_columns_on_both_inserts_and_updates()
     {
-        // e.g. to also record who modified a row when it's created, instead of leaving it empty until it's updated
-        IDbConnection OpenAs(string userId)
-        {
-            var db = OpenDbConnection();
-            db.EnsureFilter<IHasTenantId>(x => x.TenantId == 1);
-            db.EnsureWrites<IHasTenantId>(x => x.TenantId, 1);
-            db.OnInsert<IAudit>(x => x.CreatedBy, userId);
-            db.OnInsert<IAudit>(x => x.CreatedDate, () => Invoices.Created);
-            db.OnWrite<IAudit>(x => x.ModifiedBy, userId);
-            db.OnWrite<IAudit>(x => x.ModifiedDate, () => Invoices.Modified);
-            return db;
-        }
+        IDbConnection OpenAs(string userId) => OpenDbConnection().UseFilters(WriterRules.For(userId));
 
         int id;
         using (OpenForUser("seed")) {}
@@ -366,6 +372,12 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
         }
     }
 
+    static readonly FilterSet<string> WorkspaceRules = FilterSet.Create<string>(f => {
+        f.Ensure<WorkspaceAuditBase>(x => x.WorkspaceId, workspaceId => workspaceId);
+        f.OnInsert<WorkspaceAuditBase>(x => x.CreatedBy, _ => "alice");
+        f.OnWrite<WorkspaceAuditBase>(x => x.ModifiedBy, _ => "alice");
+    });
+
     [Test]
     public void Filters_and_rules_on_a_base_class_apply_to_its_tables()
     {
@@ -375,12 +387,7 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
             seed.Insert(new WorkspaceDocument { Id = "theirs", WorkspaceId = "w2", Name = "Theirs" });
         }
 
-        var workspaceId = "w1";
-        using var db = OpenDbConnection();
-        db.EnsureFilter<WorkspaceAuditBase>(x => x.WorkspaceId == workspaceId);
-        db.EnsureWrites<WorkspaceAuditBase>(x => x.WorkspaceId, workspaceId);
-        db.OnInsert<WorkspaceAuditBase>(x => x.CreatedBy, "alice");
-        db.OnWrite<WorkspaceAuditBase>(x => x.ModifiedBy, "alice");
+        using var db = OpenDbConnection().UseFilters(WorkspaceRules.For("w1"));
 
         // An empty string isn't a value that was set, so the workspace is set from the rule
         db.Insert(new WorkspaceDocument { Id = "mine", Name = "Mine" });
@@ -424,7 +431,7 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
     }
 
     [Test]
-    public void Registering_the_same_rules_again_is_ignored()
+    public void Using_the_same_rules_again_is_ignored()
     {
         using var db = OpenForUser("alice");
 
@@ -436,32 +443,20 @@ public class ConnectionWriteRuleUseCases(DialectContext context) : OrmLiteProvid
         var id = db.Insert(new TenantInvoice { Customer = "Acme" }, selectIdentity: true);
         AssertCreatedBy(db.SingleById<TenantInvoice>(id), "alice");
 
-        // The same value of a different type is the same rule
-        db.EnsureWrites<IHasTenantId>(x => x.TenantId, 1L);
+        // The rules can't be used again for another tenant or user, the connection would write rows for both
+        Assert.Throws<InvalidOperationException>(() => db.ForUser(2, "alice"));
+        Assert.Throws<InvalidOperationException>(() => db.ForUser(1, "bob"));
         Assert.That(db.GetFilters(), Is.SameAs(rules));
-
-        // A connection can't ensure 2 different values for a column
-        var ex = Assert.Throws<InvalidOperationException>(() => db.EnsureWrites<IHasTenantId>(x => x.TenantId, 2));
-        Assert.That(ex.Message, Does.Contain("TenantId"));
-        Assert.Throws<InvalidOperationException>(() => db.EnsureWrites<TenantInvoice>(x => x.TenantId, 2));
-
-        // A different OnInsert, OnUpdate or OnWrite value replaces the previous value, which logs a warning
-        db.OnInsert<IAudit>(x => x.CreatedBy, "bob");
-        id = db.Insert(new TenantInvoice { Customer = "Globex" }, selectIdentity: true);
-        AssertCreatedBy(db.SingleById<TenantInvoice>(id), "bob");
     }
 
     [Test]
     public void Invalid_rules_throw()
     {
-        using var db = OpenForUser("alice");
-
         // Columns are selected with a property of the table or interface
-        Assert.Throws<ArgumentException>(() => db.OnInsert<IAudit>(x => x.CreatedBy.Length, 1));
-
-        // A function needs to be a lambda returning the value
-        Func<DateTime> clock = () => DateTime.UtcNow;
-        Assert.Throws<ArgumentException>(() => db.OnInsert<IAudit>(x => x.CreatedDate, clock));
+        Assert.Throws<ArgumentException>(() => FilterSet.Create<Invoices.TenantUser>(f =>
+            f.OnInsert<IAudit>(x => x.CreatedBy.Length, s => 1)));
+        Assert.Throws<ArgumentException>(() => FilterSet.Create<Invoices.TenantUser>(f =>
+            f.Ensure<IHasTenantId>(x => x.TenantId + 1, s => s.TenantId)));
     }
 
     [Test]

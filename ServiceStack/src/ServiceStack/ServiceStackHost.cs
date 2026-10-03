@@ -705,8 +705,8 @@ public abstract partial class ServiceStackHost
 
     /// <summary>
     /// Configure the DB connections opened for a Request, e.g. Db in your Services and the connections opened by
-    /// AutoQuery. Use it to register OrmLite connection filters and rules for the Request's user or tenant:
-    /// <code>DbConnectionRequestFilters.Add((db, req) => db.EnsureFilter&lt;IHasTenantId&gt;(x => x.TenantId == GetTenantId(req)));</code>
+    /// AutoQuery. Use it to apply OrmLite FilterSets with the Request's user or tenant:
+    /// <code>DbConnectionRequestFilters.Add((db, req) => db.UseFilters(TenantFilters.For(GetTenant(req))));</code>
     /// The connection is disposed if a filter throws, e.g. an HttpError for a user that can't access the tenant.
     /// </summary>
     public List<Action<IDbConnection, IRequest>> DbConnectionRequestFilters { get; set; } = [];

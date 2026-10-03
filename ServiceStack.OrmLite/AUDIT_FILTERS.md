@@ -16,103 +16,80 @@ registered on a database connection and applied to every typed API OrmLite const
 
 ## API
 
-### Registering filters and rules
+### Declaring filters and rules
+
+Filters and rules are declared once in a `FilterSet`, with the type of the scope they read their values from, then
+used by each connection with the scope's value:
 
 ```csharp
-// Mandatory filters: reads, updates and deletes only see matching rows
-db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);  // every table implementing IHasTenantId
-db.EnsureFilter<Order>(x => !x.IsDeleted);                   // only the Order table
+public record TenantUser(int TenantId, string UserId);
 
-// A function called for each statement, for filters that change. No filter is applied when it returns null
-db.EnsureFilter<IHasTenantId>(() => {
-    if (user.IsAdmin) return null;
-    return x => x.TenantId == user.TenantId;
+public static readonly FilterSet<TenantUser> UserRules = FilterSet.Create<TenantUser>(f => {
+    // Rows have the value: reads, updates and deletes only see rows with it, inserts set it when unset,
+    // and writing a different value throws
+    f.Ensure<IHasTenantId>(x => x.TenantId, s => s.TenantId);
+
+    // Write rules: always set the column on inserts / updates. OnWrite is both
+    f.OnInsert<IAudit>(x => x.CreatedBy, s => s.UserId);
+    f.OnInsert<IAudit>(x => x.CreatedDate, _ => DateTime.UtcNow);
+    f.OnWrite<IAudit>(x => x.ModifiedBy, s => s.UserId);
+    f.OnWrite<IAudit>(x => x.ModifiedDate, _ => DateTime.UtcNow);
 });
 
-// Mandatory values: set on insert when unset, throws when set to a different value or changed by an update
-db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
+// Filters without a write rule: reads, updates and deletes only see matching rows
+public static readonly FilterSet SoftDeletes = FilterSet.Create(f => f.Filter<Order>(x => !x.IsDeleted));
 
-// Write rules: always set the column on inserts / updates
-db.OnInsert<IAudit>(x => x.CreatedBy, userId);
-db.OnInsert<IAudit>(x => x.CreatedDate, () => DateTime.UtcNow);
-db.OnUpdate<IAudit>(x => x.ModifiedBy, userId);
-db.OnUpdate<IAudit>(x => x.ModifiedDate, () => DateTime.UtcNow);
-
-// OnWrite is an alias for both OnInsert and OnUpdate, e.g. to also set the modified columns when a row is created
-db.OnWrite<IAudit>(x => x.ModifiedBy, userId);
+db.UseFilters(UserRules.For(new TenantUser(tenantId, userId)));
+db.UseFilters(SoftDeletes);
 
 // The same connection and transaction without any filters or rules, e.g. for admin tasks
 var adminDb = db.WithoutFilters();
 ```
 
-- The type argument is a table type or an interface. Interface filters and rules apply to every table implementing the
-  interface, with the expression rebound to the table's property of the same name, e.g. `IHasTenantId.TenantId` to
-  `Order.TenantId`, so column aliases and naming strategies apply.
-- Multiple filters and rules combine, e.g. a tenant filter and a soft delete filter.
-- Values are either fixed (`userId`) or a function (`() => DateTime.UtcNow`) evaluated for each statement, or each
-  row for object writes. Captured values in filter expressions are sent as params.
-- Captured values of a filter are read for each statement, so a filter on a captured `tenantId` variable uses its
-  current value. Use the function overload when the filter itself changes, e.g. no filter for admins.
-- Registering on a connection that isn't an `OrmLiteConnection` throws, so a filter is never silently ignored.
+- The type argument is a table type, an interface or a base class. Interface filters and rules apply to every table
+  implementing the interface, with the expression rebound to the table's property of the same name, e.g.
+  `IHasTenantId.TenantId` to `Order.TenantId`, so column aliases and naming strategies apply.
+- A connection can use multiple sets, whose filters and rules combine, e.g. a tenant set and a soft delete set.
+- Values are read from the scope each time they're used: for each statement, or each row for object writes. Values
+  in filter conditions are sent as params. A condition that only reads the scope decides if the rest of the filter
+  applies, e.g. `(x, s) => s.IsAdmin || x.TenantId == s.TenantId`.
+- Filter conditions and `Ensure` values can only read values from the scope: a variable captured from outside the
+  rule throws an `ArgumentException` when the set is created, so a set is the same for every connection using it.
+- `set.For(scope)` pairs a set with its scope, so a scope of the wrong type doesn't compile, with an error naming it.
+- Using a set on a connection that isn't an `OrmLiteConnection` throws, so a filter is never silently ignored.
+- `Ensure` combines the filter and the write rule of a column, so a tenant column can't be filtered without also
+  being enforced on writes.
 
-### Registering more than once
+### Using a set more than once
 
 A connection can be configured more than once, e.g. a shared SQLite `:memory:` connection that's opened multiple times
-in a request, so registrations are compared with the ones a connection already has:
+in a request, so sets are compared with the ones a connection already uses:
 
-| Registered again | Result |
+| Used again | Result |
 |-|-|
-| The same filter with the same captured values, or the same filter function | Ignored |
-| The same rule for a column with the same value, or the same function | Ignored |
-| The same filter with different captured values, e.g. another tenant | Added, with a warning logged as rows need to match both |
-| `EnsureWrites` for a column with a different value | Throws `InvalidOperationException` |
-| `OnInsert` / `OnUpdate` for a column with a different value | Added, replacing the previous value, with a warning logged |
-
-- Filters are compared by their expression and the values they captured when registered. Captured values that aren't
-  simple values, e.g. collections, can't be compared, so the filter is added without a warning.
-- Lambdas that capture variables are a new function each time they're created, so filter functions and rule value
-  functions like `() => clock.UtcNow` are added again. Functions that don't capture, like `() => DateTime.UtcNow`,
-  are the same function. Repeated rules set the same value and repeated filters add the same condition.
-- Rule values are compared as the column's type, so `1` and `1L` are the same value. Rules for the same column on an
-  interface and a table implementing it are compared too.
-- Warnings are logged to the `OrmLiteConnectionFilters` logger.
+| The same set with the same scope, the same object or an equal one, e.g. a `record` | Ignored |
+| The same set with a different scope, e.g. another tenant | Throws `InvalidOperationException`, as rows would need to match both |
 
 ### App-defined openers
 
-Apps wrap their rules in an extension method so they're defined once:
+Apps wrap their sets in an extension method so connections are configured the same way:
 
 ```csharp
-public static IDbConnection OpenForTenant(this IDbConnectionFactory dbFactory, int tenantId, string userId)
-{
-    var db = dbFactory.OpenDbConnection();
-    db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
-    db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
-    db.OnInsert<IAudit>(x => x.CreatedBy, userId);
-    db.OnWrite<IAudit>(x => x.ModifiedBy, userId);
-    return db;
-}
+public static IDbConnection OpenForTenant(this IDbConnectionFactory dbFactory, int tenantId, string userId) =>
+    dbFactory.OpenDbConnection().UseFilters(UserRules.For(new TenantUser(tenantId, userId)));
 ```
 
 ### ServiceStack integration
 
 ServiceStack opens connections for requests with `AppHost.GetDbConnection(IRequest)`, used by `Service.Db`, AutoQuery,
-AutoCrud and other features. Overriding it applies the filters and rules everywhere the framework opens a connection
-for a request, which is the recommended approach in ServiceStack apps and should lead the docs:
+AutoCrud and other features. `DbConnectionRequestFilters` apply the sets everywhere the framework opens a connection
+for a request, which is the recommended approach in ServiceStack apps and leads the docs:
 
 ```csharp
-public override IDbConnection GetDbConnection(IRequest? req = null)
-{
-    var db = base.GetDbConnection(req);
-    if (req?.GetSession() is { } session && session.IsAuthenticated)
-    {
-        var tenantId = session.GetTenantId(); // app-specific
-        db.EnsureFilter<IHasTenantId>(x => x.TenantId == tenantId);
-        db.EnsureWrites<IHasTenantId>(x => x.TenantId, tenantId);
-        db.OnInsert<IAudit>(x => x.CreatedBy, session.UserAuthId);
-        db.OnWrite<IAudit>(x => x.ModifiedBy, session.UserAuthId);
-    }
-    return db;
-}
+DbConnectionRequestFilters.Add((db, req) => {
+    if (req.GetSession() is { IsAuthenticated: true } session)
+        db.UseFilters(UserRules.For(new TenantUser(session.GetTenantId(), session.UserAuthId)));
+});
 ```
 
 ## Where filters are applied
@@ -155,26 +132,26 @@ Notes:
 |-|-|
 | `OnInsert` | `Insert` (objects and dictionaries), `InsertAll`, `InsertUsingDefaults`, `InsertOnly` (all forms), `BulkInsert`, `InsertIntoSelect`, and the inserts of `Save` / `SaveAll` and `Upsert` / `UpsertAll` |
 | `OnUpdate` | `Update(obj)`, `UpdateAll`, `UpdateOnly` (all forms), `UpdateOnlyFields`, `UpdateNonDefaults`, `UpdateAdd`, `UpdateFrom`, `UpdateOnlyReturning`, and the updates of `Save` / `SaveAll` and `Upsert` / `UpsertAll` |
-| `EnsureWrites` | Every insert and update API above |
+| `Ensure` | Every insert and update API above |
 | Raw SQL, e.g. `ExecuteSql`, and the legacy `UpdateFmt()` | **Not applied** |
 
 ### Which rule to use
 
-| | `EnsureWrites` | `OnInsert` / `OnUpdate` |
+| | `Ensure` | `OnInsert` / `OnUpdate` |
 |-|-|-|
 | Use for | A column that's the same for everything the connection writes, e.g. `TenantId` | A column recording an insert or update, e.g. `CreatedBy`, `ModifiedDate` |
 | Applies to | Inserts and updates | Only inserts, or only updates |
 | App sets a different value | Throws, as it's a bug | Replaced with the rule's value |
 | App doesn't set a value | Inserts set it, updates leave the column alone | Always set |
 
-Rule of thumb: `EnsureWrites` for who owns the row, `OnInsert` / `OnUpdate` for who changed it and when. The docs should
+Rule of thumb: `Ensure` for who owns the row, `OnInsert` / `OnUpdate` for who changed it and when. The docs should
 lead the write rules section with this table.
 
-`OnWrite` registers both an `OnInsert` and an `OnUpdate` rule for a column. With only `OnUpdate`, a row's `ModifiedBy`
+`OnWrite` declares both an `OnInsert` and an `OnUpdate` rule for a column. With only `OnUpdate`, a row's `ModifiedBy`
 and `ModifiedDate` are empty until its first update. The docs example should use `OnInsert` for the created columns,
 with `[IgnoreOnUpdate]`, and `OnWrite` for the modified columns.
 
-`EnsureWrites` depends on what's written. A column isn't set when it's `null`, its type's default value or an empty
+`Ensure`'s write rule depends on what's written. A column isn't set when it's `null`, its type's default value or an empty
 string, e.g. a property initialized with `string TenantId { get; set; } = ""`:
 
 | Write | Column isn't set | Column is set to a different value |
@@ -197,15 +174,15 @@ string, e.g. a property initialized with `string TenantId { get; set; } = ""`:
   with filters, as a single upsert statement can't use different values for its insert and update. So `OnInsert`
   columns are only set when the row is inserted, and `OnUpdate` columns when it's updated.
 - A rule's value always wins over a value from the app, incl. values set by `OrmLiteConfig.InsertFilter` /
-  `UpdateFilter` which run first, so audit columns can be trusted, while `EnsureWrites` throws instead of silently
-  changing the value.
+  `UpdateFilter` which run first, so audit columns can be trusted, while `Ensure` throws instead of silently changing
+  the value.
 - **`OnInsert` columns aren't protected from updates**: updating all an object's fields, e.g. `db.Update(obj)`, also
   writes its `CreatedBy`. Add `[IgnoreOnUpdate]` to created columns so they're only set when the row is inserted,
   which the docs should recommend.
-- `EnsureWrites` guards the values that are written, `EnsureFilter` guards the rows that are changed. Multi-tenant apps
-  need both: without the filter, an update could move another tenant's row into the connection's tenant.
-- Rule values are passed as a value or a lambda, e.g. `() => DateTime.UtcNow`. Passing a delegate variable, e.g. a
-  `Func<DateTime>`, as a value throws, as it would be used as the value.
+- `Ensure` guards both the rows that are changed and the values that are written. Multi-tenant apps need both:
+  without the filter, an update could move another tenant's row into the connection's tenant, and without the write
+  rule an insert could be written for another tenant. `Filter` is only for conditions that don't decide what's
+  written, e.g. soft deletes.
 
 ## `WithoutFilters()`
 
@@ -226,8 +203,10 @@ to the next request or test.
 
 ## Implementation
 
-- **Storage**: `OrmLiteConnection.Filters`, an immutable set of filters and rules replaced on each registration, with
-  a per-connection cache from table type to its matching filters and rules. Commands reach it through
+- **Storage**: `OrmLiteConnection.Filters`, an immutable list of the sets a connection uses with their scopes, and the
+  filters and rules they bind to the scope, replaced each time a set is used, with a per-connection cache from table
+  type to its matching filters and rules. A set's filter conditions have the scope in place of their parameter, so
+  the scope's values are read for each statement. Commands reach it through
   `OrmLiteCommand.OrmLiteConnection`.
 - **Rebinding interface expressions**: an `ExpressionVisitor` that replaces the interface parameter with a parameter of
   the table type and rebinds member access to the table's property of the same name, cached per table type.
@@ -261,6 +240,9 @@ MySqlConnector, and a full test suite run.
    `BulkInsert` and `InsertIntoSelect`.
 5. ✅ **`WithoutFilters()`** and the reference docs: a new page leading with the `GetDbConnection()` pattern, multi-tenancy
    and auditing examples, the table of covered APIs and the raw SQL caveat, plus release notes.
+6. ✅ **`FilterSet`**: filters and rules declared once with a typed scope, replacing registering them on each
+   connection with `EnsureFilter`, `EnsureWrites`, `OnInsert`, `OnUpdate` and `OnWrite` before they shipped. `Ensure`
+   combines a column's filter and write rule.
 
 ## Docs
 
@@ -275,7 +257,9 @@ In `/home/mythz/src/ServiceStack/docs.servicestack.net/MyApp`:
 ## Decisions
 
 - `Update(obj)` of a row excluded by a filter returns 0 instead of throwing, apps check the row count.
-- `EnsureFilter<T>()` has an overload with a function called for each statement, for filters that change during a
-  connection's lifetime.
+- Filters and rules are declared once in a `FilterSet` with a typed scope, instead of being registered on each
+  connection with closures: a set's shape is fixed when it's created, so it can be validated, compared and its SQL
+  reused, and rules can't capture values from outside the scope. Values that change during a connection's lifetime
+  are read from the scope for each statement.
 - Legacy APIs (`Legacy/`), e.g. `SelectFmt()`, are filtered where they have a table type. They're all marked
   `[Obsolete]`. The ones taking complete SQL or a table name aren't filtered, like other raw SQL.

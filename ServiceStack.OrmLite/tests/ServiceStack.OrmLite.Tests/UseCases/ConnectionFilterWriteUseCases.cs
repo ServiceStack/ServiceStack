@@ -107,7 +107,7 @@ public class ConnectionFilterWriteUseCases(DialectContext context) : OrmLiteProv
     {
         using (var db = OpenForTenant(1))
         {
-            db.EnsureFilter<TenantOrder>(x => !x.IsDeleted);
+            db.UseFilters(FilterSet.Create(f => f.Filter<TenantOrder>(x => !x.IsDeleted)));
 
             // Order 2 is already deleted
             Assert.That(db.UpdateOnly(() => new TenantOrder { Total = 0 }), Is.EqualTo(2));
