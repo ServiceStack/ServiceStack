@@ -295,6 +295,76 @@ public class OrmLiteConnectionFactory : IDbConnectionFactoryExtended
         NamedConnections[namedConnection] = connectionFactory;
         Locks.AddLock(namedConnection);
     }
+
+    /// <summary>
+    /// The read replica of this connection that OpenReadOnlyDbConnection() opens, e.g. a PostgreSQL standby, or null
+    /// when it opens this connection
+    /// </summary>
+    public OrmLiteConnectionFactory ReadReplica { get; set; }
+
+    /// <summary>
+    /// Register a read replica of this connection, which uses its dialect. OpenReadOnlyDbConnection() opens it.
+    /// </summary>
+    public virtual void RegisterReadReplica(string connectionString) =>
+        ReadReplica = CreateReadReplica(this, connectionString);
+
+    /// <summary>
+    /// Register a read replica of a named connection, which uses its dialect. OpenReadOnlyDbConnection(namedConnection)
+    /// opens it.
+    /// </summary>
+    public virtual void RegisterReadReplica(string namedConnection, string connectionString)
+    {
+        var primary = GetNamedConnection(namedConnection);
+        primary.ReadReplica = CreateReadReplica(primary, connectionString);
+    }
+
+    private static OrmLiteConnectionFactory CreateReadReplica(OrmLiteConnectionFactory primary, string connectionString) =>
+        new(connectionString ?? throw new ArgumentNullException(nameof(connectionString)), primary.DialectProvider,
+            setGlobalDialectProvider: false) {
+            ConnectionFilter = primary.ConnectionFilter,
+            OnDispose = primary.OnDispose,
+        };
+
+    private static OrmLiteConnectionFactory GetNamedConnection(string namedConnection)
+    {
+        if (namedConnection == null)
+            throw new ArgumentNullException(nameof(namedConnection));
+        return NamedConnections.TryGetValue(namedConnection, out var factory)
+            ? factory
+            : throw new KeyNotFoundException("No factory registered is named " + namedConnection);
+    }
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: its read replica when one is registered, otherwise
+    /// this connection. A replica can be behind the primary, so read what was just written from the primary.
+    /// </summary>
+    public virtual IDbConnection OpenReadOnlyDbConnection() =>
+        ReadReplica != null ? ReadReplica.OpenDbConnection() : OpenDbConnection();
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: the named connection's read replica when one is
+    /// registered, otherwise the named connection
+    /// </summary>
+    public virtual IDbConnection OpenReadOnlyDbConnection(string namedConnection) =>
+        GetNamedConnection(namedConnection).ReadReplica is { } replica
+            ? replica.OpenDbConnection()
+            : OpenDbConnection(namedConnection);
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: its read replica when one is registered, otherwise
+    /// this connection
+    /// </summary>
+    public virtual Task<IDbConnection> OpenReadOnlyDbConnectionAsync(CancellationToken token = default) =>
+        ReadReplica != null ? ReadReplica.OpenDbConnectionAsync(token) : OpenDbConnectionAsync(token);
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: the named connection's read replica when one is
+    /// registered, otherwise the named connection
+    /// </summary>
+    public virtual Task<IDbConnection> OpenReadOnlyDbConnectionAsync(string namedConnection, CancellationToken token = default) =>
+        GetNamedConnection(namedConnection).ReadReplica is { } replica
+            ? replica.OpenDbConnectionAsync(token)
+            : OpenDbConnectionAsync(namedConnection, token);
 }
 
 public static class OrmLiteConnectionFactoryExtensions
@@ -516,6 +586,53 @@ public static class OrmLiteConnectionFactoryExtensions
         return await dbFactory.OpenAsync(configure).ConfigAwait();
     }
         
+    /// <summary>
+    /// Register a read replica of the main connection, which OpenReadOnlyDbConnection() opens
+    /// </summary>
+    public static void RegisterReadReplica(this IDbConnectionFactory dbFactory, string connectionString) =>
+        ((OrmLiteConnectionFactory)dbFactory).RegisterReadReplica(connectionString);
+
+    /// <summary>
+    /// Register a read replica of a named connection, which OpenReadOnlyDbConnection(namedConnection) opens
+    /// </summary>
+    public static void RegisterReadReplica(this IDbConnectionFactory dbFactory, string namedConnection, string connectionString) =>
+        ((OrmLiteConnectionFactory)dbFactory).RegisterReadReplica(namedConnection, connectionString);
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: the read replica when one is registered,
+    /// otherwise the main connection, e.g:
+    /// <para>using var db = dbFactory.OpenReadOnlyDbConnection();</para>
+    /// </summary>
+    public static IDbConnection OpenReadOnlyDbConnection(this IDbConnectionFactory dbFactory) =>
+        dbFactory is OrmLiteConnectionFactory factory ? factory.OpenReadOnlyDbConnection() : dbFactory.OpenDbConnection();
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: the named connection's read replica when one is
+    /// registered, otherwise the named connection
+    /// </summary>
+    public static IDbConnection OpenReadOnlyDbConnection(this IDbConnectionFactory dbFactory, string namedConnection) =>
+        dbFactory is OrmLiteConnectionFactory factory
+            ? factory.OpenReadOnlyDbConnection(namedConnection)
+            : dbFactory.OpenDbConnection(namedConnection);
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: the read replica when one is registered,
+    /// otherwise the main connection
+    /// </summary>
+    public static Task<IDbConnection> OpenReadOnlyDbConnectionAsync(this IDbConnectionFactory dbFactory,
+        CancellationToken token = default) => dbFactory is OrmLiteConnectionFactory factory
+        ? factory.OpenReadOnlyDbConnectionAsync(token)
+        : dbFactory.OpenDbConnectionAsync(token);
+
+    /// <summary>
+    /// Open a connection for queries that can read from a replica: the named connection's read replica when one is
+    /// registered, otherwise the named connection
+    /// </summary>
+    public static Task<IDbConnection> OpenReadOnlyDbConnectionAsync(this IDbConnectionFactory dbFactory,
+        string namedConnection, CancellationToken token = default) => dbFactory is OrmLiteConnectionFactory factory
+        ? factory.OpenReadOnlyDbConnectionAsync(namedConnection, token)
+        : dbFactory.OpenDbConnectionAsync(namedConnection, token);
+
     public static Dictionary<string, OrmLiteConnectionFactory> GetNamedConnections(this IDbConnectionFactory dbFactory) => 
         OrmLiteConnectionFactory.NamedConnections;
 

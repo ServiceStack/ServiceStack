@@ -94,8 +94,11 @@ as a whole. Remaining:
 - Retry queries that fail while reading their rows, before any are returned
 - Retry queries run with OrmLite's Dapper APIs
 
-### 4.2 Read/Write Connection Routing (S)
-Named connections exist, but routing is manual. An `OpenReadOnlyDbConnection()` (or `db.ReadReplica()`) convention would pick a replica connection string automatically, falling back to the primary when no replica is configured.
+### 4.2 More Read Replicas (S)
+`dbFactory.OpenReadOnlyDbConnection()` opens the read replica of a connection registered with `AddReadReplica()`, or the
+primary when it doesn't have one. Remaining:
+- A read-only `Db` in ServiceStack Services, configured by the AppHost's `DbConnectionRequestFilters` like `Db`, so
+  multi-tenant Apps can read from replicas with their tenant's filters
 
 ---
 
