@@ -116,6 +116,52 @@ public class FilterSetBenchmark
         }
         if (sqliteFiltered.SingleById<Project>(1) != null || sqliteFiltered.SingleById<Project>(2) == null)
             throw new Exception("The SQLite query isn't filtered");
+
+        // The SQL and db params each SingleById() sends, to run them without OrmLite
+        plainCommand = CaptureCommand(() => sqlitePlain.SingleById<Project>(id));
+        filteredCommand = CaptureCommand(() => sqliteFiltered.SingleById<Project>(id));
+        if (filteredCommand.Params.Length != plainCommand.Params.Length + 1)
+            throw new Exception("The filtered SingleById() doesn't have the filter's db param: " + filteredCommand.Sql);
+    }
+
+    private (string Sql, (string Name, object Value)[] Params) plainCommand, filteredCommand;
+
+    static (string Sql, (string Name, object Value)[] Params) CaptureCommand(Action run)
+    {
+        (string, (string, object)[]) captured = default;
+        OrmLiteConfig.BeforeExecFilter = cmd => captured = (cmd.CommandText,
+            cmd.Parameters.Cast<IDbDataParameter>().Select(p => (p.ParameterName, p.Value)).ToArray());
+        try
+        {
+            run();
+        }
+        finally
+        {
+            OrmLiteConfig.BeforeExecFilter = null;
+        }
+        return captured;
+    }
+
+    // Runs a command as OrmLite does, reading the row's columns
+    static int Run(IDbConnection db, (string Sql, (string Name, object Value)[] Params) command)
+    {
+        using var cmd = db.ToDbConnection().CreateCommand();
+        cmd.CommandText = command.Sql;
+        foreach (var (name, value) in command.Params)
+        {
+            var p = cmd.CreateParameter();
+            p.ParameterName = name;
+            p.Value = value;
+            cmd.Parameters.Add(p);
+        }
+        using var reader = cmd.ExecuteReader();
+        var count = 0;
+        while (reader.Read())
+        {
+            for (var i = 0; i < reader.FieldCount; i++)
+                count += reader.IsDBNull(i) ? 0 : 1;
+        }
+        return count;
     }
 
     [GlobalCleanup]
@@ -262,4 +308,12 @@ public class FilterSetBenchmark
 
     [Benchmark, BenchmarkCategory("6. SQLite SingleById")]
     public Project? Sqlite_Filtered() => sqliteFiltered.SingleById<Project>(id);
+
+    // 7. The same SQL and db params as SingleById() sends, without OrmLite, for the database's share of the time
+
+    [Benchmark(Baseline = true), BenchmarkCategory("7. SQLite ADO.NET")]
+    public int Ado_Plain() => Run(sqlitePlain, plainCommand);
+
+    [Benchmark, BenchmarkCategory("7. SQLite ADO.NET")]
+    public int Ado_Filtered() => Run(sqlitePlain, filteredCommand);
 }
