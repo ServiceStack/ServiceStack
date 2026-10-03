@@ -17,7 +17,7 @@ public sealed class OrmLiteConnectionFilters
 
     private readonly BoundFilterSet[] sets;
     private readonly EnsureFilterDef[] ensureFilters;
-    private readonly ConcurrentDictionary<Type, Func<LambdaExpression?>[]> ensureFiltersByTable = new();
+    private readonly ConcurrentDictionary<Type, object> ensureFiltersByTable = new();
 
     private readonly WriteRuleDef[] writeRules;
     private readonly ConcurrentDictionary<Type, TableWriteRules?> writeRulesByTable = new();
@@ -56,8 +56,8 @@ public sealed class OrmLiteConnectionFilters
         var rules = new List<WriteRuleDef>(writeRules);
         foreach (var rule in bound.Rules)
         {
-            if (rule.BindCondition(bound.Scope) is { } condition)
-                filters.Add(new EnsureFilterDef(rule.Type, condition));
+            if (rule.Condition != null)
+                filters.Add(new EnsureFilterDef(rule, bound.Scope));
 
             if (rule.ValueFn == null)
                 continue;
@@ -108,59 +108,59 @@ public sealed class OrmLiteConnectionFilters
     }
 
     /// <summary>
-    /// The filters that apply to the table, with interface filters rebound to the table's properties
+    /// The filters that apply to the table with the values of their scopes, with interface filters rebound to the
+    /// table's properties
     /// </summary>
     public Expression<Func<T, bool>>[] GetEnsureFilters<T>()
     {
-        if (ensureFilters.Length == 0)
-            return [];
-
-        var filterFns = GetFilterFns(typeof(T));
-        if (filterFns.Length == 0)
-            return [];
-
-        var typed = new List<Expression<Func<T, bool>>>(filterFns.Length);
-        foreach (var filterFn in filterFns)
-        {
-            if (filterFn() is Expression<Func<T, bool>> filter)
-                typed.Add(filter);
-        }
-        return typed.ToArray();
+        var filters = GetTableFilters<T>();
+        var to = new Expression<Func<T, bool>>[filters.Length];
+        for (var i = 0; i < filters.Length; i++)
+            to[i] = filters[i].Bound;
+        return to;
     }
 
-    private Func<LambdaExpression?>[] GetFilterFns(Type tableType) =>
-        ensureFiltersByTable.GetOrAdd(tableType, _ => {
-            var to = new List<Func<LambdaExpression?>>();
+    /// <summary>
+    /// The filters that apply to the table
+    /// </summary>
+    internal ConnectionFilter<T>[] GetTableFilters<T>()
+    {
+        if (ensureFilters.Length == 0)
+            return [];
+        return (ConnectionFilter<T>[])ensureFiltersByTable.GetOrAdd(typeof(T), _ => {
+            var to = new List<ConnectionFilter<T>>();
             foreach (var filter in ensureFilters)
             {
-                if (filter.Type.IsAssignableFrom(tableType))
-                    to.Add(filter.For(tableType));
+                if (filter.Rule.Type.IsAssignableFrom(typeof(T)))
+                    to.Add(new ConnectionFilter<T>(filter.Rule.GetTemplate<T>(), filter.Scope));
             }
             return to.ToArray();
         });
+    }
 
     /// <summary>
     /// Whether filters are registered for the table
     /// </summary>
-    internal bool MayFilter(Type tableType) => ensureFilters.Length > 0 && GetFilterFns(tableType).Length > 0;
+    internal bool MayFilter(Type tableType)
+    {
+        foreach (var filter in ensureFilters)
+        {
+            if (filter.Rule.Type.IsAssignableFrom(tableType))
+                return true;
+        }
+        return false;
+    }
 
     /// <summary>
-    /// Whether any filters apply to the table
+    /// Whether filters are registered for the table, which may not apply to rows with the current values of
+    /// their scopes, e.g. f.Filter&lt;T&gt;((x, s) =&gt; s.IsAdmin || x.OwnerId == s.UserId)
     /// </summary>
-    public bool HasEnsureFilters<T>() => GetEnsureFilters<T>().Length > 0;
+    public bool HasEnsureFilters<T>() => MayFilter(typeof(T));
 
-    private sealed class EnsureFilterDef(Type type, LambdaExpression predicate)
+    private sealed class EnsureFilterDef(FilterRule rule, object? scope)
     {
-        public Type Type { get; } = type;
-
-        /// <summary>
-        /// The filter for the table, which is rebound once for tables of an interface or base class
-        /// </summary>
-        public Func<LambdaExpression?> For(Type tableType)
-        {
-            var rebound = tableType == Type ? predicate : TableTypeRebinder.Rebind(predicate, tableType);
-            return () => rebound;
-        }
+        public FilterRule Rule { get; } = rule;
+        public object? Scope { get; } = scope;
     }
 }
 
@@ -225,16 +225,19 @@ internal sealed class TableTypeRebinder : ExpressionVisitor
         this.to = to;
     }
 
+    /// <summary>
+    /// The lambda with its first parameter rebound to the table type, e.g. (x, s) =&gt; or x =&gt;
+    /// </summary>
     public static LambdaExpression Rebind(LambdaExpression lambda, Type tableType)
     {
-        if (lambda.Parameters.Count != 1)
-            throw new ArgumentException("Expected a filter with a single parameter", nameof(lambda));
-
         var from = lambda.Parameters[0];
         var to = Expression.Parameter(tableType, from.Name);
         var body = new TableTypeRebinder(from, to).Visit(lambda.Body);
-        var delegateType = typeof(Func<,>).MakeGenericType(tableType, lambda.ReturnType);
-        return Expression.Lambda(delegateType, body!, to);
+        var parameters = new ParameterExpression[lambda.Parameters.Count];
+        parameters[0] = to;
+        for (var i = 1; i < parameters.Length; i++)
+            parameters[i] = lambda.Parameters[i];
+        return Expression.Lambda(body!, parameters);
     }
 
     protected override Expression VisitMember(MemberExpression node)

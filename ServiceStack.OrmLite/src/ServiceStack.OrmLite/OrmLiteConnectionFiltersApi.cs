@@ -124,7 +124,7 @@ public static class OrmLiteConnectionFiltersApi
         if (filters.IsEmpty)
             return q;
         q.ConnectionFilters = filters; // for filters of joined tables
-        foreach (var filter in filters.GetEnsureFilters<T>())
+        foreach (var filter in filters.GetTableFilters<T>())
             q.EnsureConnectionFilter(filter);
         return q;
     }
@@ -188,7 +188,7 @@ public static class OrmLiteConnectionFiltersApi
         string? alias, string paramPrefix, out List<IDbDataParameter> filterParams)
     {
         filterParams = [];
-        var ensureFilters = filters.GetEnsureFilters<T>();
+        var ensureFilters = filters.GetTableFilters<T>();
         if (ensureFilters.Length == 0)
             return null!;
 

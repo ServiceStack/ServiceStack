@@ -48,11 +48,11 @@ SQL Server and MariaDB, which have them natively. Remaining temporal features:
 ### 2.1 More Compiled Queries (M)
 `OrmLiteQuery.Compile()` generates the SQL of a typed query once, then only creates db params from its arguments each
 time it's run. Remaining:
-- Reuse SQL of tables with mandatory filters, whose values would be arguments of the SQL. A `FilterSet`'s shape is
-  fixed when it's created, so a statement can be kept for the sets a connection uses, with their scopes' values as
-  params.
+- Reuse SQL of tables with mandatory filters. Each filter's SQL is already generated once (`FilterTemplate`), so a
+  compiled statement can be kept for each combination of the filters a connection uses and their SQL, with their
+  scopes' values as params.
   Queries of other tables and connections with only write rules reuse their SQL, but queries of filtered tables
-  generate it each time, e.g. a tenant's tables in multi-tenant Apps
+  generate the rest of their SQL each time, e.g. a tenant's tables in multi-tenant Apps
 - Reuse SQL when `OrmLiteConfig.SqlExpressionSelectFilter` is used, e.g. opted in for filters without values that
   change, like soft deletes
 - Vector arguments, e.g. `Sql.CosineDistance(x.Embedding, vector)`, and arguments in join conditions

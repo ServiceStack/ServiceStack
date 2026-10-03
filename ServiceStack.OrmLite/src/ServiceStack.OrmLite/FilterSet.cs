@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
@@ -23,6 +24,12 @@ public sealed class FilterSet
     internal FilterRule[] Rules { get; }
 
     internal FilterSet(FilterRule[] rules) => Rules = rules;
+
+    /// <summary>
+    /// Why filters of the set are translated to SQL for each statement instead of once, empty when each filter's SQL
+    /// is reused. Filters are translated when they're first used.
+    /// </summary>
+    public List<string> NotCachedReasons => FilterRule.NotCachedReasons(Rules);
 
     /// <summary>
     /// Filters and rules that read their values from a scope, which each connection provides with set.For(scope)
@@ -57,6 +64,12 @@ public sealed class FilterSet<TScope>
     internal FilterRule[] Rules { get; }
 
     internal FilterSet(FilterRule[] rules) => Rules = rules;
+
+    /// <summary>
+    /// Why filters of the set are translated to SQL for each statement instead of once, empty when each filter's SQL
+    /// is reused. Filters are translated when they're first used.
+    /// </summary>
+    public List<string> NotCachedReasons => FilterRule.NotCachedReasons(Rules);
 
     /// <summary>
     /// The filters and rules with the scope they read their values from, to use with db.UseFilters()
@@ -115,22 +128,27 @@ internal sealed class FilterRule(Type type, FilterRuleType ruleType)
     public Func<object?, object?>? ValueFn { get; set; }
 
     /// <summary>
-    /// The filter with the scope in place of its parameter: x => condition
+    /// Why the filter was last translated to SQL for a statement instead of reusing its SQL, if it was
     /// </summary>
-    public LambdaExpression? BindCondition(object? scope)
-    {
-        if (Condition == null)
-            return null;
-        if (Condition.Parameters.Count == 1)
-            return Condition;
-        var scopeParam = Condition.Parameters[1];
-        var body = new ReplaceParameter(scopeParam, Expression.Constant(scope, scopeParam.Type)).Visit(Condition.Body);
-        return Expression.Lambda(body!, Condition.Parameters[0]);
-    }
+    public string? NotCachedReason { get; set; }
 
-    private sealed class ReplaceParameter(ParameterExpression from, Expression to) : ExpressionVisitor
+    private readonly ConcurrentDictionary<Type, object> templates = new();
+
+    /// <summary>
+    /// The filter for the table, or every table implementing the interface or base class of the rule
+    /// </summary>
+    public FilterTemplate<T> GetTemplate<T>() =>
+        (FilterTemplate<T>)templates.GetOrAdd(typeof(T), _ => new FilterTemplate<T>(this));
+
+    internal static List<string> NotCachedReasons(FilterRule[] rules)
     {
-        protected override Expression VisitParameter(ParameterExpression node) => node == from ? to : node;
+        var to = new List<string>();
+        foreach (var rule in rules)
+        {
+            if (rule.NotCachedReason is { } reason)
+                to.Add($"{rule.RuleType} {rule.Type.Name} {reason}");
+        }
+        return to;
     }
 }
 

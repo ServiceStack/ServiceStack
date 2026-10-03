@@ -57,7 +57,7 @@ namespace ServiceStack.OrmLite
         protected bool isSelectExpression = false;
         private bool hasEnsureConditions = false;
         private string ensureExpression; // the Ensure() conditions, kept when WHERE conditions are cleared
-        private List<KeyValuePair<LambdaExpression, string>> connectionFilters; // filters from the connection and their SQL
+        private List<KeyValuePair<ConnectionFilter<T>, string>> connectionFilters; // filters from the connection and their SQL
 
         /// <summary>
         /// The connection's mandatory filters, applied to tables joined to the query
@@ -882,16 +882,21 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Adds a mandatory filter from the connection with Ensure(), with columns prefixed by the table, so it stays
-        /// unambiguous when tables are joined later
+        /// unambiguous when tables are joined later. Filters that don't apply with the values of their scope aren't added.
         /// </summary>
-        internal SqlExpression<T> EnsureConnectionFilter(Expression<Func<T, bool>> filter)
+        internal SqlExpression<T> EnsureConnectionFilter(ConnectionFilter<T> filter)
         {
-            var sql = ToConnectionFilterSql(filter);
+            var sql = filter.ToSql(this);
+            if (sql == null)
+                return this;
             (connectionFilters ??= []).Add(new(filter, sql));
             return Ensure(sql);
         }
 
-        private string ToConnectionFilterSql(LambdaExpression filter)
+        /// <summary>
+        /// Translates a filter of the connection to SQL, with its db params added to the query
+        /// </summary>
+        internal string RenderConnectionFilter(LambdaExpression filter)
         {
             var hold = PrefixFieldWithTableName;
             PrefixFieldWithTableName = true;
@@ -916,7 +921,7 @@ namespace ServiceStack.OrmLite
             for (var i = 0; i < connectionFilters.Count; i++)
             {
                 var (filter, oldSql) = (connectionFilters[i].Key, connectionFilters[i].Value);
-                var newSql = ToConnectionFilterSql(filter);
+                var newSql = filter.ToSql(this) ?? TrueLiteral;
                 whereExpression = whereExpression?.Replace(oldSql, newSql);
                 ensureExpression = ensureExpression?.Replace(oldSql, newSql);
                 connectionFilters[i] = new(filter, newSql);

@@ -205,9 +205,14 @@ to the next request or test.
 
 - **Storage**: `OrmLiteConnection.Filters`, an immutable list of the sets a connection uses with their scopes, and the
   filters and rules they bind to the scope, replaced each time a set is used, with a per-connection cache from table
-  type to its matching filters and rules. A set's filter conditions have the scope in place of their parameter, so
-  the scope's values are read for each statement. Commands reach it through
-  `OrmLiteCommand.OrmLiteConnection`.
+  type to its matching filters and rules. Commands reach it through `OrmLiteCommand.OrmLiteConnection`.
+- **Filter SQL** (`FilterTemplate.cs`): each rule has a template for each table type. Parts of its condition that
+  don't read the row are evaluated for each statement: `bool` conditions of `&&`, `||`, `!` and `?:` that only read
+  the scope are decided in C# with short-circuiting, and other values become db params. The SQL of each combination
+  of decided conditions, dialect, table alias and null values is generated once, with the values as the arguments of
+  a compiled query (`CompiledQueryBuild`), and kept when it's the same as the filter normally translated with the
+  scope's values. Each statement reads the values and adds them as db params renamed for its query. Filters whose
+  SQL can't be kept are translated with the scope's values for each statement, see `FilterSet.NotCachedReasons`.
 - **Rebinding interface expressions**: an `ExpressionVisitor` that replaces the interface parameter with a parameter of
   the table type and rebinds member access to the table's property of the same name, cached per table type.
 - **Filtered query creation**: one internal entry point, e.g. `dbCmd.CreateQuery<T>()` / `dbConn.CreateQuery<T>()`,
@@ -243,6 +248,9 @@ MySqlConnector, and a full test suite run.
 6. ✅ **`FilterSet`**: filters and rules declared once with a typed scope, replacing registering them on each
    connection with `EnsureFilter`, `EnsureWrites`, `OnInsert`, `OnUpdate` and `OnWrite` before they shipped. `Ensure`
    combines a column's filter and write rule.
+7. ✅ **Filter SQL translated once**: each filter's SQL is reused by every connection that uses its set, with
+   conditions that only read the scope decided in C#, e.g. `s.WorkspaceId == null || x.RefIdStr == s.WorkspaceId`
+   has no SQL for the null case. `FilterSetBenchmark` measures the time filters add to each statement.
 
 ## Docs
 
