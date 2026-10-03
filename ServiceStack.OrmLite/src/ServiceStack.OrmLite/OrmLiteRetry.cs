@@ -490,6 +490,33 @@ public static class OrmLiteRetryApi
     }
 
     /// <summary>
+    /// Whether a write of many rows, which runs in a transaction of its own, runs in a transaction that's run again
+    /// after a temporary error, e.g. InsertAll(). Writes in the App's transaction are retried with it.
+    /// </summary>
+    internal static bool RetriesAsTransaction(this IDbConnection db) =>
+        !db.InTransaction() && db.GetDialectProvider().RetryPolicy != null;
+
+    /// <summary>
+    /// Run a write of many rows in a transaction that's run again after a temporary error, see RetriesAsTransaction()
+    /// </summary>
+    internal static T ExecAll<T>(this IDbConnection db, Func<IDbCommand, T> fn) =>
+        db.RetriesAsTransaction() ? db.RunInTransaction(() => db.Exec(fn)) : db.Exec(fn);
+
+    internal static void ExecAll(this IDbConnection db, Action<IDbCommand> fn)
+    {
+        if (db.RetriesAsTransaction())
+            db.RunInTransaction(() => db.Exec(fn));
+        else
+            db.Exec(fn);
+    }
+
+    internal static Task<T> ExecAllAsync<T>(this IDbConnection db, Func<IDbCommand, Task<T>> fn, CancellationToken token) =>
+        db.RetriesAsTransaction() ? db.RunInTransactionAsync(() => db.Exec(fn), token: token) : db.Exec(fn);
+
+    internal static Task ExecAllAsync(this IDbConnection db, Func<IDbCommand, Task> fn, CancellationToken token) =>
+        db.RetriesAsTransaction() ? db.RunInTransactionAsync(() => db.Exec(fn), token: token) : db.Exec(fn);
+
+    /// <summary>
     /// Roll back a transaction that failed, whose connection may have been lost
     /// </summary>
     private static void DisposeQuietly(IDbTransaction? trans)

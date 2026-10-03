@@ -89,8 +89,8 @@ and the `migrate.new` App Task writes the next migration to the App's migrations
 
 ### 4.1 More Retries (S)
 A `RetryPolicy`, global in `OrmLiteConfig` or for each dialect, runs statements and connections again after a
-temporary error, and `db.RunInTransaction()` runs a whole transaction again. SQLite doesn't retry. Remaining:
-- Retry the APIs that write many rows in a transaction of their own, e.g. `InsertAll`, as a whole
+temporary error, and `db.RunInTransaction()` runs a whole transaction again. SQLite doesn't retry. The APIs that write many rows in a transaction of their own, e.g. `InsertAll`, are run again
+as a whole. Remaining:
 - Retry queries that fail while reading their rows, before any are returned
 - Retry queries run with OrmLite's Dapper APIs
 

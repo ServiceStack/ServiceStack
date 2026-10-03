@@ -52,6 +52,22 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
         };
     }
 
+    // Throw a temporary error for one INSERT, after the first ones have been inserted. Each row is inserted with a
+    // statement of its own, as DbBatch isn't used with OnBeforeExecuteNonQuery.
+    private void FailInsertAfter(int inserts)
+    {
+        var failed = false;
+        DialectProvider.OnBeforeExecuteNonQuery = _ => { };
+        OrmLiteConfig.BeforeExecFilter = cmd => {
+            if (failed || !cmd.CommandText.TrimStart().StartsWith("INSERT", StringComparison.OrdinalIgnoreCase))
+                return;
+            if (inserts-- > 0)
+                return;
+            failed = true;
+            throw new FakeTransientException();
+        };
+    }
+
     [SetUp]
     public void SetUp()
     {
@@ -67,6 +83,7 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
         OrmLiteConfig.RetryPolicy = null;
         DialectProvider.RetryPolicy = null;
         DialectProvider.OnBeforeExecuteNonQuery = null;
+        OrmLiteConfig.BeforeExecFilter = null;
     }
 
     private void IgnoreIfRetriesNotSupported()
@@ -242,6 +259,88 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
 
         Assert.That(attempts, Is.EqualTo(2));
         Assert.That((await db.SelectAsync<RetryItem>()).OrderBy(x => x.Name).Map(x => x.Name), Is.EqualTo(new[] { "A", "B" }));
+    }
+
+    [Test]
+    public void Writes_of_many_rows_run_again_as_a_whole()
+    {
+        IgnoreIfRetriesNotSupported();
+        DialectProvider.RetryPolicy = CreatePolicy()
+            .Handle(e => e is FakeTransientException, TransientError.NotApplied);
+
+        using var db = OpenDbConnection();
+        // The second row fails, after the first was inserted in the write's transaction
+        FailInsertAfter(1);
+        db.InsertAll(new[] { new RetryItem { Name = "A" }, new RetryItem { Name = "B" }, new RetryItem { Name = "C" } });
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+        Assert.That(db.Select<RetryItem>().OrderBy(x => x.Name).Map(x => x.Name), Is.EqualTo(new[] { "A", "B", "C" }));
+        Assert.That(db.InTransaction(), Is.False);
+
+        // New rows get the ids they're saved with, not those of the attempt that was rolled back
+        retries.Clear();
+        var rows = new List<RetryItem> { new() { Name = "D" }, new() { Name = "E" } };
+        FailInsertAfter(1);
+        Assert.That(db.SaveAll(rows), Is.EqualTo(2));
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+        var saved = db.Select<RetryItem>(x => x.Name == "D" || x.Name == "E").OrderBy(x => x.Name).ToList();
+        Assert.That(saved.Map(x => x.Name), Is.EqualTo(new[] { "D", "E" }));
+        Assert.That(rows.Map(x => x.Id), Is.EqualTo(saved.Map(x => x.Id)));
+
+        // Existing and new rows
+        retries.Clear();
+        rows[0].Name = "D2";
+        rows.Add(new RetryItem { Name = "F" });
+        FailInsertAfter(0);
+        Assert.That(db.SaveAll(rows), Is.EqualTo(1));
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+        Assert.That(db.Select<RetryItem>().OrderBy(x => x.Name).Map(x => x.Name),
+            Is.EqualTo(new[] { "A", "B", "C", "D2", "E", "F" }));
+    }
+
+    [Test]
+    public async Task Async_writes_of_many_rows_run_again_as_a_whole()
+    {
+        IgnoreIfRetriesNotSupported();
+        DialectProvider.RetryPolicy = CreatePolicy()
+            .Handle(e => e is FakeTransientException, TransientError.NotApplied);
+
+        using var db = await OpenDbConnectionAsync();
+        FailInsertAfter(1);
+        await db.InsertAllAsync(new[] { new RetryItem { Name = "A" }, new RetryItem { Name = "B" } });
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+
+        retries.Clear();
+        var rows = new List<RetryItem> { new() { Name = "C" }, new() { Name = "D" } };
+        FailInsertAfter(1);
+        Assert.That(await db.SaveAllAsync(rows), Is.EqualTo(2));
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+        var saved = (await db.SelectAsync<RetryItem>()).OrderBy(x => x.Name).ToList();
+        Assert.That(saved.Map(x => x.Name), Is.EqualTo(new[] { "A", "B", "C", "D" }));
+        Assert.That(rows.Map(x => x.Id), Is.EqualTo(saved.Skip(2).Map(x => x.Id)));
+    }
+
+    [Test]
+    public void Writes_of_many_rows_in_the_Apps_transaction_are_retried_with_it()
+    {
+        DialectProvider.RetryPolicy = CreatePolicy()
+            .Handle(e => e is FakeTransientException, TransientError.NotApplied);
+
+        using var db = OpenDbConnection();
+        using (db.OpenTransaction())
+        {
+            FailInsertAfter(1);
+            Assert.Throws<FakeTransientException>(() =>
+                db.InsertAll(new[] { new RetryItem { Name = "A" }, new RetryItem { Name = "B" } }));
+        }
+        Assert.That(retries, Is.Empty);
+
+        // Without a policy they run in a transaction of their own, which is rolled back
+        DialectProvider.RetryPolicy = OrmLiteRetry.None;
+        FailInsertAfter(1);
+        Assert.Throws<FakeTransientException>(() =>
+            db.InsertAll(new[] { new RetryItem { Name = "A" }, new RetryItem { Name = "B" } }));
+        Assert.That(db.Count<RetryItem>(), Is.EqualTo(0));
+        Assert.That(retries, Is.Empty);
     }
 
     [Test]
