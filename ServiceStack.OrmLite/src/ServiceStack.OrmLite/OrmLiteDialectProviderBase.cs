@@ -2605,6 +2605,31 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef) => null;
 
+    public virtual List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef) => null;
+
+    /// <summary>
+    /// The indexes of the rows of a query with name, is_unique, is_constraint and columns, a comma-separated list of
+    /// its key columns in order
+    /// </summary>
+    protected static List<IndexSchema> ToIndexSchemas(List<Dictionary<string, object>> rows)
+    {
+        object Value(Dictionary<string, object> row, string name)
+        {
+            foreach (var entry in row)
+            {
+                if (string.Equals(entry.Key, name, StringComparison.OrdinalIgnoreCase))
+                    return entry.Value is DBNull ? null : entry.Value;
+            }
+            return null;
+        }
+        return rows.Map(row => new IndexSchema {
+            Name = Value(row, "name")?.ToString(),
+            IsUnique = Convert.ToBoolean(Value(row, "is_unique") ?? false),
+            IsConstraint = Convert.ToBoolean(Value(row, "is_constraint") ?? false),
+            Columns = (Value(row, "columns")?.ToString() ?? "").Split([','], StringSplitOptions.RemoveEmptyEntries).ToList(),
+        });
+    }
+
     public virtual string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
         $"ALTER TABLE {QuoteTable(tableRef)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
 

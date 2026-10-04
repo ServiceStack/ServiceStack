@@ -474,6 +474,13 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef) => db.Column<string>(
         "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name = {0} COLLATE NOCASE".SqlFmt(this, UnquotedTable(tableRef)));
 
+    // Indexes that aren't created with CREATE INDEX are for primary keys and unique constraints
+    public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef) => ToIndexSchemas(
+        db.SqlList<Dictionary<string, object>>(
+            "SELECT il.name AS name, il.\"unique\" AS is_unique, CASE WHEN il.origin = 'c' THEN 0 ELSE 1 END AS is_constraint, " +
+            "(SELECT group_concat(name, ',') FROM (SELECT ii.name FROM pragma_index_info(il.name) ii ORDER BY ii.seqno)) AS columns " +
+            "FROM pragma_index_list({0}) il".SqlFmt(this, UnquotedTable(tableRef))));
+
     public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
         // The names of tables aren't case sensitive

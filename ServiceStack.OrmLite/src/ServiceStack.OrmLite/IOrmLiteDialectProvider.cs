@@ -426,6 +426,11 @@ public interface IOrmLiteDialectProvider
     /// </summary>
     List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef);
 
+    /// <summary>
+    /// The indexes of a table with their key columns, or null if they can't be read
+    /// </summary>
+    List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef);
+
     string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn);

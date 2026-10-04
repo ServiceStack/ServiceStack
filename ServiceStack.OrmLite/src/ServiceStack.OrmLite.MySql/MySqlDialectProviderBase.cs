@@ -540,6 +540,17 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 		"SELECT DISTINCT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"
 			.SqlFmt(UnquotedTable(tableRef), db.Database));
 
+	// Indexes are created for primary keys, unique constraints and foreign keys, with the name of their constraint
+	public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef) => ToIndexSchemas(
+		db.SqlList<Dictionary<string, object>>(
+			("SELECT s.INDEX_NAME AS name, MIN(s.NON_UNIQUE) = 0 AS is_unique, " +
+			 "EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc WHERE tc.TABLE_SCHEMA = s.TABLE_SCHEMA " +
+			 "AND tc.TABLE_NAME = s.TABLE_NAME AND tc.CONSTRAINT_NAME = s.INDEX_NAME) AS is_constraint, " +
+			 "GROUP_CONCAT(s.COLUMN_NAME ORDER BY s.SEQ_IN_INDEX SEPARATOR ',') AS columns " +
+			 "FROM INFORMATION_SCHEMA.STATISTICS s WHERE s.TABLE_NAME = {0} AND s.TABLE_SCHEMA = {1} " +
+			 "GROUP BY s.TABLE_SCHEMA, s.TABLE_NAME, s.INDEX_NAME")
+			.SqlFmt(UnquotedTable(tableRef), db.Database)));
+
 	public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
 	{
 		var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"

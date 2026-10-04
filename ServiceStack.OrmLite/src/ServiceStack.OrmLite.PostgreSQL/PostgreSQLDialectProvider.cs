@@ -727,6 +727,24 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         return db.Column<string>(sql);
     }
 
+    // The key columns of indexes are the first indnkeyatts of their columns, the others are INCLUDE columns
+    public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef)
+    {
+        var schema = GetSchemaName(tableRef);
+        var sql = "SELECT i.relname AS name, ix.indisunique AS is_unique, (ix.indisprimary OR c.oid IS NOT NULL) AS is_constraint, " +
+            "array_to_string(ARRAY(SELECT COALESCE(a.attname, '?') FROM unnest(ix.indkey) WITH ORDINALITY AS k(attnum, ord) " +
+            "LEFT JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = k.attnum " +
+            "WHERE k.ord <= ix.indnkeyatts ORDER BY k.ord), ',') AS columns " +
+            "FROM pg_index ix JOIN pg_class i ON i.oid = ix.indexrelid JOIN pg_class t ON t.oid = ix.indrelid " +
+            "JOIN pg_namespace n ON n.oid = t.relnamespace " +
+            "LEFT JOIN pg_constraint c ON c.conindid = ix.indexrelid AND c.contype IN ('p','u','x') " +
+            "WHERE lower(t.relname) = {0}".SqlFmt(this, GetTableNameOnly(tableRef).ToLower())
+            + (schema != null
+                ? " AND lower(n.nspname) = {0}".SqlFmt(this, schema.ToLower())
+                : " AND n.nspname = current_schema()");
+        return ToIndexSchemas(db.SqlList<Dictionary<string, object>>(sql));
+    }
+
     public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
         var sql = DoesTableExistSql(dbCmd, tableRef);

@@ -74,7 +74,7 @@ public class AdminSchemaDiffResponse : IHasResponseStatus
 public class AdminSchemaChange
 {
     /// <summary>
-    /// CreateTable, AddColumn, AlterColumn, DropColumn or CreateIndex
+    /// CreateTable, AddColumn, AlterColumn, DropColumn, CreateIndex, AlterIndex or DropIndex
     /// </summary>
     public string Type { get; set; } = "";
     public string Model { get; set; } = "";
@@ -86,6 +86,11 @@ public class AdminSchemaChange
     public string? Name { get; set; }
     public string? ModelColumn { get; set; }
     public string? DatabaseColumn { get; set; }
+
+    /// <summary>
+    /// The column that's likely the same column renamed
+    /// </summary>
+    public string? LikelyRename { get; set; }
     public string Description { get; set; } = "";
     public string? Sql { get; set; }
     public bool? IsDestructive { get; set; }
@@ -130,6 +135,7 @@ public class AdminSchemaDiffService : Service
                 Name = x.Name,
                 ModelColumn = x.ModelColumn,
                 DatabaseColumn = x.DatabaseColumn,
+                LikelyRename = x.LikelyRename,
                 Description = x.Description,
                 Sql = x.Sql,
                 IsDestructive = x.IsDestructive ? true : null,

@@ -33,6 +33,38 @@ public enum SchemaChangeType
     /// The index of the model isn't in the database
     /// </summary>
     CreateIndex,
+    /// <summary>
+    /// The index of the model is in the database with other columns or uniqueness, so it's dropped and created again
+    /// </summary>
+    AlterIndex,
+    /// <summary>
+    /// The index of the table isn't in the model, e.g. it was removed from the model or added to the database by
+    /// hand. It's destructive, so it's only dropped with allowDestructive.
+    /// </summary>
+    DropIndex,
+}
+
+/// <summary>
+/// An index of a table in the database
+/// </summary>
+public class IndexSchema
+{
+    public string Name { get; set; }
+
+    public bool IsUnique { get; set; }
+
+    /// <summary>
+    /// The key columns of the index in order, which don't include the columns of INCLUDE
+    /// </summary>
+    public List<string> Columns { get; set; } = [];
+
+    /// <summary>
+    /// Whether the index is created by the database for a constraint, e.g. a primary key or a unique constraint,
+    /// which isn't compared with the indexes of a model
+    /// </summary>
+    public bool IsConstraint { get; set; }
+
+    public override string ToString() => (IsUnique ? "UNIQUE " : "") + "(" + string.Join(", ", Columns) + ")";
 }
 
 /// <summary>
@@ -60,14 +92,23 @@ public class SchemaChange
     public FieldDefinition Field { get; set; }
 
     /// <summary>
-    /// The column the model would be created with, e.g. VARCHAR(200) NULL
+    /// The column the model would be created with, e.g. VARCHAR(200) NULL, or the columns of its index, e.g.
+    /// UNIQUE (Email, TenantId)
     /// </summary>
     public string ModelColumn { get; set; }
 
     /// <summary>
-    /// The column that's in the database, e.g. VARCHAR(50) NOT NULL
+    /// The column that's in the database, e.g. VARCHAR(50) NOT NULL, or the columns of its index
     /// </summary>
     public string DatabaseColumn { get; set; }
+
+    /// <summary>
+    /// The column that's likely the same column renamed: of a column that isn't in the database, the column that isn't
+    /// in its model with the same type, and of a column that isn't in the model, the column that isn't in the database.
+    /// It's only likely when there's one column of the type that's in each, so the columns aren't renamed by
+    /// ApplySchemaDiff(), and the migrations of ToMigration() say how to rename them instead.
+    /// </summary>
+    public string LikelyRename { get; set; }
 
     /// <summary>
     /// The SQL that makes the change, null if the database can't make it, e.g. SQLite can't alter a column
@@ -82,11 +123,15 @@ public class SchemaChange
 
     public string Description => Type switch {
         SchemaChangeType.CreateTable => $"Table {Table} isn't in the database",
-        SchemaChangeType.AddColumn => $"Column {Table}.{Name} isn't in the database: {ModelColumn}",
+        SchemaChangeType.AddColumn => $"Column {Table}.{Name} isn't in the database: {ModelColumn}"
+            + (LikelyRename != null ? $" (renamed from {LikelyRename}?)" : ""),
         SchemaChangeType.AlterColumn => $"Column {Table}.{Name} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
             + (Sql == null ? " (can't be altered in this database)" : ""),
-        SchemaChangeType.DropColumn => $"Column {Table}.{Name} isn't in {ModelType.Name}: {DatabaseColumn}",
+        SchemaChangeType.DropColumn => $"Column {Table}.{Name} isn't in {ModelType.Name}: {DatabaseColumn}"
+            + (LikelyRename != null ? $" (renamed to {LikelyRename}?)" : ""),
         SchemaChangeType.CreateIndex => $"Index {Name} of {Table} isn't in the database",
+        SchemaChangeType.AlterIndex => $"Index {Name} of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}",
+        SchemaChangeType.DropIndex => $"Index {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}",
         _ => Type.ToString(),
     };
 
@@ -198,10 +243,14 @@ public class SchemaDiff
             {
                 sb.AppendLine(change.Type switch {
                     SchemaChangeType.CreateTable => "  + table isn't in the database",
-                    SchemaChangeType.AddColumn => $"  + {change.Name}  {change.ModelColumn}",
+                    SchemaChangeType.AddColumn => $"  + {change.Name}  {change.ModelColumn}"
+                        + (change.LikelyRename != null ? $" (renamed from {change.LikelyRename}?)" : ""),
                     SchemaChangeType.AlterColumn => $"  ~ {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}"
                         + (change.Sql == null ? " (can't be altered in this database)" : ""),
-                    SchemaChangeType.DropColumn => $"  - {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})",
+                    SchemaChangeType.DropColumn => $"  - {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})"
+                        + (change.LikelyRename != null ? $" (renamed to {change.LikelyRename}?)" : ""),
+                    SchemaChangeType.AlterIndex => $"  ~ index {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}",
+                    SchemaChangeType.DropIndex => $"  - index {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})",
                     _ => $"  + index {change.Name}",
                 });
             }
@@ -294,6 +343,8 @@ public static class OrmLiteSchemaDiffApi
             }
 
             var matched = new HashSet<ColumnSchema>();
+            var added = new List<(SchemaChange change, ColumnSchema modelColumn)>();
+            var dropped = new List<(SchemaChange change, ColumnSchema dbColumn)>();
             foreach (var fieldDef in columnFields)
             {
                 var index = fieldDefs.IndexOf(fieldDef);
@@ -302,7 +353,7 @@ public static class OrmLiteSchemaDiffApi
                 var dbColumn = dbColumns.FirstOrDefault(x => x.ColumnName.EqualsIgnoreCase(name));
                 if (dbColumn == null)
                 {
-                    diff.Changes.Add(new SchemaChange {
+                    var addColumn = new SchemaChange {
                         Type = SchemaChangeType.AddColumn,
                         ModelType = modelType,
                         Table = table,
@@ -310,7 +361,9 @@ public static class OrmLiteSchemaDiffApi
                         Field = fieldDef,
                         ModelColumn = modelColumn != null ? Describe(modelColumn) : ColumnType(dialect, fieldDef),
                         Sql = dialect.ToAddColumnStatement(tableRef, fieldDef.Clone(f => f.IsPrimaryKey = false)),
-                    });
+                    };
+                    diff.Changes.Add(addColumn);
+                    added.Add((addColumn, modelColumn));
                     continue;
                 }
 
@@ -338,7 +391,7 @@ public static class OrmLiteSchemaDiffApi
                 if (matched.Contains(dbColumn))
                     continue;
 
-                diff.Changes.Add(new SchemaChange {
+                var dropColumn = new SchemaChange {
                     Type = SchemaChangeType.DropColumn,
                     ModelType = modelType,
                     Table = table,
@@ -346,10 +399,19 @@ public static class OrmLiteSchemaDiffApi
                     DatabaseColumn = Describe(dbColumn),
                     Sql = dialect.ToDropColumnStatement(tableRef, dbColumn.ColumnName),
                     IsDestructive = true,
-                });
+                };
+                diff.Changes.Add(dropColumn);
+                dropped.Add((dropColumn, dbColumn));
             }
+            FindLikelyRenames(added, dropped, dialect);
 
             var createIndexes = dialect.ToCreateIndexStatements(modelType);
+            var dbIndexes = dialect.GetTableIndexes(db, tableRef);
+            if (dbIndexes != null)
+            {
+                CompareIndexes(diff, modelType, tableRef, table, createIndexes, dbIndexes, dialect);
+                continue;
+            }
             if (createIndexes.Count == 0)
                 continue;
 
@@ -378,6 +440,152 @@ public static class OrmLiteSchemaDiffApi
             }
         }
         return diff;
+    }
+
+    // A column that's not in the database and a column that's not in the model are likely the same column renamed
+    // when they're the only ones of their type
+    private static void FindLikelyRenames(List<(SchemaChange change, ColumnSchema modelColumn)> added,
+        List<(SchemaChange change, ColumnSchema dbColumn)> dropped, IOrmLiteDialectProvider dialect)
+    {
+        foreach (var (addColumn, modelColumn) in added)
+        {
+            if (modelColumn == null)
+                continue;
+            var sameType = dropped.Where(x => IsSameColumnType(x.dbColumn, modelColumn, dialect)).ToList();
+            if (sameType.Count != 1
+                || added.Count(x => x.modelColumn != null && IsSameColumnType(sameType[0].dbColumn, x.modelColumn, dialect)) != 1)
+                continue;
+            addColumn.LikelyRename = sameType[0].change.Name;
+            sameType[0].change.LikelyRename = addColumn.Name;
+        }
+    }
+
+    private static bool IsSameColumnType(ColumnSchema dbColumn, ColumnSchema modelColumn, IOrmLiteDialectProvider dialect) =>
+        IsSameType(dbColumn, modelColumn) || IsTextFor(dbColumn, modelColumn, dialect)
+        || (IsIntegerType(dbColumn) && IsIntegerType(modelColumn));
+
+    // The indexes of the model that aren't in the database or are with other columns, and the indexes in the database
+    // that aren't in the model. Indexes of constraints, e.g. primary keys, aren't compared.
+    private static void CompareIndexes(SchemaDiff diff, Type modelType, TableRef tableRef, string table,
+        List<string> createIndexes, List<IndexSchema> dbIndexes, IOrmLiteDialectProvider dialect)
+    {
+        var modelIndexNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var createIndex in createIndexes)
+        {
+            var indexName = GetIndexName(createIndex);
+            if (indexName == null)
+                continue;
+            modelIndexNames.Add(indexName);
+
+            var dbIndex = dbIndexes.FirstOrDefault(x => x.Name.EqualsIgnoreCase(indexName));
+            if (dbIndex == null)
+            {
+                diff.Changes.Add(new SchemaChange {
+                    Type = SchemaChangeType.CreateIndex,
+                    ModelType = modelType,
+                    Table = table,
+                    Name = indexName,
+                    Sql = createIndex.Trim(),
+                });
+                continue;
+            }
+
+            var modelIndex = ParseIndex(createIndex);
+            if (dbIndex.IsConstraint || modelIndex == null
+                || (modelIndex.IsUnique == dbIndex.IsUnique
+                    && modelIndex.Columns.Count == dbIndex.Columns.Count
+                    && modelIndex.Columns.Zip(dbIndex.Columns, (a, b) => a.EqualsIgnoreCase(b)).All(x => x)))
+                continue;
+
+            diff.Changes.Add(new SchemaChange {
+                Type = SchemaChangeType.AlterIndex,
+                ModelType = modelType,
+                Table = table,
+                Name = dbIndex.Name,
+                ModelColumn = modelIndex.ToString(),
+                DatabaseColumn = dbIndex.ToString(),
+                Sql = ToDropIndexStatement(dialect, modelType, dbIndex.Name).Trim().TrimEnd(';') + ";\n" + createIndex.Trim(),
+                // Rows can have the same values of the columns of an index that's made unique
+                IsDestructive = modelIndex.IsUnique && !dbIndex.IsUnique,
+            });
+        }
+
+        foreach (var dbIndex in dbIndexes)
+        {
+            if (dbIndex.IsConstraint || modelIndexNames.Contains(dbIndex.Name))
+                continue;
+            diff.Changes.Add(new SchemaChange {
+                Type = SchemaChangeType.DropIndex,
+                ModelType = modelType,
+                Table = table,
+                Name = dbIndex.Name,
+                DatabaseColumn = dbIndex.ToString(),
+                Sql = ToDropIndexStatement(dialect, modelType, dbIndex.Name),
+                IsDestructive = true,
+            });
+        }
+    }
+
+    private static readonly System.Reflection.MethodInfo ToDropIndexStatementMethod =
+        typeof(IOrmLiteDialectProvider).GetMethod(nameof(IOrmLiteDialectProvider.ToDropIndexStatement));
+
+    private static string ToDropIndexStatement(IOrmLiteDialectProvider dialect, Type modelType, string indexName) =>
+        (string)ToDropIndexStatementMethod.MakeGenericMethod(modelType).Invoke(dialect, [indexName]);
+
+    private static readonly Regex UniqueIndexRegex = new(@"^\s*CREATE\s+UNIQUE\b",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex IndexColumnsRegex = new(@"\bON\s+(?:""[^""]*""|`[^`]*`|\[[^\]]*\]|[^\s(])+(?:\s+USING\s+\w+)?\s*\(",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+    /// <summary>
+    /// The key columns and uniqueness of an index from the statement that creates it, or null if they can't be read
+    /// </summary>
+    internal static IndexSchema ParseIndex(string createIndexSql)
+    {
+        var match = IndexColumnsRegex.Match(createIndexSql);
+        if (!match.Success)
+            return null;
+
+        var to = new IndexSchema {
+            Name = GetIndexName(createIndexSql),
+            IsUnique = UniqueIndexRegex.IsMatch(createIndexSql),
+        };
+        var depth = 0;
+        var start = match.Index + match.Length;
+        for (var i = start; i < createIndexSql.Length; i++)
+        {
+            var c = createIndexSql[i];
+            if (c == '(')
+            {
+                depth++;
+            }
+            else if (c == ')' && depth > 0)
+            {
+                depth--;
+            }
+            else if ((c == ',' || c == ')') && depth == 0)
+            {
+                to.Columns.Add(IndexColumnName(createIndexSql.Substring(start, i - start)));
+                if (c == ')')
+                    return to;
+                start = i + 1;
+            }
+        }
+        return null;
+    }
+
+    // The column of a key column of an index, without its quotes, ASC or DESC, or operator class
+    private static string IndexColumnName(string keyColumn)
+    {
+        keyColumn = keyColumn.Trim();
+        if (keyColumn.Length > 0 && keyColumn[0] is '"' or '`' or '[')
+        {
+            var close = keyColumn[0] == '[' ? ']' : keyColumn[0];
+            var end = keyColumn.IndexOf(close, 1);
+            return end > 0 ? keyColumn.Substring(1, end - 1) : keyColumn;
+        }
+        var space = keyColumn.IndexOfAny([' ', '\t', '\n']);
+        return space > 0 ? keyColumn.Substring(0, space) : keyColumn;
     }
 
     /// <summary>
@@ -601,6 +809,11 @@ internal static class SchemaMigrationWriter
                         undo.Add($"Db.DropTable<{name}>();");
                         break;
                     case SchemaChangeType.AddColumn:
+                        if (change.LikelyRename != null)
+                        {
+                            up.Add($"// {change.Name} is likely {change.LikelyRename} renamed. If it is, rename it instead of adding it:");
+                            up.Add($"// Db.RenameColumn<{name}>(x => x.{property}, {ToLiteral(change.LikelyRename)});");
+                        }
                         up.Add($"Db.AddColumn<{name}>(x => x.{property});");
                         undo.Add($"Db.DropColumn<{name}>(x => x.{property});");
                         break;
@@ -616,12 +829,22 @@ internal static class SchemaMigrationWriter
                         break;
                     case SchemaChangeType.DropColumn:
                         up.Add($"// {change.Name} ({change.DatabaseColumn}) isn't in {name}. If it was renamed, rename it instead:");
-                        up.Add($"// Db.RenameColumn<{name}>({ToLiteral(change.Name)}, \"NewName\");");
+                        up.Add($"// Db.RenameColumn<{name}>({ToLiteral(change.Name)}, {ToLiteral(change.LikelyRename ?? "NewName")});");
                         up.Add($"// Db.DropColumn<{name}>({ToLiteral(change.Name)});");
                         break;
                     case SchemaChangeType.CreateIndex:
                         up.Add($"Db.ExecuteSql({ToLiteral(change.Sql)});");
                         undo.Add($"Db.DropIndex<{name}>({ToLiteral(change.Name)});");
+                        break;
+                    case SchemaChangeType.AlterIndex:
+                        up.Add($"// {change.Name} is {change.DatabaseColumn}");
+                        up.Add($"Db.DropIndex<{name}>({ToLiteral(change.Name)});");
+                        up.Add($"Db.ExecuteSql({ToLiteral(change.Sql.Substring(change.Sql.IndexOf('\n') + 1))});");
+                        undo.Add($"// {change.Name} was {change.DatabaseColumn}");
+                        break;
+                    case SchemaChangeType.DropIndex:
+                        up.Add($"// Index {change.Name} {change.DatabaseColumn} isn't in {name}. If it's no longer used, drop it:");
+                        up.Add($"// Db.DropIndex<{name}>({ToLiteral(change.Name)});");
                         break;
                 }
             }

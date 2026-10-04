@@ -498,10 +498,10 @@ export const Database = {
         }
         function isChangeOpen(table,index) { return !!openChanges.value[`${table}:${index}`] }
         function changeSymbol(change) {
-            return change.type === 'AlterColumn' ? '~' : change.type === 'DropColumn' ? '-' : '+'
+            return change.type.startsWith('Alter') ? '~' : change.type.startsWith('Drop') ? '-' : '+'
         }
         function changeColor(change) {
-            return change.type === 'AlterColumn' ? 'text-amber-600' : change.type === 'DropColumn' ? 'text-red-600' : 'text-green-600'
+            return change.type.startsWith('Alter') ? 'text-amber-600' : change.type.startsWith('Drop') ? 'text-red-600' : 'text-green-600'
         }
         function changeTitle(change) {
             return change.type === 'CreateTable' ? 'Create table' : change.name
@@ -509,10 +509,12 @@ export const Database = {
         function changeDetail(change) {
             switch (change.type) {
                 case 'CreateTable': return `The table of ${change.model} isn't in the database`
-                case 'AddColumn': return `Add column: ${change.modelColumn}`
+                case 'AddColumn': return `Add column: ${change.modelColumn}` + (change.likelyRename ? ` (renamed from ${change.likelyRename}?)` : '')
                 case 'AlterColumn': return `${change.databaseColumn} \u2192 ${change.modelColumn}` + (change.sql ? '' : " (can't be altered in this database)")
-                case 'DropColumn': return `Not in ${change.model}: ${change.databaseColumn}`
+                case 'DropColumn': return `Not in ${change.model}: ${change.databaseColumn}` + (change.likelyRename ? ` (renamed to ${change.likelyRename}?)` : '')
                 case 'CreateIndex': return 'Add index'
+                case 'AlterIndex': return `Index ${change.databaseColumn} \u2192 ${change.modelColumn}`
+                case 'DropIndex': return `Index not in ${change.model}: ${change.databaseColumn}`
                 default: return change.description
             }
         }

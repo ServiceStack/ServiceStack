@@ -441,7 +441,120 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         // Columns that aren't in the model may have been renamed, so they're only dropped by a comment
         Assert.That(source, Does.Match(@"// Db\.DropColumn<Invoice>\(""legacy_?code""\);").IgnoreCase);
-        Assert.That(source, Does.Match(@"// Db\.RenameColumn<Invoice>\(""legacy_?code"", ""NewName""\);").IgnoreCase);
+        if (db.GetDialectProvider().Kind == DbKind.Sqlite)
+        {
+            // SQLite creates DateTime columns as text, so PaidDate is a column of the same type as LegacyCode too
+            Assert.That(source, Does.Match(@"// Db\.RenameColumn<Invoice>\(""legacy_?code"", ""NewName""\);").IgnoreCase);
+            return;
+        }
+        // LegacyCode is likely renamed to Currency, the only new column of its type
+        Assert.That(source, Does.Match(@"// Db\.RenameColumn<Invoice>\(""legacy_?code"", ""currency""\);").IgnoreCase);
+        Assert.That(source, Does.Match(@"// Db\.RenameColumn<Invoice>\(x => x\.Currency, ""legacy_?code""\);").IgnoreCase);
+    }
+
+    public static class Before
+    {
+        [CompositeIndex(nameof(Reference), nameof(Status), Name = "ix_shipment_by_status")]
+        public class Shipment
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+
+            [Index(Name = "ix_shipment_reference")]
+            public string Reference { get; set; }
+
+            [Index(Name = "ix_shipment_carrier")]
+            public string Carrier { get; set; }
+
+            [Unique]
+            public string TrackingCode { get; set; }
+
+            public string Status { get; set; }
+            public int Weight { get; set; }
+        }
+    }
+
+    [CompositeIndex(nameof(Status), nameof(Reference), Name = "ix_shipment_by_status")] // columns in another order
+    public class Shipment
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        [Index(Name = "ix_shipment_reference", Unique = true)] // made unique
+        public string Reference { get; set; }
+
+        public string Carrier { get; set; } // no longer indexed
+
+        [Unique]
+        public string TrackingCode { get; set; }
+
+        public string Status { get; set; }
+        public int WeightInGrams { get; set; } // renamed
+    }
+
+    [Test]
+    public void Compare_the_columns_of_indexes_and_find_the_indexes_that_are_not_in_the_model()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<Shipment>();
+        db.CreateTable<Before.Shipment>();
+
+        var diff = db.GetSchemaDiff<Shipment>();
+        var indexes = diff.Changes.Where(x => x.Type is SchemaChangeType.AlterIndex or SchemaChangeType.DropIndex)
+            .ToDictionary(x => x.Name.ToLower());
+
+        // Indexes whose columns or uniqueness changed are dropped and created again
+        var byStatus = indexes["ix_shipment_by_status"];
+        Assert.That(byStatus.Type, Is.EqualTo(SchemaChangeType.AlterIndex));
+        Assert.That(byStatus.DatabaseColumn.ToLower(), Is.EqualTo("(reference, status)"));
+        Assert.That(byStatus.ModelColumn.ToLower(), Is.EqualTo("(status, reference)"));
+        Assert.That(byStatus.IsDestructive, Is.False);
+
+        // An index that's made unique fails if rows have the same values
+        var reference = indexes["ix_shipment_reference"];
+        Assert.That(reference.Type, Is.EqualTo(SchemaChangeType.AlterIndex));
+        Assert.That(reference.ModelColumn.ToLower(), Is.EqualTo("unique (reference)"));
+        Assert.That(reference.IsDestructive, Is.True);
+
+        // An index that's not in the model is only dropped with allowDestructive, as it may have been added by hand
+        var carrier = indexes["ix_shipment_carrier"];
+        Assert.That(carrier.Type, Is.EqualTo(SchemaChangeType.DropIndex));
+        Assert.That(carrier.IsDestructive, Is.True);
+
+        // Indexes of constraints aren't compared, e.g. of the primary key and [Unique] TrackingCode
+        Assert.That(indexes.Count, Is.EqualTo(3), diff.ToString());
+        Assert.That(diff.ToString(), Does.Contain("~ index ix_shipment_by_status"));
+        Assert.That(diff.ToString(), Does.Contain("- index ix_shipment_carrier"));
+
+        var source = diff.ToMigration("Migration1006");
+        Assert.That(source, Does.Contain("Db.DropIndex<Shipment>(\"ix_shipment_by_status\");"));
+        Assert.That(source, Does.Contain("// Db.DropIndex<Shipment>(\"ix_shipment_carrier\");"));
+
+        // The indexes are the same once they're applied
+        db.ApplySchemaDiff(diff, allowDestructive: true);
+        diff = db.GetSchemaDiff<Shipment>();
+        Assert.That(diff.Changes.Where(x => x.Type is SchemaChangeType.CreateIndex or SchemaChangeType.AlterIndex
+            or SchemaChangeType.DropIndex), Is.Empty, diff.ToString());
+    }
+
+    [Test]
+    public void A_column_that_is_not_in_the_model_and_a_new_column_of_the_same_type_are_likely_renamed()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<Shipment>();
+        db.CreateTable<Before.Shipment>();
+
+        var diff = db.GetSchemaDiff<Shipment>();
+        var added = diff.Changes.Single(x => x.Type == SchemaChangeType.AddColumn);
+        var dropped = diff.Changes.Single(x => x.Type == SchemaChangeType.DropColumn);
+        Assert.That(added.LikelyRename, Is.EqualTo(dropped.Name));
+        Assert.That(dropped.LikelyRename, Is.EqualTo(added.Name));
+        Assert.That(diff.ToString(), Does.Contain($"(renamed from {dropped.Name}?)"));
+
+        // They're not renamed when they're applied, as it's only likely
+        var source = diff.ToMigration("Migration1007");
+        Assert.That(source, Does.Contain($"// Db.RenameColumn<Shipment>(x => x.WeightInGrams, \"{dropped.Name}\");"));
+        Assert.That(source, Does.Contain("Db.AddColumn<Shipment>(x => x.WeightInGrams);"));
     }
 
     [Test]
