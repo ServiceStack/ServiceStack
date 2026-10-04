@@ -1029,6 +1029,46 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(diff.Changes, Is.Empty, diff.ToString());
     }
 
+    public static class ComputedBefore
+    {
+        [Alias("DiffLineItem")]
+        public class DiffLineItem
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+            public int Quantity { get; set; }
+            public int UnitPrice { get; set; }
+
+            [Compute("{Quantity} * {UnitPrice}"), Persisted]
+            public int Total { get; set; }
+        }
+    }
+
+    [Alias("DiffLineItem")]
+    public class DiffLineItem
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+        public int Quantity { get; set; }
+        public int UnitPrice { get; set; }
+
+        [Compute("{Quantity} * {UnitPrice} + 1"), Persisted] // another expression
+        public int Total { get; set; }
+    }
+
+    [Test]
+    public void The_expressions_of_generated_columns_are_not_compared()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<DiffLineItem>();
+        db.CreateTable<ComputedBefore.DiffLineItem>();
+
+        // e.g. PostgreSQL reports the expression of a generated column as its default, which it can't have
+        var diff = db.GetSchemaDiff<DiffLineItem>();
+        Assert.That(diff.Changes, Is.Empty, diff.ToString());
+        Assert.That(diff.Warnings, Is.Empty);
+    }
+
     public static class ParcelBefore
     {
         [Alias("Parcel")]

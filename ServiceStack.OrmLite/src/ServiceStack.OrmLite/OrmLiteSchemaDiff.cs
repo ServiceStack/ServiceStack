@@ -589,8 +589,9 @@ public static class OrmLiteSchemaDiffApi
                     });
                 }
 
-                // The defaults of auto incremented columns are their sequences, e.g. PostgreSQL's nextval('seq')
-                if (dbDefaults == null || fieldDef.AutoIncrement)
+                // The defaults of auto incremented columns are their sequences, e.g. PostgreSQL's nextval('seq'), and
+                // generated columns have no default, which PostgreSQL reports their expressions as
+                if (dbDefaults == null || fieldDef.AutoIncrement || fieldDef.IsGenerated)
                     continue;
                 dbDefaults.TryGetValue(dbColumn.ColumnName, out var dbDefault);
                 var modelDefault = modelColumn.DefaultValue as string;
