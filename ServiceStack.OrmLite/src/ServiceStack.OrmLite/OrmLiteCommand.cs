@@ -94,7 +94,8 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         dbConn.OnExecute(this, isNonQuery: false);
         return !CanRetry
             ? ExecuteReaderOnce()
-            : OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteReaderOnce);
+            : OrmLiteRetryExec.RetryReader(this, DialectProvider,
+                OrmLiteRetryExec.Execute(this, DialectProvider, ExecuteReaderOnce), CommandBehavior.Default);
     }
 
     private IDataReader ExecuteReaderOnce()
@@ -110,7 +111,8 @@ public class OrmLiteCommand : IDbCommand, IHasDbCommand, IHasDialectProvider
         dbConn.OnExecute(this, isNonQuery: false);
         return !CanRetry
             ? ExecuteReaderOnce(behavior)
-            : OrmLiteRetryExec.Execute(this, DialectProvider, () => ExecuteReaderOnce(behavior));
+            : OrmLiteRetryExec.RetryReader(this, DialectProvider,
+                OrmLiteRetryExec.Execute(this, DialectProvider, () => ExecuteReaderOnce(behavior)), behavior);
     }
 
     private IDataReader ExecuteReaderOnce(CommandBehavior behavior)

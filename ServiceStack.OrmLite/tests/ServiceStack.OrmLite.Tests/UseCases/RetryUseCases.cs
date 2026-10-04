@@ -480,6 +480,72 @@ public class RetryUseCases(DialectContext context) : OrmLiteProvidersTestBase(co
         Assert.That(retries, Is.Empty);
     }
 
+    // A query whose first row fails with a division by zero, which SQL Server reports when its first row is read and
+    // PostgreSQL when it's run.
+    // Its error is handled as temporary, and the divisor is fixed before it's run again.
+    private void FailFirstRow(Action<OrmLiteRetryPolicy> configure)
+    {
+        IgnoreIfNotServer();
+        // MySQL returns NULL for a division by zero
+        if ((Dialect & Dialect.AnyMySql) != 0)
+            Assert.Ignore("MySQL doesn't fail a division by zero");
+
+        using var db = OpenDbConnection();
+        db.InsertAll([new RetryAccount { Id = 1, Balance = 0 }, new RetryAccount { Id = 2, Balance = 1 }]);
+
+        var policy = OrmLiteRetry.Exponential(3, delay: TimeSpan.FromMilliseconds(1), maxDelay: TimeSpan.FromMilliseconds(10))
+            .Handle(e => e.Message.IndexOf("zero", StringComparison.OrdinalIgnoreCase) >= 0)
+            .OnRetry((ex, retry, delay) => {
+                retries.Add(retry);
+                using var fix = OpenDbConnection();
+                fix.UpdateOnly(() => new RetryAccount { Balance = 1 }, x => x.Id == 1);
+            });
+        configure(policy);
+        DialectProvider.RetryPolicy = policy;
+    }
+
+    private string DivideSql(IDbConnection db) =>
+        $"SELECT 10 / {DialectProvider.GetQuotedColumnName(nameof(RetryAccount.Balance))} FROM {db.GetQuotedTableName<RetryAccount>()} " +
+        $"ORDER BY {DialectProvider.GetQuotedColumnName(nameof(RetryAccount.Id))}";
+
+    [Test]
+    public void Reads_are_retried_when_their_first_row_fails()
+    {
+        FailFirstRow(_ => {});
+        using var db = OpenDbConnection();
+        Assert.That(db.SqlList<int>(DivideSql(db)), Is.EqualTo(new[] { 10, 10 }));
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+    }
+
+    [Test]
+    public async Task Reads_are_retried_when_their_first_row_fails_Async()
+    {
+        FailFirstRow(_ => {});
+        using var db = await OpenDbConnectionAsync();
+        Assert.That(await db.SqlListAsync<int>(DivideSql(db)), Is.EqualTo(new[] { 10, 10 }));
+        Assert.That(retries, Is.EqualTo(new[] { 1 }));
+    }
+
+    [Test]
+    public void Reads_are_not_retried_after_a_row_was_read()
+    {
+        FailFirstRow(_ => {});
+        using var db = OpenDbConnection();
+        db.UpdateOnly(() => new RetryAccount { Balance = 1 }, x => x.Id == 1);
+        db.UpdateOnly(() => new RetryAccount { Balance = 0 }, x => x.Id == 2);
+
+        // The first row has been returned, so the error of the second row is thrown
+        var rows = new List<int>();
+        using var cmd = db.CreateCommand();
+        cmd.CommandText = DivideSql(db);
+        Assert.That(() => {
+            using var reader = cmd.ExecuteReader();
+            while (reader.Read())
+                rows.Add(reader.GetInt32(0));
+        }, Throws.Exception);
+        Assert.That(retries, Is.Empty);
+    }
+
     [Test]
     public async Task Deadlocked_transactions_are_run_again()
     {

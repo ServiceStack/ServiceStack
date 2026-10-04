@@ -318,8 +318,21 @@ internal static class OrmLiteRetryExec
             : RetryReaderAsync(dbCmd, dialect, token);
     }
 
-    private static Task<IDataReader> RetryReaderAsync(IDbCommand dbCmd, IOrmLiteDialectProvider dialect, CancellationToken token) =>
-        ExecuteAsync(dbCmd, () => dialect.ExecuteReaderAsync(dbCmd, token), token);
+    private static async Task<IDataReader> RetryReaderAsync(IDbCommand dbCmd, IOrmLiteDialectProvider dialect, CancellationToken token) =>
+        RetryReader(dbCmd, dialect, await ExecuteAsync(dbCmd, () => dialect.ExecuteReaderAsync(dbCmd, token), token).ConfigAwait(),
+            CommandBehavior.Default);
+
+    /// <summary>
+    /// The rows of a query that's run again if reading its first row fails with a temporary error
+    /// </summary>
+    internal static IDataReader RetryReader(IDbCommand dbCmd, IOrmLiteDialectProvider dialect, IDataReader reader,
+        CommandBehavior behavior)
+    {
+        var policy = GetStatementPolicy(dbCmd, dialect);
+        return policy != null && reader is DbDataReader dbReader
+            ? new OrmLiteRetryReader(dbReader, dbCmd, dialect, policy, behavior)
+            : reader;
+    }
 
     internal static Task<object> ExecScalarWithRetryAsync(this IDbCommand dbCmd, CancellationToken token)
     {
