@@ -378,15 +378,47 @@ public class JsonColumnUseCases(DialectContext context) : OrmLiteProvidersTestBa
         db.Insert(new Nickname { Id = 1, Aliases = ["Ali", "Al"] });
         db.Insert(new Nickname { Id = 2, Aliases = ["Bobby"] });
 
-        if (Dialect.AnyPostgreSql.HasFlag(Dialect))
-        {
-            // PostgreSQL stores arrays of strings and numbers in its own array types, which aren't JSON
-            Assert.Throws<NotSupportedException>(() => db.From<Nickname>().Where(x => x.Aliases.Contains("Al")));
-            return;
-        }
-
+        // PostgreSQL stores arrays of strings and numbers in its own array types, e.g. text[], which are searched
+        // with its array functions, e.g. @p0 = ANY("aliases")
         Assert.That(db.Select<Nickname>(x => x.Aliases.Contains("Al")).Map(x => x.Id), Is.EqualTo(new[] { 1 }));
         Assert.That(db.Select<Nickname>(x => x.Aliases.Length == 1).Map(x => x.Id), Is.EqualTo(new[] { 2 }));
+        Assert.That(db.Select<Nickname>(x => x.Aliases.Any(a => a.StartsWith("B"))).Map(x => x.Id), Is.EqualTo(new[] { 2 }));
+        Assert.That(db.Select<Nickname>(x => x.Aliases.All(a => a.Length <= 3)).Map(x => x.Id), Is.EqualTo(new[] { 1 }));
+        Assert.That(db.Select<Nickname>(x => x.Aliases.Count(a => a.StartsWith("A")) == 2).Map(x => x.Id), Is.EqualTo(new[] { 1 }));
+        Assert.That(db.Select<Nickname>(x => !x.Aliases.Contains("Al")).Map(x => x.Id), Is.EqualTo(new[] { 2 }));
+    }
+
+    public class LuckyNumbers
+    {
+        public int Id { get; set; }
+        public int[] Numbers { get; set; }
+        public List<int> Others { get; set; }
+    }
+
+    [Test]
+    public void Arrays_of_numbers_are_searched_like_lists()
+    {
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<LuckyNumbers>();
+        db.Insert(new LuckyNumbers { Id = 1, Numbers = [7, 13], Others = [1] });
+        db.Insert(new LuckyNumbers { Id = 2, Numbers = [3], Others = [2, 3] });
+        db.Insert(new LuckyNumbers { Id = 3, Numbers = [], Others = [] });
+
+        var lucky = 7;
+        Assert.That(db.Select<LuckyNumbers>(x => x.Numbers.Contains(lucky)).Map(x => x.Id), Is.EqualTo(new[] { 1 }));
+        Assert.That(db.Select<LuckyNumbers>(x => x.Numbers.Any(n => n > 10)).Map(x => x.Id), Is.EqualTo(new[] { 1 }));
+        Assert.That(db.Select<LuckyNumbers>(x => x.Numbers.Any()).Map(x => x.Id), Is.EquivalentTo(new[] { 1, 2 }));
+        Assert.That(db.Select<LuckyNumbers>(x => x.Numbers.Length == 0).Map(x => x.Id), Is.EqualTo(new[] { 3 }));
+
+        // Arrays and lists can be searched for the values of the row's columns, including columns with the names of the
+        // columns of the database's functions that read their items, e.g. the id of SQLite's json_each()
+        Assert.That(db.Select<LuckyNumbers>(x => x.Others.Contains(x.Id)).Map(x => x.Id), Is.EquivalentTo(new[] { 1, 2 }));
+        Assert.That(db.Select<LuckyNumbers>(x => x.Numbers.Contains(x.Id + 1)).Map(x => x.Id), Is.EqualTo(new[] { 2 }));
+        Assert.That(db.Select<LuckyNumbers>(x => x.Others.Any(n => n > x.Id)).Map(x => x.Id), Is.EqualTo(new[] { 2 }));
+
+        // The SQL of the values to search for is the same, which are db params
+        Assert.That(db.From<LuckyNumbers>().Where(x => x.Numbers.Contains(lucky)).ToSelectStatement(),
+            Is.EqualTo(db.From<LuckyNumbers>().Where(x => x.Numbers.Contains(13)).ToSelectStatement()));
     }
 
     [Test]

@@ -3570,8 +3570,24 @@ namespace ServiceStack.OrmLite
             if (!IsJsonArrayScalarType(expression.Type))
                 throw new NotSupportedException("Sql.JsonArrayContains values must be JSON scalar values.");
 
-            var value = Visit(expression);
+            var value = WithTablePrefixes(() => Visit(expression));
             return value is PartialSqlString ? value : new PartialSqlString(ConvertToParam(value));
+        }
+
+        // The columns of the query's tables in a subquery of an array's items are prefixed with their table, as the
+        // subquery's own columns can have the same names, e.g. the id, key and value of SQLite's json_each()
+        private T WithTablePrefixes<T>(Func<T> fn)
+        {
+            var hold = PrefixFieldWithTableName;
+            PrefixFieldWithTableName = true;
+            try
+            {
+                return fn();
+            }
+            finally
+            {
+                PrefixFieldWithTableName = hold;
+            }
         }
 
         protected readonly struct JsonPathExpression
@@ -3639,7 +3655,9 @@ namespace ServiceStack.OrmLite
             if (expression is ParameterExpression item && jsonItems != null && jsonItems.TryGetValue(item, out var itemAlias))
             {
                 // An item that's a scalar, e.g. t in x.Tags.Any(t => t.StartsWith("v"))
-                result = VisitJsonArrayItemValue(itemAlias, item.Type);
+                result = arrayItemAliases?.Contains(itemAlias) == true
+                    ? VisitArrayItemValue(itemAlias, item.Type)
+                    : VisitJsonArrayItemValue(itemAlias, item.Type);
                 return true;
             }
             if (TryVisitJsonArrayPredicate(expression, out result))
@@ -3675,18 +3693,27 @@ namespace ServiceStack.OrmLite
             var source = UnwrapSpanConversion(call.Arguments[0]);
             if (!IsJsonArrayType(source.Type))
                 return false;
-            var pathParts = new List<string>();
-            if (!TryCollectTypedJsonPath(source, pathParts, out var document))
-                return false;
 
-            AssertJsonDocument(document);
-            var json = VisitJsonDocument(GetJsonDocument(document));
-            var path = JsonPath("$" + string.Concat(pathParts));
+            object json = null;
+            JsonPathExpression path = default;
+            var isArrayColumn = TryGetArrayColumn(source, out var column, out var arrayField);
+            if (!isArrayColumn)
+            {
+                var pathParts = new List<string>();
+                if (!TryCollectTypedJsonPath(source, pathParts, out var document))
+                    return false;
+
+                AssertJsonDocument(document);
+                json = VisitJsonDocument(GetJsonDocument(document));
+                path = JsonPath("$" + string.Concat(pathParts));
+            }
 
             if (call.Arguments.Count == 1)
             {
                 // Any() and Count() of the whole array
-                var length = VisitJsonArrayLengthMethod(json, path);
+                var length = isArrayColumn
+                    ? VisitArrayLength(column, arrayField)
+                    : VisitJsonArrayLengthMethod(json, path);
                 result = call.Method.Name == nameof(Enumerable.Any)
                     ? new PartialSqlString($"({length} > 0)")
                     : length;
@@ -3697,12 +3724,21 @@ namespace ServiceStack.OrmLite
                 return false;
 
             var alias = "j" + jsonItemAliases++;
-            var from = JsonArrayItemsFrom(json, path, alias);
+            string from;
+            if (isArrayColumn)
+            {
+                from = ArrayItemsFrom(column, arrayField, alias);
+                (arrayItemAliases ??= new()).Add(alias);
+            }
+            else
+            {
+                from = JsonArrayItemsFrom(json, path, alias);
+            }
             (jsonItems ??= new())[predicate.Parameters[0]] = alias;
             string condition;
             try
             {
-                condition = ToJsonItemCondition(predicate.Body);
+                condition = WithTablePrefixes(() => ToJsonItemCondition(predicate.Body));
             }
             finally
             {
@@ -3823,6 +3859,14 @@ namespace ServiceStack.OrmLite
             if (array == null)
                 return false;
 
+            if (TryGetArrayColumn(array, out var column, out var arrayField))
+            {
+                result = isLength
+                    ? VisitArrayLength(column, arrayField)
+                    : VisitArrayContains(column, arrayField, VisitArrayValue(value));
+                return true;
+            }
+
             // The array can be a property of a document, or the document itself e.g. a List<string> column
             var pathParts = new List<string>();
             if (!TryCollectTypedJsonPath(array, pathParts, out var document))
@@ -3836,6 +3880,72 @@ namespace ServiceStack.OrmLite
                 : VisitJsonArrayContainsMethod(json, path, VisitJsonValueArgument(value), value.Type);
             return true;
         }
+
+        // The aliases of the rows of the items of arrays that are stored in the database's own array type
+        private HashSet<string> arrayItemAliases;
+
+        /// <summary>
+        /// Whether a column is stored in the database's own array type instead of JSON, e.g. PostgreSQL's text[] of a
+        /// string[] property, which is queried with VisitArrayContains(), VisitArrayLength() and ArrayItemsFrom()
+        /// </summary>
+        protected virtual bool IsArrayColumn(FieldDefinition fieldDef) => false;
+
+        // A column of a table in the query that's stored in the database's own array type, e.g. x.Aliases
+        private bool TryGetArrayColumn(Expression expression, out object column, out FieldDefinition fieldDef)
+        {
+            column = null;
+            fieldDef = null;
+            while (expression is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                expression = convert.Operand;
+            if (expression is not MemberExpression { Member: PropertyInfo } member)
+                return false;
+            var source = member.Expression;
+            while (source is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                source = convert.Operand;
+            if (source is not ParameterExpression param || jsonItems?.ContainsKey(param) == true)
+                return false;
+
+            var tableDef = param.Type.IsAssignableFrom(modelDef.ModelType)
+                ? modelDef
+                : tableDefs.FirstOrDefault(x => param.Type.IsAssignableFrom(x.ModelType));
+            fieldDef = tableDef?.GetFieldDefinition(member.Member.Name);
+            if (fieldDef == null || !IsArrayColumn(fieldDef))
+                return false;
+            column = Visit(member);
+            return true;
+        }
+
+        // A value searched for in an array, which is a db param unless it's a column
+        private object VisitArrayValue(Expression expression)
+        {
+            var value = Visit(expression);
+            return value is PartialSqlString ? value : new PartialSqlString(ConvertToParam(value));
+        }
+
+        /// <summary>
+        /// Whether an array column contains a value, see IsArrayColumn()
+        /// </summary>
+        protected virtual object VisitArrayContains(object column, FieldDefinition fieldDef, object value) =>
+            throw new NotSupportedException($"{DialectProvider.GetType().Name} does not support array columns.");
+
+        /// <summary>
+        /// The number of items of an array column, see IsArrayColumn()
+        /// </summary>
+        protected virtual object VisitArrayLength(object column, FieldDefinition fieldDef) =>
+            throw new NotSupportedException($"{DialectProvider.GetType().Name} does not support array columns.");
+
+        /// <summary>
+        /// The rows of the items of an array column for a subquery, whose items are read with VisitArrayItemValue(),
+        /// see IsArrayColumn()
+        /// </summary>
+        protected virtual string ArrayItemsFrom(object column, FieldDefinition fieldDef, string alias) =>
+            throw new NotSupportedException($"{DialectProvider.GetType().Name} does not support array columns.");
+
+        /// <summary>
+        /// An item of an array column in the rows of ArrayItemsFrom()
+        /// </summary>
+        protected virtual object VisitArrayItemValue(string alias, Type type) =>
+            new PartialSqlString(alias + "." + DialectProvider.GetQuotedName("value"));
 
         /// <summary>
         /// Whether the expression is a column that's a complex type OrmLite serializes, e.g. x.Address or x.Tags,

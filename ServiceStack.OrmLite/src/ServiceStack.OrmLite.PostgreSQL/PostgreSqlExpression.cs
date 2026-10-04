@@ -55,6 +55,21 @@ public class PostgreSqlExpression<T> : SqlExpression<T>
         return memberName;
     }
 
+    // Arrays of strings and numbers are stored in PostgreSQL's array types, e.g. text[] of a string[]
+    protected override bool IsArrayColumn(FieldDefinition fieldDef) =>
+        (fieldDef.CustomFieldDefinition ?? DialectProvider.GetConverter(fieldDef.FieldType)?.ColumnDefinition)?.EndsWith("[]") == true;
+
+    protected override object VisitArrayContains(object column, FieldDefinition fieldDef, object value) =>
+        value.ToString() == "null"
+            ? new PartialSqlString($"(array_position({column}, NULL) IS NOT NULL)")
+            : new PartialSqlString($"({value} = ANY({column}))");
+
+    protected override object VisitArrayLength(object column, FieldDefinition fieldDef) =>
+        new PartialSqlString($"cardinality({column})");
+
+    protected override string ArrayItemsFrom(object column, FieldDefinition fieldDef, string alias) =>
+        $"unnest({column}) AS {alias}({DialectProvider.GetQuotedName("value")})";
+
     private static string JsonItem(object json, JsonPathExpression path) =>
         $"jsonb_path_query_first(CAST({json} AS jsonb), CAST({path} AS jsonpath))";
 
