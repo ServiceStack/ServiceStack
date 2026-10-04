@@ -14,13 +14,6 @@ Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
 
 ## 1. Modelling
 
-### 1.1 More JSON Queries (M)
-Complex type properties stored as JSON are queried directly, e.g. `x.Address.City == "London"`,
-`x.Tags.Contains("vip")`, `x.Lines.Count`, `x.Lines[0].Quantity` and conditions on a list's items with
-`x.Lines.Any(l => l.Sku == "A-1" && l.Quantity > 1)`, `All()` and `Count()`, and JSON in `string` columns with
-`Sql.Json<T>()`. PostgreSQL's native arrays, e.g. `string[]` as `text[]`, are queried the same way. Remaining:
-- `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes of a JSON property
-
 ### 1.2 More Vector Support (M)
 `[Vector]` `float[]` and `ReadOnlyMemory<float>` columns with `Sql.CosineDistance()`, `Sql.L2Distance()` and
 `Sql.NegativeInnerProduct()` are supported on PostgreSQL (pgvector), SQL Server 2025, MariaDB, MySQL and SQLite
@@ -99,6 +92,13 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 - **Retrying queries run with OrmLite's Dapper APIs:** OrmLite's embedded copy of Dapper is never modified, so it
   stays the same as Dapper's own implementation. Its queries don't run through OrmLite's commands, so they aren't
   retried. Queries that need retrying use OrmLite's APIs.
+- **`[JsonIndex]` to index the JSON properties of a model:** each database only uses an index whose expression is
+  the same as the query's, including OrmLite's `CASE WHEN json_type(...)` checks, so the SQL of JSON queries could
+  never change without silently leaving existing indexes unused. SQL Server and MariaDB can only index them through
+  extra computed or virtual columns with the expression's exact type and collation, which the schema diff would see
+  as columns that aren't in the model. Values longer than the index's limit fail inserts on SQL Server and MariaDB,
+  and MySQL 8 and MariaDB before 11.8 couldn't be verified. A property that's queried often is better stored in a
+  column of its own, and SQLite and PostgreSQL can index the query's expression by hand, see `json.md`.
 - **Slow query log, N+1 detection and parameter redaction in logs:** reconsider if users ask for them.
 - **Compiling the SET clause of compiled `UPDATE` statements:** `UpdateOnly()` and `UpdateAdd()` reuse the SQL of a
   compiled query's `WHERE` clause. Their `SET` clause is a few columns and db params, and would need write rules'
