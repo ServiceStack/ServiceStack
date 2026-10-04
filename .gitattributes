@@ -27,3 +27,8 @@
 *.fsproj text=auto merge=union 
 *.dbproj text=auto merge=union 
 *.sln text=auto eol=crlf merge=union 
+
+# Written by Publish_ui() with LF line endings, which they are checked out with too, so they are not shown as
+# modified each time it runs
+ServiceStack/src/ServiceStack/Templates/*.html text eol=lf
+ServiceStack/src/ServiceStack/modules/**/*.html text eol=lf
