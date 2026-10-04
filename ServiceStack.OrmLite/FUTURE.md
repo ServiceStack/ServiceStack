@@ -18,9 +18,8 @@ Effort: **S** = days, **M** = 1-2 weeks, **L** = multi-week.
 Complex type properties stored as JSON are queried directly, e.g. `x.Address.City == "London"`,
 `x.Tags.Contains("vip")`, `x.Lines.Count`, `x.Lines[0].Quantity` and conditions on a list's items with
 `x.Lines.Any(l => l.Sku == "A-1" && l.Quantity > 1)`, `All()` and `Count()`, and JSON in `string` columns with
-`Sql.Json<T>()`. Remaining JSON features:
+`Sql.Json<T>()`. PostgreSQL's native arrays, e.g. `string[]` as `text[]`, are queried the same way. Remaining:
 - `[JsonIndex(nameof(Address.City))]` to create generated-column or expression indexes of a JSON property
-- PostgreSQL's native arrays, e.g. `x.Aliases.Contains("Al")` on a `string[]` column as `= ANY(aliases)`
 
 ### 1.2 More Vector Support (M)
 `[Vector]` `float[]` and `ReadOnlyMemory<float>` columns with `Sql.CosineDistance()`, `Sql.L2Distance()` and
@@ -61,14 +60,14 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 
 ### 3.1 More Schema Diff (M)
 `db.GetSchemaDiff(types)` finds the differences between models and their tables (tables, columns and indexes),
-`diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Tables that aren't
+`diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Indexes are compared by their key columns and uniqueness, indexes that aren't
+in the model are found, and likely column renames are suggested. Tables that aren't
 managed by OrmLite are ignored with `OrmLiteConfig.SchemaDiff` (`AspNet*` by default), and
 `AdminDatabaseFeature.LogSchemaDiff` logs the differences when an App starts. The Admin UI compares the data models
 of AutoQuery APIs and the App's models of the tables migrations create, found by `Migrator.GetMigrationTables()`,
 and the `migrate.new` App Task writes the next migration to the App's migrations. Remaining:
-- Compare default values, foreign keys, check and unique constraints, primary keys and the columns of indexes
-- Indexes that are in the database and not in the model
-- Detect likely renames: a column that's not in the model and a new property of the same type
+- Compare default values, foreign keys, check and unique constraints, primary keys, and the INCLUDE columns and WHERE
+  conditions of indexes
 - Rebuild a SQLite table to alter its columns
 - Oracle and Firebird, which haven't been tested and don't compare indexes
 
@@ -79,16 +78,9 @@ and the `migrate.new` App Task writes the next migration to the App's migrations
 ### 4.1 More Retries (S)
 A `RetryPolicy`, global in `OrmLiteConfig` or for each dialect, runs statements and connections again after a
 temporary error, and `db.RunInTransaction()` runs a whole transaction again. SQLite doesn't retry. The APIs that
-write many rows in a transaction of their own, e.g. `InsertAll`, are run again as a whole. Remaining:
-- Retry queries that fail while reading their rows, before any are returned
+write many rows in a transaction of their own, e.g. `InsertAll`, are run again as a whole, and a query whose first row
+fails is run again. Remaining:
 - Retry queries run with OrmLite's Dapper APIs
-
-### 4.2 More Read Replicas (S)
-`dbFactory.OpenReadOnlyDbConnection()` opens the read replica of a connection registered with `AddReadReplica()`, or the
-primary when it doesn't have one. ServiceStack Services read from it with `ReadDb`, `Request.OpenReadOnlyDb()` and
-AutoQuery's `UseReadReplica`. Read-only connections can't write, a request reads from the primary once it writes,
-and a replica that can't be opened can fall back to its primary. Remaining:
-- Read your own writes across requests: read from the primary for a few seconds after a user writes
 
 ---
 

@@ -506,6 +506,17 @@ namespace ServiceStack.OrmLite.SqlServer
             "SELECT name FROM sys.indexes WHERE object_id = OBJECT_ID({0}) AND name IS NOT NULL"
                 .SqlFmt(this, QuoteTable(tableRef)));
 
+        public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef) => ToIndexSchemas(
+            db.SqlList<Dictionary<string, object>>(
+                "SELECT i.name AS name, i.is_unique AS is_unique, " +
+                "CAST(CASE WHEN i.is_primary_key = 1 OR i.is_unique_constraint = 1 THEN 1 ELSE 0 END AS bit) AS is_constraint, " +
+                "STUFF((SELECT ',' + c.name FROM sys.index_columns ic " +
+                "JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id " +
+                "WHERE ic.object_id = i.object_id AND ic.index_id = i.index_id AND ic.is_included_column = 0 " +
+                "ORDER BY ic.key_ordinal FOR XML PATH('')), 1, 1, '') AS columns " +
+                "FROM sys.indexes i WHERE i.object_id = OBJECT_ID({0}) AND i.name IS NOT NULL"
+                    .SqlFmt(this, QuoteTable(tableRef))));
+
         // UNION ALL stops the staging table inheriting the IDENTITY of the table's column, so it can be given values
         protected override string ToCreateBulkStagingTableStatement(ModelDefinition modelDef, string stagingTable, List<FieldDefinition> fieldDefs)
         {

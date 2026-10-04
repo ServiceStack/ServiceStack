@@ -85,4 +85,19 @@ public class ReadOnlyConnectionUseCases(DialectContext context) : OrmLiteProvide
         db.WithoutFilters().UpdateOnly(() => new ReadOnlyItem { Name = "B" }, x => x.Id == 1);
         Assert.That(conn.HasWrites, Is.True);
     }
+
+    [Test]
+    public void Connections_call_OnFirstWrite_before_their_first_write()
+    {
+        using var db = OpenDbConnection();
+        var conn = (OrmLiteConnection)db;
+        var calls = 0;
+        conn.OnFirstWrite = () => calls++;
+
+        db.Select<ReadOnlyItem>();
+        Assert.That(calls, Is.EqualTo(0));
+        db.UpdateOnly(() => new ReadOnlyItem { Name = "B" }, x => x.Id == 1);
+        db.UpdateOnly(() => new ReadOnlyItem { Name = "C" }, x => x.Id == 1);
+        Assert.That(calls, Is.EqualTo(1));
+    }
 }
