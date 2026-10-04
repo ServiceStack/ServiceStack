@@ -52,6 +52,8 @@ public class DdlAttributeUseCases(DialectContext context) : OrmLiteProvidersTest
         using var db = OpenDbConnection();
         db.DropTable<Subscriber>();
         Assert.That(() => db.CreateTable<Subscriber>(), Throws.TypeOf<NotSupportedException>());
+        // before the table is created without its index
+        Assert.That(db.TableExists<Subscriber>(), Is.False);
     }
 
     [CompositeIndex(nameof(TenantId), nameof(Status), Include = [nameof(Name), nameof(Size)])]

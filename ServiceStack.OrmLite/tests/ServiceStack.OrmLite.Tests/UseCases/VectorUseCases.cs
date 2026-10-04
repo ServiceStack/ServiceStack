@@ -417,6 +417,10 @@ public class VectorUseCases(DialectContext context) : OrmLiteProvidersTestBase(c
             Assert.That(() => DialectProvider.ToCreateIndexStatements(typeof(TunedPassage)), Throws.TypeOf<NotSupportedException>());
             Assert.That(() => DialectProvider.ToCreateIndexStatements(typeof(ListedPassage)), Throws.TypeOf<NotSupportedException>());
             Assert.That(DialectProvider.ToCreateIndexStatements(typeof(MPassage)).Single(), Does.Contain(" M=8 DISTANCE=cosine"));
+            // before the table is created without its index
+            db.DropTable<TunedPassage>();
+            Assert.That(() => db.CreateTable<TunedPassage>(), Throws.TypeOf<NotSupportedException>());
+            Assert.That(db.TableExists<TunedPassage>(), Is.False);
             db.DropAndCreateTable<MPassage>();
             return;
         }

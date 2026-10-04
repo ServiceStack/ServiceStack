@@ -102,6 +102,11 @@ public static class OrmLiteWriteCommandExtensions
         {
             if (!tableExists)
             {
+                // Generated first, so a model with an option the RDBMS doesn't have, e.g. a filtered index in MySQL,
+                // throws before the table is created without it
+                var createTableSql = dialectProvider.ToCreateTableStatement(modelType);
+                var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelType);
+
                 if (modelDef.PreCreateTableSql != null)
                 {
                     ExecuteSql(dbCmd, modelDef.PreCreateTableSql);
@@ -142,7 +147,6 @@ public static class OrmLiteWriteCommandExtensions
                     }
                 }
 
-                var createTableSql = dialectProvider.ToCreateTableStatement(modelType);
                 ExecuteSql(dbCmd, createTableSql);
 
                 var postCreateTableSql = dialectProvider.ToPostCreateTableStatement(modelDef);
@@ -156,7 +160,6 @@ public static class OrmLiteWriteCommandExtensions
                     ExecuteSql(dbCmd, modelDef.PostCreateTableSql);
                 }
 
-                var sqlIndexes = dialectProvider.ToCreateIndexStatements(modelType);
                 foreach (var sqlIndex in sqlIndexes)
                 {
                     try
