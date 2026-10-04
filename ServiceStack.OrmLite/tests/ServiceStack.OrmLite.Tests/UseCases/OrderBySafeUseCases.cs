@@ -116,8 +116,14 @@ public class OrderBySafeUseCases(DialectContext context) : OrmLiteProvidersTestB
         // SQL fragments are never embedded
         Assert.Throws<ArgumentException>(() => q.OrderBySafe("Id--"));
         Assert.Throws<ArgumentException>(() => q.OrderBySafe("Id;DROP TABLE Book"));
-        Assert.Throws<ArgumentException>(() => q.OrderBySafe("(SELECT 1)"));
         Assert.Throws<ArgumentException>(() => q.OrderBySafe("Id DESC NULLS FIRST"));
-        Assert.Throws<ArgumentException>(() => q.OrderBySafe("Id SIDEWAYS"));
+
+        // Input that isn't a field is reported as one before its direction is checked
+        Assert.That(Assert.Throws<ArgumentException>(() => q.OrderBySafe("(SELECT 1)")).Message,
+            Is.EqualTo("Could not find OrderBy field '(SELECT'"));
+        Assert.That(Assert.Throws<ArgumentException>(() => q.OrderBySafe("(SELECT 1)", SortableFields)).Message,
+            Is.EqualTo("OrderBy field '(SELECT' is not allowed"));
+        Assert.That(Assert.Throws<ArgumentException>(() => q.OrderBySafe("Id SIDEWAYS")).Message,
+            Is.EqualTo("Invalid OrderBy direction 'SIDEWAYS'"));
     }
 }

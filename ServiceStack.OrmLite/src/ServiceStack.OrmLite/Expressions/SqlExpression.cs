@@ -1204,6 +1204,7 @@ namespace ServiceStack.OrmLite
 
                 var desc = false;
                 string name;
+                string direction = null;
                 if (item[0] == '-')
                 {
                     desc = true;
@@ -1216,12 +1217,7 @@ namespace ServiceStack.OrmLite
                         throw new ArgumentException($"Invalid OrderBy field '{item}'");
                     name = tokens[0];
                     if (tokens.Length == 2)
-                    {
-                        if (string.Equals(tokens[1], "DESC", StringComparison.OrdinalIgnoreCase))
-                            desc = true;
-                        else if (!string.Equals(tokens[1], "ASC", StringComparison.OrdinalIgnoreCase))
-                            throw new ArgumentException($"Invalid OrderBy direction '{tokens[1]}'");
-                    }
+                        direction = tokens[1];
                 }
 
                 if (allowedFields != null)
@@ -1235,6 +1231,16 @@ namespace ServiceStack.OrmLite
                 else if (FirstMatchingField(name) == null)
                 {
                     throw new ArgumentException($"Could not find OrderBy field '{name}'");
+                }
+
+                // The direction is checked after the field, so input that isn't a field is reported as one,
+                // e.g. "(SELECT 1)"
+                if (direction != null)
+                {
+                    if (string.Equals(direction, "DESC", StringComparison.OrdinalIgnoreCase))
+                        desc = true;
+                    else if (!string.Equals(direction, "ASC", StringComparison.OrdinalIgnoreCase))
+                        throw new ArgumentException($"Invalid OrderBy direction '{direction}'");
                 }
 
                 fieldNames.Add(desc ? "-" + name : name);
