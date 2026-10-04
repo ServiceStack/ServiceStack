@@ -87,6 +87,25 @@ public class KeysetPaginationUseCases(DialectContext context) : OrmLiteProviders
     }
 
     [Test]
+    public void The_first_column_is_bounded_so_its_index_can_be_seeked()
+    {
+        using var db = OpenDbConnection();
+        var dialect = db.GetDialectProvider();
+        string Col(string name) => dialect.GetQuotedColumnName(name);
+
+        // Without the bound, PostgreSQL and SQL Server scan an index from its start to find the rows after the cursor
+        var q = db.From<Book>().OrderByDescending(x => x.Year).ThenBy(x => x.Id).SeekAfter(1990, 42);
+        Assert.That(q.WhereExpression.Replace("\n", " "), Does.Contain($"({Col("Year")} <= "));
+
+        q = db.From<Book>().OrderBy(x => x.Price).ThenBy(x => x.Id).SeekAfter(9.99m, 42);
+        Assert.That(q.WhereExpression.Replace("\n", " "), Does.Contain($"({Col("Price")} >= "));
+
+        // A single column is already a range
+        q = db.From<Book>().OrderBy(x => x.Id).SeekAfter(42);
+        Assert.That(q.WhereExpression, Does.Not.Contain(">="));
+    }
+
+    [Test]
     public void Combine_with_filters()
     {
         using var db = OpenDbConnection();
