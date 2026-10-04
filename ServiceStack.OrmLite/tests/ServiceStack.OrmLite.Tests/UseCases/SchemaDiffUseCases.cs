@@ -636,18 +636,30 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         var diff = db.GetSchemaDiff<DiffProduct>();
         var uniques = diff.Changes.Where(IsUnique).ToList();
         // [UniqueConstraint] of the same columns in another order is the same constraint
-        Assert.That(uniques.Count, Is.EqualTo(2), diff.ToString());
+        Assert.That(uniques.Count, Is.EqualTo(db.GetDialectProvider().Kind == DbKind.MySql ? 1 : 2), diff.ToString());
 
         // Rows can have the same values
         var barcode = uniques.Single(x => x.Type == SchemaChangeType.AddConstraint);
         Assert.That(barcode.ModelColumn, Is.EqualTo("UNIQUE (barcode)").IgnoreCase);
         Assert.That(barcode.IsDestructive, Is.True);
 
+        Assert.That(diff.ToString(), Does.Contain("+ constraint "));
+        if (db.GetDialectProvider().Kind == DbKind.MySql)
+        {
+            // MySQL's unique constraints are its unique indexes, which are kept when they're on columns of the model
+            var index = diff.Changes.Single(x => x.Type == SchemaChangeType.IndexNotInModel);
+            Assert.That(index.Attribute, Is.EqualTo("[Unique]"));
+            Assert.That(index.AttributeTarget, Is.EqualTo("DiffProduct.Code"));
+            db.ApplySchemaDiff(diff, allowDestructive: true);
+            diff = db.GetSchemaDiff<DiffProduct>();
+            Assert.That(diff.Changes.Map(x => x.Type), Is.EqualTo(new[] { SchemaChangeType.IndexNotInModel }), diff.ToString());
+            return;
+        }
+
         // [Unique] constraints are named by the database
         var code = uniques.Single(x => x.Type == SchemaChangeType.DropConstraint);
         Assert.That(code.DatabaseColumn, Is.EqualTo("UNIQUE (code)").IgnoreCase);
         Assert.That(code.IsDestructive, Is.True);
-        Assert.That(diff.ToString(), Does.Contain("+ constraint "));
         Assert.That(diff.ToString(), Does.Contain("- constraint "));
 
         if (!CanAlterColumns(db))
@@ -954,7 +966,7 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         db.CreateTable<Before.Shipment>();
 
         var diff = db.GetSchemaDiff<Shipment>();
-        var indexes = diff.Changes.Where(x => x.Type is SchemaChangeType.AlterIndex or SchemaChangeType.DropIndex)
+        var indexes = diff.Changes.Where(x => x.Type is SchemaChangeType.AlterIndex or SchemaChangeType.IndexNotInModel)
             .ToDictionary(x => x.Name.ToLower());
 
         // Indexes whose columns or uniqueness changed are dropped and created again
@@ -970,25 +982,152 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(reference.ModelColumn.ToLower(), Is.EqualTo("unique (reference)"));
         Assert.That(reference.IsDestructive, Is.True);
 
-        // An index that's not in the model is only dropped with allowDestructive, as it may have been added by hand
+        // An index on a column of the model that's not in the model is never dropped, it says how to declare it
         var carrier = indexes["ix_shipment_carrier"];
-        Assert.That(carrier.Type, Is.EqualTo(SchemaChangeType.DropIndex));
-        Assert.That(carrier.IsDestructive, Is.True);
+        Assert.That(carrier.Type, Is.EqualTo(SchemaChangeType.IndexNotInModel));
+        Assert.That(carrier.Attribute, Is.EqualTo($"[Index(Name = \"{carrier.Name}\")]"));
+        Assert.That(carrier.AttributeTarget, Is.EqualTo("Shipment.Carrier"));
+        Assert.That(carrier.Sql, Is.Null);
+        Assert.That(carrier.IsDestructive, Is.False);
 
         // Indexes of constraints aren't compared, e.g. of the primary key and [Unique] TrackingCode
         Assert.That(indexes.Count, Is.EqualTo(3), diff.ToString());
         Assert.That(diff.ToString(), Does.Contain("~ index ix_shipment_by_status"));
-        Assert.That(diff.ToString(), Does.Contain("- index ix_shipment_carrier"));
+        Assert.That(diff.ToString().ToLower(), Does.Contain($"! index ix_shipment_carrier  (carrier) (not in shipment, kept: add [index(name = \"ix_shipment_carrier\")] to shipment.carrier)"));
 
         var source = diff.ToMigration("Migration1006");
         Assert.That(source, Does.Contain("Db.DropIndex<Shipment>(\"ix_shipment_by_status\");"));
-        Assert.That(source, Does.Contain("// Db.DropIndex<Shipment>(\"ix_shipment_carrier\");"));
+        Assert.That(source, Does.Contain($"// Add [Index(Name = \"{carrier.Name}\")] to Shipment.Carrier so the model has it"));
+        Assert.That(source, Does.Not.Contain("ix_shipment_carrier\");"));
 
-        // The indexes are the same once they're applied
+        // The indexes are the same once they're applied, and the index that's not in the model is kept
         db.ApplySchemaDiff(diff, allowDestructive: true);
         diff = db.GetSchemaDiff<Shipment>();
         Assert.That(diff.Changes.Where(x => x.Type is SchemaChangeType.CreateIndex or SchemaChangeType.AlterIndex
             or SchemaChangeType.DropIndex), Is.Empty, diff.ToString());
+        Assert.That(diff.Changes.Single(x => x.Type == SchemaChangeType.IndexNotInModel).Name, Is.EqualTo(carrier.Name));
+    }
+
+    public class DiffPrice
+    {
+        [AutoIncrement]
+        public long Id { get; set; }
+        public decimal Price { get; set; }
+    }
+
+    [Test]
+    public void SQLite_numeric_columns_of_other_precisions_are_the_same()
+    {
+        using var db = OpenDbConnection();
+        if (db.GetDialectProvider().Kind != DbKind.Sqlite)
+            return;
+        db.DropTable<DiffPrice>();
+        // e.g. a table that wasn't created by OrmLite, as SQLite doesn't use their precision
+        db.ExecuteSql("CREATE TABLE \"DiffPrice\" (\"Id\" INTEGER PRIMARY KEY AUTOINCREMENT, \"Price\" NUMERIC(10,2) NOT NULL)");
+
+        var diff = db.GetSchemaDiff<DiffPrice>();
+        Assert.That(diff.Changes, Is.Empty, diff.ToString());
+    }
+
+    public static class ParcelBefore
+    {
+        [Alias("Parcel")]
+        [CompositeIndex(nameof(Carrier), nameof(Status), Name = "ix_parcel_carrier_status", Unique = true)]
+        public class Parcel
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+
+            [Index(Name = "ix_parcel_carrier")]
+            public string Carrier { get; set; }
+
+            public string Status { get; set; }
+
+            [Index(Name = "ix_parcel_legacy")]
+            public string LegacyCode { get; set; }
+
+            public int Weight { get; set; }
+        }
+    }
+
+    // The indexes of the database are no longer in the model, LegacyCode was removed and Weight has a default
+    [Alias("Parcel")]
+    public class Parcel
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        public string Carrier { get; set; }
+
+        public string Status { get; set; }
+
+        [Default(0)]
+        public int Weight { get; set; }
+    }
+
+    // Parcel with the attributes the diff suggests
+    public static class ParcelDeclared
+    {
+        [Alias("Parcel")]
+        [CompositeIndex("Carrier", "Status", Name = "ix_parcel_carrier_status", Unique = true)]
+        public class Parcel
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+
+            [Index(Name = "ix_parcel_carrier")]
+            public string Carrier { get; set; }
+
+            public string Status { get; set; }
+
+            [Default(0)]
+            public int Weight { get; set; }
+        }
+    }
+
+    [Test]
+    public void Indexes_on_columns_of_the_model_are_never_dropped_and_say_which_attribute_declares_them()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<Parcel>();
+        db.CreateTable<ParcelBefore.Parcel>();
+        db.Insert(new ParcelBefore.Parcel { Carrier = "DHL", Status = "Sent", LegacyCode = "A1", Weight = 5 });
+
+        var diff = db.GetSchemaDiff<Parcel>();
+        var carrier = diff.Changes.Single(x => x.Name?.ToLower() == "ix_parcel_carrier");
+        Assert.That(carrier.Type, Is.EqualTo(SchemaChangeType.IndexNotInModel));
+        Assert.That(carrier.Attribute, Is.EqualTo($"[Index(Name = \"{carrier.Name}\")]"));
+        Assert.That(carrier.AttributeTarget, Is.EqualTo("Parcel.Carrier"));
+        Assert.That(carrier.Sql, Is.Null);
+
+        var byStatus = diff.Changes.Single(x => x.Name?.ToLower() == "ix_parcel_carrier_status");
+        Assert.That(byStatus.Type, Is.EqualTo(SchemaChangeType.IndexNotInModel));
+        // MySQL's unique indexes are its unique constraints, which [UniqueConstraint] declares too
+        Assert.That(byStatus.Attribute.ToLower(), Is.EqualTo(db.GetDialectProvider().Kind == DbKind.MySql
+            ? "[uniqueconstraint(\"carrier\", \"status\")]"
+            : "[compositeindex(\"carrier\", \"status\", name = \"ix_parcel_carrier_status\", unique = true)]"));
+        Assert.That(byStatus.AttributeTarget, Is.EqualTo("Parcel"));
+
+        // An index on a column that isn't in the model is dropped with it, before it
+        var legacy = diff.Changes.Single(x => x.Name?.ToLower() == "ix_parcel_legacy");
+        Assert.That(legacy.Type, Is.EqualTo(SchemaChangeType.DropIndex));
+        Assert.That(legacy.IsDestructive, Is.True);
+        Assert.That(diff.Changes.IndexOf(legacy), Is.LessThan(diff.Changes.FindIndex(x => x.Type == SchemaChangeType.DropColumn)));
+
+        var source = diff.ToMigration("Migration1010");
+        Assert.That(source, Does.Contain($"// Add [Index(Name = \"{carrier.Name}\")] to Parcel.Carrier so the model has it"));
+        Assert.That(source, Does.Contain($"// Add {byStatus.Attribute} to Parcel so the model has it"));
+
+        // The indexes are kept when the changes are made, including when SQLite rebuilds the table
+        db.ApplySchemaDiff(diff, allowDestructive: true);
+        diff = db.GetSchemaDiff<Parcel>();
+        Assert.That(diff.Changes.Map(x => x.Type), Is.EquivalentTo(new[] {
+            SchemaChangeType.IndexNotInModel, SchemaChangeType.IndexNotInModel }), diff.ToString());
+        Assert.That(db.Single<Parcel>(x => x.Carrier == "DHL").Weight, Is.EqualTo(5));
+
+        // Adding the attributes to the model makes it the same as the database
+        diff = db.GetSchemaDiff<ParcelDeclared.Parcel>();
+        Assert.That(diff.Changes, Is.Empty, diff.ToString());
     }
 
     [Test]

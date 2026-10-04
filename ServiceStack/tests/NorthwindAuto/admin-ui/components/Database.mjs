@@ -106,13 +106,18 @@ export const Database = {
                                             </span>
                                             <span class="block text-sm text-gray-500 break-words">{{changeDetail(change)}}</span>
                                         </span>
-                                        <svg v-if="change.sql" :class="[isChangeOpen(group.table,index) ? 'rotate-90 text-gray-500' : 'text-gray-400','mt-0.5 h-4 w-4 shrink-0 transform transition-transform duration-150 group-hover:text-gray-500']" viewBox="0 0 20 20" aria-hidden="true">
+                                        <svg v-if="change.sql || change.attribute" :class="[isChangeOpen(group.table,index) ? 'rotate-90 text-gray-500' : 'text-gray-400','mt-0.5 h-4 w-4 shrink-0 transform transition-transform duration-150 group-hover:text-gray-500']" viewBox="0 0 20 20" aria-hidden="true">
                                             <path d="M6 6L14 10L6 14V6Z" fill="currentColor" />
                                         </svg>
                                     </button>
                                     <div v-if="change.sql && isChangeOpen(group.table,index)" class="group relative mt-2 ml-7">
                                         <CopyIcon class="absolute right-0 opacity-0 transition-opacity group-hover:opacity-100" :text="change.sql" />
                                         <pre class="whitespace-pre-wrap break-words pr-8 text-sm"><code class="language-sql" v-highlightjs="change.sql"></code></pre>
+                                    </div>
+                                    <div v-else-if="change.attribute && isChangeOpen(group.table,index)" class="group relative mt-2 ml-7">
+                                        <CopyIcon class="absolute right-0 opacity-0 transition-opacity group-hover:opacity-100" :text="change.attribute" />
+                                        <p class="mb-1 text-xs text-gray-500">Add to {{change.attributeTarget}}:</p>
+                                        <pre class="whitespace-pre-wrap break-words pr-8 text-sm"><code>{{change.attribute}}</code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -498,10 +503,10 @@ export const Database = {
         }
         function isChangeOpen(table,index) { return !!openChanges.value[`${table}:${index}`] }
         function changeSymbol(change) {
-            return change.type.startsWith('Alter') || change.type === 'RebuildTable' ? '~' : change.type.startsWith('Drop') ? '-' : '+'
+            return change.type === 'IndexNotInModel' ? '!' : change.type.startsWith('Alter') || change.type === 'RebuildTable' ? '~' : change.type.startsWith('Drop') ? '-' : '+'
         }
         function changeColor(change) {
-            return change.type.startsWith('Alter') || change.type === 'RebuildTable' ? 'text-amber-600' : change.type.startsWith('Drop') ? 'text-red-600' : 'text-green-600'
+            return change.type === 'IndexNotInModel' ? 'text-sky-600' : change.type.startsWith('Alter') || change.type === 'RebuildTable' ? 'text-amber-600' : change.type.startsWith('Drop') ? 'text-red-600' : 'text-green-600'
         }
         function changeTitle(change) {
             // SQLite doesn't keep the names of foreign keys
@@ -518,7 +523,9 @@ export const Database = {
                 case 'DropColumn': return `Not in ${change.model}: ${change.databaseColumn}` + (change.likelyRename ? ` (renamed to ${change.likelyRename}?)` : '')
                 case 'CreateIndex': return 'Add index'
                 case 'AlterIndex': return `Index ${change.databaseColumn} \u2192 ${change.modelColumn}`
-                case 'DropIndex': return `Index not in ${change.model}: ${change.databaseColumn}`
+                case 'DropIndex': return `Index of a column not in ${change.model}: ${change.databaseColumn}`
+                case 'IndexNotInModel': return `Index not in ${change.model}: ${change.databaseColumn}. Kept, `
+                    + (change.attribute ? `add ${change.attribute} to ${change.attributeTarget}` : `add it to ${change.model}`)
                 case 'AlterDefault': return `Default ${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)
                 case 'AddForeignKey': return `Add foreign key: ${change.modelColumn}` + cantChange(change)
                 case 'AlterForeignKey': return `Foreign key ${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)

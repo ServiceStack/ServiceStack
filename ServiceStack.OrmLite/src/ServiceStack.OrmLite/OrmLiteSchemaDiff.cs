@@ -38,8 +38,8 @@ public enum SchemaChangeType
     /// </summary>
     AlterIndex,
     /// <summary>
-    /// The index of the table isn't in the model, e.g. it was removed from the model or added to the database by
-    /// hand. It's destructive, so it's only dropped with allowDestructive.
+    /// The index of the table is on a column that isn't in the model, so it's dropped with its column. It's
+    /// destructive, so it's only dropped with allowDestructive.
     /// </summary>
     DropIndex,
     /// <summary>
@@ -92,6 +92,11 @@ public enum SchemaChangeType
     /// The full-text index of the model's [FullTextIndex] isn't in the database
     /// </summary>
     CreateFullTextIndex,
+    /// <summary>
+    /// The index of the table is on columns of the model but isn't in the model, e.g. it was added to the database by
+    /// hand. It's never dropped: Attribute is the [Index] or [CompositeIndex] to add to the model so it has the index.
+    /// </summary>
+    IndexNotInModel,
 }
 
 /// <summary>
@@ -256,6 +261,18 @@ public class SchemaChange
     /// </summary>
     public bool IsRebuilt { get; set; }
 
+    /// <summary>
+    /// IndexNotInModel: the attribute to add to the model so it has the index of the database, e.g.
+    /// [Index(Name = "idx_order_customerid")] on its Field, or [CompositeIndex(...)] on the model when Field is null.
+    /// Null when the index can't be declared by an attribute, e.g. an index of an expression.
+    /// </summary>
+    public string Attribute { get; set; }
+
+    /// <summary>
+    /// Where Attribute is added, e.g. Order.CustomerId, or Order for a [CompositeIndex]
+    /// </summary>
+    public string AttributeTarget => Field?.PropertyInfo != null ? $"{ModelType.Name}.{Field.PropertyInfo.Name}" : ModelType?.Name;
+
     public string Description => Type switch {
         SchemaChangeType.CreateTable => $"Table {Table} isn't in the database",
         SchemaChangeType.AddColumn => $"Column {Table}.{Name} isn't in the database: {ModelColumn}"
@@ -269,10 +286,10 @@ public class SchemaChange
         SchemaChangeType.DropIndex => $"Index {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}",
         SchemaChangeType.AlterDefault => $"Default of {Table}.{Name} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
             + CantChange,
-        SchemaChangeType.AddForeignKey => $"Foreign key {Name} of {Table} isn't in the database: {ModelColumn}" + CantChange,
-        SchemaChangeType.AlterForeignKey => $"Foreign key {Name} of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
+        SchemaChangeType.AddForeignKey => $"Foreign key {NamePrefix}of {Table} isn't in the database: {ModelColumn}" + CantChange,
+        SchemaChangeType.AlterForeignKey => $"Foreign key {NamePrefix}of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
             + CantChange,
-        SchemaChangeType.DropForeignKey => $"Foreign key {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}" + CantChange,
+        SchemaChangeType.DropForeignKey => $"Foreign key {NamePrefix}of {Table} isn't in {ModelType.Name}: {DatabaseColumn}" + CantChange,
         SchemaChangeType.AddConstraint => $"Constraint {Name} of {Table} isn't in the database: {ModelColumn}" + CantChange,
         SchemaChangeType.AlterConstraint => $"Constraint {Name} of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
             + CantChange,
@@ -280,8 +297,13 @@ public class SchemaChange
         SchemaChangeType.AlterPrimaryKey => $"Primary key of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}",
         SchemaChangeType.RebuildTable => $"Table {Table} is created again from {ModelType.Name} and its rows are copied, to change {ModelColumn}",
         SchemaChangeType.CreateFullTextIndex => $"Full-text index {Name} of {Table} isn't in the database: {ModelColumn}",
+        SchemaChangeType.IndexNotInModel => $"Index {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}. "
+            + (Attribute != null ? $"It's kept, add {Attribute} to {AttributeTarget} so the model has it" : "It's kept, add it to the model"),
         _ => Type.ToString(),
     };
+
+    // SQLite doesn't name foreign keys
+    private string NamePrefix => string.IsNullOrEmpty(Name) ? "" : Name + " ";
 
     private string CantChange => Sql != null ? ""
         : IsRebuilt ? " (by rebuilding the table)"
@@ -404,15 +426,17 @@ public class SchemaDiff
                     SchemaChangeType.AlterIndex => $"  ~ index {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}",
                     SchemaChangeType.DropIndex => $"  - index {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})",
                     SchemaChangeType.AlterDefault => $"  ~ {change.Name}  default {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
-                    SchemaChangeType.AddForeignKey => $"  + foreign key {change.Name}  {change.ModelColumn}" + CantChange(change),
-                    SchemaChangeType.AlterForeignKey => $"  ~ foreign key {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
-                    SchemaChangeType.DropForeignKey => $"  - foreign key {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
+                    SchemaChangeType.AddForeignKey => $"  + foreign key {(string.IsNullOrEmpty(change.Name) ? "" : change.Name + "  ")}{change.ModelColumn}" + CantChange(change),
+                    SchemaChangeType.AlterForeignKey => $"  ~ foreign key {(string.IsNullOrEmpty(change.Name) ? "" : change.Name + "  ")}{change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
+                    SchemaChangeType.DropForeignKey => $"  - foreign key {(string.IsNullOrEmpty(change.Name) ? "" : change.Name + "  ")}{change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
                     SchemaChangeType.AddConstraint => $"  + constraint {change.Name}  {change.ModelColumn}" + CantChange(change),
                     SchemaChangeType.AlterConstraint => $"  ~ constraint {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
                     SchemaChangeType.DropConstraint => $"  - constraint {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
                     SchemaChangeType.AlterPrimaryKey => $"  ~ primary key  {change.DatabaseColumn} -> {change.ModelColumn} (not changed)",
                     SchemaChangeType.RebuildTable => $"  ~ rebuild table to change {change.ModelColumn}",
                     SchemaChangeType.CreateFullTextIndex => $"  + full-text index {change.Name}  {change.ModelColumn}",
+                    SchemaChangeType.IndexNotInModel => $"  ! index {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name}, kept: "
+                        + (change.Attribute != null ? $"add {change.Attribute} to {change.AttributeTarget})" : "add it to the model)"),
                     _ => $"  + index {change.Name}",
                 });
             }
@@ -720,7 +744,7 @@ public static class OrmLiteSchemaDiffApi
 
     private static bool IsSameColumnType(ColumnSchema dbColumn, ColumnSchema modelColumn, IOrmLiteDialectProvider dialect) =>
         IsSameType(dbColumn, modelColumn) || IsTextFor(dbColumn, modelColumn, dialect)
-        || (IsIntegerType(dbColumn) && IsIntegerType(modelColumn));
+        || IsNumericFor(dbColumn, modelColumn, dialect) || (IsIntegerType(dbColumn) && IsIntegerType(modelColumn));
 
     // The indexes of the model that aren't in the database or are with other columns, and the indexes in the database
     // that aren't in the model. Indexes of constraints, e.g. primary keys, aren't compared.
@@ -778,7 +802,30 @@ public static class OrmLiteSchemaDiffApi
         {
             if (dbIndex.IsConstraint || modelIndexNames.Contains(dbIndex.Name))
                 continue;
-            diff.Changes.Add(new SchemaChange {
+
+            // Indexes on columns of the model are never dropped, the model is told how to declare them instead.
+            // Only an index on a column that's dropped as it isn't in the model is dropped with it.
+            bool IsColumnNotInModel(string column) => diff.Changes.Any(x => x.ModelType == modelType
+                && x.Type == SchemaChangeType.DropColumn && x.Name.EqualsIgnoreCase(column));
+            var columns = dbIndex.Columns.Concat(dbIndex.Include).ToList();
+            var fields = columns.Map(c => fieldDefs.FirstOrDefault(f =>
+                dialect.NamingStrategy.GetColumnName(f.FieldName).EqualsIgnoreCase(c)));
+            if (!fields.Any(f => f == null) || !columns.Any(IsColumnNotInModel))
+            {
+                var keyFields = fields.Take(dbIndex.Columns.Count).ToList();
+                diff.Changes.Add(new SchemaChange {
+                    Type = SchemaChangeType.IndexNotInModel,
+                    ModelType = modelType,
+                    Table = table,
+                    Name = dbIndex.Name,
+                    Field = keyFields.Count == 1 ? keyFields[0] : null,
+                    DatabaseColumn = dbIndex.ToString(),
+                    Attribute = fields.Count > 0 && !fields.Any(f => f == null) ? ToIndexAttribute(dbIndex, keyFields, fields.Skip(keyFields.Count).ToList()) : null,
+                });
+                continue;
+            }
+
+            var dropIndex = new SchemaChange {
                 Type = SchemaChangeType.DropIndex,
                 ModelType = modelType,
                 Table = table,
@@ -786,8 +833,29 @@ public static class OrmLiteSchemaDiffApi
                 DatabaseColumn = dbIndex.ToString(),
                 Sql = ToDropIndexStatement(dialect, modelType, dbIndex.Name),
                 IsDestructive = true,
-            });
+            };
+            // Its index is dropped before its column, which SQL Server can't drop while it's indexed
+            var dropColumn = diff.Changes.FindIndex(x => x.ModelType == modelType && x.Type == SchemaChangeType.DropColumn
+                && columns.Any(c => c.EqualsIgnoreCase(x.Name)));
+            diff.Changes.Insert(dropColumn >= 0 ? dropColumn : diff.Changes.Count, dropIndex);
         }
+    }
+
+    // The [Index] of a property or the [CompositeIndex] of a model that creates an index of the database. It's named
+    // as the database's index, as indexes are compared by their name.
+    private static string ToIndexAttribute(IndexSchema dbIndex, List<FieldDefinition> keyFields, List<FieldDefinition> includeFields)
+    {
+        var args = new List<string>();
+        if (keyFields.Count > 1)
+            args.AddRange(keyFields.Map(x => SchemaMigrationWriter.ToLiteral(x.Name)));
+        args.Add($"Name = {SchemaMigrationWriter.ToLiteral(dbIndex.Name)}");
+        if (dbIndex.IsUnique)
+            args.Add("Unique = true");
+        if (includeFields.Count > 0)
+            args.Add($"Include = [{includeFields.Map(x => SchemaMigrationWriter.ToLiteral(x.Name)).Join(", ")}]");
+        if (dbIndex.Where != null)
+            args.Add($"Where = {SchemaMigrationWriter.ToLiteral(dbIndex.Where)}");
+        return $"[{(keyFields.Count > 1 ? "CompositeIndex" : "Index")}({args.Join(", ")})]";
     }
 
     // The foreign keys of the model that aren't in the database or are different, and the foreign keys in the database
@@ -1093,6 +1161,26 @@ public static class OrmLiteSchemaDiffApi
         {
             if (matched.Contains(dbUnique))
                 continue;
+
+            // MySQL's unique constraints are its unique indexes, which are never dropped when they're on columns of
+            // the model, like other indexes. [Unique] and [UniqueConstraint] declare them whatever their name.
+            var fields = dbUnique.Columns.Map(c => modelDef.FieldDefinitions.FirstOrDefault(f =>
+                !f.ShouldSkipCreate() && dialect.NamingStrategy.GetColumnName(f.FieldName).EqualsIgnoreCase(c)));
+            if (dialect.Kind == DbKind.MySql && fields.Count > 0 && fields.All(f => f != null))
+            {
+                diff.Changes.Add(new SchemaChange {
+                    Type = SchemaChangeType.IndexNotInModel,
+                    ModelType = modelType,
+                    Table = table,
+                    Name = dbUnique.Name,
+                    Field = fields.Count == 1 ? fields[0] : null,
+                    DatabaseColumn = dbUnique.ToString(),
+                    Attribute = fields.Count == 1 ? "[Unique]"
+                        : $"[UniqueConstraint({fields.Map(f => SchemaMigrationWriter.ToLiteral(f.Name)).Join(", ")})]",
+                });
+                continue;
+            }
+
             drops.Add(new SchemaChange {
                 Type = SchemaChangeType.DropConstraint,
                 ModelType = modelType,
@@ -1387,7 +1475,7 @@ public static class OrmLiteSchemaDiffApi
 
     private static bool IsSame(ColumnSchema dbColumn, ColumnSchema modelColumn, IOrmLiteDialectProvider dialect) =>
         (IsSameType(dbColumn, modelColumn) || IsTextFor(dbColumn, modelColumn, dialect)
-            || (IsIntegerType(dbColumn) && IsIntegerType(modelColumn)))
+            || IsNumericFor(dbColumn, modelColumn, dialect) || (IsIntegerType(dbColumn) && IsIntegerType(modelColumn)))
         && dbColumn.AllowDBNull == modelColumn.AllowDBNull;
 
     private static readonly HashSet<string> IntegerTypes = new(StringComparer.OrdinalIgnoreCase) {
@@ -1424,6 +1512,17 @@ public static class OrmLiteSchemaDiffApi
     private static bool IsTextFor(ColumnSchema dbColumn, ColumnSchema modelColumn, IOrmLiteDialectProvider dialect) =>
         IsCharType(modelColumn)
         && (IsText(dbColumn) || (dialect.Kind == DbKind.Sqlite && IsCharType(dbColumn)));
+
+    // SQLite doesn't use the precision and scale of a column, so its NUMERIC and DECIMAL types are all the same, e.g.
+    // NUMERIC(10,2) and DECIMAL(18,12)
+    private static bool IsNumericFor(ColumnSchema dbColumn, ColumnSchema modelColumn, IOrmLiteDialectProvider dialect) =>
+        dialect.Kind == DbKind.Sqlite && IsDecimalType(dbColumn) && IsDecimalType(modelColumn);
+
+    private static bool IsDecimalType(ColumnSchema column)
+    {
+        var type = column.DataTypeName?.Trim().ToUpper() ?? "";
+        return type.StartsWith("NUMERIC") || type.StartsWith("DECIMAL");
+    }
 
     private static bool IsSameType(ColumnSchema a, ColumnSchema b) =>
         string.Equals(a.DataTypeName, b.DataTypeName, StringComparison.OrdinalIgnoreCase)
@@ -1617,8 +1716,14 @@ internal static class SchemaMigrationWriter
                         undo.Add($"// {change.Name} was {change.DatabaseColumn}");
                         break;
                     case SchemaChangeType.DropIndex:
-                        up.Add($"// Index {change.Name} {change.DatabaseColumn} isn't in {name}. If it's no longer used, drop it:");
+                        up.Add($"// Index {change.Name} {change.DatabaseColumn} is on a column that isn't in {name}. If it's no longer used, drop it:");
                         up.Add($"// Db.DropIndex<{name}>({ToLiteral(change.Name)});");
+                        break;
+                    case SchemaChangeType.IndexNotInModel:
+                        up.Add($"// Index {change.Name} {change.DatabaseColumn} isn't in {change.ModelType.Name}, and is kept.");
+                        up.Add(change.Attribute != null
+                            ? $"// Add {change.Attribute} to {change.AttributeTarget} so the model has it"
+                            : $"// Add it to {change.ModelType.Name} so the model has it");
                         break;
                     case SchemaChangeType.AlterDefault:
                         if (change.Sql == null)

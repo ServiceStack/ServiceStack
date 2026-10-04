@@ -11,8 +11,8 @@ public static class OrmLiteRebuildTableApi
     /// <summary>
     /// SQLite: create a table again from its model and copy its rows, to change what SQLite can't alter, e.g. the type,
     /// nullability or default of a column, and its foreign keys and constraints. The rows of the columns in both are
-    /// kept, columns that aren't in the model are dropped, and the model's indexes and the table's triggers are created
-    /// again. It's run in a transaction of its own, or in the connection's transaction, e.g. a migration's.
+    /// kept, columns that aren't in the model are dropped, and the model's indexes, the table's other indexes on the columns
+    /// that are kept, and its triggers are created again. It's run in a transaction of its own, or in the connection's transaction, e.g. a migration's.
     /// <para>A table that's referenced by the foreign keys of other tables can't be rebuilt in a transaction while
     /// foreign keys are enforced, as SQLite would delete or change the rows that reference it.</para>
     /// </summary>
@@ -78,8 +78,8 @@ public static class OrmLiteRebuildTableApi
 
     /// <summary>
     /// The statements that rebuild a SQLite table from its model: create it with another name, copy the rows of the
-    /// columns in both, keep its AUTOINCREMENT sequence, drop it, rename the new table, and create the model's indexes
-    /// and the table's triggers again. See https://www.sqlite.org/lang_altertable.html#otheralter
+    /// columns in both, keep its AUTOINCREMENT sequence, drop it, rename the new table, and create the model's indexes,
+    /// the table's other indexes on the columns that are kept, and its triggers again. See https://www.sqlite.org/lang_altertable.html#otheralter
     /// </summary>
     internal static List<string> ToRebuildTableStatements(IDbConnection db, Type modelType)
     {
@@ -107,6 +107,27 @@ public static class OrmLiteRebuildTableApi
                 columns.Add(dialect.GetQuotedName(dbColumn.ColumnName));
         }
 
+        // Indexes of the table that aren't in the model are created again when their columns are kept, as they're
+        // never dropped by a rebuild. An index on a column that isn't in the model is dropped with its column.
+        var modelIndexes = dialect.ToCreateIndexStatements(modelType).Map(x => x.Trim());
+        var modelIndexNames = new HashSet<string>(modelIndexes.Map(OrmLiteSchemaDiffApi.GetIndexName).Where(x => x != null),
+            StringComparer.OrdinalIgnoreCase);
+        var keptColumns = new HashSet<string>(dbColumns.Where(x => columns.Contains(dialect.GetQuotedName(x.ColumnName)))
+            .Select(x => x.ColumnName), StringComparer.OrdinalIgnoreCase);
+        var dbIndexes = db.Dictionary<string, string>(
+            "SELECT name, sql FROM sqlite_master WHERE type = 'index' AND sql IS NOT NULL AND tbl_name = {0} COLLATE NOCASE"
+            .SqlFmt(dialect, table));
+        var keptIndexes = new List<string>();
+        foreach (var entry in dbIndexes)
+        {
+            if (modelIndexNames.Contains(entry.Key))
+                continue;
+            // The columns of an expression have no name, and are kept with the index
+            var indexColumns = db.Column<string>("SELECT name FROM pragma_index_info({0})".SqlFmt(dialect, entry.Key));
+            if (indexColumns.All(x => x == null || keptColumns.Contains(x)))
+                keptIndexes.Add(entry.Value.Trim().TrimEnd(';') + ";");
+        }
+
         var triggers = db.Column<string>("SELECT sql FROM sqlite_master WHERE type = 'trigger' AND tbl_name = {0} COLLATE NOCASE"
             .SqlFmt(dialect, table));
         var legacyAlterTable = db.Scalar<long>("PRAGMA legacy_alter_table");
@@ -129,7 +150,8 @@ public static class OrmLiteRebuildTableApi
         statements.Add("PRAGMA legacy_alter_table=ON;");
         statements.Add($"ALTER TABLE {quotedNewTable} RENAME TO {quotedTable};");
         statements.Add($"PRAGMA legacy_alter_table={(legacyAlterTable == 1 ? "ON" : "OFF")};");
-        statements.AddRange(dialect.ToCreateIndexStatements(modelType).Map(x => x.Trim()));
+        statements.AddRange(modelIndexes);
+        statements.AddRange(keptIndexes);
         statements.AddRange(triggers.Where(x => !string.IsNullOrEmpty(x)).Map(x => x.Trim().TrimEnd(';') + ";"));
         return statements;
     }

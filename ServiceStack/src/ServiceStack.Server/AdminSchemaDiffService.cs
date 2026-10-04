@@ -76,7 +76,7 @@ public class AdminSchemaChange
     /// <summary>
     /// CreateTable, AddColumn, AlterColumn, DropColumn, CreateIndex, AlterIndex, DropIndex, AlterDefault,
     /// AddForeignKey, AlterForeignKey, DropForeignKey, AddConstraint, AlterConstraint, DropConstraint, AlterPrimaryKey,
-    /// RebuildTable or CreateFullTextIndex
+    /// RebuildTable, CreateFullTextIndex or IndexNotInModel
     /// </summary>
     public string Type { get; set; } = "";
     public string Model { get; set; } = "";
@@ -101,6 +101,16 @@ public class AdminSchemaChange
     /// Whether it's made by the RebuildTable change of its table, as SQLite can't make it by itself
     /// </summary>
     public bool? IsRebuilt { get; set; }
+
+    /// <summary>
+    /// IndexNotInModel: the attribute to add to the model so it has the index, which is never dropped
+    /// </summary>
+    public string? Attribute { get; set; }
+
+    /// <summary>
+    /// Where Attribute is added, e.g. Order.CustomerId, or Order for a [CompositeIndex]
+    /// </summary>
+    public string? AttributeTarget { get; set; }
 }
 
 /// <summary>
@@ -147,6 +157,8 @@ public class AdminSchemaDiffService : Service
                 Sql = x.Sql,
                 IsDestructive = x.IsDestructive ? true : null,
                 IsRebuilt = x.IsRebuilt ? true : null,
+                Attribute = x.Attribute,
+                AttributeTarget = x.Type == SchemaChangeType.IndexNotInModel ? x.AttributeTarget : null,
             }),
             Warnings = diff.Warnings,
             Ignored = diff.Ignored,
