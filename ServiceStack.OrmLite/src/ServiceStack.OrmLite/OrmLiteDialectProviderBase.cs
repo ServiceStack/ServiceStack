@@ -2592,7 +2592,17 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
         db.ExecuteSql(ToCreateTempTableStatement(tempTable, columns.Join(",\n  ")));
         try
         {
-            return GetSchemaColumns(db, tempTable);
+            var schemaColumns = GetSchemaColumns(db, tempTable);
+            // The defaults the model's columns are created with, as the database writes them
+            var defaults = GetColumnDefaults(db, tempTable);
+            if (defaults != null)
+            {
+                foreach (var column in schemaColumns)
+                {
+                    column.DefaultValue = defaults.TryGetValue(column.ColumnName, out var defaultValue) ? defaultValue : null;
+                }
+            }
+            return schemaColumns;
         }
         finally
         {
@@ -2611,24 +2621,59 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
     /// The indexes of the rows of a query with name, is_unique, is_constraint and columns, a comma-separated list of
     /// its key columns in order
     /// </summary>
-    protected static List<IndexSchema> ToIndexSchemas(List<Dictionary<string, object>> rows)
-    {
-        object Value(Dictionary<string, object> row, string name)
-        {
-            foreach (var entry in row)
-            {
-                if (string.Equals(entry.Key, name, StringComparison.OrdinalIgnoreCase))
-                    return entry.Value is DBNull ? null : entry.Value;
-            }
-            return null;
-        }
-        return rows.Map(row => new IndexSchema {
-            Name = Value(row, "name")?.ToString(),
-            IsUnique = Convert.ToBoolean(Value(row, "is_unique") ?? false),
-            IsConstraint = Convert.ToBoolean(Value(row, "is_constraint") ?? false),
-            Columns = (Value(row, "columns")?.ToString() ?? "").Split([','], StringSplitOptions.RemoveEmptyEntries).ToList(),
+    protected static List<IndexSchema> ToIndexSchemas(List<Dictionary<string, object>> rows) =>
+        rows.Map(row => new IndexSchema {
+            Name = RowValue(row, "name")?.ToString(),
+            IsUnique = Convert.ToBoolean(RowValue(row, "is_unique") ?? false),
+            IsConstraint = Convert.ToBoolean(RowValue(row, "is_constraint") ?? false),
+            Columns = RowList(row, "columns"),
         });
+
+    public virtual Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable) => null;
+
+    public virtual List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef) => null;
+
+    /// <summary>
+    /// The default values of the rows of a query with name and value columns
+    /// </summary>
+    protected static Dictionary<string, string> ToColumnDefaults(List<Dictionary<string, object>> rows)
+    {
+        var to = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in rows)
+        {
+            var name = RowValue(row, "name")?.ToString();
+            if (name != null)
+                to[name] = RowValue(row, "value")?.ToString();
+        }
+        return to;
     }
+
+    /// <summary>
+    /// The foreign keys of the rows of a query with name, columns and ref_columns, comma-separated lists of their
+    /// columns in order, ref_table, on_delete and on_update
+    /// </summary>
+    protected static List<ForeignKeySchema> ToForeignKeySchemas(List<Dictionary<string, object>> rows) =>
+        rows.Map(row => new ForeignKeySchema {
+            Name = RowValue(row, "name")?.ToString(),
+            Columns = RowList(row, "columns"),
+            RefTable = RowValue(row, "ref_table")?.ToString(),
+            RefColumns = RowList(row, "ref_columns"),
+            OnDelete = RowValue(row, "on_delete")?.ToString(),
+            OnUpdate = RowValue(row, "on_update")?.ToString(),
+        });
+
+    private static object RowValue(Dictionary<string, object> row, string name)
+    {
+        foreach (var entry in row)
+        {
+            if (string.Equals(entry.Key, name, StringComparison.OrdinalIgnoreCase))
+                return entry.Value is DBNull ? null : entry.Value;
+        }
+        return null;
+    }
+
+    private static List<string> RowList(Dictionary<string, object> row, string name) =>
+        (RowValue(row, name)?.ToString() ?? "").Split([','], StringSplitOptions.RemoveEmptyEntries).ToList();
 
     public virtual string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef) => 
         $"ALTER TABLE {QuoteTable(tableRef)} ADD COLUMN {GetColumnDefinition(fieldDef)};";
@@ -2668,6 +2713,23 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName) =>
         $"ALTER TABLE {QuoteTable(tableRef)} DROP CONSTRAINT {GetQuotedName(foreignKeyName)};";
+
+    public virtual string ToAddForeignKeyStatement(TableRef tableRef, FieldDefinition fieldDef)
+    {
+        var refModelDef = fieldDef.ForeignKey.ReferenceType.GetModelDefinition();
+        var name = fieldDef.ForeignKey.GetForeignKeyName(fieldDef.ModelDef ?? tableRef.ModelDef, refModelDef, NamingStrategy, fieldDef);
+        return $"ALTER TABLE {QuoteTable(tableRef)} " +
+               $"ADD CONSTRAINT {GetQuotedName(name)} FOREIGN KEY ({GetQuotedColumnName(fieldDef)}) " +
+               $"REFERENCES {GetQuotedTableName(refModelDef)} ({GetQuotedColumnName(refModelDef.PrimaryKey)})" +
+               $"{GetForeignKeyOnDeleteClause(fieldDef.ForeignKey)}{GetForeignKeyOnUpdateClause(fieldDef.ForeignKey)};";
+    }
+
+    public virtual string ToAlterColumnDefaultStatement(TableRef tableRef, FieldDefinition fieldDef)
+    {
+        var defaultValue = GetDefaultValue(fieldDef);
+        return $"ALTER TABLE {QuoteTable(tableRef)} ALTER COLUMN {GetQuotedColumnName(fieldDef)} " +
+               (string.IsNullOrEmpty(defaultValue) ? "DROP DEFAULT;" : $"SET DEFAULT {defaultValue};");
+    }
 
     public virtual string ToDropConstraintStatement(TableRef tableRef, string constraintName) => null;
 

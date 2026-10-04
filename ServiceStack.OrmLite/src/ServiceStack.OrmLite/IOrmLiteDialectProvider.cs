@@ -431,6 +431,18 @@ public interface IOrmLiteDialectProvider
     /// </summary>
     List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef);
 
+    /// <summary>
+    /// The default values of the columns of a table by column name, as they're written by the database, e.g.
+    /// ((0)) on SQL Server, with null for columns without a default, or null if they can't be read. It reads the
+    /// temporary tables of GetModelSchemaColumns() too.
+    /// </summary>
+    Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable);
+
+    /// <summary>
+    /// The foreign keys of a table, or null if they can't be read
+    /// </summary>
+    List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef);
+
     string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn);
@@ -445,6 +457,17 @@ public interface IOrmLiteDialectProvider
         string foreignKeyName = null);
 
     string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName);
+
+    /// <summary>
+    /// Add the foreign key of a field to its table, or null if the database can't add it to an existing table
+    /// </summary>
+    string ToAddForeignKeyStatement(TableRef tableRef, FieldDefinition fieldDef);
+
+    /// <summary>
+    /// Change the default value of a column to its field's, or remove it when the field doesn't have one, or null if
+    /// the database can't change it
+    /// </summary>
+    string ToAlterColumnDefaultStatement(TableRef tableRef, FieldDefinition fieldDef);
         
     string ToCreateIndexStatement<T>(Expression<Func<T,object>> field, string indexName=null, bool unique=false);
 

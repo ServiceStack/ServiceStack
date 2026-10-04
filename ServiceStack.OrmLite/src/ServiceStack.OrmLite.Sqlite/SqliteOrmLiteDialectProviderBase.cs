@@ -481,6 +481,30 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
             "(SELECT group_concat(name, ',') FROM (SELECT ii.name FROM pragma_index_info(il.name) ii ORDER BY ii.seqno)) AS columns " +
             "FROM pragma_index_list({0}) il".SqlFmt(this, UnquotedTable(tableRef))));
 
+    public override Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable)
+    {
+        var to = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var column in db.SqlList<Dictionary<string, object>>($"PRAGMA table_xinfo({quotedTable})"))
+        {
+            var defaultValue = column["dflt_value"];
+            to[column["name"].ToString()] = defaultValue is null or DBNull ? null : defaultValue.ToString();
+        }
+        return to;
+    }
+
+    // SQLite doesn't keep the names of foreign keys, and "to" is null for foreign keys of the referenced primary key
+    public override List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef) => ToForeignKeySchemas(
+        db.SqlList<Dictionary<string, object>>(
+            ("SELECT NULL AS name, group_concat(\"from\", ',') AS columns, \"table\" AS ref_table, " +
+             "group_concat(\"to\", ',') AS ref_columns, on_delete, on_update " +
+             "FROM (SELECT * FROM pragma_foreign_key_list({0}) ORDER BY id, seq) GROUP BY id")
+                .SqlFmt(this, UnquotedTable(tableRef))));
+
+    // Constraints and defaults can only be changed by creating the table again
+    public override string ToAddForeignKeyStatement(TableRef tableRef, FieldDefinition fieldDef) => null;
+
+    public override string ToAlterColumnDefaultStatement(TableRef tableRef, FieldDefinition fieldDef) => null;
+
     public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
     {
         // The names of tables aren't case sensitive

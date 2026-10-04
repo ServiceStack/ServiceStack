@@ -42,6 +42,26 @@ public enum SchemaChangeType
     /// hand. It's destructive, so it's only dropped with allowDestructive.
     /// </summary>
     DropIndex,
+    /// <summary>
+    /// The default value of the column isn't its property's, or the column has a default that its property doesn't.
+    /// It only changes the values of rows that are inserted without one.
+    /// </summary>
+    AlterDefault,
+    /// <summary>
+    /// The foreign key of a property isn't in the table. It's destructive unless its column is added in the same
+    /// diff, as the rows in the table can reference rows that don't exist.
+    /// </summary>
+    AddForeignKey,
+    /// <summary>
+    /// The foreign key of a property references another table or has other ON DELETE or ON UPDATE actions, so it's
+    /// dropped and added again. It's destructive when it references another table.
+    /// </summary>
+    AlterForeignKey,
+    /// <summary>
+    /// The foreign key of the table isn't in the model, e.g. it was removed from the model or added to the database by
+    /// hand. It's destructive, so it's only dropped with allowDestructive.
+    /// </summary>
+    DropForeignKey,
 }
 
 /// <summary>
@@ -68,6 +88,47 @@ public class IndexSchema
 }
 
 /// <summary>
+/// A foreign key of a table in the database
+/// </summary>
+public class ForeignKeySchema
+{
+    /// <summary>
+    /// The name of its constraint, null in SQLite, which doesn't keep the names of foreign keys
+    /// </summary>
+    public string Name { get; set; }
+
+    public List<string> Columns { get; set; } = [];
+
+    /// <summary>
+    /// The name of the table it references, without its schema
+    /// </summary>
+    public string RefTable { get; set; }
+
+    /// <summary>
+    /// The columns of the table it references, empty when the database doesn't say, e.g. SQLite's foreign keys
+    /// that reference a primary key without naming its column
+    /// </summary>
+    public List<string> RefColumns { get; set; } = [];
+
+    /// <summary>
+    /// e.g. CASCADE, SET NULL or NO ACTION
+    /// </summary>
+    public string OnDelete { get; set; }
+
+    public string OnUpdate { get; set; }
+
+    public override string ToString() =>
+        $"({string.Join(", ", Columns)}) REFERENCES {RefTable}" + (RefColumns.Count > 0 ? $" ({string.Join(", ", RefColumns)})" : "")
+        + Action("DELETE", OnDelete) + Action("UPDATE", OnUpdate);
+
+    private static string Action(string on, string action)
+    {
+        action = OrmLiteSchemaDiffApi.NormalizeFkAction(action);
+        return action == "NO ACTION" ? "" : $" ON {on} {action}";
+    }
+}
+
+/// <summary>
 /// A change to the database that makes it the same as a model
 /// </summary>
 public class SchemaChange
@@ -82,7 +143,7 @@ public class SchemaChange
     public string Table { get; set; }
 
     /// <summary>
-    /// The name of the column or index in the database, null for a table
+    /// The name of the column, index or foreign key in the database, null for a table
     /// </summary>
     public string Name { get; set; }
 
@@ -92,13 +153,14 @@ public class SchemaChange
     public FieldDefinition Field { get; set; }
 
     /// <summary>
-    /// The column the model would be created with, e.g. VARCHAR(200) NULL, or the columns of its index, e.g.
-    /// UNIQUE (Email, TenantId)
+    /// The column the model would be created with, e.g. VARCHAR(200) NULL, the columns of its index, e.g.
+    /// UNIQUE (Email, TenantId), its default value or its foreign key
     /// </summary>
     public string ModelColumn { get; set; }
 
     /// <summary>
-    /// The column that's in the database, e.g. VARCHAR(50) NOT NULL, or the columns of its index
+    /// The column that's in the database, e.g. VARCHAR(50) NOT NULL, the columns of its index, its default value or
+    /// its foreign key
     /// </summary>
     public string DatabaseColumn { get; set; }
 
@@ -132,8 +194,16 @@ public class SchemaChange
         SchemaChangeType.CreateIndex => $"Index {Name} of {Table} isn't in the database",
         SchemaChangeType.AlterIndex => $"Index {Name} of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}",
         SchemaChangeType.DropIndex => $"Index {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}",
+        SchemaChangeType.AlterDefault => $"Default of {Table}.{Name} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
+            + CantChange,
+        SchemaChangeType.AddForeignKey => $"Foreign key {Name} of {Table} isn't in the database: {ModelColumn}" + CantChange,
+        SchemaChangeType.AlterForeignKey => $"Foreign key {Name} of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
+            + CantChange,
+        SchemaChangeType.DropForeignKey => $"Foreign key {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}" + CantChange,
         _ => Type.ToString(),
     };
+
+    private string CantChange => Sql == null ? " (can't be changed in this database)" : "";
 
     public override string ToString() => Description;
 }
@@ -251,6 +321,10 @@ public class SchemaDiff
                         + (change.LikelyRename != null ? $" (renamed to {change.LikelyRename}?)" : ""),
                     SchemaChangeType.AlterIndex => $"  ~ index {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}",
                     SchemaChangeType.DropIndex => $"  - index {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})",
+                    SchemaChangeType.AlterDefault => $"  ~ {change.Name}  default {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
+                    SchemaChangeType.AddForeignKey => $"  + foreign key {change.Name}  {change.ModelColumn}" + CantChange(change),
+                    SchemaChangeType.AlterForeignKey => $"  ~ foreign key {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
+                    SchemaChangeType.DropForeignKey => $"  - foreign key {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
                     _ => $"  + index {change.Name}",
                 });
             }
@@ -261,6 +335,9 @@ public class SchemaDiff
             sb.AppendLine(ignored);
         return StringBuilderCache.ReturnAndFree(sb).TrimEnd();
     }
+
+    private static string CantChange(SchemaChange change) =>
+        change.Sql == null ? " (can't be changed in this database)" : "";
 
     /// <summary>
     /// The source code of a migration that makes the changes, to review and add to your migrations. It starts with a
@@ -275,8 +352,8 @@ public class SchemaDiff
 public static class OrmLiteSchemaDiffApi
 {
     /// <summary>
-    /// The differences between a model and its table: missing tables, columns and indexes, columns that aren't in
-    /// the model and columns with a different type, size or nullability. E.g:
+    /// The differences between a model and its table: missing tables, columns, indexes and foreign keys, the ones
+    /// that aren't in the model, and columns with a different type, size, nullability or default value. E.g:
     /// <para>var diff = db.GetSchemaDiff&lt;Order&gt;();</para>
     /// </summary>
     public static SchemaDiff GetSchemaDiff<T>(this IDbConnection db) => db.GetSchemaDiff(typeof(T));
@@ -298,6 +375,7 @@ public static class OrmLiteSchemaDiffApi
         var diff = new SchemaDiff();
         var dialect = db.GetDialectProvider();
         var warnedIndexes = false;
+        var warnedForeignKeys = false;
         foreach (var modelType in modelTypes)
         {
             var modelDef = modelType.GetModelDefinition();
@@ -322,7 +400,10 @@ public static class OrmLiteSchemaDiffApi
                 continue;
             }
 
-            var dbColumns = dialect.GetSchemaColumns(db, dialect.GetQuotedTableName(modelDef));
+            var quotedTable = dialect.GetQuotedTableName(modelDef);
+            var dbColumns = dialect.GetSchemaColumns(db, quotedTable);
+            // Changes to the foreign keys of columns that are dropped are made before them
+            var firstChange = diff.Changes.Count;
 
             // Some fields don't have a column, e.g. PostgreSQL's row version is the xmin of its rows
             var columnFields = modelDef.FieldDefinitions
@@ -341,6 +422,8 @@ public static class OrmLiteSchemaDiffApi
                 diff.Warnings.Add($"The types of {table}'s columns weren't compared, as a temporary table " +
                                   $"couldn't be created with them: {e.Message}");
             }
+            // The defaults of the model's columns are read from the temporary table they're created in
+            var dbDefaults = modelColumns != null ? dialect.GetColumnDefaults(db, quotedTable) : null;
 
             var matched = new HashSet<ColumnSchema>();
             var added = new List<(SchemaChange change, ColumnSchema modelColumn)>();
@@ -368,21 +451,43 @@ public static class OrmLiteSchemaDiffApi
                 }
 
                 matched.Add(dbColumn);
-                if (modelColumn == null || IsSame(dbColumn, modelColumn, dialect))
+                if (modelColumn == null)
+                    continue;
+
+                if (!IsSame(dbColumn, modelColumn, dialect))
+                {
+                    diff.Changes.Add(new SchemaChange {
+                        Type = SchemaChangeType.AlterColumn,
+                        ModelType = modelType,
+                        Table = table,
+                        Name = dbColumn.ColumnName,
+                        Field = fieldDef,
+                        ModelColumn = Describe(modelColumn, dbColumn),
+                        DatabaseColumn = Describe(dbColumn, modelColumn),
+                        Sql = dialect.Kind == DbKind.Sqlite // can't alter the columns of a table
+                            ? null
+                            : dialect.ToAlterColumnStatement(tableRef, fieldDef),
+                        IsDestructive = !IsSafeToAlter(dbColumn, modelColumn),
+                    });
+                }
+
+                // The defaults of auto incremented columns are their sequences, e.g. PostgreSQL's nextval('seq')
+                if (dbDefaults == null || fieldDef.AutoIncrement)
+                    continue;
+                dbDefaults.TryGetValue(dbColumn.ColumnName, out var dbDefault);
+                var modelDefault = modelColumn.DefaultValue as string;
+                if (IsSameDefault(dbDefault, modelDefault))
                     continue;
 
                 diff.Changes.Add(new SchemaChange {
-                    Type = SchemaChangeType.AlterColumn,
+                    Type = SchemaChangeType.AlterDefault,
                     ModelType = modelType,
                     Table = table,
                     Name = dbColumn.ColumnName,
                     Field = fieldDef,
-                    ModelColumn = Describe(modelColumn, dbColumn),
-                    DatabaseColumn = Describe(dbColumn, modelColumn),
-                    Sql = dialect.Kind == DbKind.Sqlite // can't alter the columns of a table
-                        ? null
-                        : dialect.ToAlterColumnStatement(tableRef, fieldDef),
-                    IsDestructive = !IsSafeToAlter(dbColumn, modelColumn),
+                    ModelColumn = DescribeDefault(modelDefault),
+                    DatabaseColumn = DescribeDefault(dbDefault),
+                    Sql = dialect.ToAlterColumnDefaultStatement(tableRef, fieldDef),
                 });
             }
 
@@ -404,6 +509,18 @@ public static class OrmLiteSchemaDiffApi
                 dropped.Add((dropColumn, dbColumn));
             }
             FindLikelyRenames(added, dropped, dialect);
+
+            if (!OrmLiteConfig.SkipForeignKeys)
+            {
+                var dbForeignKeys = dialect.GetTableForeignKeys(db, tableRef);
+                if (dbForeignKeys != null)
+                    CompareForeignKeys(diff, modelType, tableRef, table, columnFields, added, dbForeignKeys, firstChange, dialect);
+                else if (columnFields.Any(x => x.ForeignKey != null) && !warnedForeignKeys)
+                {
+                    diff.Warnings.Add($"Foreign keys aren't compared for {dialect.GetType().Name}");
+                    warnedForeignKeys = true;
+                }
+            }
 
             var createIndexes = dialect.ToCreateIndexStatements(modelType);
             var dbIndexes = dialect.GetTableIndexes(db, tableRef);
@@ -525,6 +642,147 @@ public static class OrmLiteSchemaDiffApi
             });
         }
     }
+
+    // The foreign keys of the model that aren't in the database or are different, and the foreign keys in the database
+    // that aren't in the model. Foreign keys are compared by their column, as OrmLite creates one for each property.
+    private static void CompareForeignKeys(SchemaDiff diff, Type modelType, TableRef tableRef, string table,
+        List<FieldDefinition> columnFields, List<(SchemaChange change, ColumnSchema modelColumn)> added,
+        List<ForeignKeySchema> dbForeignKeys, int firstChange, IOrmLiteDialectProvider dialect)
+    {
+        var modelDef = modelType.GetModelDefinition();
+        var matched = new HashSet<ForeignKeySchema>();
+        foreach (var fieldDef in columnFields)
+        {
+            if (fieldDef.ForeignKey == null)
+                continue;
+
+            var refModelDef = fieldDef.ForeignKey.ReferenceType.GetModelDefinition();
+            var refTableRef = new TableRef(refModelDef);
+            var column = dialect.NamingStrategy.GetColumnName(fieldDef.FieldName);
+            var modelForeignKey = new ForeignKeySchema {
+                Name = fieldDef.ForeignKey.GetForeignKeyName(modelDef, refModelDef, dialect.NamingStrategy, fieldDef),
+                Columns = [column],
+                RefTable = dialect.GetTableNameOnly(refTableRef),
+                RefColumns = [dialect.NamingStrategy.GetColumnName(refModelDef.PrimaryKey.FieldName)],
+                OnDelete = fieldDef.ForeignKey.OnDelete,
+                OnUpdate = fieldDef.ForeignKey.OnUpdate,
+            };
+
+            var dbForeignKey = dbForeignKeys.FirstOrDefault(x => !matched.Contains(x)
+                && x.Columns.Count == 1 && x.Columns[0].EqualsIgnoreCase(column));
+            if (dbForeignKey == null)
+            {
+                // A column that's added doesn't have values that reference rows that don't exist
+                var isAdded = added.Any(x => x.change.Field == fieldDef);
+                diff.Changes.Add(new SchemaChange {
+                    Type = SchemaChangeType.AddForeignKey,
+                    ModelType = modelType,
+                    Table = table,
+                    Name = modelForeignKey.Name,
+                    Field = fieldDef,
+                    ModelColumn = modelForeignKey.ToString(),
+                    Sql = dialect.ToAddForeignKeyStatement(tableRef, fieldDef),
+                    IsDestructive = !isAdded,
+                });
+                continue;
+            }
+            matched.Add(dbForeignKey);
+
+            var isSameTable = IsSameTable(dbForeignKey.RefTable, refTableRef, dialect)
+                && (dbForeignKey.RefColumns.Count == 0
+                    || (dbForeignKey.RefColumns.Count == 1 && dbForeignKey.RefColumns[0].EqualsIgnoreCase(modelForeignKey.RefColumns[0])));
+            if (isSameTable
+                && NormalizeFkAction(dbForeignKey.OnDelete) == NormalizeFkAction(modelForeignKey.OnDelete)
+                && NormalizeFkAction(dbForeignKey.OnUpdate) == NormalizeFkAction(modelForeignKey.OnUpdate))
+                continue;
+
+            var addSql = dialect.ToAddForeignKeyStatement(tableRef, fieldDef);
+            diff.Changes.Add(new SchemaChange {
+                Type = SchemaChangeType.AlterForeignKey,
+                ModelType = modelType,
+                Table = table,
+                Name = dbForeignKey.Name ?? modelForeignKey.Name,
+                Field = fieldDef,
+                ModelColumn = modelForeignKey.ToString(),
+                DatabaseColumn = dbForeignKey.ToString(),
+                Sql = addSql != null && dbForeignKey.Name != null
+                    ? dialect.ToDropForeignKeyStatement(tableRef, dbForeignKey.Name).Trim().TrimEnd(';') + ";\n" + addSql.Trim()
+                    : null,
+                // The rows in the table can reference rows that don't exist in the other table
+                IsDestructive = !isSameTable,
+            });
+        }
+
+        // Dropped before the columns they're of are dropped, which some databases don't drop with them
+        var drops = new List<SchemaChange>();
+        foreach (var dbForeignKey in dbForeignKeys)
+        {
+            if (matched.Contains(dbForeignKey))
+                continue;
+            drops.Add(new SchemaChange {
+                Type = SchemaChangeType.DropForeignKey,
+                ModelType = modelType,
+                Table = table,
+                Name = dbForeignKey.Name,
+                DatabaseColumn = dbForeignKey.ToString(),
+                Sql = dbForeignKey.Name != null && dialect.Kind != DbKind.Sqlite
+                    ? dialect.ToDropForeignKeyStatement(tableRef, dbForeignKey.Name)
+                    : null,
+                IsDestructive = true,
+            });
+        }
+        diff.Changes.InsertRange(firstChange, drops);
+    }
+
+    private static bool IsSameTable(string dbTable, TableRef tableRef, IOrmLiteDialectProvider dialect) =>
+        dbTable != null && (dbTable.EqualsIgnoreCase(dialect.GetTableNameOnly(tableRef))
+            || dbTable.EqualsIgnoreCase(dialect.UnquotedTable(tableRef).LastRightPart('.')));
+
+    /// <summary>
+    /// The action of a foreign key as it's compared, where RESTRICT, NO ACTION and none are the same
+    /// </summary>
+    internal static string NormalizeFkAction(string action)
+    {
+        action = (action ?? "").Trim().Replace('_', ' ').ToUpperInvariant();
+        return action is "" or "RESTRICT" or "NO ACTION" ? "NO ACTION" : action;
+    }
+
+    // Databases write the defaults of the model's columns the same way as the table's, which are only wrapped in
+    // parentheses more or less by some, e.g. SQL Server's ((0))
+    private static bool IsSameDefault(string dbDefault, string modelDefault) =>
+        NormalizeDefault(dbDefault) == NormalizeDefault(modelDefault);
+
+    private static string NormalizeDefault(string value)
+    {
+        value = value?.Trim();
+        if (string.IsNullOrEmpty(value) || value.EqualsIgnoreCase("NULL"))
+            return null;
+        while (value.Length >= 2 && value[0] == '(' && value[value.Length - 1] == ')' && IsWrapped(value))
+            value = value.Substring(1, value.Length - 2).Trim();
+        return value;
+    }
+
+    // Whether the parenthesis at the start of a value is closed at its end, e.g. (0) but not (a) + (b)
+    private static bool IsWrapped(string value)
+    {
+        var depth = 0;
+        var inQuotes = false;
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+            if (c == '\'')
+                inQuotes = !inQuotes;
+            else if (inQuotes)
+                continue;
+            else if (c == '(')
+                depth++;
+            else if (c == ')' && --depth == 0)
+                return i == value.Length - 1;
+        }
+        return false;
+    }
+
+    private static string DescribeDefault(string value) => NormalizeDefault(value) != null ? $"DEFAULT {value.Trim()}" : "no default";
 
     private static readonly System.Reflection.MethodInfo ToDropIndexStatementMethod =
         typeof(IOrmLiteDialectProvider).GetMethod(nameof(IOrmLiteDialectProvider.ToDropIndexStatement));
@@ -845,6 +1103,45 @@ internal static class SchemaMigrationWriter
                     case SchemaChangeType.DropIndex:
                         up.Add($"// Index {change.Name} {change.DatabaseColumn} isn't in {name}. If it's no longer used, drop it:");
                         up.Add($"// Db.DropIndex<{name}>({ToLiteral(change.Name)});");
+                        break;
+                    case SchemaChangeType.AlterDefault:
+                        if (change.Sql == null)
+                        {
+                            up.Add($"// The default of {change.Name} is {change.DatabaseColumn}, which can't be changed to {change.ModelColumn} in this database");
+                            break;
+                        }
+                        up.Add($"// The default of {change.Name} is {change.DatabaseColumn}");
+                        up.Add($"Db.ExecuteSql({ToLiteral(change.Sql)});");
+                        undo.Add($"// The default of {change.Name} was {change.DatabaseColumn}");
+                        break;
+                    case SchemaChangeType.AddForeignKey:
+                        if (change.Sql == null)
+                        {
+                            up.Add($"// Foreign key {change.Name} {change.ModelColumn} can't be added to an existing table in this database");
+                            break;
+                        }
+                        up.Add($"Db.ExecuteSql({ToLiteral(change.Sql)});");
+                        undo.Add($"Db.DropForeignKey<{name}>({ToLiteral(change.Name)});");
+                        break;
+                    case SchemaChangeType.AlterForeignKey:
+                        if (change.Sql == null)
+                        {
+                            up.Add($"// Foreign key {change.Name} is {change.DatabaseColumn}, which can't be changed to {change.ModelColumn} in this database");
+                            break;
+                        }
+                        up.Add($"// Foreign key {change.Name} is {change.DatabaseColumn}");
+                        up.Add($"Db.DropForeignKey<{name}>({ToLiteral(change.Name)});");
+                        up.Add($"Db.ExecuteSql({ToLiteral(change.Sql.Substring(change.Sql.IndexOf('\n') + 1))});");
+                        undo.Add($"// Foreign key {change.Name} was {change.DatabaseColumn}");
+                        break;
+                    case SchemaChangeType.DropForeignKey:
+                        if (change.Sql == null)
+                        {
+                            up.Add($"// Foreign key {change.DatabaseColumn} isn't in {name}, and can't be dropped in this database");
+                            break;
+                        }
+                        up.Add($"// Foreign key {change.Name} {change.DatabaseColumn} isn't in {name}. If it's no longer used, drop it:");
+                        up.Add($"// Db.DropForeignKey<{name}>({ToLiteral(change.Name)});");
                         break;
                 }
             }

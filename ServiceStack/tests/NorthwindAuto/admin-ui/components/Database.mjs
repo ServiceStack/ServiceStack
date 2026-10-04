@@ -504,7 +504,8 @@ export const Database = {
             return change.type.startsWith('Alter') ? 'text-amber-600' : change.type.startsWith('Drop') ? 'text-red-600' : 'text-green-600'
         }
         function changeTitle(change) {
-            return change.type === 'CreateTable' ? 'Create table' : change.name
+            // SQLite doesn't keep the names of foreign keys
+            return change.type === 'CreateTable' ? 'Create table' : change.name || 'Foreign key'
         }
         function changeDetail(change) {
             switch (change.type) {
@@ -515,8 +516,15 @@ export const Database = {
                 case 'CreateIndex': return 'Add index'
                 case 'AlterIndex': return `Index ${change.databaseColumn} \u2192 ${change.modelColumn}`
                 case 'DropIndex': return `Index not in ${change.model}: ${change.databaseColumn}`
+                case 'AlterDefault': return `Default ${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)
+                case 'AddForeignKey': return `Add foreign key: ${change.modelColumn}` + cantChange(change)
+                case 'AlterForeignKey': return `Foreign key ${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)
+                case 'DropForeignKey': return `Foreign key not in ${change.model}: ${change.databaseColumn}` + cantChange(change)
                 default: return change.description
             }
+        }
+        function cantChange(change) {
+            return change.sql ? '' : " (can't be changed in this database)"
         }
         function copyMigration() {
             copiedMigration.value = true

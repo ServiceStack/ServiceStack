@@ -551,6 +551,35 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 			 "GROUP BY s.TABLE_SCHEMA, s.TABLE_NAME, s.INDEX_NAME")
 			.SqlFmt(UnquotedTable(tableRef), db.Database)));
 
+	// SHOW COLUMNS reads temporary tables too, which INFORMATION_SCHEMA doesn't have
+	public override Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable)
+	{
+		var to = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+		foreach (var column in db.SqlList<Dictionary<string, object>>($"SHOW COLUMNS FROM {quotedTable}"))
+		{
+			var defaultValue = column["Default"];
+			to[column["Field"].ToString()] = defaultValue is null or DBNull ? null : defaultValue.ToString();
+		}
+		return to;
+	}
+
+	public override List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef)
+	{
+		string Columns(string column) =>
+			$"(SELECT GROUP_CONCAT(k.{column} ORDER BY k.ORDINAL_POSITION SEPARATOR ',') FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE k " +
+			"WHERE k.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA AND k.TABLE_NAME = rc.TABLE_NAME AND k.CONSTRAINT_NAME = rc.CONSTRAINT_NAME)";
+		return ToForeignKeySchemas(db.SqlList<Dictionary<string, object>>(
+			($"SELECT rc.CONSTRAINT_NAME AS name, {Columns("COLUMN_NAME")} AS columns, rc.REFERENCED_TABLE_NAME AS ref_table, " +
+			 $"{Columns("REFERENCED_COLUMN_NAME")} AS ref_columns, rc.DELETE_RULE AS on_delete, rc.UPDATE_RULE AS on_update " +
+			 "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc WHERE rc.TABLE_NAME = {0} AND rc.CONSTRAINT_SCHEMA = {1}")
+				.SqlFmt(UnquotedTable(tableRef), db.Database)));
+	}
+
+	// The column is defined again with its default, as ALTER COLUMN SET DEFAULT can only set literals and expressions
+	// in parentheses, e.g. not CURRENT_TIMESTAMP before MySQL 8.0.13
+	public override string ToAlterColumnDefaultStatement(TableRef tableRef, FieldDefinition fieldDef) =>
+		ToAlterColumnStatement(tableRef, fieldDef);
+
 	public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)
 	{
 		var sql = "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = {0} AND TABLE_SCHEMA = {1}"

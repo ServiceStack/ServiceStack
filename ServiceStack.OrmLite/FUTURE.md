@@ -60,33 +60,22 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 
 ### 3.1 More Schema Diff (M)
 `db.GetSchemaDiff(types)` finds the differences between models and their tables (tables, columns and indexes),
-`diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Indexes are compared by their key columns and uniqueness, indexes that aren't
-in the model are found, and likely column renames are suggested. Tables that aren't
+`diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Indexes are compared by
+their key columns and uniqueness, default values and foreign keys are compared, the indexes and foreign keys that
+aren't in the model are found, and likely column renames are suggested. Tables that aren't
 managed by OrmLite are ignored with `OrmLiteConfig.SchemaDiff` (`AspNet*` by default), and
 `AdminDatabaseFeature.LogSchemaDiff` logs the differences when an App starts. The Admin UI compares the data models
 of AutoQuery APIs and the App's models of the tables migrations create, found by `Migrator.GetMigrationTables()`,
 and the `migrate.new` App Task writes the next migration to the App's migrations. Remaining:
-- Compare default values, foreign keys, check and unique constraints, primary keys, and the INCLUDE columns and WHERE
-  conditions of indexes
-- Rebuild a SQLite table to alter its columns
-- Oracle and Firebird, which haven't been tested and don't compare indexes
+- Compare check and unique constraints, primary keys, and the INCLUDE columns and WHERE conditions of indexes
+- Rebuild a SQLite table to alter its columns, defaults and foreign keys
+- Oracle and Firebird, which haven't been tested and don't compare indexes, defaults or foreign keys
 
 ---
 
-## 4. Resilience
+## 4. Security
 
-### 4.1 More Retries (S)
-A `RetryPolicy`, global in `OrmLiteConfig` or for each dialect, runs statements and connections again after a
-temporary error, and `db.RunInTransaction()` runs a whole transaction again. SQLite doesn't retry. The APIs that
-write many rows in a transaction of their own, e.g. `InsertAll`, are run again as a whole, and a query whose first row
-fails is run again. Remaining:
-- Retry queries run with OrmLite's Dapper APIs
-
----
-
-## 5. Security
-
-### 5.1 Roslyn Analyzer Package (M)
+### 4.1 Roslyn Analyzer Package (M)
 A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 - String concatenation or interpolation passed to `Where(string)`, `OrderBy(string)`, `Unsafe*`, `SqlList(string)` and `ExecuteSql(string)`. The code fix would suggest parameters or `Sql.Fmt()`.
 - Use of `Unsafe*` APIs with non-constant arguments.
@@ -107,6 +96,9 @@ A `ServiceStack.OrmLite.Analyzers` package would flag at compile time:
 - **Allow-list helpers for user-supplied filters (`WhereSafe`):** AutoQuery already resolves and restricts
   user-supplied filters, `OrderBySafe()` covers dynamic sorting, and `ColumnRef` / `Sql.Fmt()` cover hand-written
   dynamic queries.
+- **Retrying queries run with OrmLite's Dapper APIs:** OrmLite's embedded copy of Dapper is never modified, so it
+  stays the same as Dapper's own implementation. Its queries don't run through OrmLite's commands, so they aren't
+  retried. Queries that need retrying use OrmLite's APIs.
 - **Slow query log, N+1 detection and parameter redaction in logs:** reconsider if users ask for them.
 - **Compiling the SET clause of compiled `UPDATE` statements:** `UpdateOnly()` and `UpdateAdd()` reuse the SQL of a
   compiled query's `WHERE` clause. Their `SET` clause is a few columns and db params, and would need write rules'

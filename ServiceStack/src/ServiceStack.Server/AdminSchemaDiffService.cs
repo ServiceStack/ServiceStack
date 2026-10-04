@@ -74,14 +74,15 @@ public class AdminSchemaDiffResponse : IHasResponseStatus
 public class AdminSchemaChange
 {
     /// <summary>
-    /// CreateTable, AddColumn, AlterColumn, DropColumn, CreateIndex, AlterIndex or DropIndex
+    /// CreateTable, AddColumn, AlterColumn, DropColumn, CreateIndex, AlterIndex, DropIndex, AlterDefault,
+    /// AddForeignKey, AlterForeignKey or DropForeignKey
     /// </summary>
     public string Type { get; set; } = "";
     public string Model { get; set; } = "";
     public string Table { get; set; } = "";
 
     /// <summary>
-    /// The name of the column or index
+    /// The name of the column, index or foreign key
     /// </summary>
     public string? Name { get; set; }
     public string? ModelColumn { get; set; }

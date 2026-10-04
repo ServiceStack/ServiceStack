@@ -8,8 +8,8 @@ namespace ServiceStack.OrmLite.Tests.UseCases;
 
 /// <summary>
 /// GetSchemaDiff() compares models with their tables in the database, to find what's changed in one and not the
-/// other: missing tables, columns and indexes, columns that aren't in the model and columns with a different type,
-/// size or nullability. The differences can be logged, applied to the database or written as a migration.
+/// other: missing tables, columns, indexes and foreign keys, the ones that aren't in the model, and columns with a
+/// different type, size, nullability or default value. The differences can be logged, applied to the database or written as a migration.
 /// </summary>
 [TestFixtureOrmLite]
 public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBase(context)
@@ -174,9 +174,11 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         db.DropAndCreateTable<DdlAttributeUseCases.Upload>();
         db.DropAndCreateTable<DdlAttributeUseCases.Shipment>();
         db.DropAndCreateTable<BatchWriteUseCases.Ticket>();
+        CreateOrderTables<DiffOrder>(db);
 
         var diff = db.GetSchemaDiff(typeof(Book), typeof(BookReview), typeof(EveryType),
-            typeof(DdlAttributeUseCases.Upload), typeof(DdlAttributeUseCases.Shipment), typeof(BatchWriteUseCases.Ticket));
+            typeof(DdlAttributeUseCases.Upload), typeof(DdlAttributeUseCases.Shipment), typeof(BatchWriteUseCases.Ticket),
+            typeof(DiffCustomer), typeof(DiffWarehouse), typeof(DiffOrder));
 
         Assert.That(diff.Changes, Is.Empty, diff.ToString());
         Assert.That(diff.Warnings, Is.Empty);
@@ -472,6 +474,192 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
             public string Status { get; set; }
             public int Weight { get; set; }
         }
+
+        public class DiffOrder
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+
+            [ForeignKey(typeof(DiffCustomer))]
+            public int CustomerId { get; set; }
+
+            [ForeignKey(typeof(DiffWarehouse))]
+            public int? WarehouseId { get; set; }
+
+            public int? BillingCustomerId { get; set; }
+
+            [Default(1)]
+            public int Quantity { get; set; }
+
+            [Default("'draft'"), StringLength(20)]
+            public string Status { get; set; }
+
+            public int Priority { get; set; }
+
+            [Default(OrmLiteVariables.SystemUtc)]
+            public DateTime Created { get; set; }
+        }
+    }
+
+    public class DiffCustomer
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DiffWarehouse
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    public class DiffOrder
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        [ForeignKey(typeof(DiffCustomer), OnDelete = "CASCADE")] // deletes its orders
+        public int CustomerId { get; set; }
+
+        public int? WarehouseId { get; set; } // no longer a foreign key
+
+        [ForeignKey(typeof(DiffCustomer))] // a foreign key of a column with values
+        public int? BillingCustomerId { get; set; }
+
+        [ForeignKey(typeof(DiffWarehouse))] // a new column
+        public int? ShipFromId { get; set; }
+
+        [Default(5)] // changed
+        public int Quantity { get; set; }
+
+        [StringLength(20)] // no longer has a default
+        public string Status { get; set; }
+
+        [Default(3)] // has a default
+        public int Priority { get; set; }
+
+        [Default(OrmLiteVariables.SystemUtc)]
+        public DateTime Created { get; set; }
+    }
+
+    static void CreateOrderTables<T>(System.Data.IDbConnection db)
+    {
+        db.DropTable<DiffOrder>();
+        db.DropAndCreateTable<DiffCustomer>();
+        db.DropAndCreateTable<DiffWarehouse>();
+        db.CreateTable<T>();
+    }
+
+    [Test]
+    public void Compare_the_default_values_of_columns()
+    {
+        using var db = OpenDbConnection();
+        CreateOrderTables<Before.DiffOrder>(db);
+
+        var diff = db.GetSchemaDiff<DiffOrder>();
+        var defaults = diff.Changes.Where(x => x.Type == SchemaChangeType.AlterDefault).ToDictionary(x => x.Field.Name);
+        Assert.That(defaults.Keys, Is.EquivalentTo(new[] { "Quantity", "Status", "Priority" }), diff.ToString());
+
+        // As they're written by the database, e.g. ((1)) on SQL Server
+        Assert.That(defaults["Quantity"].DatabaseColumn, Does.Match(@"^DEFAULT \(*1\)*$"));
+        Assert.That(defaults["Quantity"].ModelColumn, Does.Match(@"^DEFAULT \(*5\)*$"));
+        Assert.That(defaults["Status"].DatabaseColumn, Does.Contain("draft"));
+        Assert.That(defaults["Status"].ModelColumn, Is.EqualTo("no default"));
+        Assert.That(defaults["Priority"].DatabaseColumn, Is.EqualTo("no default"));
+        Assert.That(diff.ToString(), Does.Match(@"~ quantity  default DEFAULT \(*1\)*").IgnoreCase);
+
+        // Defaults only change the rows that are inserted without a value
+        Assert.That(defaults.Values.All(x => !x.IsDestructive));
+
+        if (!CanAlterColumns(db))
+        {
+            Assert.That(defaults.Values.All(x => x.Sql == null));
+            Assert.That(diff.ToString(), Does.Contain("(can't be changed in this database)"));
+            return;
+        }
+
+        var source = diff.ToMigration("Migration1008");
+        Assert.That(source, Does.Contain("// The default of "));
+
+        db.ApplySchemaDiff(diff);
+        diff = db.GetSchemaDiff<DiffOrder>();
+        Assert.That(diff.Changes.Where(x => x.Type == SchemaChangeType.AlterDefault), Is.Empty, diff.ToString());
+
+        db.Insert(new DiffCustomer { Name = "Customer" });
+        // Columns that aren't inserted have their defaults
+        db.InsertOnly(() => new DiffOrder { CustomerId = 1 });
+        var order = db.Single<DiffOrder>(x => x.CustomerId == 1);
+        Assert.That(order.Quantity, Is.EqualTo(5));
+        Assert.That(order.Priority, Is.EqualTo(3));
+        Assert.That(order.Status, Is.Null);
+    }
+
+    [Test]
+    public void Compare_foreign_keys_and_find_the_foreign_keys_that_are_not_in_the_model()
+    {
+        using var db = OpenDbConnection();
+        CreateOrderTables<Before.DiffOrder>(db);
+
+        var diff = db.GetSchemaDiff<DiffOrder>();
+        var foreignKeys = diff.Changes.Where(x => x.Type is SchemaChangeType.AddForeignKey
+            or SchemaChangeType.AlterForeignKey or SchemaChangeType.DropForeignKey).ToList();
+        Assert.That(foreignKeys.Count, Is.EqualTo(4), diff.ToString());
+
+        // Foreign keys with other actions are dropped and added again
+        var customer = foreignKeys.Single(x => x.Field?.Name == "CustomerId");
+        Assert.That(customer.Type, Is.EqualTo(SchemaChangeType.AlterForeignKey));
+        Assert.That(customer.ModelColumn, Does.EndWith("ON DELETE CASCADE"));
+        Assert.That(customer.DatabaseColumn, Does.Not.Contain("CASCADE"));
+        Assert.That(customer.IsDestructive, Is.False);
+
+        // The rows of a column can reference rows that don't exist
+        var billing = foreignKeys.Single(x => x.Field?.Name == "BillingCustomerId");
+        Assert.That(billing.Type, Is.EqualTo(SchemaChangeType.AddForeignKey));
+        Assert.That(billing.ModelColumn, Does.Match(@"^\(billing_?customer_?id\) REFERENCES diff_?customer \(id\)$").IgnoreCase);
+        Assert.That(billing.IsDestructive, Is.True);
+
+        // unlike a column that's added
+        var shipFrom = foreignKeys.Single(x => x.Field?.Name == "ShipFromId");
+        Assert.That(shipFrom.Type, Is.EqualTo(SchemaChangeType.AddForeignKey));
+        Assert.That(shipFrom.IsDestructive, Is.False);
+
+        // A foreign key that's not in the model is only dropped with allowDestructive
+        var warehouse = foreignKeys.Single(x => x.Type == SchemaChangeType.DropForeignKey);
+        Assert.That(warehouse.DatabaseColumn, Does.Match(@"^\(warehouse_?id\) REFERENCES diff_?warehouse").IgnoreCase);
+        Assert.That(warehouse.IsDestructive, Is.True);
+
+        Assert.That(diff.ToString(), Does.Contain("+ foreign key "));
+        Assert.That(diff.ToString(), Does.Contain("~ foreign key "));
+        Assert.That(diff.ToString(), Does.Contain("- foreign key "));
+
+        if (!CanAlterColumns(db))
+        {
+            // SQLite can only change the foreign keys of a table by creating it again
+            Assert.That(foreignKeys.All(x => x.Sql == null));
+            return;
+        }
+
+        var source = diff.ToMigration("Migration1009");
+        Assert.That(source, Does.Contain($"Db.DropForeignKey<DiffOrder>(\"{customer.Name}\");"));
+        Assert.That(source, Does.Contain($"// Db.DropForeignKey<DiffOrder>(\"{warehouse.Name}\");"));
+        Assert.That(source, Does.Contain($"Db.ExecuteSql(\"{shipFrom.Sql.Replace("\"", "\\\"")}\");"));
+
+        var applied = db.ApplySchemaDiff(diff);
+        Assert.That(applied, Does.Contain(customer).And.Contain(shipFrom));
+        Assert.That(applied, Does.Not.Contain(billing).And.Not.Contain(warehouse));
+
+        db.ApplySchemaDiff(db.GetSchemaDiff<DiffOrder>(), allowDestructive: true);
+        diff = db.GetSchemaDiff<DiffOrder>();
+        Assert.That(diff.Changes.Where(x => x.Type is SchemaChangeType.AddForeignKey
+            or SchemaChangeType.AlterForeignKey or SchemaChangeType.DropForeignKey), Is.Empty, diff.ToString());
+
+        // Deleting a customer deletes their orders
+        var customerId = (int)db.Insert(new DiffCustomer { Name = "Customer" }, selectIdentity: true);
+        db.Insert(new DiffOrder { CustomerId = customerId, Created = DateTime.UtcNow });
+        db.DeleteById<DiffCustomer>(customerId);
+        Assert.That(db.Count<DiffOrder>(), Is.EqualTo(0));
     }
 
     [CompositeIndex(nameof(Status), nameof(Reference), Name = "ix_shipment_by_status")] // columns in another order

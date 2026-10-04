@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Npgsql;
@@ -743,6 +744,46 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
                 ? " AND lower(n.nspname) = {0}".SqlFmt(this, schema.ToLower())
                 : " AND n.nspname = current_schema()");
         return ToIndexSchemas(db.SqlList<Dictionary<string, object>>(sql));
+    }
+
+    // Strings are cast to their column's type, e.g. 'a'::character varying, which isn't a difference from text
+    private static readonly Regex StringCastRegex = new(@"'::(character varying|text|bpchar|character)\b",
+        RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+    public override Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable)
+    {
+        var defaults = ToColumnDefaults(db.SqlList<Dictionary<string, object>>(
+            ("SELECT a.attname AS name, pg_get_expr(d.adbin, d.adrelid) AS value FROM pg_attribute a " +
+             "LEFT JOIN pg_attrdef d ON d.adrelid = a.attrelid AND d.adnum = a.attnum " +
+             "WHERE a.attrelid = {0}::regclass AND a.attnum > 0 AND NOT a.attisdropped").SqlFmt(this, quotedTable)));
+        foreach (var name in defaults.Keys.ToList())
+        {
+            if (defaults[name] != null)
+                defaults[name] = StringCastRegex.Replace(defaults[name], "'");
+        }
+        return defaults;
+    }
+
+    public override List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef)
+    {
+        string Columns(string keys, string table) =>
+            $"array_to_string(ARRAY(SELECT a.attname FROM unnest(c.{keys}) WITH ORDINALITY AS k(attnum, ord) " +
+            $"JOIN pg_attribute a ON a.attrelid = c.{table} AND a.attnum = k.attnum ORDER BY k.ord), ',')";
+        string Action(string type) =>
+            $"CASE c.{type} WHEN 'c' THEN 'CASCADE' WHEN 'n' THEN 'SET NULL' WHEN 'd' THEN 'SET DEFAULT' " +
+            "WHEN 'r' THEN 'RESTRICT' ELSE 'NO ACTION' END";
+
+        var schema = GetSchemaName(tableRef);
+        var sql = $"SELECT c.conname AS name, {Columns("conkey", "conrelid")} AS columns, rt.relname AS ref_table, " +
+            $"{Columns("confkey", "confrelid")} AS ref_columns, {Action("confdeltype")} AS on_delete, " +
+            $"{Action("confupdtype")} AS on_update " +
+            "FROM pg_constraint c JOIN pg_class t ON t.oid = c.conrelid JOIN pg_namespace n ON n.oid = t.relnamespace " +
+            "JOIN pg_class rt ON rt.oid = c.confrelid " +
+            "WHERE c.contype = 'f' AND lower(t.relname) = {0}".SqlFmt(this, GetTableNameOnly(tableRef).ToLower())
+            + (schema != null
+                ? " AND lower(n.nspname) = {0}".SqlFmt(this, schema.ToLower())
+                : " AND n.nspname = current_schema()");
+        return ToForeignKeySchemas(db.SqlList<Dictionary<string, object>>(sql));
     }
 
     public override bool DoesTableExist(IDbCommand dbCmd, TableRef tableRef)

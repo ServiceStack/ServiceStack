@@ -517,6 +517,47 @@ namespace ServiceStack.OrmLite.SqlServer
                 "FROM sys.indexes i WHERE i.object_id = OBJECT_ID({0}) AND i.name IS NOT NULL"
                     .SqlFmt(this, QuoteTable(tableRef))));
 
+        // Temporary tables, e.g. of GetModelSchemaColumns(), are in tempdb
+        public override Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable)
+        {
+            var isTemp = quotedTable.IndexOf('#') >= 0;
+            var catalog = isTemp ? "tempdb." : "";
+            var objectName = isTemp ? "tempdb.." + quotedTable.StripDbQuotes() : quotedTable;
+            return ToColumnDefaults(db.SqlList<Dictionary<string, object>>(
+                ($"SELECT c.name AS name, dc.definition AS value FROM {catalog}sys.columns c " +
+                 $"LEFT JOIN {catalog}sys.default_constraints dc ON dc.parent_object_id = c.object_id AND dc.parent_column_id = c.column_id " +
+                 "WHERE c.object_id = OBJECT_ID({0})").SqlFmt(this, objectName)));
+        }
+
+        public override List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef)
+        {
+            string Columns(string table, string column) =>
+                "STUFF((SELECT ',' + c.name FROM sys.foreign_key_columns fkc " +
+                $"JOIN sys.columns c ON c.object_id = fkc.{table} AND c.column_id = fkc.{column} " +
+                "WHERE fkc.constraint_object_id = fk.object_id ORDER BY fkc.constraint_column_id FOR XML PATH('')), 1, 1, '')";
+            return ToForeignKeySchemas(db.SqlList<Dictionary<string, object>>(
+                ($"SELECT fk.name AS name, {Columns("parent_object_id", "parent_column_id")} AS columns, " +
+                 $"OBJECT_NAME(fk.referenced_object_id) AS ref_table, {Columns("referenced_object_id", "referenced_column_id")} AS ref_columns, " +
+                 "fk.delete_referential_action_desc AS on_delete, fk.update_referential_action_desc AS on_update " +
+                 "FROM sys.foreign_keys fk WHERE fk.parent_object_id = OBJECT_ID({0})").SqlFmt(this, QuoteTable(tableRef))));
+        }
+
+        // Defaults are constraints, so the column's default is dropped by its name before it's added
+        public override string ToAlterColumnDefaultStatement(TableRef tableRef, FieldDefinition fieldDef)
+        {
+            var table = QuoteTable(tableRef);
+            var sql = "DECLARE @default sysname = (SELECT dc.name FROM sys.default_constraints dc " +
+                "JOIN sys.columns c ON c.object_id = dc.parent_object_id AND c.column_id = dc.parent_column_id " +
+                "WHERE dc.parent_object_id = OBJECT_ID({0}) AND c.name = {1});\n".SqlFmt(this, table, NamingStrategy.GetColumnName(fieldDef.FieldName)) +
+                $"DECLARE @drop nvarchar(max) = {GetQuotedValue($"ALTER TABLE {table} DROP CONSTRAINT ")} + QUOTENAME(@default);\n" +
+                "IF @default IS NOT NULL EXEC(@drop);";
+            var defaultValue = GetDefaultValue(fieldDef);
+            if (string.IsNullOrEmpty(defaultValue))
+                return sql;
+            var constraint = fieldDef.DefaultValueConstraint != null ? $" CONSTRAINT {GetQuotedName(fieldDef.DefaultValueConstraint)}" : "";
+            return sql + $"\nALTER TABLE {table} ADD{constraint} DEFAULT {defaultValue} FOR {GetQuotedColumnName(fieldDef)};";
+        }
+
         // UNION ALL stops the staging table inheriting the IDENTITY of the table's column, so it can be given values
         protected override string ToCreateBulkStagingTableStatement(ModelDefinition modelDef, string stagingTable, List<FieldDefinition> fieldDefs)
         {
