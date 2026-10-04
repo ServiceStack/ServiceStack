@@ -482,14 +482,15 @@ export const Database = {
         }
         function isChangeOpen(table,index) { return !!openChanges.value[`${table}:${index}`] }
         function changeSymbol(change) {
-            return change.type.startsWith('Alter') ? '~' : change.type.startsWith('Drop') ? '-' : '+'
+            return change.type.startsWith('Alter') || change.type === 'RebuildTable' ? '~' : change.type.startsWith('Drop') ? '-' : '+'
         }
         function changeColor(change) {
-            return change.type.startsWith('Alter') ? 'text-amber-600' : change.type.startsWith('Drop') ? 'text-red-600' : 'text-green-600'
+            return change.type.startsWith('Alter') || change.type === 'RebuildTable' ? 'text-amber-600' : change.type.startsWith('Drop') ? 'text-red-600' : 'text-green-600'
         }
         function changeTitle(change) {
             // SQLite doesn't keep the names of foreign keys
             return change.type === 'CreateTable' ? 'Create table'
+                : change.type === 'RebuildTable' ? 'Rebuild table'
                 : change.type === 'AlterPrimaryKey' ? 'Primary key'
                 : change.name || (change.type.endsWith('Constraint') ? 'Constraint' : 'Foreign key')
         }
@@ -497,7 +498,7 @@ export const Database = {
             switch (change.type) {
                 case 'CreateTable': return `The table of ${change.model} isn't in the database`
                 case 'AddColumn': return `Add column: ${change.modelColumn}` + (change.likelyRename ? ` (renamed from ${change.likelyRename}?)` : '')
-                case 'AlterColumn': return `${change.databaseColumn} \u2192 ${change.modelColumn}` + (change.sql ? '' : " (can't be altered in this database)")
+                case 'AlterColumn': return `${change.databaseColumn} \u2192 ${change.modelColumn}` + (change.sql ? '' : change.isRebuilt ? ' (by rebuilding the table)' : " (can't be altered in this database)")
                 case 'DropColumn': return `Not in ${change.model}: ${change.databaseColumn}` + (change.likelyRename ? ` (renamed to ${change.likelyRename}?)` : '')
                 case 'CreateIndex': return 'Add index'
                 case 'AlterIndex': return `Index ${change.databaseColumn} \u2192 ${change.modelColumn}`
@@ -510,11 +511,12 @@ export const Database = {
                 case 'AlterConstraint': return `${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)
                 case 'DropConstraint': return `Constraint not in ${change.model}: ${change.databaseColumn}` + cantChange(change)
                 case 'AlterPrimaryKey': return `${change.databaseColumn} \u2192 ${change.modelColumn} (not changed by Schema Diff)`
+                case 'RebuildTable': return `Created again from ${change.model} and its rows copied, to change ${change.modelColumn}`
                 default: return change.description
             }
         }
         function cantChange(change) {
-            return change.sql ? '' : " (can't be changed in this database)"
+            return change.sql ? '' : change.isRebuilt ? ' (by rebuilding the table)' : " (can't be changed in this database)"
         }
         function copyMigration() {
             copiedMigration.value = true
