@@ -288,7 +288,7 @@ public class QueryInternalsTests(DialectContext context) : OrmLiteProvidersTestB
         Bookstore.SeedMany(db, 200);
 
         // e.g. ?orderBy=-Price,Id&after={cursor}
-        SqlExpression<Book> Query() => db.From<Book>().OrderBySafe("-Price,Id", nameof(Book.Price), nameof(Book.Id));
+        SqlExpression<Book> Query() => db.From<Book>().OrderBySafe("-Price,Id", [nameof(Book.Price), nameof(Book.Id)]);
         var all = db.Select(Query());
 
         var page = db.Select(Query().SeekAfter(all[49]).Take(50));

@@ -1174,16 +1174,27 @@ namespace ServiceStack.OrmLite
 
         /// <summary>
         /// Order by a user-supplied, comma-delimited list of field names that are resolved to quoted columns instead of
-        /// being embedded as SQL. Fields can be prefixed with '-' or suffixed with ASC/DESC to change the sort direction, e.g:
-        /// <para>q.OrderBySafe(request.OrderBy, nameof(Order.Id), nameof(Order.Total), nameof(Order.CreatedDate))</para>
-        /// <para>Accepts "-Total,Id" or "Total DESC, Id". If no allowed fields are specified any field on the queried tables
-        /// is accepted. Throws an ArgumentException for any other input. A null or empty orderBy leaves the order unchanged.</para>
+        /// being embedded as SQL, which can be any field of the queried tables. Fields can be prefixed with '-' or
+        /// suffixed with ASC/DESC to change the sort direction, e.g. "-Total,Id" or "Total DESC, Id". Use the overload
+        /// with the allowed fields to stop users sorting by fields they shouldn't, e.g. a PasswordHash.
+        /// Throws an ArgumentException for any other input. A null or empty orderBy leaves the order unchanged.
         /// </summary>
-        public virtual SqlExpression<T> OrderBySafe(string orderBy, params string[] allowed)
+        public virtual SqlExpression<T> OrderBySafe(string orderBy) => OrderBySafe(orderBy, (IEnumerable<string>)null);
+
+        /// <summary>
+        /// Order by a user-supplied, comma-delimited list of the allowed fields, which are resolved to quoted columns
+        /// instead of being embedded as SQL, e.g:
+        /// <para>q.OrderBySafe(request.OrderBy, [nameof(Order.Id), nameof(Order.Total), nameof(Order.CreatedDate)])</para>
+        /// <para>Accepts "-Total,Id" or "Total DESC, Id", ignoring the case of field names. Throws an ArgumentException
+        /// for any other input, including fields that aren't allowed. A null or empty orderBy leaves the order unchanged.</para>
+        /// </summary>
+        public virtual SqlExpression<T> OrderBySafe(string orderBy, IEnumerable<string> allowed)
         {
             if (string.IsNullOrWhiteSpace(orderBy))
                 return this;
 
+            // null allows any field of the queried tables, while an empty list allows none
+            var allowedFields = allowed?.ToArray();
             var fieldNames = new List<string>();
             foreach (var part in orderBy.Split(','))
             {
@@ -1213,10 +1224,13 @@ namespace ServiceStack.OrmLite
                     }
                 }
 
-                if (allowed is { Length: > 0 })
+                if (allowedFields != null)
                 {
-                    var match = Array.Find(allowed, x => string.Equals(x, name, StringComparison.OrdinalIgnoreCase));
+                    var match = Array.Find(allowedFields, x => string.Equals(x, name, StringComparison.OrdinalIgnoreCase));
                     name = match ?? throw new ArgumentException($"OrderBy field '{name}' is not allowed");
+                    // A mistake in the allowed fields, rather than in the user's input
+                    if (FirstMatchingField(name) == null && !string.Equals(name, "Random", StringComparison.OrdinalIgnoreCase))
+                        throw new ArgumentException($"OrderBy field '{name}' is allowed, but isn't a field of the query");
                 }
                 else if (FirstMatchingField(name) == null)
                 {

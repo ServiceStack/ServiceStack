@@ -87,6 +87,23 @@ public class OrderBySafeUseCases(DialectContext context) : OrmLiteProvidersTestB
     }
 
     [Test]
+    public void The_allowed_fields_are_a_list()
+    {
+        using var db = OpenDbConnection();
+        Bookstore.Seed(db);
+
+        var q = db.From<Book>().OrderBySafe("-Price", [nameof(Book.Title), nameof(Book.Price)]).Take(1);
+        Assert.That(db.Single(q).Price, Is.EqualTo(db.Scalar<Book, decimal>(x => Sql.Max(x.Price))));
+
+        // An empty list allows no fields, unlike OrderBySafe(orderBy) which allows any field of the query
+        Assert.Throws<ArgumentException>(() => db.From<Book>().OrderBySafe("Price", []));
+
+        // A mistake in the allowed fields is reported as one
+        var ex = Assert.Throws<ArgumentException>(() => db.From<Book>().OrderBySafe("Pirce", ["Pirce"]));
+        Assert.That(ex.Message, Does.Contain("isn't a field of the query"));
+    }
+
+    [Test]
     public void Invalid_or_malicious_input_throws_ArgumentException()
     {
         using var db = OpenDbConnection();
