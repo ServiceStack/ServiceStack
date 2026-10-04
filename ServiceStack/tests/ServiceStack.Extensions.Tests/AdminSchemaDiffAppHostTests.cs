@@ -197,7 +197,7 @@ public class AdminSchemaDiffAppHostTests
         // SchemaDiffCategory is the same as its table
         Assert.That(response.Results.Map(x => x.Model), Is.All.EqualTo(nameof(SchemaDiffProduct)));
 
-        var changes = response.Results.ToDictionary(x => x.Name!);
+        var changes = response.Results.Where(x => x.Name != null).ToDictionary(x => x.Name!);
         Assert.That(changes["Stock"].Type, Is.EqualTo("AddColumn"));
         Assert.That(changes["Stock"].Sql, Does.StartWith("ALTER TABLE"));
         Assert.That(changes["Stock"].IsDestructive, Is.Null);
@@ -206,13 +206,19 @@ public class AdminSchemaDiffAppHostTests
         Assert.That(changes["Sku"].DatabaseColumn, Is.EqualTo("VARCHAR(20) NOT NULL"));
         Assert.That(changes["Sku"].ModelColumn, Is.EqualTo("VARCHAR(100) NULL"));
         Assert.That(changes["Sku"].Sql, Is.Null); // SQLite can't alter a column
+        Assert.That(changes["Sku"].IsRebuilt, Is.True); // so its table is rebuilt
 
         Assert.That(changes["Barcode"].Type, Is.EqualTo("DropColumn"));
         Assert.That(changes["Barcode"].IsDestructive, Is.True);
         Assert.That(changes["Barcode"].Description, Does.Contain("isn't in SchemaDiffProduct"));
 
         Assert.That(changes["idx_schemadiffproduct_stock"].Type, Is.EqualTo("CreateIndex"));
-        Assert.That(response.Results.Count, Is.EqualTo(4));
+
+        // Rebuilding the table drops Barcode, which isn't in the model
+        var rebuild = response.Results.Single(x => x.Type == "RebuildTable");
+        Assert.That(rebuild.Sql, Does.Contain("RENAME TO"));
+        Assert.That(rebuild.IsDestructive, Is.True);
+        Assert.That(response.Results.Count, Is.EqualTo(5));
     }
 
     [Test]

@@ -767,6 +767,12 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         return defaults;
     }
 
+    public override List<string> GetModelIndexConditions(IDbConnection db, List<FieldDefinition> fieldDefs,
+        List<IndexSchema> indexes) => ReadModelIndexConditions(db, fieldDefs, indexes, tempTable => ToColumnDefaults(
+            db.SqlList<Dictionary<string, object>>(
+                ("SELECT i.relname AS name, pg_get_expr(ix.indpred, ix.indrelid) AS value FROM pg_index ix " +
+                 "JOIN pg_class i ON i.oid = ix.indexrelid WHERE ix.indrelid = {0}::regclass").SqlFmt(this, tempTable))));
+
     public override List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable)
     {
         var checks = ToCheckConstraintSchemas(db.SqlList<Dictionary<string, object>>(

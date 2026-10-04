@@ -522,6 +522,12 @@ namespace ServiceStack.OrmLite.SqlServer
                     .SqlFmt(this, QuoteTable(tableRef))));
         }
 
+        public override List<string> GetModelIndexConditions(IDbConnection db, List<FieldDefinition> fieldDefs,
+            List<IndexSchema> indexes) => ReadModelIndexConditions(db, fieldDefs, indexes, tempTable => ToColumnDefaults(
+                db.SqlList<Dictionary<string, object>>(
+                    "SELECT name AS name, filter_definition AS value FROM tempdb.sys.indexes WHERE object_id = OBJECT_ID({0})"
+                        .SqlFmt(this, "tempdb.." + tempTable.StripDbQuotes()))));
+
         // Temporary tables, e.g. of GetModelCheckConstraints(), are in tempdb
         public override List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable)
         {

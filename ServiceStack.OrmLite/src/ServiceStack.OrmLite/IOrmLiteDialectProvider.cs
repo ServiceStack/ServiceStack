@@ -456,6 +456,13 @@ public interface IOrmLiteDialectProvider
     List<CheckConstraintSchema> GetModelCheckConstraints(IDbConnection db, List<FieldDefinition> fieldDefs,
         List<CheckConstraintSchema> checks);
 
+    /// <summary>
+    /// The WHERE conditions of filtered indexes as the database writes them, which are read from indexes created with
+    /// them on a temporary table with the columns of fieldDefs, in the same order as indexes, or null if the database
+    /// keeps them as they're written, e.g. SQLite
+    /// </summary>
+    List<string> GetModelIndexConditions(IDbConnection db, List<FieldDefinition> fieldDefs, List<IndexSchema> indexes);
+
     string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn);

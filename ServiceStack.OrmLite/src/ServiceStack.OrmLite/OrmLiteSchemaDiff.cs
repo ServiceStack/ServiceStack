@@ -82,6 +82,12 @@ public enum SchemaChangeType
     /// needs its foreign keys and data to be migrated too.
     /// </summary>
     AlterPrimaryKey,
+    /// <summary>
+    /// SQLite: the table is created again from its model and its rows are copied, to make the changes SQLite can't
+    /// make to it, e.g. altering a column, its default, foreign keys and constraints. It's destructive when one of
+    /// them is, or when the table has columns that aren't in the model, which aren't kept.
+    /// </summary>
+    RebuildTable,
 }
 
 /// <summary>
@@ -241,12 +247,17 @@ public class SchemaChange
     /// </summary>
     public bool IsDestructive { get; set; }
 
+    /// <summary>
+    /// Whether it's made by the RebuildTable change of its table, as SQLite can't make it by itself
+    /// </summary>
+    public bool IsRebuilt { get; set; }
+
     public string Description => Type switch {
         SchemaChangeType.CreateTable => $"Table {Table} isn't in the database",
         SchemaChangeType.AddColumn => $"Column {Table}.{Name} isn't in the database: {ModelColumn}"
             + (LikelyRename != null ? $" (renamed from {LikelyRename}?)" : ""),
         SchemaChangeType.AlterColumn => $"Column {Table}.{Name} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
-            + (Sql == null ? " (can't be altered in this database)" : ""),
+            + (Sql != null ? "" : IsRebuilt ? " (by rebuilding the table)" : " (can't be altered in this database)"),
         SchemaChangeType.DropColumn => $"Column {Table}.{Name} isn't in {ModelType.Name}: {DatabaseColumn}"
             + (LikelyRename != null ? $" (renamed to {LikelyRename}?)" : ""),
         SchemaChangeType.CreateIndex => $"Index {Name} of {Table} isn't in the database",
@@ -263,10 +274,13 @@ public class SchemaChange
             + CantChange,
         SchemaChangeType.DropConstraint => $"Constraint {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}" + CantChange,
         SchemaChangeType.AlterPrimaryKey => $"Primary key of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}",
+        SchemaChangeType.RebuildTable => $"Table {Table} is created again from {ModelType.Name} and its rows are copied, to change {ModelColumn}",
         _ => Type.ToString(),
     };
 
-    private string CantChange => Sql == null ? " (can't be changed in this database)" : "";
+    private string CantChange => Sql != null ? ""
+        : IsRebuilt ? " (by rebuilding the table)"
+        : " (can't be changed in this database)";
 
     public override string ToString() => Description;
 }
@@ -379,7 +393,7 @@ public class SchemaDiff
                     SchemaChangeType.AddColumn => $"  + {change.Name}  {change.ModelColumn}"
                         + (change.LikelyRename != null ? $" (renamed from {change.LikelyRename}?)" : ""),
                     SchemaChangeType.AlterColumn => $"  ~ {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}"
-                        + (change.Sql == null ? " (can't be altered in this database)" : ""),
+                        + (change.Sql != null ? "" : change.IsRebuilt ? " (by rebuilding the table)" : " (can't be altered in this database)"),
                     SchemaChangeType.DropColumn => $"  - {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})"
                         + (change.LikelyRename != null ? $" (renamed to {change.LikelyRename}?)" : ""),
                     SchemaChangeType.AlterIndex => $"  ~ index {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}",
@@ -392,6 +406,7 @@ public class SchemaDiff
                     SchemaChangeType.AlterConstraint => $"  ~ constraint {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
                     SchemaChangeType.DropConstraint => $"  - constraint {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
                     SchemaChangeType.AlterPrimaryKey => $"  ~ primary key  {change.DatabaseColumn} -> {change.ModelColumn} (not changed)",
+                    SchemaChangeType.RebuildTable => $"  ~ rebuild table to change {change.ModelColumn}",
                     _ => $"  + index {change.Name}",
                 });
             }
@@ -404,7 +419,9 @@ public class SchemaDiff
     }
 
     private static string CantChange(SchemaChange change) =>
-        change.Sql == null ? " (can't be changed in this database)" : "";
+        change.Sql != null ? ""
+        : change.IsRebuilt ? " (by rebuilding the table)"
+        : " (can't be changed in this database)";
 
     /// <summary>
     /// The source code of a migration that makes the changes, to review and add to your migrations. It starts with a
@@ -598,7 +615,7 @@ public static class OrmLiteSchemaDiffApi
             var dbIndexes = dialect.GetTableIndexes(db, tableRef);
             if (dbIndexes != null)
             {
-                CompareIndexes(diff, modelType, tableRef, table, createIndexes, dbIndexes, dialect);
+                CompareIndexes(diff, db, modelType, tableRef, table, fieldDefs, createIndexes, dbIndexes, dialect);
                 CompareUniqueConstraints(diff, modelType, tableRef, table, createIndexes, dbIndexes, firstChange, dialect);
                 ComparePrimaryKey(diff, modelType, table, dbIndexes, dbColumns, dialect);
                 continue;
@@ -630,7 +647,48 @@ public static class OrmLiteSchemaDiffApi
                 });
             }
         }
+        if (dialect.Kind == DbKind.Sqlite)
+            AddRebuildTables(diff, db, dialect);
         return diff;
+    }
+
+    private static readonly HashSet<SchemaChangeType> RebuiltTypes = [
+        SchemaChangeType.AlterColumn, SchemaChangeType.AlterDefault, SchemaChangeType.AddForeignKey,
+        SchemaChangeType.AlterForeignKey, SchemaChangeType.DropForeignKey, SchemaChangeType.AddConstraint,
+        SchemaChangeType.AlterConstraint, SchemaChangeType.DropConstraint,
+    ];
+
+    // SQLite can only alter columns, defaults, foreign keys and constraints by creating the table again, which is a
+    // change of its own after the other changes of its table, e.g. the columns that are added
+    private static void AddRebuildTables(SchemaDiff diff, IDbConnection db, IOrmLiteDialectProvider dialect)
+    {
+        foreach (var modelType in diff.Changes.Select(x => x.ModelType).Distinct().ToList())
+        {
+            var changes = diff.Changes.Where(x => x.ModelType == modelType).ToList();
+            var rebuilt = changes.Where(x => x.Sql == null && RebuiltTypes.Contains(x.Type)).ToList();
+            // A primary key is only changed by a migration that's written with its foreign keys and data
+            if (rebuilt.Count == 0 || changes.Any(x => x.Type is SchemaChangeType.AlterPrimaryKey or SchemaChangeType.CreateTable))
+                continue;
+
+            foreach (var change in rebuilt)
+                change.IsRebuilt = true;
+            var rebuildTable = new SchemaChange {
+                Type = SchemaChangeType.RebuildTable,
+                ModelType = modelType,
+                Table = changes[0].Table,
+                ModelColumn = rebuilt.Map(x => x.Type switch {
+                    SchemaChangeType.AlterColumn => x.Name,
+                    SchemaChangeType.AlterDefault => $"the default of {x.Name}",
+                    SchemaChangeType.AddForeignKey or SchemaChangeType.AlterForeignKey or SchemaChangeType.DropForeignKey =>
+                        $"foreign key {x.Name ?? x.DatabaseColumn}",
+                    _ => $"constraint {x.Name ?? x.ModelColumn ?? x.DatabaseColumn}",
+                }).Distinct().Join(", "),
+                Sql = OrmLiteRebuildTableApi.ToRebuildTableStatements(db, modelType).Join("\n"),
+                // Columns that aren't in the model aren't kept
+                IsDestructive = rebuilt.Any(x => x.IsDestructive) || changes.Any(x => x.Type == SchemaChangeType.DropColumn),
+            };
+            diff.Changes.Insert(diff.Changes.LastIndexOf(changes[changes.Count - 1]) + 1, rebuildTable);
+        }
     }
 
     // A column that's not in the database and a column that's not in the model are likely the same column renamed
@@ -657,9 +715,13 @@ public static class OrmLiteSchemaDiffApi
 
     // The indexes of the model that aren't in the database or are with other columns, and the indexes in the database
     // that aren't in the model. Indexes of constraints, e.g. primary keys, aren't compared.
-    private static void CompareIndexes(SchemaDiff diff, Type modelType, TableRef tableRef, string table,
-        List<string> createIndexes, List<IndexSchema> dbIndexes, IOrmLiteDialectProvider dialect)
+    private static void CompareIndexes(SchemaDiff diff, IDbConnection db, Type modelType, TableRef tableRef, string table,
+        List<FieldDefinition> fieldDefs, List<string> createIndexes, List<IndexSchema> dbIndexes, IOrmLiteDialectProvider dialect)
     {
+        var modelIndexes = createIndexes.Distinct().ToDictionary(x => x, ParseIndex);
+        UseWrittenConditions(diff, db, table, fieldDefs, modelIndexes.Values.Where(x => x?.Where != null
+            && dbIndexes.Any(d => d.Where != null && d.Name.EqualsIgnoreCase(x.Name))).ToList(), dialect);
+
         var modelIndexNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var createIndex in createIndexes)
         {
@@ -682,7 +744,7 @@ public static class OrmLiteSchemaDiffApi
             }
 
             // MySQL reports unique indexes as constraints, so the indexes of the model are compared when they are
-            var modelIndex = ParseIndex(createIndex);
+            var modelIndex = modelIndexes[createIndex];
             if (dbIndex.IsPrimaryKey || modelIndex == null || IsSameIndex(modelIndex, dbIndex))
                 continue;
 
@@ -855,6 +917,31 @@ public static class OrmLiteSchemaDiffApi
     }
 
     private static string DescribeDefault(string value) => NormalizeDefault(value) != null ? $"DEFAULT {value.Trim()}" : "no default";
+
+    // Databases rewrite the conditions of filtered indexes, e.g. an IN list as = ANY (ARRAY[...]) in PostgreSQL, so the
+    // model's are compared as the database writes them, by creating them on a temporary table
+    private static void UseWrittenConditions(SchemaDiff diff, IDbConnection db, string table,
+        List<FieldDefinition> fieldDefs, List<IndexSchema> filteredIndexes, IOrmLiteDialectProvider dialect)
+    {
+        if (filteredIndexes.Count == 0)
+            return;
+        try
+        {
+            var written = dialect.GetModelIndexConditions(db, fieldDefs, filteredIndexes);
+            if (written == null)
+                return;
+            for (var i = 0; i < filteredIndexes.Count; i++)
+            {
+                if (written[i] != null)
+                    filteredIndexes[i].Where = written[i];
+            }
+        }
+        catch (Exception e)
+        {
+            diff.Warnings.Add($"The conditions of {table}'s indexes were compared as they're written, as a temporary " +
+                              $"table couldn't be created with them: {e.Message}");
+        }
+    }
 
     private static bool IsSameIndex(IndexSchema modelIndex, IndexSchema dbIndex) =>
         modelIndex.IsUnique == dbIndex.IsUnique
@@ -1212,7 +1299,8 @@ public static class OrmLiteSchemaDiffApi
     /// <summary>
     /// Make the changes of a schema diff to the database and return the changes that were made. Changes that can
     /// lose data or fail with the rows of a table are only made with allowDestructive: dropping columns that
-    /// aren't in a model, and altering a column unless it's made larger or to allow nulls.
+    /// aren't in a model, and altering a column unless it's made larger or to allow nulls. SQLite tables are rebuilt
+    /// with RebuildTable() to make the changes SQLite can't alter.
     /// </summary>
     public static List<SchemaChange> ApplySchemaDiff(this IDbConnection db, SchemaDiff diff, bool allowDestructive = false)
     {
@@ -1225,6 +1313,10 @@ public static class OrmLiteSchemaDiffApi
             if (change.Type == SchemaChangeType.CreateTable)
             {
                 db.CreateTable(overwrite: false, change.ModelType);
+            }
+            else if (change.Type == SchemaChangeType.RebuildTable)
+            {
+                db.RebuildTable(change.ModelType);
             }
             else
             {
@@ -1386,7 +1478,8 @@ internal static class SchemaMigrationWriter
             var modelType = model.Key;
             var modelDef = modelType.GetModelDefinition();
             var name = modelType.Name;
-            var createsTable = model.Any(x => x.Type == SchemaChangeType.CreateTable);
+            // A table that's created or rebuilt is created from all the properties of the model
+            var createsTable = model.Any(x => x.Type is SchemaChangeType.CreateTable or SchemaChangeType.RebuildTable);
 
             // The table as it is after the migration, with the properties that it changes
             foreach (var attr in CustomAttributeData.GetCustomAttributes(modelType))
@@ -1423,8 +1516,19 @@ internal static class SchemaMigrationWriter
             foreach (var change in model)
             {
                 var property = change.Field?.PropertyInfo?.Name;
+                if (change.IsRebuilt)
+                {
+                    up.Add($"// {change.Description}");
+                    continue;
+                }
                 switch (change.Type)
                 {
+                    case SchemaChangeType.RebuildTable:
+                        up.Add($"// Create {change.Table} again from {name} and copy its rows, which SQLite needs to change it.");
+                        up.Add("// Columns that aren't in the model aren't kept.");
+                        up.Add($"Db.RebuildTable<{name}>();");
+                        undo.Add($"// Rebuild {change.Table} with its previous model to revert it");
+                        break;
                     case SchemaChangeType.CreateTable:
                         up.Add($"Db.CreateTable<{name}>();");
                         undo.Add($"Db.DropTable<{name}>();");

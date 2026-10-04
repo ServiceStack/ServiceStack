@@ -189,8 +189,23 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         if (db.GetDialectProvider().Kind == DbKind.MySql)
             return;
         db.DropAndCreateTable<DdlAttributeUseCases.Subscriber>();
-        diff = db.GetSchemaDiff<DdlAttributeUseCases.Subscriber>();
+        // Conditions the database rewrites, e.g. an IN list as = ANY (ARRAY[...]) in PostgreSQL
+        db.DropAndCreateTable<FilteredTask>();
+        diff = db.GetSchemaDiff(typeof(DdlAttributeUseCases.Subscriber), typeof(FilteredTask));
         Assert.That(diff.Changes, Is.Empty, diff.ToString());
+        Assert.That(diff.Warnings, Is.Empty);
+    }
+
+    public class FilteredTask
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        [Index(Name = "ix_filtered_task_status", Where = "{Status} IN ('New', 'Open')")]
+        public string Status { get; set; }
+
+        [Index(Name = "ix_filtered_task_priority", Where = "{Priority} > 1 AND {Status} = 'Open'")]
+        public int Priority { get; set; }
     }
 
     [Test]
@@ -270,7 +285,9 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         // e.g. a long property with an INTEGER column, or an int property with a BIGINT column.
         // An integer column is a difference to a decimal property
-        Assert.That(diff.Changes.Map(x => x.Field.Name), Is.EqualTo(new[] { nameof(Counter.Score) }), diff.ToString());
+        // SQLite rebuilds its table to alter it
+        Assert.That(diff.Changes.Where(x => x.Type != SchemaChangeType.RebuildTable).Map(x => x.Field.Name),
+            Is.EqualTo(new[] { nameof(Counter.Score) }), diff.ToString());
     }
 
     [Test]
@@ -283,7 +300,7 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         var diff = db.GetSchemaDiff<Invoice>();
 
         Assert.That(diff.HasChanges);
-        var changes = diff.Changes.ToDictionary(x => x.Name.ToLower().Replace("_", ""));
+        var changes = diff.Changes.Where(x => x.Name != null).ToDictionary(x => x.Name.ToLower().Replace("_", ""));
 
         // New properties need their column
         Assert.That(changes["paiddate"].Type, Is.EqualTo(SchemaChangeType.AddColumn));
@@ -299,6 +316,7 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(reference.ModelColumn, Does.Contain("200").And.EndsWith(" NULL").And.Not.Contain("NOT NULL"));
         Assert.That(reference.IsDestructive, Is.False);
         Assert.That(reference.Sql != null, Is.EqualTo(CanAlterColumns(db))); // SQLite can't alter a column
+        Assert.That(reference.IsRebuilt, Is.EqualTo(!CanAlterColumns(db)));  // so its table is rebuilt
 
         // The column isn't a property, dropping it loses its data
         var legacyCode = changes["legacycode"];
@@ -309,7 +327,12 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(index.Name, Is.EqualTo("idx_invoice_customerid").IgnoreCase);
         Assert.That(index.Sql, Does.StartWith("CREATE INDEX") | Does.StartWith("CREATE NONCLUSTERED INDEX"));
 
-        Assert.That(diff.Changes.Count, Is.EqualTo(5));
+        // SQLite rebuilds the table, which drops the column that isn't in the model, so it's destructive too
+        var rebuild = diff.Changes.SingleOrDefault(x => x.Type == SchemaChangeType.RebuildTable);
+        Assert.That(rebuild != null, Is.EqualTo(!CanAlterColumns(db)));
+        Assert.That(rebuild?.IsDestructive ?? true);
+
+        Assert.That(diff.Changes.Count, Is.EqualTo(CanAlterColumns(db) ? 5 : 6));
         Assert.That(diff.Warnings, Is.Empty);
     }
 
@@ -326,7 +349,7 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         Assert.That(lines[0], Is.EqualTo("Invoice").IgnoreCase);
         Assert.That(lines.Count(x => x.StartsWith("  + ")), Is.EqualTo(3)); // 2 columns and an index
-        Assert.That(lines.Single(x => x.StartsWith("  ~ ")), Does.Contain("50").And.Contain(" -> ").And.Contain("200"));
+        Assert.That(lines.First(x => x.StartsWith("  ~ ")), Does.Contain("50").And.Contain(" -> ").And.Contain("200"));
         Assert.That(lines.Single(x => x.StartsWith("  - ")), Does.Contain("(not in Invoice)"));
         Assert.That(lines.Any(x => x.StartsWith("  + index idx_invoice_customerid", StringComparison.OrdinalIgnoreCase)));
 
@@ -376,10 +399,11 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(invoices[1].Currency, Is.EqualTo("USD"));
         Assert.That(db.Select<V1.Invoice>().Map(x => x.LegacyCode), Does.Contain("A1"));
 
+        // SQLite's rebuild would drop the column that's not in the model, so it's destructive
         var remaining = db.GetSchemaDiff<Invoice>();
         Assert.That(remaining.Changes.Map(x => x.Type), Is.EquivalentTo(CanAlterColumns(db)
             ? new[] { SchemaChangeType.DropColumn }
-            : new[] { SchemaChangeType.AlterColumn, SchemaChangeType.DropColumn }));
+            : new[] { SchemaChangeType.AlterColumn, SchemaChangeType.DropColumn, SchemaChangeType.RebuildTable }));
     }
 
     [Test]
@@ -395,11 +419,9 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(applied.Any(x => x.Type == SchemaChangeType.DropColumn));
         Assert.That(db.Select<Invoice>().Single().Reference, Is.EqualTo("INV-1"));
 
+        // SQLite's table is rebuilt to alter its column
         var remaining = db.GetSchemaDiff<Invoice>();
-        if (CanAlterColumns(db))
-            Assert.That(remaining.Changes, Is.Empty, remaining.ToString());
-        else
-            Assert.That(remaining.Changes.Single().Sql, Is.Null); // SQLite can't alter a column
+        Assert.That(remaining.Changes, Is.Empty, remaining.ToString());
     }
 
     [Test]
@@ -412,8 +434,10 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         var diff = db.GetSchemaDiff<Strict.Invoice>();
 
         // A smaller column, and a column that no longer allows nulls. SQLite doesn't use the length of a column
-        Assert.That(diff.Changes.Map(x => x.Type), Is.All.EqualTo(SchemaChangeType.AlterColumn));
-        Assert.That(diff.Changes.Count, Is.EqualTo(CanAlterColumns(db) ? 2 : 1));
+        // SQLite rebuilds its table to alter it
+        Assert.That(diff.Changes.Where(x => x.Type != SchemaChangeType.RebuildTable).Map(x => x.Type),
+            Is.All.EqualTo(SchemaChangeType.AlterColumn));
+        Assert.That(diff.Changes.Count, Is.EqualTo(2));
         Assert.That(diff.Changes.Map(x => x.IsDestructive), Is.All.True);
 
         Assert.That(db.ApplySchemaDiff(diff), Is.Empty);
@@ -431,13 +455,13 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(source, Does.Contain("namespace MyApp.Migrations;"));
         Assert.That(source, Does.Contain("public class Migration1005 : MigrationBase"));
 
-        // The properties that are changed, and its primary key
+        // The properties that are changed, and its primary key. SQLite rebuilds the table from all its properties
         Assert.That(source, Does.Contain("public class Invoice"));
         Assert.That(source, Does.Contain("public int Id { get; set; }"));
         Assert.That(source, Does.Contain("public DateTime? PaidDate { get; set; }"));
-        Assert.That(source.Contains("[StringLength(200)]"), Is.EqualTo(CanAlterColumns(db)));
-        Assert.That(source.Contains("public string Reference { get; set; }"), Is.EqualTo(CanAlterColumns(db)));
-        Assert.That(source, Does.Not.Contain("public decimal Total"));
+        Assert.That(source, Does.Contain("[StringLength(200)]"));
+        Assert.That(source, Does.Contain("public string Reference { get; set; }"));
+        Assert.That(source.Contains("public decimal Total"), Is.EqualTo(!CanAlterColumns(db)));
 
         Assert.That(source, Does.Contain("Db.AddColumn<Invoice>(x => x.PaidDate);"));
         Assert.That(source, Does.Contain("Db.AddColumn<Invoice>(x => x.Currency);"));
@@ -446,7 +470,7 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         if (CanAlterColumns(db))
             Assert.That(source, Does.Contain("Db.AlterColumn<Invoice>(x => x.Reference);"));
         else
-            Assert.That(source, Does.Contain("which can't be altered to VARCHAR(200) NULL in this database"));
+            Assert.That(source, Does.Contain("Db.RebuildTable<Invoice>();"));
 
         // Columns that aren't in the model may have been renamed, so they're only dropped by a comment
         Assert.That(source, Does.Match(@"// Db\.DropColumn<Invoice>\(""legacy_?code""\);").IgnoreCase);
@@ -628,8 +652,11 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         if (!CanAlterColumns(db))
         {
-            // SQLite can only change the constraints of a table by creating it again
-            Assert.That(uniques.All(x => x.Sql == null));
+            // SQLite rebuilds its table to change them
+            Assert.That(uniques.All(x => x.Sql == null && x.IsRebuilt));
+            db.ApplySchemaDiff(diff, allowDestructive: true);
+            diff = db.GetSchemaDiff<DiffProduct>();
+            Assert.That(diff.Changes, Is.Empty, diff.ToString());
             return;
         }
 
@@ -671,7 +698,11 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         if (!CanAlterColumns(db))
         {
-            Assert.That(checks.All(x => x.Sql == null));
+            // SQLite rebuilds its table to change them
+            Assert.That(checks.All(x => x.Sql == null && x.IsRebuilt));
+            db.ApplySchemaDiff(diff, allowDestructive: true);
+            diff = db.GetSchemaDiff<DiffProduct>();
+            Assert.That(diff.Changes, Is.Empty, diff.ToString());
             return;
         }
 
@@ -720,7 +751,8 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         var indexes = diff.Changes.Where(x => x.Type == SchemaChangeType.AlterIndex).ToDictionary(x => x.Name.ToLower());
         Assert.That(indexes.Keys, Is.EquivalentTo(new[] { "ix_diff_event_kind", "ix_diff_event_user" }), diff.ToString());
         Assert.That(indexes["ix_diff_event_kind"].DatabaseColumn, Does.Contain(" WHERE "));
-        Assert.That(indexes["ix_diff_event_kind"].ModelColumn, Does.EndWith("> 1"));
+        // As the database writes it, e.g. (kind > 1) in PostgreSQL or ([Kind]>(1)) in SQL Server
+        Assert.That(indexes["ix_diff_event_kind"].ModelColumn, Does.Match(@"WHERE \(*\[?""?kind""?\]?\s*>\s*\(*1\)*$").IgnoreCase);
 
         // The indexes are the same once they're applied, as the database writes their conditions
         db.ApplySchemaDiff(diff);
@@ -802,8 +834,12 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         if (!CanAlterColumns(db))
         {
-            Assert.That(defaults.Values.All(x => x.Sql == null));
-            Assert.That(diff.ToString(), Does.Contain("(can't be changed in this database)"));
+            // SQLite rebuilds its table to change them
+            Assert.That(defaults.Values.All(x => x.Sql == null && x.IsRebuilt));
+            db.ApplySchemaDiff(diff, allowDestructive: true);
+            diff = db.GetSchemaDiff<DiffOrder>();
+            Assert.That(diff.Changes, Is.Empty, diff.ToString());
+            Assert.That(diff.ToString(), Does.Contain("No schema differences"));
             return;
         }
 
@@ -863,8 +899,11 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
 
         if (!CanAlterColumns(db))
         {
-            // SQLite can only change the foreign keys of a table by creating it again
-            Assert.That(foreignKeys.All(x => x.Sql == null));
+            // SQLite rebuilds its table to change them
+            Assert.That(foreignKeys.All(x => x.Sql == null && x.IsRebuilt));
+            db.ApplySchemaDiff(diff, allowDestructive: true);
+            diff = db.GetSchemaDiff<DiffOrder>();
+            Assert.That(diff.Changes, Is.Empty, diff.ToString());
             return;
         }
 

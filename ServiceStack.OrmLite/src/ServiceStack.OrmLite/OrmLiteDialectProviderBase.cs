@@ -2634,16 +2634,51 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
 
     public virtual List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable) => null;
 
-    public virtual List<CheckConstraintSchema> GetModelCheckConstraints(IDbConnection db, List<FieldDefinition> fieldDefs,
-        List<CheckConstraintSchema> checks)
+    public virtual List<string> GetModelIndexConditions(IDbConnection db, List<FieldDefinition> fieldDefs,
+        List<IndexSchema> indexes) => null;
+
+    /// <summary>
+    /// The WHERE conditions of indexes created on a temporary table with the columns of fieldDefs, as they're read by
+    /// readConditions with the temporary table's quoted name, by index name
+    /// </summary>
+    protected List<string> ReadModelIndexConditions(IDbConnection db, List<FieldDefinition> fieldDefs,
+        List<IndexSchema> indexes, Func<string, Dictionary<string, string>> readConditions)
     {
         var tempTable = GetBulkStagingTableName("ormlite_diff_" + Guid.NewGuid().ToString("N"));
-        var columns = fieldDefs.Map(x => GetColumnDefinition(x.DefaultValueConstraint == null
+        db.ExecuteSql(ToCreateTempTableStatement(tempTable, GetTempColumnDefinitions(fieldDefs).Join(",\n  ")));
+        try
+        {
+            // Index names have to be unique in some databases, e.g. in PostgreSQL's schemas
+            var prefix = "ix_" + Guid.NewGuid().ToString("N").Substring(0, 12) + "_";
+            for (var i = 0; i < indexes.Count; i++)
+            {
+                db.ExecuteSql($"CREATE INDEX {GetQuotedName(prefix + i)} ON {tempTable} " +
+                              $"({indexes[i].Columns.Map(GetQuotedName).Join(", ")}) WHERE {indexes[i].Where}");
+            }
+            var written = readConditions(tempTable);
+            return indexes.Select((_, i) => written.TryGetValue(prefix + i, out var condition) ? condition : null).ToList();
+        }
+        finally
+        {
+            db.ExecuteSql(ToDropBulkStagingTableStatement(tempTable));
+        }
+    }
+
+    // The columns of a temporary table that's created with the columns of a model, without the names of their default
+    // constraints, which have to be unique in some databases
+    protected List<string> GetTempColumnDefinitions(List<FieldDefinition> fieldDefs) =>
+        fieldDefs.Map(x => GetColumnDefinition(x.DefaultValueConstraint == null
             ? x
             : x.Clone(f => {
                 f.ModelDef = x.ModelDef;
                 f.DefaultValueConstraint = null;
             })));
+
+    public virtual List<CheckConstraintSchema> GetModelCheckConstraints(IDbConnection db, List<FieldDefinition> fieldDefs,
+        List<CheckConstraintSchema> checks)
+    {
+        var tempTable = GetBulkStagingTableName("ormlite_diff_" + Guid.NewGuid().ToString("N"));
+        var columns = GetTempColumnDefinitions(fieldDefs);
         // Constraint names have to be unique in some databases, e.g. in SQL Server's tempdb
         var prefix = "chk_" + Guid.NewGuid().ToString("N").Substring(0, 12) + "_";
         for (var i = 0; i < checks.Count; i++)

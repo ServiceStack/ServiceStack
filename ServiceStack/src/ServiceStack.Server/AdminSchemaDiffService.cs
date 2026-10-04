@@ -75,7 +75,8 @@ public class AdminSchemaChange
 {
     /// <summary>
     /// CreateTable, AddColumn, AlterColumn, DropColumn, CreateIndex, AlterIndex, DropIndex, AlterDefault,
-    /// AddForeignKey, AlterForeignKey, DropForeignKey, AddConstraint, AlterConstraint, DropConstraint or AlterPrimaryKey
+    /// AddForeignKey, AlterForeignKey, DropForeignKey, AddConstraint, AlterConstraint, DropConstraint, AlterPrimaryKey
+    /// or RebuildTable
     /// </summary>
     public string Type { get; set; } = "";
     public string Model { get; set; } = "";
@@ -95,6 +96,11 @@ public class AdminSchemaChange
     public string Description { get; set; } = "";
     public string? Sql { get; set; }
     public bool? IsDestructive { get; set; }
+
+    /// <summary>
+    /// Whether it's made by the RebuildTable change of its table, as SQLite can't make it by itself
+    /// </summary>
+    public bool? IsRebuilt { get; set; }
 }
 
 /// <summary>
@@ -140,6 +146,7 @@ public class AdminSchemaDiffService : Service
                 Description = x.Description,
                 Sql = x.Sql,
                 IsDestructive = x.IsDestructive ? true : null,
+                IsRebuilt = x.IsRebuilt ? true : null,
             }),
             Warnings = diff.Warnings,
             Ignored = diff.Ignored,
