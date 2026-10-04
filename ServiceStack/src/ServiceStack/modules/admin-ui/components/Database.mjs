@@ -511,6 +511,7 @@ export const Database = {
                 case 'AlterConstraint': return `${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)
                 case 'DropConstraint': return `Constraint not in ${change.model}: ${change.databaseColumn}` + cantChange(change)
                 case 'AlterPrimaryKey': return `${change.databaseColumn} \u2192 ${change.modelColumn} (not changed by Schema Diff)`
+                case 'CreateFullTextIndex': return `Add full-text index: ${change.modelColumn}`
                 case 'RebuildTable': return `Created again from ${change.model} and its rows copied, to change ${change.modelColumn}`
                 default: return change.description
             }

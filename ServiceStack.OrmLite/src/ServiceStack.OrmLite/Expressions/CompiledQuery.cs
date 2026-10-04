@@ -928,6 +928,17 @@ namespace ServiceStack.OrmLite
             return new CompiledValue((args, lists) => getValue(args, lists) is { } value ? convert(value) : null, sample);
         }
 
+        // Its value, for SQL that changes with it, which is kept for each value of its argument, or not kept when it isn't
+        // the argument itself
+        internal object UseValueInSql()
+        {
+            if (ArgIndex >= 0)
+                CompiledQueryBuild.ReadArg(ArgIndex);
+            else if (CompiledQueryBuild.Current is { } build)
+                build.HasNullValue = true;
+            return Sample;
+        }
+
         // SQL that uses this instead of a db param isn't the SQL that's normally generated, so it's never kept
         public override string ToString() => "{CompiledQueryArg}";
     }

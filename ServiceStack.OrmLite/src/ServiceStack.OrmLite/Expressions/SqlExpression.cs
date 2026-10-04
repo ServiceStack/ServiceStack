@@ -3401,6 +3401,65 @@ namespace ServiceStack.OrmLite
                 VisitVectorOperand(m.Arguments[0], column), VisitVectorOperand(m.Arguments[1], column)));
         }
 
+        // Sql.Matches(x, search) and Sql.MatchRank(x, search) of the [FullTextIndex] of x's table
+        protected virtual object VisitFullTextSqlMethodCall(MethodCallExpression m)
+        {
+            var table = m.Arguments[0];
+            while (table is UnaryExpression { NodeType: ExpressionType.Convert or ExpressionType.ConvertChecked } convert)
+                table = convert.Operand;
+            if (table is not ParameterExpression param)
+                throw new NotSupportedException($"Sql.{m.Method.Name}() searches the table of a lambda's parameter, e.g. Sql.{m.Method.Name}(x, search)");
+
+            var tableDef = param.Type.GetModelDefinition();
+            if (tableDef?.FullTextIndex == null)
+                throw new NotSupportedException($"{param.Type.Name} doesn't have a [FullTextIndex] to search");
+            var primaryKey = tableDef.PrimaryKey
+                ?? throw new NotSupportedException($"{param.Type.Name} needs a primary key to search its [FullTextIndex]");
+
+            // Qualified with the table or its alias, as a sub query of the full-text index can reference them
+            var tableAlias = tableDef == modelDef ? TableAlias : null;
+            string Qualified(FieldDefinition fieldDef) => tableAlias != null
+                ? DialectProvider.GetQuotedColumnName(tableDef, tableAlias, fieldDef)
+                : DialectProvider.GetQuotedColumnName(tableDef, fieldDef);
+            var columns = new FullTextColumns {
+                ModelDef = tableDef,
+                Table = DialectProvider.GetQuotedTableName(tableDef),
+                Columns = tableDef.GetFullTextFields().Map(Qualified),
+                PrimaryKey = Qualified(primaryKey),
+            };
+
+            // The search is only ever sent as db params, in the RDBMS's full-text query syntax
+            var search = Visit(m.Arguments[1]);
+            if (search is PartialSqlString sql)
+            {
+                if (!sql.Text.EqualsIgnoreCase("null"))
+                    throw new NotSupportedException($"The search of Sql.{m.Method.Name}() is a value, not a column");
+                search = null;
+            }
+            List<string> ToSearch(object value) => DialectProvider.ToFullTextSearch(OrmLiteFullTextSearch.ParseSearch(value?.ToString()));
+
+            var parameters = new List<string>();
+            if (search is CompiledValue compiled && !DialectProvider.FullTextMatchesEachTerm)
+            {
+                // The argument of a compiled query, whose search is converted each time it's run
+                var p = AddParam(compiled.Map(x => ToSearch(x)[0])
+                    ?? throw new ArgumentException("The search has no words to search for"));
+                parameters.Add(p.ParameterName);
+            }
+            else
+            {
+                // A condition for each term changes the SQL with the search, which a compiled query keeps for each search
+                if (search is CompiledValue each)
+                    search = each.UseValueInSql();
+                foreach (var value in ToSearch(search))
+                    parameters.Add(AddParam(value).ParameterName);
+            }
+
+            return new PartialSqlString(m.Method.Name == nameof(Sql.Matches)
+                ? DialectProvider.ToFullTextMatch(columns, parameters)
+                : DialectProvider.ToFullTextRank(columns, parameters));
+        }
+
         // The [Vector] column of an operand, if it's one
         private static FieldDefinition VectorFieldOf(Expression expression)
         {
@@ -3452,6 +3511,9 @@ namespace ServiceStack.OrmLite
 
             if (m.Method.Name is nameof(Sql.CosineDistance) or nameof(Sql.L2Distance) or nameof(Sql.NegativeInnerProduct))
                 return VisitVectorSqlMethodCall(m);
+
+            if (m.Method.Name is nameof(Sql.Matches) or nameof(Sql.MatchRank))
+                return VisitFullTextSqlMethodCall(m);
 
             List<object> args = this.VisitInSqlExpressionList(m.Arguments);
             object quotedColName = args[0];

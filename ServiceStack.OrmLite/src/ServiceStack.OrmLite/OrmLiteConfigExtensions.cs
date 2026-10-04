@@ -95,6 +95,8 @@ internal static class OrmLiteConfigExtensions
         modelDef.UniqueConstraints.AddRange(
             modelType.AllAttributes<UniqueConstraintAttribute>().ToList());
 
+        modelDef.FullTextIndex = modelType.FirstAttribute<FullTextIndexAttribute>();
+
         var objProperties = modelType.GetProperties(
             BindingFlags.Public | BindingFlags.Instance).ToList();
 

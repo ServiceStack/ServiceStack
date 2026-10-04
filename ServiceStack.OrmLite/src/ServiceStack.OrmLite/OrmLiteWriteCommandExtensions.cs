@@ -170,6 +170,12 @@ public static class OrmLiteWriteCommandExtensions
                     }
                 }
 
+                if (modelDef.FullTextIndex != null)
+                {
+                    foreach (var sql in dialectProvider.ToCreateFullTextIndexStatements(modelDef))
+                        dbCmd.ExecuteSql(sql);
+                }
+
                 foreach (var sqlComment in dialectProvider.ToCreateCommentStatements(modelType))
                 {
                     dbCmd.ExecuteSql(sqlComment);
@@ -220,6 +226,13 @@ public static class OrmLiteWriteCommandExtensions
                 if (modelDef.PreDropTableSql != null)
                 {
                     ExecuteSql(dbCmd, modelDef.PreDropTableSql);
+                }
+
+                // SQLite's full-text index is a table of its own, which other RDBMS drop with the table
+                if (modelDef.FullTextIndex != null && dialectProvider.Kind == DbKind.Sqlite)
+                {
+                    foreach (var sql in dialectProvider.ToDropFullTextIndexStatements(modelDef))
+                        dbCmd.ExecuteSql(sql);
                 }
 
                 var dropTableFks = dialectProvider.GetDropForeignKeyConstraints(modelDef);

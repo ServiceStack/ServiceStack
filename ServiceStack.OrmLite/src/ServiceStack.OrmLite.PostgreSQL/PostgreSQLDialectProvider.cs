@@ -767,6 +767,50 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
         return defaults;
     }
 
+    private static readonly Regex TextSearchConfigRegex = new(@"^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled,
+        TimeSpan.FromSeconds(1));
+
+    // The text search configuration, 'simple' by default, which indexes words as they're written
+    private string FullTextConfig(ModelDefinition modelDef)
+    {
+        var language = modelDef.FullTextIndex?.Language ?? "simple";
+        if (!TextSearchConfigRegex.IsMatch(language))
+            throw new ArgumentException($"'{language}' isn't the name of a PostgreSQL text search configuration");
+        return GetQuotedValue(language.ToLowerInvariant());
+    }
+
+    // The tsvector of the columns, which queries use the same expression as the index for it to be used
+    private string ToTsVector(ModelDefinition modelDef, List<string> columns) =>
+        $"to_tsvector({FullTextConfig(modelDef)}, {columns.Map(x => $"coalesce({x},'')").Join(" || ' ' || ")})";
+
+    public override List<string> ToCreateFullTextIndexStatements(ModelDefinition modelDef) => [
+        $"CREATE INDEX IF NOT EXISTS {GetQuotedName(GetFullTextIndexName(modelDef))} ON {GetQuotedTableName(modelDef)} " +
+        $"USING GIN ({ToTsVector(modelDef, GetFullTextColumnNames(modelDef))});",
+    ];
+
+    public override List<string> ToDropFullTextIndexStatements(ModelDefinition modelDef)
+    {
+        var schema = GetSchemaName(new TableRef(modelDef));
+        var name = GetQuotedName(GetFullTextIndexName(modelDef));
+        return [$"DROP INDEX IF EXISTS {(schema != null ? GetQuotedName(schema) + "." : "")}{name};"];
+    }
+
+    public override bool SupportsFullTextSearch(IDbConnection db) => true;
+
+    public override bool HasFullTextIndex(IDbConnection db, ModelDefinition modelDef) =>
+        GetTableIndexNames(db, new TableRef(modelDef)).Any(x => x.EqualsIgnoreCase(GetFullTextIndexName(modelDef)));
+
+    // Words are prefixes of the words they match, e.g. data:*, and a phrase's words follow each other
+    public override List<string> ToFullTextSearch(List<FullTextTerm> terms) => [
+        terms.Map(x => x.IsPhrase ? "(" + x.Words.Join(" <-> ") + ")" : x.Words[0] + ":*").Join(" & "),
+    ];
+
+    public override string ToFullTextMatch(FullTextColumns columns, List<string> parameters) =>
+        $"{ToTsVector(columns.ModelDef, columns.Columns)} @@ to_tsquery({FullTextConfig(columns.ModelDef)}, {parameters[0]})";
+
+    public override string ToFullTextRank(FullTextColumns columns, List<string> parameters) =>
+        $"ts_rank_cd({ToTsVector(columns.ModelDef, columns.Columns)}, to_tsquery({FullTextConfig(columns.ModelDef)}, {parameters[0]}))";
+
     public override List<string> GetModelIndexConditions(IDbConnection db, List<FieldDefinition> fieldDefs,
         List<IndexSchema> indexes) => ReadModelIndexConditions(db, fieldDefs, indexes, tempTable => ToColumnDefaults(
             db.SqlList<Dictionary<string, object>>(

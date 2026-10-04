@@ -75,8 +75,8 @@ public class AdminSchemaChange
 {
     /// <summary>
     /// CreateTable, AddColumn, AlterColumn, DropColumn, CreateIndex, AlterIndex, DropIndex, AlterDefault,
-    /// AddForeignKey, AlterForeignKey, DropForeignKey, AddConstraint, AlterConstraint, DropConstraint, AlterPrimaryKey
-    /// or RebuildTable
+    /// AddForeignKey, AlterForeignKey, DropForeignKey, AddConstraint, AlterConstraint, DropConstraint, AlterPrimaryKey,
+    /// RebuildTable or CreateFullTextIndex
     /// </summary>
     public string Type { get; set; } = "";
     public string Model { get; set; } = "";

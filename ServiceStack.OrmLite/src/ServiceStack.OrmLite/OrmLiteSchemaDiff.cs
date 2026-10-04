@@ -88,6 +88,10 @@ public enum SchemaChangeType
     /// them is, or when the table has columns that aren't in the model, which aren't kept.
     /// </summary>
     RebuildTable,
+    /// <summary>
+    /// The full-text index of the model's [FullTextIndex] isn't in the database
+    /// </summary>
+    CreateFullTextIndex,
 }
 
 /// <summary>
@@ -275,6 +279,7 @@ public class SchemaChange
         SchemaChangeType.DropConstraint => $"Constraint {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}" + CantChange,
         SchemaChangeType.AlterPrimaryKey => $"Primary key of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}",
         SchemaChangeType.RebuildTable => $"Table {Table} is created again from {ModelType.Name} and its rows are copied, to change {ModelColumn}",
+        SchemaChangeType.CreateFullTextIndex => $"Full-text index {Name} of {Table} isn't in the database: {ModelColumn}",
         _ => Type.ToString(),
     };
 
@@ -407,6 +412,7 @@ public class SchemaDiff
                     SchemaChangeType.DropConstraint => $"  - constraint {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
                     SchemaChangeType.AlterPrimaryKey => $"  ~ primary key  {change.DatabaseColumn} -> {change.ModelColumn} (not changed)",
                     SchemaChangeType.RebuildTable => $"  ~ rebuild table to change {change.ModelColumn}",
+                    SchemaChangeType.CreateFullTextIndex => $"  + full-text index {change.Name}  {change.ModelColumn}",
                     _ => $"  + index {change.Name}",
                 });
             }
@@ -477,6 +483,8 @@ public static class OrmLiteSchemaDiffApi
             {
                 var createSql = new List<string> { dialect.ToCreateTableStatement(modelType).Trim() };
                 createSql.AddRange(dialect.ToCreateIndexStatements(modelType).Map(x => x.Trim()));
+                if (modelDef.FullTextIndex != null && dialect.SupportsFullTextSearch(db))
+                    createSql.AddRange(dialect.ToCreateFullTextIndexStatements(modelDef).Map(x => x.Trim()));
                 diff.Changes.Add(new SchemaChange {
                     Type = SchemaChangeType.CreateTable,
                     ModelType = modelType,
@@ -610,12 +618,13 @@ public static class OrmLiteSchemaDiffApi
 
             CompareCheckConstraints(diff, db, modelType, tableRef, quotedTable, table, fieldDefs, firstChange, dialect,
                 ref warnedChecks);
+            var fullTextIndexName = CompareFullTextIndex(diff, db, modelType, table, dialect);
 
             var createIndexes = dialect.ToCreateIndexStatements(modelType);
             var dbIndexes = dialect.GetTableIndexes(db, tableRef);
             if (dbIndexes != null)
             {
-                CompareIndexes(diff, db, modelType, tableRef, table, fieldDefs, createIndexes, dbIndexes, dialect);
+                CompareIndexes(diff, db, modelType, tableRef, table, fieldDefs, createIndexes, dbIndexes, fullTextIndexName, dialect);
                 CompareUniqueConstraints(diff, modelType, tableRef, table, createIndexes, dbIndexes, firstChange, dialect);
                 ComparePrimaryKey(diff, modelType, table, dbIndexes, dbColumns, dialect);
                 continue;
@@ -716,13 +725,17 @@ public static class OrmLiteSchemaDiffApi
     // The indexes of the model that aren't in the database or are with other columns, and the indexes in the database
     // that aren't in the model. Indexes of constraints, e.g. primary keys, aren't compared.
     private static void CompareIndexes(SchemaDiff diff, IDbConnection db, Type modelType, TableRef tableRef, string table,
-        List<FieldDefinition> fieldDefs, List<string> createIndexes, List<IndexSchema> dbIndexes, IOrmLiteDialectProvider dialect)
+        List<FieldDefinition> fieldDefs, List<string> createIndexes, List<IndexSchema> dbIndexes, string fullTextIndexName,
+        IOrmLiteDialectProvider dialect)
     {
         var modelIndexes = createIndexes.Distinct().ToDictionary(x => x, ParseIndex);
         UseWrittenConditions(diff, db, table, fieldDefs, modelIndexes.Values.Where(x => x?.Where != null
             && dbIndexes.Any(d => d.Where != null && d.Name.EqualsIgnoreCase(x.Name))).ToList(), dialect);
 
         var modelIndexNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // The full-text index is an index of the table in some RDBMS, e.g. PostgreSQL and MySQL
+        if (fullTextIndexName != null)
+            modelIndexNames.Add(fullTextIndexName);
         foreach (var createIndex in createIndexes)
         {
             var indexName = GetIndexName(createIndex);
@@ -941,6 +954,33 @@ public static class OrmLiteSchemaDiffApi
             diff.Warnings.Add($"The conditions of {table}'s indexes were compared as they're written, as a temporary " +
                               $"table couldn't be created with them: {e.Message}");
         }
+    }
+
+    // The full-text index of the model's [FullTextIndex] when it isn't in the database. Returns its name.
+    private static string CompareFullTextIndex(SchemaDiff diff, IDbConnection db, Type modelType, string table,
+        IOrmLiteDialectProvider dialect)
+    {
+        var modelDef = modelType.GetModelDefinition();
+        if (modelDef.FullTextIndex == null)
+            return null;
+        var name = dialect.GetFullTextIndexName(modelDef);
+        if (!dialect.SupportsFullTextSearch(db))
+        {
+            diff.Warnings.Add($"The full-text index of {table} wasn't compared, as {dialect.GetType().Name} doesn't support full-text indexes");
+            return name;
+        }
+        if (dialect.HasFullTextIndex(db, modelDef))
+            return name;
+
+        diff.Changes.Add(new SchemaChange {
+            Type = SchemaChangeType.CreateFullTextIndex,
+            ModelType = modelType,
+            Table = table,
+            Name = name,
+            ModelColumn = "(" + modelDef.GetFullTextFields().Map(x => dialect.NamingStrategy.GetColumnName(x.FieldName)).Join(", ") + ")",
+            Sql = dialect.ToCreateFullTextIndexStatements(modelDef).Map(x => x.Trim()).Join("\n"),
+        });
+        return name;
     }
 
     private static bool IsSameIndex(IndexSchema modelIndex, IndexSchema dbIndex) =>
@@ -1318,6 +1358,10 @@ public static class OrmLiteSchemaDiffApi
             {
                 db.RebuildTable(change.ModelType);
             }
+            else if (change.Type == SchemaChangeType.CreateFullTextIndex)
+            {
+                db.CreateFullTextIndex(change.ModelType);
+            }
             else
             {
                 if (change.Sql == null)
@@ -1479,7 +1523,8 @@ internal static class SchemaMigrationWriter
             var modelDef = modelType.GetModelDefinition();
             var name = modelType.Name;
             // A table that's created or rebuilt is created from all the properties of the model
-            var createsTable = model.Any(x => x.Type is SchemaChangeType.CreateTable or SchemaChangeType.RebuildTable);
+            var createsTable = model.Any(x => x.Type is SchemaChangeType.CreateTable or SchemaChangeType.RebuildTable
+                or SchemaChangeType.CreateFullTextIndex);
 
             // The table as it is after the migration, with the properties that it changes
             foreach (var attr in CustomAttributeData.GetCustomAttributes(modelType))
@@ -1523,6 +1568,10 @@ internal static class SchemaMigrationWriter
                 }
                 switch (change.Type)
                 {
+                    case SchemaChangeType.CreateFullTextIndex:
+                        up.Add($"Db.CreateFullTextIndex<{name}>();");
+                        undo.Add($"Db.DropFullTextIndex<{name}>();");
+                        break;
                     case SchemaChangeType.RebuildTable:
                         up.Add($"// Create {change.Table} again from {name} and copy its rows, which SQLite needs to change it.");
                         up.Add("// Columns that aren't in the model aren't kept.");

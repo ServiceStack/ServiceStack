@@ -528,6 +528,75 @@ namespace ServiceStack.OrmLite.SqlServer
                     "SELECT name AS name, filter_definition AS value FROM tempdb.sys.indexes WHERE object_id = OBJECT_ID({0})"
                         .SqlFmt(this, "tempdb.." + tempTable.StripDbQuotes()))));
 
+        // The catalog full-text indexes are created in
+        public const string FullTextCatalog = "ormlite_fts";
+
+        // A full-text index keyed by the table's primary key. Its catalog and index can't be created in a transaction, so
+        // they're created with EXEC, which runs them in batches of their own.
+        public override List<string> ToCreateFullTextIndexStatements(ModelDefinition modelDef)
+        {
+            if (modelDef.PrimaryKey == null)
+                throw new NotSupportedException($"SQL Server's full-text index of {modelDef.Name} needs a primary key");
+            var table = GetQuotedTableName(modelDef);
+            var language = modelDef.FullTextIndex?.Language;
+            var languageTerm = string.IsNullOrEmpty(language) ? "0"
+                : int.TryParse(language, out var lcid) ? lcid.ToString() : GetQuotedValue(language);
+            var columns = GetFullTextColumnNames(modelDef).Map(x => $"{x} LANGUAGE {languageTerm}").Join(", ");
+            var catalog = GetQuotedName(FullTextCatalog);
+            return [
+                $"IF NOT EXISTS (SELECT 1 FROM sys.fulltext_catalogs WHERE name = {GetQuotedValue(FullTextCatalog)}) " +
+                $"EXEC({GetQuotedValue($"CREATE FULLTEXT CATALOG {catalog}")});",
+                $"DECLARE @key sysname = (SELECT name FROM sys.indexes WHERE object_id = OBJECT_ID({GetQuotedValue(table)}) AND is_primary_key = 1);\n" +
+                $"DECLARE @sql nvarchar(max) = {GetQuotedValue($"CREATE FULLTEXT INDEX ON {table} ({columns}) KEY INDEX ")} + QUOTENAME(@key) + " +
+                $"{GetQuotedValue($" ON {catalog} WITH (CHANGE_TRACKING = AUTO, STOPLIST = OFF)")};\n" +
+                "EXEC(@sql);",
+            ];
+        }
+
+        public override List<string> ToDropFullTextIndexStatements(ModelDefinition modelDef)
+        {
+            var table = GetQuotedTableName(modelDef);
+            return [
+                $"IF EXISTS (SELECT 1 FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID({GetQuotedValue(table)})) " +
+                $"EXEC({GetQuotedValue($"DROP FULLTEXT INDEX ON {table}")});",
+            ];
+        }
+
+        // Full-Text Search is an optional component of SQL Server
+        public override bool SupportsFullTextSearch(IDbConnection db) =>
+            db.Scalar<int?>("SELECT CONVERT(int, FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))") == 1;
+
+        public override bool HasFullTextIndex(IDbConnection db, ModelDefinition modelDef) =>
+            db.Scalar<int>("SELECT COUNT(*) FROM sys.fulltext_indexes WHERE object_id = OBJECT_ID({0})"
+                .SqlFmt(this, GetQuotedTableName(modelDef))) > 0;
+
+        // Rows are indexed in the background after they're written
+        public override bool IsFullTextIndexUpToDate(IDbConnection db, ModelDefinition modelDef)
+        {
+            var objectId = "OBJECT_ID({0})".SqlFmt(this, GetQuotedTableName(modelDef));
+            return db.Scalar<int>($"SELECT CASE WHEN OBJECTPROPERTYEX({objectId}, 'TableFulltextPendingChanges') = 0 " +
+                $"AND OBJECTPROPERTYEX({objectId}, 'TableFulltextPopulateStatus') = 0 THEN 1 ELSE 0 END") == 1;
+        }
+
+        // CONTAINS() of several columns only matches rows with every word of its search in the same column, so each word
+        // and phrase is matched by a CONTAINS() of its own, which matches it in any column
+        public override bool FullTextMatchesEachTerm => true;
+
+        // Words are prefixes of the words they match, e.g. "data*"
+        public override List<string> ToFullTextSearch(List<FullTextTerm> terms) =>
+            terms.Map(x => x.IsPhrase ? "\"" + x.Words.Join(" ") + "\"" : "\"" + x.Words[0] + "*\"");
+
+        public override string ToFullTextMatch(FullTextColumns columns, List<string> parameters) =>
+            "(" + parameters.Map(p => $"CONTAINS(({columns.Columns.Join(", ")}), {p})").Join(" AND ") + ")";
+
+        // The sum of the rank of each word and phrase
+        public override string ToFullTextRank(FullTextColumns columns, List<string> parameters)
+        {
+            var ftColumns = GetFullTextColumnNames(columns.ModelDef).Join(", ");
+            return "(" + parameters.Map(p => $"COALESCE((SELECT ft.[RANK] FROM CONTAINSTABLE({columns.Table}, ({ftColumns}), {p}) ft " +
+                $"WHERE ft.[KEY] = {columns.PrimaryKey}), 0)").Join(" + ") + ")";
+        }
+
         // Temporary tables, e.g. of GetModelCheckConstraints(), are in tempdb
         public override List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable)
         {

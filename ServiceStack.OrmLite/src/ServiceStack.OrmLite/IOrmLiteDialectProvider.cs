@@ -479,6 +479,61 @@ public interface IOrmLiteDialectProvider
     string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName);
 
     /// <summary>
+    /// The name of the full-text index of a model's [FullTextIndex], e.g. ftx_article, or SQLite's article_fts table
+    /// </summary>
+    string GetFullTextIndexName(ModelDefinition modelDef);
+
+    /// <summary>
+    /// The statements that create the full-text index of a model's [FullTextIndex] in its table, and index the rows it
+    /// has. Throws a NotSupportedException if the RDBMS doesn't have full-text indexes.
+    /// </summary>
+    List<string> ToCreateFullTextIndexStatements(ModelDefinition modelDef);
+
+    /// <summary>
+    /// The statements that drop the full-text index of a model's [FullTextIndex]
+    /// </summary>
+    List<string> ToDropFullTextIndexStatements(ModelDefinition modelDef);
+
+    /// <summary>
+    /// Whether the database can create full-text indexes
+    /// </summary>
+    bool SupportsFullTextSearch(IDbConnection db);
+
+    /// <summary>
+    /// Whether the table of a model has the full-text index of its [FullTextIndex]
+    /// </summary>
+    bool HasFullTextIndex(IDbConnection db, ModelDefinition modelDef);
+
+    /// <summary>
+    /// Whether the rows that were written are in the full-text index of a model, which SQL Server indexes in the
+    /// background
+    /// </summary>
+    bool IsFullTextIndexUpToDate(IDbConnection db, ModelDefinition modelDef);
+
+    /// <summary>
+    /// Whether each word or phrase of a search is matched by a condition of its own, with a db param for each, e.g.
+    /// SQL Server, whose CONTAINS() of several columns only matches rows with every word in the same column
+    /// </summary>
+    bool FullTextMatchesEachTerm { get; }
+
+    /// <summary>
+    /// The values of the db params of a search, in the full-text query syntax of the RDBMS, from the words and "quoted
+    /// phrases" of OrmLiteFullTextSearch.ParseSearch(): one for the whole search, or one for each of its terms when
+    /// FullTextMatchesEachTerm
+    /// </summary>
+    List<string> ToFullTextSearch(List<FullTextTerm> terms);
+
+    /// <summary>
+    /// The condition that a row's full-text index matches the search of db params
+    /// </summary>
+    string ToFullTextMatch(FullTextColumns columns, List<string> parameters);
+
+    /// <summary>
+    /// How relevant a row is to the search of db params, where higher is more relevant
+    /// </summary>
+    string ToFullTextRank(FullTextColumns columns, List<string> parameters);
+
+    /// <summary>
     /// Add a constraint to a table, e.g. CONSTRAINT "UC_Order_Code" UNIQUE ("Code"), or null if the database can't
     /// add it to an existing table
     /// </summary>

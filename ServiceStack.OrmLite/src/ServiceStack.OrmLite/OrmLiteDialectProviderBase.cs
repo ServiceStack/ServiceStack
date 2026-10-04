@@ -2806,6 +2806,34 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
                $"{GetForeignKeyOnDeleteClause(fieldDef.ForeignKey)}{GetForeignKeyOnUpdateClause(fieldDef.ForeignKey)};";
     }
 
+    public virtual string GetFullTextIndexName(ModelDefinition modelDef) =>
+        modelDef.FullTextIndex?.Name ?? NamingStrategy.ApplyNameRestrictions("ftx_" + GetTableNameOnly(new TableRef(modelDef)));
+
+    protected NotSupportedException FullTextNotSupported() =>
+        new($"{GetType().Name} doesn't support full-text indexes");
+
+    public virtual List<string> ToCreateFullTextIndexStatements(ModelDefinition modelDef) => throw FullTextNotSupported();
+
+    public virtual List<string> ToDropFullTextIndexStatements(ModelDefinition modelDef) => throw FullTextNotSupported();
+
+    public virtual bool SupportsFullTextSearch(IDbConnection db) => false;
+
+    public virtual bool HasFullTextIndex(IDbConnection db, ModelDefinition modelDef) => false;
+
+    public virtual bool IsFullTextIndexUpToDate(IDbConnection db, ModelDefinition modelDef) => true;
+
+    public virtual bool FullTextMatchesEachTerm => false;
+
+    public virtual List<string> ToFullTextSearch(List<FullTextTerm> terms) => throw FullTextNotSupported();
+
+    public virtual string ToFullTextMatch(FullTextColumns columns, List<string> parameters) => throw FullTextNotSupported();
+
+    public virtual string ToFullTextRank(FullTextColumns columns, List<string> parameters) => throw FullTextNotSupported();
+
+    // The quoted columns of a [FullTextIndex] without their table, e.g. to create its index
+    protected List<string> GetFullTextColumnNames(ModelDefinition modelDef) =>
+        modelDef.GetFullTextFields().Map(GetQuotedColumnName);
+
     public virtual string ToAddConstraintStatement(TableRef tableRef, string constraint) =>
         $"ALTER TABLE {QuoteTable(tableRef)} ADD {constraint};";
 

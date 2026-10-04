@@ -577,6 +577,44 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled,
 		TimeSpan.FromSeconds(1));
 
+	// A FULLTEXT index, whose columns are the ones MATCH() has to search for it to be used. It's created by copying the
+	// table, as MariaDB doesn't index the rows a table has when it's created again in place
+	public override List<string> ToCreateFullTextIndexStatements(ModelDefinition modelDef) => [
+		$"ALTER TABLE {GetQuotedTableName(modelDef)} ADD FULLTEXT INDEX {GetQuotedName(GetFullTextIndexName(modelDef))} " +
+		$"({GetFullTextColumnNames(modelDef).Join(", ")}), ALGORITHM=COPY;",
+	];
+
+	public override List<string> ToDropFullTextIndexStatements(ModelDefinition modelDef) => [
+		$"DROP INDEX {GetQuotedName(GetFullTextIndexName(modelDef))} ON {GetQuotedTableName(modelDef)};",
+	];
+
+	public override bool SupportsFullTextSearch(IDbConnection db) => true;
+
+	public override bool HasFullTextIndex(IDbConnection db, ModelDefinition modelDef) =>
+		GetTableIndexNames(db, new TableRef(modelDef)).Any(x => x.EqualsIgnoreCase(GetFullTextIndexName(modelDef)));
+
+	// InnoDB's default stop words, which aren't indexed
+	private static readonly HashSet<string> FullTextStopWords = new(StringComparer.OrdinalIgnoreCase) {
+		"a", "about", "an", "are", "as", "at", "be", "by", "com", "de", "en", "for", "from", "how", "i", "in", "is",
+		"it", "la", "of", "on", "or", "that", "the", "this", "to", "was", "what", "when", "where", "who", "will",
+		"with", "und", "www",
+	};
+
+	// Every word and phrase is required, and words are prefixes of the words they match, e.g. +data*. Words that
+	// aren't indexed, as they're shorter than innodb_ft_min_token_size (3) or stop words, would match no rows when
+	// they're required, so they're optional.
+	public override List<string> ToFullTextSearch(List<FullTextTerm> terms) => [
+		terms.Map(x => x.IsPhrase ? "+\"" + x.Words.Join(" ") + "\""
+			: x.Words[0].Length < 3 || FullTextStopWords.Contains(x.Words[0]) ? x.Words[0] + "*"
+			: "+" + x.Words[0] + "*").Join(" "),
+	];
+
+	public override string ToFullTextMatch(FullTextColumns columns, List<string> parameters) =>
+		$"MATCH({columns.Columns.Join(", ")}) AGAINST({parameters[0]} IN BOOLEAN MODE)";
+
+	public override string ToFullTextRank(FullTextColumns columns, List<string> parameters) =>
+		$"MATCH({columns.Columns.Join(", ")}) AGAINST({parameters[0]} IN BOOLEAN MODE)";
+
 	// Unique constraints are unique indexes
 	public override string ToDropUniqueConstraintStatement(TableRef tableRef, string constraintName) =>
 		$"ALTER TABLE {QuoteTable(tableRef)} DROP INDEX {GetQuotedName(constraintName)};";

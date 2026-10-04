@@ -535,6 +535,74 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
         System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled,
         TimeSpan.FromSeconds(1));
 
+    // An FTS5 table that indexes the text of the table's rows by their integer primary key, which it reads from the
+    // table instead of storing it again. Triggers keep it in sync with the table's rows.
+    public override string GetFullTextIndexName(ModelDefinition modelDef) =>
+        modelDef.FullTextIndex?.Name ?? GetTableNameOnly(new TableRef(modelDef)) + "_fts";
+
+    public override List<string> ToCreateFullTextIndexStatements(ModelDefinition modelDef)
+    {
+        var primaryKey = modelDef.PrimaryKey;
+        if (primaryKey == null || !primaryKey.FieldType.IsIntegerType())
+            throw new NotSupportedException($"SQLite's full-text index of {modelDef.Name} needs an integer primary key");
+
+        var table = GetQuotedTableName(modelDef);
+        var name = GetFullTextIndexName(modelDef);
+        var fts = GetQuotedName(name);
+        var columns = GetFullTextColumnNames(modelDef);
+        var pk = GetQuotedColumnName(primaryKey);
+        string Values(string row) => columns.Map(x => row + "." + x).Join(", ");
+        var ftsColumns = columns.Join(", ");
+        var insert = $"INSERT INTO {fts}(rowid, {ftsColumns}) VALUES (new.{pk}, {Values("new")});";
+        var delete = $"INSERT INTO {fts}({fts}, rowid, {ftsColumns}) VALUES ('delete', old.{pk}, {Values("old")});";
+
+        return [
+            $"CREATE VIRTUAL TABLE {fts} USING fts5({ftsColumns}, content={GetQuotedValue(UnquotedTable(new TableRef(modelDef)))}, " +
+                $"content_rowid={GetQuotedValue(NamingStrategy.GetColumnName(primaryKey.FieldName))});",
+            $"CREATE TRIGGER {GetQuotedName(name + "_ai")} AFTER INSERT ON {table} BEGIN {insert} END;",
+            $"CREATE TRIGGER {GetQuotedName(name + "_ad")} AFTER DELETE ON {table} BEGIN {delete} END;",
+            $"CREATE TRIGGER {GetQuotedName(name + "_au")} AFTER UPDATE OF {pk}, {ftsColumns} ON {table} BEGIN {delete} {insert} END;",
+            // Index the rows the table already has
+            $"INSERT INTO {fts}({fts}) VALUES ('rebuild');",
+        ];
+    }
+
+    public override List<string> ToDropFullTextIndexStatements(ModelDefinition modelDef)
+    {
+        var name = GetFullTextIndexName(modelDef);
+        return [
+            $"DROP TRIGGER IF EXISTS {GetQuotedName(name + "_ai")};",
+            $"DROP TRIGGER IF EXISTS {GetQuotedName(name + "_ad")};",
+            $"DROP TRIGGER IF EXISTS {GetQuotedName(name + "_au")};",
+            $"DROP TABLE IF EXISTS {GetQuotedName(name)};",
+        ];
+    }
+
+    public override bool SupportsFullTextSearch(IDbConnection db) =>
+        db.Scalar<long>("SELECT COUNT(*) FROM pragma_module_list WHERE name = 'fts5'") > 0;
+
+    public override bool HasFullTextIndex(IDbConnection db, ModelDefinition modelDef) =>
+        db.Scalar<long>("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = {0} COLLATE NOCASE"
+            .SqlFmt(this, GetFullTextIndexName(modelDef))) > 0;
+
+    // Words are prefixes of the words they match, e.g. "data"*
+    public override List<string> ToFullTextSearch(List<FullTextTerm> terms) => [
+        terms.Map(x => x.IsPhrase ? "\"" + x.Words.Join(" ") + "\"" : "\"" + x.Words[0] + "\"*").Join(" AND "),
+    ];
+
+    public override string ToFullTextMatch(FullTextColumns columns, List<string> parameters)
+    {
+        var fts = GetQuotedName(GetFullTextIndexName(columns.ModelDef));
+        return $"{columns.PrimaryKey} IN (SELECT rowid FROM {fts} WHERE {fts} MATCH {parameters[0]})";
+    }
+
+    // bm25() is lower for more relevant rows, so it's negated
+    public override string ToFullTextRank(FullTextColumns columns, List<string> parameters)
+    {
+        var fts = GetQuotedName(GetFullTextIndexName(columns.ModelDef));
+        return $"COALESCE((SELECT -bm25({fts}) FROM {fts} WHERE {fts} MATCH {parameters[0]} AND rowid = {columns.PrimaryKey}), 0)";
+    }
+
     public override string ToAddConstraintStatement(TableRef tableRef, string constraint) => null;
 
     public override string ToDropUniqueConstraintStatement(TableRef tableRef, string constraintName) => null;

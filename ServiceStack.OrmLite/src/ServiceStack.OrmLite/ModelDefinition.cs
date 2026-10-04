@@ -147,6 +147,11 @@ public class ModelDefinition
 
     public List<CompositeIndexAttribute> CompositeIndexes { get; set; } = [];
 
+    /// <summary>
+    /// The full-text index of the table's text columns, from its [FullTextIndex]
+    /// </summary>
+    public FullTextIndexAttribute FullTextIndex { get; set; }
+
     public List<UniqueConstraintAttribute> UniqueConstraints { get; set; } = [];
 
     public FieldDefinition GetFieldDefinition<T>(Expression<Func<T, object>> field)
