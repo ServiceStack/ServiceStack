@@ -116,7 +116,7 @@ internal sealed class OrmLiteBatch : IDisposable
                 foreach (var batchCmd in batch.BatchCommands)
                 {
                     if (batchCmd.RecordsAffected == 0)
-                        throw new OptimisticConcurrencyException();
+                        throw new OptimisticConcurrencyException(OrmLiteWriteCommandExtensions.RowModifiedMessage);
                 }
             }
             if (rowsAffected > 0)

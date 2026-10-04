@@ -159,7 +159,8 @@ public class BatchWriteUseCases(DialectContext context) : OrmLiteProvidersTestBa
         db.UpdateOnly(() => new Ticket { Title = "Changed" }, where: x => x.Id == 2); // by someone else
 
         tickets.Each(x => x.Title += "!");
-        Assert.Throws<OptimisticConcurrencyException>(() => db.UpdateAll(tickets));
+        var ex = Assert.Throws<OptimisticConcurrencyException>(() => db.UpdateAll(tickets));
+        Assert.That(ex.Message, Is.EqualTo("The row was modified or deleted since the last read"));
 
         // None of the rows are updated
         Assert.That(db.Select<Ticket>().OrderBy(x => x.Id).Map(x => x.Title), Is.EqualTo(new[] {

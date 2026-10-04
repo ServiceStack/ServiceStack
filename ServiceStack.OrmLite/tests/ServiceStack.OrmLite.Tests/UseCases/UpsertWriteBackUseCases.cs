@@ -89,7 +89,8 @@ public class UpsertWriteBackUseCases(DialectContext context) : OrmLiteProvidersT
         db.Upsert(doc);
 
         stale.Title = "Overwritten";
-        Assert.Throws<OptimisticConcurrencyException>(() => db.Update(stale));
+        var ex = Assert.Throws<OptimisticConcurrencyException>(() => db.Update(stale));
+        Assert.That(ex.Message, Is.EqualTo("The row was modified or deleted since the last read"));
 
         // The upserted object still has the latest row version
         doc.Title = "Archived";

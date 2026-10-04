@@ -26,6 +26,11 @@ public static class OrmLiteWriteCommandExtensions
 {
     internal static ILog Log => OrmLiteLog.Log;
 
+    /// <summary>
+    /// The message of the OptimisticConcurrencyException thrown when a row's version isn't the one that was read
+    /// </summary>
+    internal const string RowModifiedMessage = "The row was modified or deleted since the last read";
+
     internal static bool CreateSchema<T>(this IDbCommand dbCmd)
     {
         var schemaName = typeof(T).FirstAttribute<SchemaAttribute>()?.Name;
@@ -496,7 +501,7 @@ public static class OrmLiteWriteCommandExtensions
         var rowsUpdated = dbCmd.ExecNonQuery();
 
         if (hadRowVersion && rowsUpdated == 0)
-            throw new OptimisticConcurrencyException();
+            throw new OptimisticConcurrencyException(RowModifiedMessage);
 
         return rowsUpdated;
     }
@@ -543,7 +548,7 @@ public static class OrmLiteWriteCommandExtensions
 
                 var rowsUpdated = dbCmd.ExecNonQuery();
                 if (hadRowVersion && rowsUpdated == 0) 
-                    throw new OptimisticConcurrencyException();
+                    throw new OptimisticConcurrencyException(RowModifiedMessage);
 
                 count += rowsUpdated;                
             }
@@ -568,7 +573,7 @@ public static class OrmLiteWriteCommandExtensions
     {
         var rowsUpdated = dbCmd.ExecNonQuery();
         if (hadRowVersion && rowsUpdated == 0)
-            throw new OptimisticConcurrencyException();
+            throw new OptimisticConcurrencyException(RowModifiedMessage);
 
         return rowsUpdated;
     }
@@ -691,7 +696,7 @@ public static class OrmLiteWriteCommandExtensions
 
         var rowsAffected = dbCmd.ExecuteSql(sql, commandFilter: commandFilter);
         if (rowsAffected == 0)
-            throw new OptimisticConcurrencyException("The row was modified or deleted since the last read");
+            throw new OptimisticConcurrencyException(RowModifiedMessage);
     }
 
     internal static string DeleteByIdSql<T>(this IDbCommand dbCmd, object id, ulong rowVersion)
