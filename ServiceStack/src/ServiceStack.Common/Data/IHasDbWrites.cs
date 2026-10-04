@@ -8,4 +8,9 @@ namespace ServiceStack.Data;
 public interface IHasDbWrites
 {
     bool HasWrites { get; }
+
+    /// <summary>
+    /// Called before the connection runs its first statement that writes
+    /// </summary>
+    System.Action? OnFirstWrite { get; set; }
 }

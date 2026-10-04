@@ -712,6 +712,13 @@ public abstract partial class ServiceStackHost
     public List<Action<IDbConnection, IRequest>> DbConnectionRequestFilters { get; set; } = [];
 
     /// <summary>
+    /// How long the requests of a user read from the primary instead of a read replica after one of their requests
+    /// writes, so they see what they wrote while the replica catches up. Users are identified by their authenticated
+    /// user id or their session, see GetDbWriterKeys(). TimeSpan.Zero to always read from the replica.
+    /// </summary>
+    public TimeSpan ReadYourWritesFor { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>
     /// Register highest priority IHttpHandler callbacks
     /// </summary>
     public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
@@ -1499,6 +1506,10 @@ public abstract partial class ServiceStackHost
                     return;
 
                 request.SetTrue(nameof(OnEndRequest));
+
+                // Read what it wrote for ReadYourWritesFor after the request ends, as it may have written for longer
+                if (ReadYourWritesFor > TimeSpan.Zero && HasDbWrites(request))
+                    RecordDbWrites(request);
             }
                 
             var disposables = RequestContext.Instance.Items.Values;

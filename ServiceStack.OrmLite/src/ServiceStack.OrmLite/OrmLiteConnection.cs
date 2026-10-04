@@ -67,6 +67,12 @@ public class OrmLiteConnection
     }
     private bool hasWrites;
 
+    /// <summary>
+    /// Called before the connection runs its first statement that writes, e.g. so the user's next requests read what
+    /// they wrote from the primary
+    /// </summary>
+    public Action? OnFirstWrite { get; set; }
+
     // The database's session is read-only, and is made read-write again before the connection is pooled
     private bool readOnlySession;
 
@@ -85,7 +91,10 @@ public class OrmLiteConnection
         }
         // Read-only connections can't write
         if (!owner.IsReadOnly && !owner.hasWrites && (isNonQuery || OrmLiteWriteStatement.IsWrite(dbCmd, exact: false)))
+        {
             owner.hasWrites = true;
+            (OnFirstWrite ?? owner.OnFirstWrite)?.Invoke();
+        }
     }
 
     // Make the session of a read-only connection read-only, so the database rejects its writes, including on a

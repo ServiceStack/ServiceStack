@@ -321,6 +321,48 @@ public class ReadReplicaAppHostTests
     }
 
     [Test]
+    public void A_users_next_requests_read_from_the_primary_after_they_write()
+    {
+        // Users are identified by their session
+        static JsonApiClient CreateSessionClient(string sessionId)
+        {
+            var client = CreateClient(1);
+            client.AddHeader("X-ss-id", sessionId);
+            return client;
+        }
+        using var writer = CreateSessionClient("writer");
+        using var other = CreateSessionClient("other");
+        var appHost = HostContext.AppHost;
+        var readYourWritesFor = appHost.ReadYourWritesFor;
+        appHost.ReadYourWritesFor = TimeSpan.FromMilliseconds(500);
+        var created = writer.Post(new CreateReplicaRow { Database = "written" });
+        try
+        {
+            // The writer reads what they wrote, which the replica doesn't have yet
+            Assert.That(writer.Get(new GetReplicaDatabases()).ReadDb, Is.EquivalentTo(new[] { "primary", "written" }));
+            Assert.That(writer.Get(new QueryReplicaRows()).Results.Map(x => x.Database), Is.EquivalentTo(new[] { "primary", "written" }));
+
+            // Other users read from the replica
+            Assert.That(other.Get(new GetReplicaDatabases()).ReadDb, Is.EqualTo(new[] { "replica" }));
+
+            // Until the replica has caught up
+            System.Threading.Thread.Sleep(appHost.ReadYourWritesFor + TimeSpan.FromMilliseconds(100));
+            Assert.That(writer.Get(new GetReplicaDatabases()).ReadDb, Is.EqualTo(new[] { "replica" }));
+
+            // Or always, without ReadYourWritesFor
+            appHost.ReadYourWritesFor = TimeSpan.Zero;
+            writer.Post(new CreateReplicaRow { Database = "written" });
+            Assert.That(writer.Get(new GetReplicaDatabases()).ReadDb, Is.EqualTo(new[] { "replica" }));
+        }
+        finally
+        {
+            appHost.ReadYourWritesFor = readYourWritesFor;
+            using var primary = dbFactory.OpenDbConnection();
+            primary.Delete<ReplicaRow>(x => x.Database == "written");
+        }
+    }
+
+    [Test]
     public void AutoQuery_APIs_can_opt_out_of_the_read_replica()
     {
         using var client = CreateClient(1);

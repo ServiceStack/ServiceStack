@@ -1129,6 +1129,10 @@ public abstract partial class ServiceStackHost
         else
             req.Items[Keywords.DbConnections] = new List<IDbConnection> { db };
 
+        // Their user's next requests read what they wrote, see ReadYourWritesFor
+        if (ReadYourWritesFor > TimeSpan.Zero && db is IHasDbWrites { HasWrites: false } hasWrites)
+            hasWrites.OnFirstWrite = () => RecordDbWrites(req);
+
         try
         {
             OnDbConnectionRequest(db, req);
@@ -1249,7 +1253,7 @@ public abstract partial class ServiceStackHost
     }
 
     public virtual IDbConnection GetReadOnlyDbConnection(IRequest req, Action<IDbConnection> configure) =>
-        HasDbWrites(req)
+        ReadsFromPrimary(req)
             ? GetDbConnection(req, configure)
             : ApplyDbConnectionRequestFilters(OpenReadOnlyDbConnection(req, configure), req);
 
@@ -1264,6 +1268,66 @@ public abstract partial class ServiceStackHost
         foreach (var db in connections)
         {
             if (db is IHasDbWrites { HasWrites: true })
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Whether the request reads from the primary instead of a read replica, as it or a recent request of its user
+    /// wrote, see <see cref="ReadYourWritesFor"/>
+    /// </summary>
+    public virtual bool ReadsFromPrimary(IRequest req) => HasDbWrites(req) || HasRecentDbWrites(req);
+
+    private const string DbWritesKeyPrefix = "__dbwrites:";
+
+    /// <summary>
+    /// Who made the request, whose requests read from the primary for <see cref="ReadYourWritesFor"/> after they
+    /// write: its authenticated user and its session
+    /// </summary>
+    public virtual List<string> GetDbWriterKeys(IRequest req)
+    {
+        var to = new List<string>(2);
+        var userId = req.GetItem(Keywords.Session) is IAuthSession { IsAuthenticated: true } session
+            ? session.UserAuthId
+            : null;
+        if (userId == null && req.GetClaimsPrincipal() is { Identity.IsAuthenticated: true } principal)
+            userId = (principal.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier) ?? principal.FindFirst("sub"))?.Value;
+        if (!string.IsNullOrEmpty(userId))
+            to.Add("user:" + userId);
+        var sessionId = req.GetSessionId();
+        if (!string.IsNullOrEmpty(sessionId))
+            to.Add("session:" + sessionId);
+        return to;
+    }
+
+    /// <summary>
+    /// Record that the user of a request wrote, so their requests read from the primary for
+    /// <see cref="ReadYourWritesFor"/>. Kept in the App's memory cache, override with HasRecentDbWrites() to share
+    /// them between an App's servers.
+    /// </summary>
+    public virtual void RecordDbWrites(IRequest req)
+    {
+        if (req == null || ReadYourWritesFor <= TimeSpan.Zero)
+            return;
+        var cache = GetMemoryCacheClient(req);
+        foreach (var key in GetDbWriterKeys(req))
+        {
+            cache.Set(DbWritesKeyPrefix + key, true, ReadYourWritesFor);
+        }
+    }
+
+    /// <summary>
+    /// Whether the user of a request wrote in the last <see cref="ReadYourWritesFor"/>, see RecordDbWrites()
+    /// </summary>
+    public virtual bool HasRecentDbWrites(IRequest req)
+    {
+        if (req == null || ReadYourWritesFor <= TimeSpan.Zero)
+            return false;
+        var cache = GetMemoryCacheClient(req);
+        foreach (var key in GetDbWriterKeys(req))
+        {
+            if (cache.Get<bool>(DbWritesKeyPrefix + key))
                 return true;
         }
         return false;
@@ -1308,7 +1372,7 @@ public abstract partial class ServiceStackHost
     }
 
     public virtual async Task<IDbConnection> GetReadOnlyDbConnectionAsync(IRequest req, Action<IDbConnection> configure) =>
-        HasDbWrites(req)
+        ReadsFromPrimary(req)
             ? await GetDbConnectionAsync(req, configure).ConfigAwait()
             : ApplyDbConnectionRequestFilters(await OpenReadOnlyDbConnectionAsync(req, configure).ConfigAwait(), req);
 
@@ -1347,7 +1411,7 @@ public abstract partial class ServiceStackHost
                 hasTag.Tag = connName;
         }
 
-        if (HasDbWrites(req) || Container.TryResolve<IDbConnectionFactory>() is not IDbReadOnlyConnectionFactory dbFactory)
+        if (ReadsFromPrimary(req) || Container.TryResolve<IDbConnectionFactory>() is not IDbReadOnlyConnectionFactory dbFactory)
             return GetDbConnection(namedConnection, req);
         return ApplyDbConnectionRequestFilters(namedConnection == null
             ? dbFactory.OpenReadOnlyDbConnection(withTag)
