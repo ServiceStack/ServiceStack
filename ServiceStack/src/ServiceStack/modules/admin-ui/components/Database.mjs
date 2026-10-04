@@ -489,7 +489,9 @@ export const Database = {
         }
         function changeTitle(change) {
             // SQLite doesn't keep the names of foreign keys
-            return change.type === 'CreateTable' ? 'Create table' : change.name || 'Foreign key'
+            return change.type === 'CreateTable' ? 'Create table'
+                : change.type === 'AlterPrimaryKey' ? 'Primary key'
+                : change.name || (change.type.endsWith('Constraint') ? 'Constraint' : 'Foreign key')
         }
         function changeDetail(change) {
             switch (change.type) {
@@ -504,6 +506,10 @@ export const Database = {
                 case 'AddForeignKey': return `Add foreign key: ${change.modelColumn}` + cantChange(change)
                 case 'AlterForeignKey': return `Foreign key ${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)
                 case 'DropForeignKey': return `Foreign key not in ${change.model}: ${change.databaseColumn}` + cantChange(change)
+                case 'AddConstraint': return `Add constraint: ${change.modelColumn}` + cantChange(change)
+                case 'AlterConstraint': return `${change.databaseColumn} \u2192 ${change.modelColumn}` + cantChange(change)
+                case 'DropConstraint': return `Constraint not in ${change.model}: ${change.databaseColumn}` + cantChange(change)
+                case 'AlterPrimaryKey': return `${change.databaseColumn} \u2192 ${change.modelColumn} (not changed by Schema Diff)`
                 default: return change.description
             }
         }

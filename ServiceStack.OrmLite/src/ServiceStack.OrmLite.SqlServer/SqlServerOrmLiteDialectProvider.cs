@@ -506,16 +506,32 @@ namespace ServiceStack.OrmLite.SqlServer
             "SELECT name FROM sys.indexes WHERE object_id = OBJECT_ID({0}) AND name IS NOT NULL"
                 .SqlFmt(this, QuoteTable(tableRef)));
 
-        public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef) => ToIndexSchemas(
-            db.SqlList<Dictionary<string, object>>(
-                "SELECT i.name AS name, i.is_unique AS is_unique, " +
-                "CAST(CASE WHEN i.is_primary_key = 1 OR i.is_unique_constraint = 1 THEN 1 ELSE 0 END AS bit) AS is_constraint, " +
+        public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef)
+        {
+            string Columns(int included, string orderBy) =>
                 "STUFF((SELECT ',' + c.name FROM sys.index_columns ic " +
                 "JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id " +
-                "WHERE ic.object_id = i.object_id AND ic.index_id = i.index_id AND ic.is_included_column = 0 " +
-                "ORDER BY ic.key_ordinal FOR XML PATH('')), 1, 1, '') AS columns " +
-                "FROM sys.indexes i WHERE i.object_id = OBJECT_ID({0}) AND i.name IS NOT NULL"
+                $"WHERE ic.object_id = i.object_id AND ic.index_id = i.index_id AND ic.is_included_column = {included} " +
+                $"ORDER BY {orderBy} FOR XML PATH('')), 1, 1, '')";
+            return ToIndexSchemas(db.SqlList<Dictionary<string, object>>(
+                ("SELECT i.name AS name, i.is_unique AS is_unique, " +
+                 "CAST(CASE WHEN i.is_primary_key = 1 OR i.is_unique_constraint = 1 THEN 1 ELSE 0 END AS bit) AS is_constraint, " +
+                 $"i.is_primary_key AS is_primary_key, {Columns(0, "ic.key_ordinal")} AS columns, " +
+                 $"{Columns(1, "ic.index_column_id")} AS include, i.filter_definition AS where_condition " +
+                 "FROM sys.indexes i WHERE i.object_id = OBJECT_ID({0}) AND i.name IS NOT NULL")
                     .SqlFmt(this, QuoteTable(tableRef))));
+        }
+
+        // Temporary tables, e.g. of GetModelCheckConstraints(), are in tempdb
+        public override List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable)
+        {
+            var isTemp = quotedTable.IndexOf('#') >= 0;
+            var catalog = isTemp ? "tempdb." : "";
+            var objectName = isTemp ? "tempdb.." + quotedTable.StripDbQuotes() : quotedTable;
+            return ToCheckConstraintSchemas(db.SqlList<Dictionary<string, object>>(
+                ($"SELECT cc.name AS name, cc.definition AS condition FROM {catalog}sys.check_constraints cc " +
+                 "WHERE cc.parent_object_id = OBJECT_ID({0})").SqlFmt(this, objectName)));
+        }
 
         // Temporary tables, e.g. of GetModelSchemaColumns(), are in tempdb
         public override Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable)

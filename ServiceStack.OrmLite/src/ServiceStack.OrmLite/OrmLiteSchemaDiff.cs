@@ -62,6 +62,26 @@ public enum SchemaChangeType
     /// hand. It's destructive, so it's only dropped with allowDestructive.
     /// </summary>
     DropForeignKey,
+    /// <summary>
+    /// A unique constraint of the model, from [Unique] or [UniqueConstraint], or a check constraint of the model, from
+    /// [CheckConstraint] or [CheckEnum], isn't in the table. It's destructive, as the rows in the table can break it.
+    /// </summary>
+    AddConstraint,
+    /// <summary>
+    /// The condition of a check constraint isn't the model's, so it's dropped and added again. It's destructive, as
+    /// the rows in the table can break it.
+    /// </summary>
+    AlterConstraint,
+    /// <summary>
+    /// A unique or check constraint of the table isn't in the model. It's destructive, so it's only dropped with
+    /// allowDestructive.
+    /// </summary>
+    DropConstraint,
+    /// <summary>
+    /// The primary key of the table has other columns than the model's. It's only reported, as changing a primary key
+    /// needs its foreign keys and data to be migrated too.
+    /// </summary>
+    AlterPrimaryKey,
 }
 
 /// <summary>
@@ -84,7 +104,45 @@ public class IndexSchema
     /// </summary>
     public bool IsConstraint { get; set; }
 
-    public override string ToString() => (IsUnique ? "UNIQUE " : "") + "(" + string.Join(", ", Columns) + ")";
+    /// <summary>
+    /// Whether it's the index of the table's primary key
+    /// </summary>
+    public bool IsPrimaryKey { get; set; }
+
+    /// <summary>
+    /// The columns of INCLUDE, which are kept in the index without being part of its key
+    /// </summary>
+    public List<string> Include { get; set; } = [];
+
+    /// <summary>
+    /// The condition of a filtered or partial index, as it's written by the database
+    /// </summary>
+    public string Where { get; set; }
+
+    /// <summary>
+    /// The key columns, INCLUDE columns, WHERE condition and uniqueness of an index from the statement that creates it,
+    /// or null if they can't be read
+    /// </summary>
+    public static IndexSchema Parse(string createIndexSql) => OrmLiteSchemaDiffApi.ParseIndex(createIndexSql);
+
+    public override string ToString() => (IsUnique ? "UNIQUE " : "") + "(" + string.Join(", ", Columns) + ")"
+        + (Include.Count > 0 ? " INCLUDE (" + string.Join(", ", Include) + ")" : "")
+        + (Where != null ? " WHERE " + Where : "");
+}
+
+/// <summary>
+/// A check constraint of a table in the database
+/// </summary>
+public class CheckConstraintSchema
+{
+    public string Name { get; set; }
+
+    /// <summary>
+    /// The condition of the CHECK, e.g. (qty > 0), as it's written by the database
+    /// </summary>
+    public string Condition { get; set; }
+
+    public override string ToString() => $"CHECK ({Condition})";
 }
 
 /// <summary>
@@ -200,6 +258,11 @@ public class SchemaChange
         SchemaChangeType.AlterForeignKey => $"Foreign key {Name} of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
             + CantChange,
         SchemaChangeType.DropForeignKey => $"Foreign key {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}" + CantChange,
+        SchemaChangeType.AddConstraint => $"Constraint {Name} of {Table} isn't in the database: {ModelColumn}" + CantChange,
+        SchemaChangeType.AlterConstraint => $"Constraint {Name} of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}"
+            + CantChange,
+        SchemaChangeType.DropConstraint => $"Constraint {Name} of {Table} isn't in {ModelType.Name}: {DatabaseColumn}" + CantChange,
+        SchemaChangeType.AlterPrimaryKey => $"Primary key of {Table} is {DatabaseColumn} in the database, {ModelColumn} in {ModelType.Name}",
         _ => Type.ToString(),
     };
 
@@ -325,6 +388,10 @@ public class SchemaDiff
                     SchemaChangeType.AddForeignKey => $"  + foreign key {change.Name}  {change.ModelColumn}" + CantChange(change),
                     SchemaChangeType.AlterForeignKey => $"  ~ foreign key {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
                     SchemaChangeType.DropForeignKey => $"  - foreign key {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
+                    SchemaChangeType.AddConstraint => $"  + constraint {change.Name}  {change.ModelColumn}" + CantChange(change),
+                    SchemaChangeType.AlterConstraint => $"  ~ constraint {change.Name}  {change.DatabaseColumn} -> {change.ModelColumn}" + CantChange(change),
+                    SchemaChangeType.DropConstraint => $"  - constraint {change.Name}  {change.DatabaseColumn} (not in {change.ModelType.Name})" + CantChange(change),
+                    SchemaChangeType.AlterPrimaryKey => $"  ~ primary key  {change.DatabaseColumn} -> {change.ModelColumn} (not changed)",
                     _ => $"  + index {change.Name}",
                 });
             }
@@ -352,8 +419,9 @@ public class SchemaDiff
 public static class OrmLiteSchemaDiffApi
 {
     /// <summary>
-    /// The differences between a model and its table: missing tables, columns, indexes and foreign keys, the ones
-    /// that aren't in the model, and columns with a different type, size, nullability or default value. E.g:
+    /// The differences between a model and its table: missing tables, columns, indexes, foreign keys and unique and
+    /// check constraints, the ones that aren't in the model, columns with a different type, size, nullability or default
+    /// value, and a primary key of other columns. E.g:
     /// <para>var diff = db.GetSchemaDiff&lt;Order&gt;();</para>
     /// </summary>
     public static SchemaDiff GetSchemaDiff<T>(this IDbConnection db) => db.GetSchemaDiff(typeof(T));
@@ -376,6 +444,7 @@ public static class OrmLiteSchemaDiffApi
         var dialect = db.GetDialectProvider();
         var warnedIndexes = false;
         var warnedForeignKeys = false;
+        var warnedChecks = false;
         foreach (var modelType in modelTypes)
         {
             var modelDef = modelType.GetModelDefinition();
@@ -522,11 +591,16 @@ public static class OrmLiteSchemaDiffApi
                 }
             }
 
+            CompareCheckConstraints(diff, db, modelType, tableRef, quotedTable, table, fieldDefs, firstChange, dialect,
+                ref warnedChecks);
+
             var createIndexes = dialect.ToCreateIndexStatements(modelType);
             var dbIndexes = dialect.GetTableIndexes(db, tableRef);
             if (dbIndexes != null)
             {
                 CompareIndexes(diff, modelType, tableRef, table, createIndexes, dbIndexes, dialect);
+                CompareUniqueConstraints(diff, modelType, tableRef, table, createIndexes, dbIndexes, firstChange, dialect);
+                ComparePrimaryKey(diff, modelType, table, dbIndexes, dbColumns, dialect);
                 continue;
             }
             if (createIndexes.Count == 0)
@@ -607,11 +681,9 @@ public static class OrmLiteSchemaDiffApi
                 continue;
             }
 
+            // MySQL reports unique indexes as constraints, so the indexes of the model are compared when they are
             var modelIndex = ParseIndex(createIndex);
-            if (dbIndex.IsConstraint || modelIndex == null
-                || (modelIndex.IsUnique == dbIndex.IsUnique
-                    && modelIndex.Columns.Count == dbIndex.Columns.Count
-                    && modelIndex.Columns.Zip(dbIndex.Columns, (a, b) => a.EqualsIgnoreCase(b)).All(x => x)))
+            if (dbIndex.IsPrimaryKey || modelIndex == null || IsSameIndex(modelIndex, dbIndex))
                 continue;
 
             diff.Changes.Add(new SchemaChange {
@@ -784,6 +856,283 @@ public static class OrmLiteSchemaDiffApi
 
     private static string DescribeDefault(string value) => NormalizeDefault(value) != null ? $"DEFAULT {value.Trim()}" : "no default";
 
+    private static bool IsSameIndex(IndexSchema modelIndex, IndexSchema dbIndex) =>
+        modelIndex.IsUnique == dbIndex.IsUnique
+        && IsSameColumns(modelIndex.Columns, dbIndex.Columns, ordered: true)
+        && IsSameColumns(modelIndex.Include, dbIndex.Include, ordered: false)
+        && NormalizeCondition(modelIndex.Where) == NormalizeCondition(dbIndex.Where);
+
+    private static bool IsSameColumns(List<string> a, List<string> b, bool ordered)
+    {
+        if (a.Count != b.Count)
+            return false;
+        if (!ordered)
+        {
+            a = a.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+            b = b.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+        return a.Zip(b, (x, y) => x.EqualsIgnoreCase(y)).All(x => x);
+    }
+
+    private static readonly Regex CastRegex = new(
+        @"::\s*[a-z_]+(\s+(varying|precision|with|without|time|zone))*(\s*\(\d+(\s*,\s*\d+)?\))?(\[\])?",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex UnicodeLiteralRegex = new(@"\bN'", RegexOptions.IgnoreCase | RegexOptions.Compiled,
+        TimeSpan.FromSeconds(1));
+
+    /// <summary>
+    /// A condition as it's compared, without the quotes, parentheses, casts and spaces that databases add to the
+    /// conditions they write, e.g. PostgreSQL's ((status)::text = 'Active'::text) and SQL Server's ([Status]='Active')
+    /// </summary>
+    internal static string NormalizeCondition(string condition)
+    {
+        if (string.IsNullOrWhiteSpace(condition))
+            return null;
+        condition = CastRegex.Replace(condition, "");
+        condition = UnicodeLiteralRegex.Replace(condition, "'");
+        var sb = new StringBuilder();
+        foreach (var c in condition)
+        {
+            if (c is '"' or '`' or '[' or ']' or '(' or ')' || char.IsWhiteSpace(c))
+                continue;
+            sb.Append(char.ToLowerInvariant(c));
+        }
+        return sb.ToString();
+    }
+
+    // The unique constraints of [Unique] properties and [UniqueConstraint] attributes, compared by their columns, as
+    // the database names the constraints of [Unique] properties
+    private static void CompareUniqueConstraints(SchemaDiff diff, Type modelType, TableRef tableRef, string table,
+        List<string> createIndexes, List<IndexSchema> dbIndexes, int firstChange, IOrmLiteDialectProvider dialect)
+    {
+        var modelDef = modelType.GetModelDefinition();
+        string Column(string fieldName) => modelDef.GetFieldDefinition(fieldName) is { } f
+            ? dialect.NamingStrategy.GetColumnName(f.FieldName)
+            : fieldName;
+        string Quoted(string fieldName) => modelDef.GetFieldDefinition(fieldName) is { } f
+            ? dialect.GetQuotedColumnName(f)
+            : dialect.GetQuotedColumnName(fieldName);
+
+        var modelUniques = new List<(string name, List<string> columns, string sql)>();
+        var tableName = dialect.GetTableNameOnly(tableRef);
+        foreach (var fieldDef in modelDef.FieldDefinitions)
+        {
+            if (!fieldDef.IsUniqueConstraint || fieldDef.IsPrimaryKey || fieldDef.ShouldSkipCreate())
+                continue;
+            var name = $"UC_{tableName}_{fieldDef.FieldName}";
+            modelUniques.Add((name, [Column(fieldDef.Name)],
+                $"CONSTRAINT {dialect.GetQuotedName(name)} UNIQUE ({dialect.GetQuotedColumnName(fieldDef)})"));
+        }
+        var uniqueSql = dialect.GetUniqueConstraints(modelDef)?.Split([",\n"], StringSplitOptions.RemoveEmptyEntries);
+        for (var i = 0; i < modelDef.UniqueConstraints.Count; i++)
+        {
+            var constraint = modelDef.UniqueConstraints[i];
+            var sql = uniqueSql != null && i < uniqueSql.Length
+                ? uniqueSql[i].Trim()
+                : null;
+            var name = sql != null ? UniqueNameRegex.Match(sql).Groups[1].Value.Trim('"', '`', '[', ']') : constraint.Name;
+            modelUniques.Add((name, constraint.FieldNames.Map(Column),
+                sql ?? $"CONSTRAINT {dialect.GetQuotedName(name)} UNIQUE ({constraint.FieldNames.Map(Quoted).Join(", ")})"));
+        }
+
+        var modelIndexNames = new HashSet<string>(createIndexes.Map(GetIndexName).Where(x => x != null),
+            StringComparer.OrdinalIgnoreCase);
+        var dbUniques = dbIndexes.Where(x => x.IsConstraint && x.IsUnique && !x.IsPrimaryKey
+            && !modelIndexNames.Contains(x.Name)).ToList();
+
+        var matched = new HashSet<IndexSchema>();
+        foreach (var (name, columns, sql) in modelUniques)
+        {
+            var dbUnique = dbUniques.FirstOrDefault(x => !matched.Contains(x) && IsSameColumns(x.Columns, columns, ordered: false));
+            if (dbUnique != null)
+            {
+                matched.Add(dbUnique);
+                continue;
+            }
+            diff.Changes.Add(new SchemaChange {
+                Type = SchemaChangeType.AddConstraint,
+                ModelType = modelType,
+                Table = table,
+                Name = name,
+                ModelColumn = $"UNIQUE ({columns.Join(", ")})",
+                Sql = dialect.ToAddConstraintStatement(tableRef, sql),
+                // Rows can have the same values of its columns
+                IsDestructive = true,
+            });
+        }
+
+        var drops = new List<SchemaChange>();
+        foreach (var dbUnique in dbUniques)
+        {
+            if (matched.Contains(dbUnique))
+                continue;
+            drops.Add(new SchemaChange {
+                Type = SchemaChangeType.DropConstraint,
+                ModelType = modelType,
+                Table = table,
+                Name = dbUnique.Name,
+                DatabaseColumn = $"UNIQUE ({dbUnique.Columns.Join(", ")})",
+                Sql = dialect.ToDropUniqueConstraintStatement(tableRef, dbUnique.Name),
+                IsDestructive = true,
+            });
+        }
+        // Dropped before the columns they're of are dropped
+        diff.Changes.InsertRange(firstChange, drops);
+    }
+
+    private static readonly Regex UniqueNameRegex = new(@"^\s*CONSTRAINT\s+(\S+)\s+UNIQUE",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex CheckRegex = new(@"^\s*CONSTRAINT\s+(\S+)\s+CHECK\s*\((.*)\)\s*$",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+    // The check constraints of [CheckConstraint] and [CheckEnum] properties. Databases rewrite their conditions, e.g.
+    // an IN list as = ANY (ARRAY[...]) in PostgreSQL, so the model's are created in a temporary table to be compared
+    // as the database writes them.
+    private static void CompareCheckConstraints(SchemaDiff diff, IDbConnection db, Type modelType, TableRef tableRef,
+        string quotedTable, string table, List<FieldDefinition> fieldDefs, int firstChange, IOrmLiteDialectProvider dialect,
+        ref bool warned)
+    {
+        var modelDef = modelType.GetModelDefinition();
+        var modelChecks = new List<(FieldDefinition fieldDef, string sql, CheckConstraintSchema check)>();
+        foreach (var fieldDef in fieldDefs)
+        {
+            var sql = dialect.GetCheckConstraint(modelDef, fieldDef);
+            var match = sql != null ? CheckRegex.Match(sql) : null;
+            if (match is not { Success: true })
+                continue;
+            modelChecks.Add((fieldDef, sql, new CheckConstraintSchema {
+                Name = match.Groups[1].Value.Trim('"', '`', '[', ']'),
+                Condition = match.Groups[2].Value.Trim(),
+            }));
+        }
+
+        var dbChecks = dialect.GetCheckConstraints(db, quotedTable);
+        if (dbChecks == null)
+        {
+            if (modelChecks.Count > 0 && !warned)
+            {
+                diff.Warnings.Add($"Check constraints aren't compared for {dialect.GetType().Name}");
+                warned = true;
+            }
+            return;
+        }
+
+        List<CheckConstraintSchema> written = null;
+        if (modelChecks.Count > 0)
+        {
+            try
+            {
+                written = dialect.GetModelCheckConstraints(db, fieldDefs, modelChecks.Map(x => x.check));
+            }
+            catch (Exception e)
+            {
+                diff.Warnings.Add($"The check constraints of {table} weren't compared, as a temporary table " +
+                                  $"couldn't be created with them: {e.Message}");
+                return;
+            }
+            if (written == null)
+                return;
+        }
+
+        var matched = new HashSet<CheckConstraintSchema>();
+        for (var i = 0; i < modelChecks.Count; i++)
+        {
+            var (fieldDef, sql, check) = modelChecks[i];
+            var condition = NormalizeCondition(written[i].Condition ?? check.Condition);
+            var dbCheck = dbChecks.FirstOrDefault(x => !matched.Contains(x) && x.Name.EqualsIgnoreCase(check.Name))
+                ?? dbChecks.FirstOrDefault(x => !matched.Contains(x) && NormalizeCondition(x.Condition) == condition);
+            var addSql = dialect.ToAddConstraintStatement(tableRef, sql);
+            if (dbCheck == null)
+            {
+                diff.Changes.Add(new SchemaChange {
+                    Type = SchemaChangeType.AddConstraint,
+                    ModelType = modelType,
+                    Table = table,
+                    Name = check.Name,
+                    Field = fieldDef,
+                    ModelColumn = $"CHECK ({check.Condition})",
+                    Sql = addSql,
+                    // Rows can break its condition
+                    IsDestructive = true,
+                });
+                continue;
+            }
+            matched.Add(dbCheck);
+            if (NormalizeCondition(dbCheck.Condition) == condition)
+                continue;
+
+            var dropSql = dialect.ToDropCheckConstraintStatement(tableRef, dbCheck.Name);
+            diff.Changes.Add(new SchemaChange {
+                Type = SchemaChangeType.AlterConstraint,
+                ModelType = modelType,
+                Table = table,
+                Name = dbCheck.Name,
+                Field = fieldDef,
+                ModelColumn = $"CHECK ({check.Condition})",
+                DatabaseColumn = dbCheck.ToString(),
+                Sql = addSql != null && dropSql != null ? dropSql.Trim().TrimEnd(';') + ";\n" + addSql.Trim() : null,
+                IsDestructive = true,
+            });
+        }
+
+        var drops = new List<SchemaChange>();
+        foreach (var dbCheck in dbChecks)
+        {
+            if (matched.Contains(dbCheck))
+                continue;
+            drops.Add(new SchemaChange {
+                Type = SchemaChangeType.DropConstraint,
+                ModelType = modelType,
+                Table = table,
+                Name = dbCheck.Name,
+                DatabaseColumn = dbCheck.ToString(),
+                Sql = dbCheck.Name != null ? dialect.ToDropCheckConstraintStatement(tableRef, dbCheck.Name) : null,
+                IsDestructive = true,
+            });
+        }
+        // Dropped before the columns they're of are dropped
+        diff.Changes.InsertRange(firstChange, drops);
+    }
+
+    // The primary key is reported when its columns aren't the model's, but isn't changed
+    private static void ComparePrimaryKey(SchemaDiff diff, Type modelType, string table, List<IndexSchema> dbIndexes,
+        ColumnSchema[] dbColumns, IOrmLiteDialectProvider dialect)
+    {
+        var modelDef = modelType.GetModelDefinition();
+        if (modelDef.PrimaryKey == null)
+            return;
+        var modelKey = new List<string> { dialect.NamingStrategy.GetColumnName(modelDef.PrimaryKey.FieldName) };
+        // SQLite's INTEGER PRIMARY KEY is the rowid of the table, which doesn't have an index
+        var dbKey = dbIndexes.FirstOrDefault(x => x.IsPrimaryKey)?.Columns
+            ?? (dialect.Kind == DbKind.Sqlite
+                ? dbColumns.Where(x => x.IsKey).Map(x => x.ColumnName)
+                : []);
+        // MariaDB adds the end of a system-versioned table's period to its primary key
+        var periodColumns = modelDef.FieldDefinitions.Where(x => x.IsRowStart || x.IsRowEnd)
+            .Map(x => dialect.NamingStrategy.GetColumnName(x.FieldName));
+        dbKey = dbKey.Where(x => !periodColumns.Any(p => p.EqualsIgnoreCase(x))).ToList();
+        if (IsSameColumns(modelKey, dbKey, ordered: true))
+            return;
+
+        // The columns of the primary key can't be altered, e.g. to allow nulls, until it's changed
+        foreach (var change in diff.Changes)
+        {
+            if (change.ModelType == modelType && change.Type == SchemaChangeType.AlterColumn
+                && dbKey.Any(x => x.EqualsIgnoreCase(change.Name)))
+                change.Sql = null;
+        }
+        diff.Changes.Add(new SchemaChange {
+            Type = SchemaChangeType.AlterPrimaryKey,
+            ModelType = modelType,
+            Table = table,
+            Name = modelKey[0],
+            Field = modelDef.PrimaryKey,
+            ModelColumn = $"PRIMARY KEY ({modelKey.Join(", ")})",
+            DatabaseColumn = dbKey.Count > 0 ? $"PRIMARY KEY ({dbKey.Join(", ")})" : "no primary key",
+            IsDestructive = true,
+        });
+    }
+
     private static readonly System.Reflection.MethodInfo ToDropIndexStatementMethod =
         typeof(IOrmLiteDialectProvider).GetMethod(nameof(IOrmLiteDialectProvider.ToDropIndexStatement));
 
@@ -792,11 +1141,16 @@ public static class OrmLiteSchemaDiffApi
 
     private static readonly Regex UniqueIndexRegex = new(@"^\s*CREATE\s+UNIQUE\b",
         RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex IncludeRegex = new(@"^\s*INCLUDE\s*\(([^)]*)\)",
+        RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+    private static readonly Regex WhereRegex = new(@"\bWHERE\b(.*)$",
+        RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
     private static readonly Regex IndexColumnsRegex = new(@"\bON\s+(?:""[^""]*""|`[^`]*`|\[[^\]]*\]|[^\s(])+(?:\s+USING\s+\w+)?\s*\(",
         RegexOptions.IgnoreCase | RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
     /// <summary>
-    /// The key columns and uniqueness of an index from the statement that creates it, or null if they can't be read
+    /// The key columns, INCLUDE columns, WHERE condition and uniqueness of an index from the statement that creates it,
+    /// or null if they can't be read
     /// </summary>
     internal static IndexSchema ParseIndex(string createIndexSql)
     {
@@ -825,7 +1179,16 @@ public static class OrmLiteSchemaDiffApi
             {
                 to.Columns.Add(IndexColumnName(createIndexSql.Substring(start, i - start)));
                 if (c == ')')
+                {
+                    var options = createIndexSql.Substring(i + 1);
+                    var include = IncludeRegex.Match(options);
+                    if (include.Success)
+                        to.Include = include.Groups[1].Value.Split(',').Map(IndexColumnName);
+                    var where = WhereRegex.Match(options);
+                    if (where.Success)
+                        to.Where = where.Groups[1].Value.Trim().TrimEnd(';').Trim();
                     return to;
+                }
                 start = i + 1;
             }
         }
@@ -1133,6 +1496,38 @@ internal static class SchemaMigrationWriter
                         up.Add($"Db.DropForeignKey<{name}>({ToLiteral(change.Name)});");
                         up.Add($"Db.ExecuteSql({ToLiteral(change.Sql.Substring(change.Sql.IndexOf('\n') + 1))});");
                         undo.Add($"// Foreign key {change.Name} was {change.DatabaseColumn}");
+                        break;
+                    case SchemaChangeType.AddConstraint:
+                        if (change.Sql == null)
+                        {
+                            up.Add($"// Constraint {change.Name} {change.ModelColumn} can't be added to an existing table in this database");
+                            break;
+                        }
+                        up.Add($"Db.ExecuteSql({ToLiteral(change.Sql)});");
+                        undo.Add($"// Drop constraint {change.Name} {change.ModelColumn}");
+                        break;
+                    case SchemaChangeType.AlterConstraint:
+                        if (change.Sql == null)
+                        {
+                            up.Add($"// Constraint {change.Name} is {change.DatabaseColumn}, which can't be changed to {change.ModelColumn} in this database");
+                            break;
+                        }
+                        up.Add($"// Constraint {change.Name} is {change.DatabaseColumn}");
+                        up.Add($"Db.ExecuteSql({ToLiteral(change.Sql)});");
+                        undo.Add($"// Constraint {change.Name} was {change.DatabaseColumn}");
+                        break;
+                    case SchemaChangeType.DropConstraint:
+                        if (change.Sql == null)
+                        {
+                            up.Add($"// Constraint {change.Name} {change.DatabaseColumn} isn't in {name}, and can't be dropped in this database");
+                            break;
+                        }
+                        up.Add($"// Constraint {change.Name} {change.DatabaseColumn} isn't in {name}. If it's no longer used, drop it:");
+                        up.Add($"// Db.ExecuteSql({ToLiteral(change.Sql)});");
+                        break;
+                    case SchemaChangeType.AlterPrimaryKey:
+                        up.Add($"// The primary key of {change.Table} is {change.DatabaseColumn}, the model's is {change.ModelColumn}.");
+                        up.Add("// Changing it needs its foreign keys and data to be migrated, so it isn't written here.");
                         break;
                     case SchemaChangeType.DropForeignKey:
                         if (change.Sql == null)

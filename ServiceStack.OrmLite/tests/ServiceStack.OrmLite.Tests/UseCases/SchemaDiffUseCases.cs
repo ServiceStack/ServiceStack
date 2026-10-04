@@ -8,8 +8,8 @@ namespace ServiceStack.OrmLite.Tests.UseCases;
 
 /// <summary>
 /// GetSchemaDiff() compares models with their tables in the database, to find what's changed in one and not the
-/// other: missing tables, columns, indexes and foreign keys, the ones that aren't in the model, and columns with a
-/// different type, size, nullability or default value. The differences can be logged, applied to the database or written as a migration.
+/// other: missing tables, columns, indexes, foreign keys and unique and check constraints, the ones that aren't in
+/// the model, columns with a different type, size, nullability or default value, and primary keys of other columns. The differences can be logged, applied to the database or written as a migration.
 /// </summary>
 [TestFixtureOrmLite]
 public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBase(context)
@@ -184,6 +184,13 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
         Assert.That(diff.Warnings, Is.Empty);
         Assert.That(diff.HasChanges, Is.False);
         Assert.That(diff.ToString(), Is.EqualTo("No schema differences"));
+
+        // A filtered unique index, which MySQL doesn't have
+        if (db.GetDialectProvider().Kind == DbKind.MySql)
+            return;
+        db.DropAndCreateTable<DdlAttributeUseCases.Subscriber>();
+        diff = db.GetSchemaDiff<DdlAttributeUseCases.Subscriber>();
+        Assert.That(diff.Changes, Is.Empty, diff.ToString());
     }
 
     [Test]
@@ -499,6 +506,226 @@ public class SchemaDiffUseCases(DialectContext context) : OrmLiteProvidersTestBa
             [Default(OrmLiteVariables.SystemUtc)]
             public DateTime Created { get; set; }
         }
+
+        [UniqueConstraint(nameof(Sku), nameof(Region))]
+        public class DiffProduct
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+
+            [Unique]
+            public string Code { get; set; }
+
+            public string Barcode { get; set; }
+            public string Sku { get; set; }
+            public string Region { get; set; }
+
+            [CheckConstraint("Qty >= 0")]
+            public int Qty { get; set; }
+
+            [CheckConstraint("Price > 0")]
+            public decimal Price { get; set; }
+
+            public int Rating { get; set; }
+        }
+
+        public class DiffKey
+        {
+            [PrimaryKey]
+            public string Code { get; set; }
+            public int Id { get; set; }
+        }
+
+        public class DiffEvent
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+
+            [Index(Name = "ix_diff_event_kind", Where = "{Kind} > 0")]
+            public int Kind { get; set; }
+
+            [Index(Name = "ix_diff_event_user", Include = [nameof(Status)])]
+            public int UserId { get; set; }
+
+            public int Status { get; set; }
+        }
+    }
+
+    [UniqueConstraint(nameof(Region), nameof(Sku))] // the same columns in another order
+    public class DiffProduct
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        public string Code { get; set; } // no longer unique
+
+        [Unique] // now unique
+        public string Barcode { get; set; }
+
+        public string Sku { get; set; }
+        public string Region { get; set; }
+
+        [CheckConstraint("Qty > 0")] // another condition
+        public int Qty { get; set; }
+
+        public decimal Price { get; set; } // no longer checked
+
+        [CheckConstraint("Rating BETWEEN 1 AND 5")] // now checked
+        public int Rating { get; set; }
+    }
+
+    public class DiffKey
+    {
+        [PrimaryKey] // was Code
+        public int Id { get; set; }
+        public string Code { get; set; }
+    }
+
+    public class DiffEvent
+    {
+        [AutoIncrement]
+        public int Id { get; set; }
+
+        [Index(Name = "ix_diff_event_kind", Where = "{Kind} > 1")] // another condition
+        public int Kind { get; set; }
+
+        [Index(Name = "ix_diff_event_user", Include = [nameof(Status), nameof(Kind)])] // includes another column
+        public int UserId { get; set; }
+
+        public int Status { get; set; }
+    }
+
+    static bool IsUnique(SchemaChange x) =>
+        (x.ModelColumn ?? x.DatabaseColumn)?.StartsWith("UNIQUE") == true && x.Type is SchemaChangeType.AddConstraint
+            or SchemaChangeType.AlterConstraint or SchemaChangeType.DropConstraint;
+    static bool IsCheck(SchemaChange x) =>
+        (x.ModelColumn ?? x.DatabaseColumn)?.StartsWith("CHECK") == true && x.Type is SchemaChangeType.AddConstraint
+            or SchemaChangeType.AlterConstraint or SchemaChangeType.DropConstraint;
+
+    [Test]
+    public void Compare_the_columns_of_unique_constraints()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<DiffProduct>();
+        db.CreateTable<Before.DiffProduct>();
+
+        var diff = db.GetSchemaDiff<DiffProduct>();
+        var uniques = diff.Changes.Where(IsUnique).ToList();
+        // [UniqueConstraint] of the same columns in another order is the same constraint
+        Assert.That(uniques.Count, Is.EqualTo(2), diff.ToString());
+
+        // Rows can have the same values
+        var barcode = uniques.Single(x => x.Type == SchemaChangeType.AddConstraint);
+        Assert.That(barcode.ModelColumn, Is.EqualTo("UNIQUE (barcode)").IgnoreCase);
+        Assert.That(barcode.IsDestructive, Is.True);
+
+        // [Unique] constraints are named by the database
+        var code = uniques.Single(x => x.Type == SchemaChangeType.DropConstraint);
+        Assert.That(code.DatabaseColumn, Is.EqualTo("UNIQUE (code)").IgnoreCase);
+        Assert.That(code.IsDestructive, Is.True);
+        Assert.That(diff.ToString(), Does.Contain("+ constraint "));
+        Assert.That(diff.ToString(), Does.Contain("- constraint "));
+
+        if (!CanAlterColumns(db))
+        {
+            // SQLite can only change the constraints of a table by creating it again
+            Assert.That(uniques.All(x => x.Sql == null));
+            return;
+        }
+
+        db.ApplySchemaDiff(diff, allowDestructive: true);
+        diff = db.GetSchemaDiff<DiffProduct>();
+        Assert.That(diff.Changes.Where(IsUnique), Is.Empty, diff.ToString());
+
+        // SQL Server's unique constraints only allow one row with nulls
+        db.Insert(new DiffProduct { Code = "A", Barcode = "1", Sku = "S1", Qty = 1, Rating = 1 });
+        db.Insert(new DiffProduct { Code = "A", Barcode = "2", Sku = "S2", Qty = 1, Rating = 1 });
+        Assert.Throws(Is.InstanceOf<Exception>(), () => db.Insert(new DiffProduct { Code = "B", Barcode = "2", Sku = "S3", Qty = 1, Rating = 1 }));
+    }
+
+    [Test]
+    public void Compare_the_conditions_of_check_constraints()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<DiffProduct>();
+        db.CreateTable<Before.DiffProduct>();
+
+        var diff = db.GetSchemaDiff<DiffProduct>();
+        var checks = diff.Changes.Where(IsCheck).ToList();
+        Assert.That(checks.Count, Is.EqualTo(3), diff.ToString());
+
+        // Conditions are compared as the database writes them
+        var qty = checks.Single(x => x.Field?.Name == "Qty");
+        Assert.That(qty.Type, Is.EqualTo(SchemaChangeType.AlterConstraint));
+        Assert.That(qty.DatabaseColumn, Does.Contain(">="));
+        Assert.That(qty.ModelColumn, Is.EqualTo("CHECK (Qty > 0)"));
+
+        var rating = checks.Single(x => x.Field?.Name == "Rating");
+        Assert.That(rating.Type, Is.EqualTo(SchemaChangeType.AddConstraint));
+
+        var price = checks.Single(x => x.Type == SchemaChangeType.DropConstraint);
+        Assert.That(price.Name, Is.EqualTo("CHK__DiffProduct_Price").IgnoreCase);
+
+        // Rows can break their conditions
+        Assert.That(checks.All(x => x.IsDestructive));
+
+        if (!CanAlterColumns(db))
+        {
+            Assert.That(checks.All(x => x.Sql == null));
+            return;
+        }
+
+        var source = diff.ToMigration("Migration1010");
+        Assert.That(source, Does.Contain($"// Constraint {qty.Name} is "));
+
+        db.ApplySchemaDiff(diff, allowDestructive: true);
+        diff = db.GetSchemaDiff<DiffProduct>();
+        Assert.That(diff.Changes.Where(IsCheck), Is.Empty, diff.ToString());
+
+        Assert.Throws(Is.InstanceOf<Exception>(), () => db.Insert(new DiffProduct { Code = "A", Barcode = "1", Qty = 1, Rating = 9 }));
+        Assert.Throws(Is.InstanceOf<Exception>(), () => db.Insert(new DiffProduct { Code = "A", Barcode = "1", Qty = 0, Rating = 1 }));
+        db.Insert(new DiffProduct { Code = "A", Barcode = "1", Qty = 1, Price = -1, Rating = 1 });
+    }
+
+    [Test]
+    public void A_primary_key_of_other_columns_is_reported_but_not_changed()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<DiffKey>();
+        db.CreateTable<Before.DiffKey>();
+
+        var diff = db.GetSchemaDiff<DiffKey>();
+        var key = diff.Changes.Single(x => x.Type == SchemaChangeType.AlterPrimaryKey);
+        Assert.That(key.DatabaseColumn, Is.EqualTo("PRIMARY KEY (code)").IgnoreCase);
+        Assert.That(key.ModelColumn, Is.EqualTo("PRIMARY KEY (id)").IgnoreCase);
+        Assert.That(key.Sql, Is.Null);
+        Assert.That(diff.ToString(), Does.Contain("~ primary key  "));
+        Assert.That(diff.ToMigration("Migration1011"), Does.Contain("// The primary key of "));
+
+        // nor are the columns of the primary key in the database, which can't allow nulls
+        var code = diff.Changes.FirstOrDefault(x => x.Type == SchemaChangeType.AlterColumn && x.Name.EqualsIgnoreCase("code"));
+        Assert.That(code?.Sql, Is.Null);
+        Assert.That(db.ApplySchemaDiff(diff, allowDestructive: true), Does.Not.Contain(key));
+    }
+
+    [Test]
+    [IgnoreDialect(Dialect.AnyMySql, "MySQL and MariaDB don't have filtered indexes")]
+    public void Compare_the_include_columns_and_conditions_of_indexes()
+    {
+        using var db = OpenDbConnection();
+        db.DropTable<DiffEvent>();
+        db.CreateTable<Before.DiffEvent>();
+
+        var diff = db.GetSchemaDiff<DiffEvent>();
+        var indexes = diff.Changes.Where(x => x.Type == SchemaChangeType.AlterIndex).ToDictionary(x => x.Name.ToLower());
+        Assert.That(indexes.Keys, Is.EquivalentTo(new[] { "ix_diff_event_kind", "ix_diff_event_user" }), diff.ToString());
+        Assert.That(indexes["ix_diff_event_kind"].DatabaseColumn, Does.Contain(" WHERE "));
+        Assert.That(indexes["ix_diff_event_kind"].ModelColumn, Does.EndWith("> 1"));
+
+        // The indexes are the same once they're applied, as the database writes their conditions
+        db.ApplySchemaDiff(diff);
+        diff = db.GetSchemaDiff<DiffEvent>();
+        Assert.That(diff.Changes, Is.Empty, diff.ToString());
     }
 
     public class DiffCustomer

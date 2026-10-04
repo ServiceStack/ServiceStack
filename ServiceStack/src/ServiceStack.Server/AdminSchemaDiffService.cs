@@ -75,14 +75,14 @@ public class AdminSchemaChange
 {
     /// <summary>
     /// CreateTable, AddColumn, AlterColumn, DropColumn, CreateIndex, AlterIndex, DropIndex, AlterDefault,
-    /// AddForeignKey, AlterForeignKey or DropForeignKey
+    /// AddForeignKey, AlterForeignKey, DropForeignKey, AddConstraint, AlterConstraint, DropConstraint or AlterPrimaryKey
     /// </summary>
     public string Type { get; set; } = "";
     public string Model { get; set; } = "";
     public string Table { get; set; } = "";
 
     /// <summary>
-    /// The name of the column, index or foreign key
+    /// The name of the column, index, foreign key or constraint
     /// </summary>
     public string? Name { get; set; }
     public string? ModelColumn { get; set; }

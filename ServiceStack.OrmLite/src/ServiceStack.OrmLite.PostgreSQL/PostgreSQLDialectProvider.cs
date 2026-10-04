@@ -732,10 +732,13 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
     public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef)
     {
         var schema = GetSchemaName(tableRef);
-        var sql = "SELECT i.relname AS name, ix.indisunique AS is_unique, (ix.indisprimary OR c.oid IS NOT NULL) AS is_constraint, " +
+        string Columns(string where) =>
             "array_to_string(ARRAY(SELECT COALESCE(a.attname, '?') FROM unnest(ix.indkey) WITH ORDINALITY AS k(attnum, ord) " +
             "LEFT JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = k.attnum " +
-            "WHERE k.ord <= ix.indnkeyatts ORDER BY k.ord), ',') AS columns " +
+            $"WHERE {where} ORDER BY k.ord), ',')";
+        var sql = "SELECT i.relname AS name, ix.indisunique AS is_unique, (ix.indisprimary OR c.oid IS NOT NULL) AS is_constraint, " +
+            $"ix.indisprimary AS is_primary_key, {Columns("k.ord <= ix.indnkeyatts")} AS columns, " +
+            $"{Columns("k.ord > ix.indnkeyatts")} AS include, pg_get_expr(ix.indpred, ix.indrelid) AS where_condition " +
             "FROM pg_index ix JOIN pg_class i ON i.oid = ix.indexrelid JOIN pg_class t ON t.oid = ix.indrelid " +
             "JOIN pg_namespace n ON n.oid = t.relnamespace " +
             "LEFT JOIN pg_constraint c ON c.conindid = ix.indexrelid AND c.contype IN ('p','u','x') " +
@@ -762,6 +765,22 @@ public class PostgreSqlDialectProvider : OrmLiteDialectProviderBase<PostgreSqlDi
                 defaults[name] = StringCastRegex.Replace(defaults[name], "'");
         }
         return defaults;
+    }
+
+    public override List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable)
+    {
+        var checks = ToCheckConstraintSchemas(db.SqlList<Dictionary<string, object>>(
+            ("SELECT conname AS name, pg_get_constraintdef(oid) AS condition FROM pg_constraint " +
+             "WHERE conrelid = {0}::regclass AND contype = 'c'").SqlFmt(this, quotedTable)));
+        foreach (var check in checks)
+        {
+            // CHECK ((qty > 0))
+            var condition = check.Condition?.Trim() ?? "";
+            if (condition.StartsWith("CHECK", StringComparison.OrdinalIgnoreCase))
+                condition = condition.Substring("CHECK".Length).Trim();
+            check.Condition = condition;
+        }
+        return checks;
     }
 
     public override List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef)

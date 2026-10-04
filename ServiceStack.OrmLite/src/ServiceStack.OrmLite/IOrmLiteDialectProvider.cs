@@ -443,6 +443,19 @@ public interface IOrmLiteDialectProvider
     /// </summary>
     List<ForeignKeySchema> GetTableForeignKeys(IDbConnection db, TableRef tableRef);
 
+    /// <summary>
+    /// The check constraints of a table, with their conditions as they're written by the database, or null if they
+    /// can't be read. It reads the temporary tables of GetModelCheckConstraints() too.
+    /// </summary>
+    List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable);
+
+    /// <summary>
+    /// The conditions of check constraints as the database writes them, which are read from a temporary table that's
+    /// created with them and the columns of fieldDefs, in the same order with the same names as checks
+    /// </summary>
+    List<CheckConstraintSchema> GetModelCheckConstraints(IDbConnection db, List<FieldDefinition> fieldDefs,
+        List<CheckConstraintSchema> checks);
+
     string ToAddColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToAlterColumnStatement(TableRef tableRef, FieldDefinition fieldDef);
     string ToChangeColumnNameStatement(TableRef tableRef, FieldDefinition fieldDef, string oldColumn);
@@ -457,6 +470,33 @@ public interface IOrmLiteDialectProvider
         string foreignKeyName = null);
 
     string ToDropForeignKeyStatement(TableRef tableRef, string foreignKeyName);
+
+    /// <summary>
+    /// Add a constraint to a table, e.g. CONSTRAINT "UC_Order_Code" UNIQUE ("Code"), or null if the database can't
+    /// add it to an existing table
+    /// </summary>
+    string ToAddConstraintStatement(TableRef tableRef, string constraint);
+
+    /// <summary>
+    /// The unique constraints of a model's [UniqueConstraint] attributes, separated by ",\n", or null if it has none
+    /// </summary>
+    string GetUniqueConstraints(ModelDefinition modelDef);
+
+    /// <summary>
+    /// The check constraint of a field's [CheckConstraint] and [CheckEnum], e.g. CONSTRAINT CHK__Order_Qty CHECK (Qty > 0),
+    /// or null if it has none
+    /// </summary>
+    string GetCheckConstraint(ModelDefinition modelDef, FieldDefinition fieldDef);
+
+    /// <summary>
+    /// Drop a unique constraint, or null if the database can't
+    /// </summary>
+    string ToDropUniqueConstraintStatement(TableRef tableRef, string constraintName);
+
+    /// <summary>
+    /// Drop a check constraint, or null if the database can't
+    /// </summary>
+    string ToDropCheckConstraintStatement(TableRef tableRef, string constraintName);
 
     /// <summary>
     /// Add the foreign key of a field to its table, or null if the database can't add it to an existing table

@@ -2626,7 +2626,54 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
             Name = RowValue(row, "name")?.ToString(),
             IsUnique = Convert.ToBoolean(RowValue(row, "is_unique") ?? false),
             IsConstraint = Convert.ToBoolean(RowValue(row, "is_constraint") ?? false),
+            IsPrimaryKey = Convert.ToBoolean(RowValue(row, "is_primary_key") ?? false),
             Columns = RowList(row, "columns"),
+            Include = RowList(row, "include"),
+            Where = RowValue(row, "where_condition")?.ToString() is { Length: > 0 } where ? where : null,
+        });
+
+    public virtual List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable) => null;
+
+    public virtual List<CheckConstraintSchema> GetModelCheckConstraints(IDbConnection db, List<FieldDefinition> fieldDefs,
+        List<CheckConstraintSchema> checks)
+    {
+        var tempTable = GetBulkStagingTableName("ormlite_diff_" + Guid.NewGuid().ToString("N"));
+        var columns = fieldDefs.Map(x => GetColumnDefinition(x.DefaultValueConstraint == null
+            ? x
+            : x.Clone(f => {
+                f.ModelDef = x.ModelDef;
+                f.DefaultValueConstraint = null;
+            })));
+        // Constraint names have to be unique in some databases, e.g. in SQL Server's tempdb
+        var prefix = "chk_" + Guid.NewGuid().ToString("N").Substring(0, 12) + "_";
+        for (var i = 0; i < checks.Count; i++)
+        {
+            columns.Add($"CONSTRAINT {GetQuotedName(prefix + i)} CHECK ({checks[i].Condition})");
+        }
+        db.ExecuteSql(ToCreateTempTableStatement(tempTable, columns.Join(",\n  ")));
+        try
+        {
+            var created = GetCheckConstraints(db, tempTable);
+            if (created == null)
+                return null;
+            return checks.Select((check, i) => new CheckConstraintSchema {
+                Name = check.Name,
+                Condition = created.FirstOrDefault(x => string.Equals(x.Name, prefix + i, StringComparison.OrdinalIgnoreCase))?.Condition,
+            }).ToList();
+        }
+        finally
+        {
+            db.ExecuteSql(ToDropBulkStagingTableStatement(tempTable));
+        }
+    }
+
+    /// <summary>
+    /// The check constraints of the rows of a query with name and condition columns
+    /// </summary>
+    protected static List<CheckConstraintSchema> ToCheckConstraintSchemas(List<Dictionary<string, object>> rows) =>
+        rows.Map(row => new CheckConstraintSchema {
+            Name = RowValue(row, "name")?.ToString(),
+            Condition = RowValue(row, "condition")?.ToString(),
         });
 
     public virtual Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable) => null;
@@ -2723,6 +2770,15 @@ public abstract class OrmLiteDialectProviderBase<TDialect>
                $"REFERENCES {GetQuotedTableName(refModelDef)} ({GetQuotedColumnName(refModelDef.PrimaryKey)})" +
                $"{GetForeignKeyOnDeleteClause(fieldDef.ForeignKey)}{GetForeignKeyOnUpdateClause(fieldDef.ForeignKey)};";
     }
+
+    public virtual string ToAddConstraintStatement(TableRef tableRef, string constraint) =>
+        $"ALTER TABLE {QuoteTable(tableRef)} ADD {constraint};";
+
+    public virtual string ToDropUniqueConstraintStatement(TableRef tableRef, string constraintName) =>
+        $"ALTER TABLE {QuoteTable(tableRef)} DROP CONSTRAINT {GetQuotedName(constraintName)};";
+
+    public virtual string ToDropCheckConstraintStatement(TableRef tableRef, string constraintName) =>
+        $"ALTER TABLE {QuoteTable(tableRef)} DROP CONSTRAINT {GetQuotedName(constraintName)};";
 
     public virtual string ToAlterColumnDefaultStatement(TableRef tableRef, FieldDefinition fieldDef)
     {

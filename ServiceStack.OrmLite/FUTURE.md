@@ -54,15 +54,18 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 ### 3.1 More Schema Diff (M)
 `db.GetSchemaDiff(types)` finds the differences between models and their tables (tables, columns and indexes),
 `diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Indexes are compared by
-their key columns and uniqueness, default values and foreign keys are compared, the indexes and foreign keys that
-aren't in the model are found, and likely column renames are suggested. Tables that aren't
+their key columns, uniqueness, INCLUDE columns and WHERE conditions, and default values, foreign keys, unique and check
+constraints and primary keys are compared, the indexes, foreign keys and constraints that aren't in the model are found,
+and likely column renames are suggested. Tables that aren't
 managed by OrmLite are ignored with `OrmLiteConfig.SchemaDiff` (`AspNet*` by default), and
 `AdminDatabaseFeature.LogSchemaDiff` logs the differences when an App starts. The Admin UI compares the data models
 of AutoQuery APIs and the App's models of the tables migrations create, found by `Migrator.GetMigrationTables()`,
 and the `migrate.new` App Task writes the next migration to the App's migrations. Remaining:
-- Compare check and unique constraints, primary keys, and the INCLUDE columns and WHERE conditions of indexes
-- Rebuild a SQLite table to alter its columns, defaults and foreign keys
-- Oracle and Firebird, which haven't been tested and don't compare indexes, defaults or foreign keys
+- Change a primary key, with the foreign keys that reference it, which is only reported
+- Compare the WHERE conditions of indexes that a database rewrites, e.g. PostgreSQL's IN lists, as check constraints
+  are, by creating them in a temporary table
+- Rebuild a SQLite table to alter its columns, defaults, foreign keys and constraints
+- Oracle and Firebird, which haven't been tested and don't compare indexes, defaults, foreign keys or constraints
 
 ---
 

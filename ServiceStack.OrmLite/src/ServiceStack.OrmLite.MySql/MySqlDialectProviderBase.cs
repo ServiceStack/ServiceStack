@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -543,13 +544,42 @@ public abstract class MySqlDialectProviderBase<TDialect> : OrmLiteDialectProvide
 	// Indexes are created for primary keys, unique constraints and foreign keys, with the name of their constraint
 	public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef) => ToIndexSchemas(
 		db.SqlList<Dictionary<string, object>>(
-			("SELECT s.INDEX_NAME AS name, MIN(s.NON_UNIQUE) = 0 AS is_unique, " +
+			("SELECT s.INDEX_NAME AS name, MIN(s.NON_UNIQUE) = 0 AS is_unique, s.INDEX_NAME = 'PRIMARY' AS is_primary_key, " +
 			 "EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc WHERE tc.TABLE_SCHEMA = s.TABLE_SCHEMA " +
 			 "AND tc.TABLE_NAME = s.TABLE_NAME AND tc.CONSTRAINT_NAME = s.INDEX_NAME) AS is_constraint, " +
 			 "GROUP_CONCAT(s.COLUMN_NAME ORDER BY s.SEQ_IN_INDEX SEPARATOR ',') AS columns " +
 			 "FROM INFORMATION_SCHEMA.STATISTICS s WHERE s.TABLE_NAME = {0} AND s.TABLE_SCHEMA = {1} " +
 			 "GROUP BY s.TABLE_SCHEMA, s.TABLE_NAME, s.INDEX_NAME")
 			.SqlFmt(UnquotedTable(tableRef), db.Database)));
+
+	// SHOW CREATE TABLE reads temporary tables too, which INFORMATION_SCHEMA doesn't have. MariaDB adds a CHECK of
+	// JSON_VALID() to JSON columns, which isn't a constraint of the model.
+	public override List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable)
+	{
+		var row = db.SqlList<Dictionary<string, object>>($"SHOW CREATE TABLE {quotedTable}").FirstOrDefault();
+		var sql = row?.Values.Skip(1).FirstOrDefault()?.ToString() ?? "";
+		var to = new List<CheckConstraintSchema>();
+		foreach (var line in sql.Split('\n'))
+		{
+			var match = CheckConstraintRegex.Match(line.Trim().TrimEnd(','));
+			if (!match.Success)
+				continue;
+			var condition = match.Groups[2].Value.Trim();
+			if (condition.StartsWith("json_valid(", StringComparison.OrdinalIgnoreCase))
+				continue;
+			to.Add(new CheckConstraintSchema { Name = match.Groups[1].Value, Condition = condition });
+		}
+		return to;
+	}
+
+	private static readonly System.Text.RegularExpressions.Regex CheckConstraintRegex = new(
+		@"^CONSTRAINT\s+`([^`]+)`\s+CHECK\s*\((.*)\)$",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled,
+		TimeSpan.FromSeconds(1));
+
+	// Unique constraints are unique indexes
+	public override string ToDropUniqueConstraintStatement(TableRef tableRef, string constraintName) =>
+		$"ALTER TABLE {QuoteTable(tableRef)} DROP INDEX {GetQuotedName(constraintName)};";
 
 	// SHOW COLUMNS reads temporary tables too, which INFORMATION_SCHEMA doesn't have
 	public override Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable)

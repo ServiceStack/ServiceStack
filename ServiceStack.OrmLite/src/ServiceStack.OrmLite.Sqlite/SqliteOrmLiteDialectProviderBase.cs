@@ -474,12 +474,72 @@ public abstract class SqliteOrmLiteDialectProviderBase : OrmLiteDialectProviderB
     public override List<string> GetTableIndexNames(IDbConnection db, TableRef tableRef) => db.Column<string>(
         "SELECT name FROM sqlite_master WHERE type='index' AND tbl_name = {0} COLLATE NOCASE".SqlFmt(this, UnquotedTable(tableRef)));
 
-    // Indexes that aren't created with CREATE INDEX are for primary keys and unique constraints
-    public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef) => ToIndexSchemas(
-        db.SqlList<Dictionary<string, object>>(
-            "SELECT il.name AS name, il.\"unique\" AS is_unique, CASE WHEN il.origin = 'c' THEN 0 ELSE 1 END AS is_constraint, " +
-            "(SELECT group_concat(name, ',') FROM (SELECT ii.name FROM pragma_index_info(il.name) ii ORDER BY ii.seqno)) AS columns " +
-            "FROM pragma_index_list({0}) il".SqlFmt(this, UnquotedTable(tableRef))));
+    // Indexes that aren't created with CREATE INDEX are for primary keys and unique constraints. SQLite keeps the
+    // statements that create indexes, which the WHERE of a partial index is read from.
+    public override List<IndexSchema> GetTableIndexes(IDbConnection db, TableRef tableRef)
+    {
+        var rows = db.SqlList<Dictionary<string, object>>(
+            ("SELECT il.name AS name, il.\"unique\" AS is_unique, CASE WHEN il.origin = 'c' THEN 0 ELSE 1 END AS is_constraint, " +
+             "CASE WHEN il.origin = 'pk' THEN 1 ELSE 0 END AS is_primary_key, " +
+             "(SELECT group_concat(name, ',') FROM (SELECT ii.name FROM pragma_index_info(il.name) ii ORDER BY ii.seqno)) AS columns, " +
+             "(SELECT m.sql FROM sqlite_master m WHERE m.type = 'index' AND m.name = il.name) AS index_sql " +
+             "FROM pragma_index_list({0}) il").SqlFmt(this, UnquotedTable(tableRef)));
+        var indexes = ToIndexSchemas(rows);
+        for (var i = 0; i < rows.Count; i++)
+        {
+            if (rows[i]["index_sql"] is string sql)
+                indexes[i].Where = IndexSchema.Parse(sql)?.Where;
+        }
+        return indexes;
+    }
+
+    // The named CHECK constraints of the statement that created the table, which SQLite keeps as it was written
+    public override List<CheckConstraintSchema> GetCheckConstraints(IDbConnection db, string quotedTable)
+    {
+        var name = quotedTable.StripDbQuotes();
+        var sql = db.Scalar<string>(("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = {0} COLLATE NOCASE " +
+            "UNION ALL SELECT sql FROM sqlite_temp_master WHERE type = 'table' AND name = {0} COLLATE NOCASE").SqlFmt(this, name));
+        var to = new List<CheckConstraintSchema>();
+        if (sql == null)
+            return to;
+        foreach (System.Text.RegularExpressions.Match match in CheckConstraintRegex.Matches(sql))
+        {
+            // The condition is in the parentheses after CHECK, which can have parentheses of their own
+            var start = match.Index + match.Length;
+            var depth = 1;
+            var inQuotes = false;
+            for (var i = start; i < sql.Length; i++)
+            {
+                var c = sql[i];
+                if (c == '\'')
+                    inQuotes = !inQuotes;
+                else if (inQuotes)
+                    continue;
+                else if (c == '(')
+                    depth++;
+                else if (c == ')' && --depth == 0)
+                {
+                    to.Add(new CheckConstraintSchema {
+                        Name = match.Groups[1].Value.Trim('"', '`', '[', ']'),
+                        Condition = sql.Substring(start, i - start).Trim(),
+                    });
+                    break;
+                }
+            }
+        }
+        return to;
+    }
+
+    private static readonly System.Text.RegularExpressions.Regex CheckConstraintRegex = new(
+        @"\bCONSTRAINT\s+(""[^""]+""|`[^`]+`|\[[^\]]+\]|[^\s(]+)\s+CHECK\s*\(",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled,
+        TimeSpan.FromSeconds(1));
+
+    public override string ToAddConstraintStatement(TableRef tableRef, string constraint) => null;
+
+    public override string ToDropUniqueConstraintStatement(TableRef tableRef, string constraintName) => null;
+
+    public override string ToDropCheckConstraintStatement(TableRef tableRef, string constraintName) => null;
 
     public override Dictionary<string, string> GetColumnDefaults(IDbConnection db, string quotedTable)
     {
