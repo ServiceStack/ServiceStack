@@ -42,8 +42,8 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 - Batch the rows that read a result back, by reading a result set for each statement: new `[AutoIncrement]` rows in
   `SaveAll` and `UpsertAll`, `[ReturnOnInsert]` columns and row versions
 - Batch `UpsertAll` on connections with filters or rules, which use an existence check for each row
-- Batches in OrmLite's diagnostics events, the dialect's `OnBeforeExecuteNonQuery` hooks and results filters, which
-  turn batching off when they're used
+- Batches with the dialect's `OnBeforeExecuteNonQuery`/`OnAfterExecuteNonQuery` hooks and `OrmLiteConfig.ResultsFilter`,
+  which turn batching off when they're used
 - Name the row that failed in the exception, which only SqlClient reports
 - Prepare the SQL once for each distinct set of insert fields
 
@@ -52,7 +52,7 @@ Npgsql, Microsoft.Data.SqlClient and MySqlConnector. Remaining:
 ## 3. Schema and Migrations
 
 ### 3.1 More Schema Diff (M)
-`db.GetSchemaDiff(types)` finds the differences between models and their tables (tables, columns and indexes),
+`db.GetSchemaDiff(types)` finds the differences between models and their tables,
 `diff.ToMigration()` writes them as a migration and `db.ApplySchemaDiff(diff)` applies them. Indexes are compared by
 their key columns, uniqueness, INCLUDE columns and WHERE conditions, and default values, foreign keys, unique and check
 constraints and primary keys are compared, the indexes, foreign keys and constraints that aren't in the model are found,
