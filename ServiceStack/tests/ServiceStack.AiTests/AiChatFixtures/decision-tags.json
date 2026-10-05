@@ -1,0 +1,53 @@
+{
+  "version": 3,
+  "tags": [
+    {
+      "label": "Email",
+      "group": "content"
+    },
+    {
+      "label": "Support",
+      "group": "content"
+    },
+    {
+      "label": "Feedback",
+      "group": "content"
+    },
+    {
+      "label": "Content",
+      "group": "content"
+    },
+    {
+      "label": "Business",
+      "group": "tag"
+    },
+    {
+      "label": "News",
+      "group": "content"
+    },
+    {
+      "label": "Classification",
+      "group": "tag"
+    },
+    {
+      "label": "Sentiment",
+      "group": "tag"
+    },
+    {
+      "label": "Relevance",
+      "group": "tag"
+    },
+    {
+      "label": "Routing",
+      "group": "tag"
+    },
+    {
+      "label": "Prioritization",
+      "group": "tag"
+    },
+    {
+      "label": "Verification",
+      "group": "tag"
+    }
+  ]
+}

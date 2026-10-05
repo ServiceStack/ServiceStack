@@ -1,0 +1,5370 @@
+[
+  {
+    "name": "claim",
+    "valid": true,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "company-news",
+    "valid": true,
+    "filename": "company-news.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Company news",
+      "description": "Assess the reported business implications for a named company. This recipe evaluates the article, not future stock prices.",
+      "tags": [
+        "news",
+        "business"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "company": {
+            "type": "string",
+            "title": "Company / ticker",
+            "default": ""
+          },
+          "article": {
+            "type": "string",
+            "title": "Article text",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "company",
+          "article"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "relevance": {
+          "type": "noul",
+          "instructions": "Does `article` directly concern `company`?",
+          "criteria": {
+            "true": "The named company or its operations are directly discussed.",
+            "false": "The company is absent or only tangentially mentioned."
+          }
+        },
+        "impact": {
+          "type": "choice",
+          "instructions": "What direction of business impact does the event in `article` suggest for `company`?",
+          "criteria": {
+            "favorable": "Beneficial business implications.",
+            "unfavorable": "Adverse business implications.",
+            "mixed": "Material benefits and drawbacks.",
+            "unclear": "Insufficient information to assess implications."
+          }
+        },
+        "materiality": {
+          "type": "score",
+          "instructions": "How material is the event described in `article` to `company`?",
+          "criteria": [
+            "Minor operational detail",
+            "Meaningful business development",
+            "Major company-wide development"
+          ]
+        }
+      },
+      "presentation": {
+        "questions": {
+          "relevance": {
+            "label": "Direct company relevance"
+          },
+          "impact": {
+            "label": "Business impact"
+          },
+          "materiality": {
+            "label": "Materiality"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Growth with costs",
+          "input": {
+            "company": "Acme Semiconductors / ACME",
+            "article": "Acme signed a three-year supply agreement with a major cloud provider and raised revenue guidance. Margins will be lower during its factory expansion."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Limited information",
+          "input": {
+            "company": "Acme Semiconductors / ACME",
+            "article": "An unnamed chip maker is expected to announce a partnership. No financial terms are available."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "company": "Acme Semiconductors / ACME",
+        "article": "Acme signed a three-year supply agreement with a major cloud provider and raised revenue guidance. Margins will be lower during its factory expansion."
+      },
+      "prompt": {
+        "company": "Acme Semiconductors / ACME",
+        "article": "Acme signed a three-year supply agreement with a major cloud provider and raised revenue guidance. Margins will be lower during its factory expansion."
+      },
+      "answers": {
+        "relevance": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "impact": {
+          "type": "choice",
+          "probabilities": {
+            "favorable": 0.78,
+            "unfavorable": 0.22,
+            "mixed": 0,
+            "unclear": 0
+          },
+          "confidence": 0.67,
+          "choice": "favorable"
+        },
+        "materiality": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "Minor operational detail",
+            "1": "Meaningful business development",
+            "2": "Major company-wide development"
+          }
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "email",
+    "valid": true,
+    "filename": "email.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Email intent",
+      "description": "Identify the main purpose of an email and whether the sender expects a timely reply.",
+      "tags": [
+        "email",
+        "classification"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email text",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "intent": {
+          "type": "choice",
+          "instructions": "What is the primary purpose of `email`?",
+          "criteria": {
+            "question": "Seeking information.",
+            "complaint": "Reporting dissatisfaction or requesting a remedy.",
+            "meeting": "Arranging a meeting.",
+            "invoice": "Invoicing or payment administration.",
+            "sales": "Selling or promoting a product.",
+            "other": "None of these purposes."
+          }
+        },
+        "reply_requested": {
+          "type": "noul",
+          "instructions": "Does `email` ask the recipient to respond?",
+          "criteria": {
+            "true": "An explicit or implied request for an answer or confirmation.",
+            "false": "No response is requested."
+          }
+        },
+        "time_sensitive": {
+          "type": "noul",
+          "instructions": "Does `email` contain a time-sensitive request?",
+          "criteria": {
+            "true": "A deadline or immediate-action request.",
+            "false": "No deadline or immediate-action request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "intent": {
+            "label": "Intent"
+          },
+          "reply_requested": {
+            "label": "Reply requested"
+          },
+          "time_sensitive": {
+            "label": "Time sensitive"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Meeting invitation",
+          "input": {
+            "email": "Can we meet Thursday at 2pm? Please confirm before tomorrow so I can book the room."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Monthly update",
+          "input": {
+            "email": "Here is our monthly product update. New features are available in your account. No action is needed."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "email": "Can we meet Thursday at 2pm? Please confirm before tomorrow so I can book the room."
+      },
+      "prompt": {
+        "email": "Can we meet Thursday at 2pm? Please confirm before tomorrow so I can book the room."
+      },
+      "answers": {
+        "intent": {
+          "type": "choice",
+          "probabilities": {
+            "question": 0.78,
+            "complaint": 0.22,
+            "meeting": 0,
+            "invoice": 0,
+            "sales": 0,
+            "other": 0
+          },
+          "confidence": 0.67,
+          "choice": "question"
+        },
+        "reply_requested": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "time_sensitive": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "feedback",
+    "valid": true,
+    "filename": "feedback.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Feedback tags",
+      "description": "Apply multiple useful tags to customer feedback and rate the reported problem.",
+      "tags": [
+        "feedback",
+        "multi-label"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "feedback": {
+            "type": "string",
+            "title": "Customer feedback",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "feedback"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "feature_request": {
+          "type": "noul",
+          "instructions": "Does `feedback` request a new capability?",
+          "criteria": {
+            "true": "The user asks for functionality that does not exist.",
+            "false": "No new capability is requested."
+          }
+        },
+        "bug_report": {
+          "type": "noul",
+          "instructions": "Does `feedback` describe broken functionality?",
+          "criteria": {
+            "true": "Unexpected failures or defects.",
+            "false": "No defect is described."
+          }
+        },
+        "usability": {
+          "type": "noul",
+          "instructions": "Does `feedback` describe difficulty using the product?",
+          "criteria": {
+            "true": "Confusing or cumbersome interactions.",
+            "false": "No usability issue is described."
+          }
+        },
+        "praise": {
+          "type": "noul",
+          "instructions": "Does `feedback` praise the product?",
+          "criteria": {
+            "true": "Explicit positive appraisal.",
+            "false": "No praise is expressed."
+          }
+        },
+        "severity": {
+          "type": "score",
+          "instructions": "How severe is the problem described in `feedback`?",
+          "criteria": [
+            "No problem or a cosmetic annoyance",
+            "Degraded functionality with a workaround",
+            "Essential functionality blocked without a workaround"
+          ]
+        }
+      },
+      "presentation": {
+        "questions": {
+          "feature_request": {
+            "label": "Feature request"
+          },
+          "bug_report": {
+            "label": "Bug report"
+          },
+          "usability": {
+            "label": "Usability"
+          },
+          "praise": {
+            "label": "Praise"
+          },
+          "severity": {
+            "label": "Severity"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Several signals",
+          "input": {
+            "feedback": "The dashboard looks great, but finding reports is confusing. Please add a search box."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Blocking defect",
+          "input": {
+            "feedback": "Every attempt to export my reports crashes the app. I cannot get the data out at all."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "feedback": "The dashboard looks great, but finding reports is confusing. Please add a search box."
+      },
+      "prompt": {
+        "feedback": "The dashboard looks great, but finding reports is confusing. Please add a search box."
+      },
+      "answers": {
+        "feature_request": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "bug_report": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "usability": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "praise": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "severity": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "No problem or a cosmetic annoyance",
+            "1": "Degraded functionality with a workaround",
+            "2": "Essential functionality blocked without a workaround"
+          }
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "relevance",
+    "valid": true,
+    "filename": "relevance.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Audience relevance",
+      "description": "Check whether content fits an audience and whether it is promotional.",
+      "tags": [
+        "content",
+        "relevance"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "audience": {
+            "type": "string",
+            "title": "Audience description",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "content": {
+            "type": "string",
+            "title": "Content to assess",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "audience",
+          "content"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "relevance": {
+          "type": "score",
+          "instructions": "How relevant is `content` to the interests and needs described in `audience`?",
+          "criteria": [
+            "Not relevant",
+            "Somewhat relevant",
+            "Directly relevant"
+          ]
+        },
+        "promotional": {
+          "type": "noul",
+          "instructions": "Is `content` primarily promotional?",
+          "criteria": {
+            "true": "It primarily sells or promotes a product or service.",
+            "false": "It primarily informs, teaches or discusses."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "relevance": {
+            "label": "Relevance"
+          },
+          "promotional": {
+            "label": "Promotional"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Relevant tutorial",
+          "input": {
+            "audience": "Python developers building small web APIs.",
+            "content": "This tutorial demonstrates request validation and error handling in an aiohttp API."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Product promotion",
+          "input": {
+            "audience": "Python developers building small web APIs.",
+            "content": "Buy our new gaming headphones now. Use code AUDIO for 20% off."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "audience": "Python developers building small web APIs.",
+        "content": "This tutorial demonstrates request validation and error handling in an aiohttp API."
+      },
+      "prompt": {
+        "audience": "Python developers building small web APIs.",
+        "content": "This tutorial demonstrates request validation and error handling in an aiohttp API."
+      },
+      "answers": {
+        "relevance": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "Not relevant",
+            "1": "Somewhat relevant",
+            "2": "Directly relevant"
+          }
+        },
+        "promotional": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "sentiment",
+    "valid": true,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "email"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "A delayed delivery",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Mixed feedback",
+          "input": {
+            "message": "I love the new design, but the search is frustrating and takes forever."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "support",
+    "valid": true,
+    "filename": "support.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Support triage",
+      "description": "Route a support ticket, identify defects, and assess urgency in one call.",
+      "tags": [
+        "support",
+        "routing"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "customer_tier": {
+            "type": "string",
+            "title": "Customer tier",
+            "enum": [
+              "Standard",
+              "Business",
+              "Enterprise"
+            ],
+            "default": "Standard"
+          },
+          "ticket": {
+            "type": "string",
+            "title": "Support ticket",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "ticket",
+          "customer_tier"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "is_bug": {
+          "type": "noul",
+          "instructions": "Is `ticket` reporting a software defect?",
+          "criteria": {
+            "true": "Broken or unexpected product behavior.",
+            "false": "A question, feature request, or general account issue."
+          }
+        },
+        "team": {
+          "type": "choice",
+          "instructions": "Which team should own `ticket`?",
+          "criteria": {
+            "payments": "Checkout, billing, invoicing or payment failures.",
+            "frontend": "Rendering, layout or browser compatibility.",
+            "account": "Login, permissions or profile issues.",
+            "other": "The ticket does not fit the listed teams."
+          }
+        },
+        "urgency": {
+          "type": "score",
+          "instructions": "How urgent is the issue described in `ticket`?",
+          "criteria": [
+            "Can wait for a future release",
+            "Needs attention this week",
+            "Blocking customer operations or revenue right now"
+          ]
+        }
+      },
+      "presentation": {
+        "questions": {
+          "is_bug": {
+            "label": "Software defect"
+          },
+          "team": {
+            "label": "Owning team"
+          },
+          "urgency": {
+            "label": "Urgency"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Checkout failure",
+          "input": {
+            "customer_tier": "Enterprise",
+            "ticket": "My checkout page shows a blank screen after I click Pay. I have tried two browsers."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Feature question",
+          "input": {
+            "customer_tier": "Standard",
+            "ticket": "Can I change the colour of the chart labels?"
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "customer_tier": "Enterprise",
+        "ticket": "My checkout page shows a blank screen after I click Pay. I have tried two browsers."
+      },
+      "prompt": {
+        "customer_tier": "Enterprise",
+        "ticket": "My checkout page shows a blank screen after I click Pay. I have tried two browsers."
+      },
+      "answers": {
+        "is_bug": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "team": {
+          "type": "choice",
+          "probabilities": {
+            "payments": 0.78,
+            "frontend": 0.22,
+            "account": 0,
+            "other": 0
+          },
+          "confidence": 0.67,
+          "choice": "payments"
+        },
+        "urgency": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "Can wait for a future release",
+            "1": "Needs attention this week",
+            "2": "Blocking customer operations or revenue right now"
+          }
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "future-version",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 2,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "missing-execution",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": null
+  },
+  {
+    "name": "not-successful",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "cancelled",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "different-prompt",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": "different",
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "missing-answers",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {},
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "private-execution-fields",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0,
+      "apiKey": "private"
+    }
+  },
+  {
+    "name": "remote-schema-ref",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false,
+        "$ref": "https://evil.example"
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "reserved-key",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        },
+        "constructor": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "unknown-field",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ],
+      "publisher": "private"
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "invalid-filename",
+    "valid": false,
+    "filename": "../private.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "reserved-filename",
+    "valid": false,
+    "filename": "CON.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "invalid-duration",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": -1
+    }
+  },
+  {
+    "name": "invalid-time",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "yesterday",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "non-utc-time",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T12:00:00+08:00",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "invalid-answers-type",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "unknown",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "unicode-dotted-filename",
+    "valid": true,
+    "filename": "例. café.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "</script><script>alert(1)</script>",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-description",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": null,
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-tags",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": null,
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-state",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": null,
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-presentation",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": null,
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-presentation-questions",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": null
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-examples",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": null
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-properties",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": null,
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-required",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": null,
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-expected",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored",
+          "expected": null
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "null-provenance",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": null
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "un-normalized-confidence",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "probabilities-do-not-sum",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.0,
+            "contradicted": 0.0,
+            "insufficient": 0.0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "raw-answer-field",
+    "valid": false,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "claim": {
+            "type": "string",
+            "title": "Claim",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "title": "Source material",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "claim",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "Supported claim",
+          "input": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Missing evidence",
+          "input": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "prompt": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported",
+          "rawResponse": "secret"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "falsy-null-arrays-unicode",
+    "valid": true,
+    "filename": "claim.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Claim support",
+      "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+      "tags": [
+        "verification",
+        "evidence"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "number": {
+            "type": "integer"
+          },
+          "words": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "enabled",
+          "number",
+          "words"
+        ]
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "support": {
+          "type": "choice",
+          "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+          "criteria": {
+            "supported": "The source supports the claim.",
+            "contradicted": "The source contradicts the claim.",
+            "insufficient": "The source does not establish either support or contradiction."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "support": {
+            "label": "Support"
+          }
+        }
+      },
+      "examples": []
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "enabled": false,
+        "number": 0,
+        "words": [
+          "例",
+          "☃"
+        ],
+        "null_value": null
+      },
+      "prompt": {
+        "enabled": false,
+        "number": 0,
+        "words": [
+          "例",
+          "☃"
+        ],
+        "null_value": null
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "recorded-usage-example",
+    "valid": true,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "email"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "recorded",
+          "label": "Real run",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored",
+          "execution": {
+            "status": "succeeded",
+            "input": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "prompt": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "answers": {
+              "sentiment": {
+                "type": "choice",
+                "probabilities": {
+                  "negative": 0.78,
+                  "neutral": 0.22,
+                  "positive": 0,
+                  "mixed": 0
+                },
+                "confidence": 0.67,
+                "choice": "negative"
+              },
+              "is_urgent": {
+                "type": "noul",
+                "noul": 0.96
+              }
+            },
+            "model": "~typesafe/jev-latest",
+            "completedAt": "2026-10-02T00:00:00Z",
+            "durationMs": 0
+          }
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "example-private-raw-response",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "email"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "recorded",
+          "label": "Real run",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored",
+          "execution": {
+            "status": "succeeded",
+            "input": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "prompt": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "answers": {
+              "sentiment": {
+                "type": "choice",
+                "probabilities": {
+                  "negative": 0.78,
+                  "neutral": 0.22,
+                  "positive": 0,
+                  "mixed": 0
+                },
+                "confidence": 0.67,
+                "choice": "negative"
+              },
+              "is_urgent": {
+                "type": "noul",
+                "noul": 0.96
+              }
+            },
+            "model": "~typesafe/jev-latest",
+            "completedAt": "2026-10-02T00:00:00Z",
+            "durationMs": 0,
+            "response": {
+              "apiKey": "private"
+            }
+          }
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "example-input-mismatch",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "email"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "recorded",
+          "label": "Real run",
+          "input": {
+            "message": "Another message"
+          },
+          "provenance": "authored",
+          "execution": {
+            "status": "succeeded",
+            "input": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "prompt": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "answers": {
+              "sentiment": {
+                "type": "choice",
+                "probabilities": {
+                  "negative": 0.78,
+                  "neutral": 0.22,
+                  "positive": 0,
+                  "mixed": 0
+                },
+                "confidence": 0.67,
+                "choice": "negative"
+              },
+              "is_urgent": {
+                "type": "noul",
+                "noul": 0.96
+              }
+            },
+            "model": "~typesafe/jev-latest",
+            "completedAt": "2026-10-02T00:00:00Z",
+            "durationMs": 0
+          }
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "example-failed-run",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "email"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "recorded",
+          "label": "Real run",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored",
+          "execution": {
+            "status": "failed",
+            "input": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "prompt": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "answers": {
+              "sentiment": {
+                "type": "choice",
+                "probabilities": {
+                  "negative": 0.78,
+                  "neutral": 0.22,
+                  "positive": 0,
+                  "mixed": 0
+                },
+                "confidence": 0.67,
+                "choice": "negative"
+              },
+              "is_urgent": {
+                "type": "noul",
+                "noul": 0.96
+              }
+            },
+            "model": "~typesafe/jev-latest",
+            "completedAt": "2026-10-02T00:00:00Z",
+            "durationMs": 0
+          }
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "example-answer-missing",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "email"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "recorded",
+          "label": "Real run",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored",
+          "execution": {
+            "status": "succeeded",
+            "input": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "prompt": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "answers": {
+              "is_urgent": {
+                "type": "noul",
+                "noul": 0.96
+              }
+            },
+            "model": "~typesafe/jev-latest",
+            "completedAt": "2026-10-02T00:00:00Z",
+            "durationMs": 0
+          }
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "example-question-options-changed",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "email"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes.",
+            "new_option": "An unfavorable attitude."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "recorded",
+          "label": "Real run",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored",
+          "execution": {
+            "status": "succeeded",
+            "input": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "prompt": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "answers": {
+              "sentiment": {
+                "type": "choice",
+                "probabilities": {
+                  "negative": 0.78,
+                  "neutral": 0.22,
+                  "positive": 0,
+                  "mixed": 0
+                },
+                "confidence": 0.67,
+                "choice": "negative"
+              },
+              "is_urgent": {
+                "type": "noul",
+                "noul": 0.96
+              }
+            },
+            "model": "~typesafe/jev-latest",
+            "completedAt": "2026-10-02T00:00:00Z",
+            "durationMs": 0
+          }
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "single-content-three-tags",
+    "valid": true,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "urgency",
+        "custom"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "A delayed delivery",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Mixed feedback",
+          "input": {
+            "message": "I love the new design, but the search is frustrating and takes forever."
+          },
+          "provenance": "authored"
+        }
+      ],
+      "content": "email"
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "content-multiple-values",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "urgency",
+        "custom"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "A delayed delivery",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Mixed feedback",
+          "input": {
+            "message": "I love the new design, but the search is frustrating and takes forever."
+          },
+          "provenance": "authored"
+        }
+      ],
+      "content": [
+        "email",
+        "news"
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "content-too-long",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "urgency",
+        "custom"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "A delayed delivery",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Mixed feedback",
+          "input": {
+            "message": "I love the new design, but the search is frustrating and takes forever."
+          },
+          "provenance": "authored"
+        }
+      ],
+      "content": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "four-tags",
+    "valid": false,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "sentiment",
+        "urgency",
+        "custom",
+        "fourth"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "A delayed delivery",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Mixed feedback",
+          "input": {
+            "message": "I love the new design, but the search is frustrating and takes forever."
+          },
+          "provenance": "authored"
+        }
+      ],
+      "content": "email"
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  },
+  {
+    "name": "legacy-mixed-four-tags",
+    "valid": true,
+    "filename": "sentiment.json",
+    "document": {
+      "schemaVersion": 1,
+      "name": "Message sentiment",
+      "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+      "tags": [
+        "email",
+        "news",
+        "sentiment",
+        "classification"
+      ],
+      "decisionModel": "~typesafe/jev-latest",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Email, tweet or comment",
+            "default": "",
+            "format": "textarea",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "message"
+        ],
+        "additionalProperties": false
+      },
+      "state": {
+        "mode": "object"
+      },
+      "questions": {
+        "sentiment": {
+          "type": "choice",
+          "instructions": "What overall sentiment does `message` express?",
+          "criteria": {
+            "negative": "An unfavorable attitude.",
+            "neutral": "No favorable or unfavorable attitude.",
+            "positive": "A favorable attitude.",
+            "mixed": "Both favorable and unfavorable attitudes."
+          }
+        },
+        "is_urgent": {
+          "type": "noul",
+          "instructions": "Does `message` express a time-sensitive request?",
+          "criteria": {
+            "true": "An explicit deadline or request for immediate action.",
+            "false": "No time-sensitive request."
+          }
+        }
+      },
+      "presentation": {
+        "questions": {
+          "sentiment": {
+            "label": "Sentiment"
+          },
+          "is_urgent": {
+            "label": "Urgent request"
+          }
+        }
+      },
+      "examples": [
+        {
+          "id": "1",
+          "label": "A delayed delivery",
+          "input": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "provenance": "authored"
+        },
+        {
+          "id": "2",
+          "label": "Mixed feedback",
+          "input": {
+            "message": "I love the new design, but the search is frustrating and takes forever."
+          },
+          "provenance": "authored"
+        }
+      ]
+    },
+    "execution": {
+      "status": "succeeded",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "prompt": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "model": "~typesafe/jev-latest",
+      "completedAt": "2026-10-02T00:00:00Z",
+      "durationMs": 0
+    }
+  }
+]

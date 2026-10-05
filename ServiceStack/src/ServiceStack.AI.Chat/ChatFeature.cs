@@ -49,6 +49,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     /// <summary>IRequest.Items key holding the raw /v1/chat/completions request JSON</summary>
     public const string ChatJsonKey = "__chatJson";
+    public const string DecisionJsonKey = "__decisionJson";
 
     // ── Host configuration ──
 
@@ -241,6 +242,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new SkillsExtension(),
             new VoiceExtension(),
             new PublishExtension(),
+            new JevExtension(),
             new GeminiExtension(),
             new KatexExtension(),
             new PdfExtension(),
@@ -397,6 +399,16 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             var chat = ChatJson.TryParseObject(json) ?? new JsonObject();
             req.Items[ChatJsonKey] = chat;
             return new ChatCompletion { Model = chat.GetString("model") ?? "" };
+        });
+
+        // Decision state/instructions/criteria are free-form JSON (string, object or array): keep the
+        // raw request instead of round-tripping those `object` properties through the typed DTO.
+        appHost.RegisterRequestBinder<CreateDecision>(req =>
+        {
+            var decision = ChatJson.TryParseObject(req.GetRawBody());
+            if (decision == null) throw HttpError.BadRequest("Expected a decision request object");
+            req.Items[DecisionJsonKey] = decision;
+            return new CreateDecision { Model = decision.GetString("model") ?? ChatDecisions.DefaultModel };
         });
 
         appHost.ScriptContext.Args[nameof(Chat)] = new Chat(this);

@@ -1,0 +1,2263 @@
+{
+  "recipes": [
+    {
+      "name": "claim",
+      "document": {
+        "schemaVersion": 1,
+        "name": "Claim support",
+        "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+        "tags": [
+          "content",
+          "verification"
+        ],
+        "decisionModel": "~typesafe/jev-latest",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "claim": {
+              "type": "string",
+              "title": "Claim",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            },
+            "source": {
+              "type": "string",
+              "title": "Source material",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "claim",
+            "source"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "mode": "object"
+        },
+        "questions": {
+          "support": {
+            "type": "choice",
+            "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+            "criteria": {
+              "supported": "The source supports the claim.",
+              "contradicted": "The source contradicts the claim.",
+              "insufficient": "The source does not establish either support or contradiction."
+            }
+          }
+        },
+        "presentation": {
+          "questions": {
+            "support": {
+              "label": "Support"
+            }
+          }
+        },
+        "examples": [
+          {
+            "id": "1",
+            "label": "Supported claim",
+            "input": {
+              "claim": "Revenue increased in the second quarter.",
+              "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+            },
+            "provenance": "authored"
+          },
+          {
+            "id": "2",
+            "label": "Missing evidence",
+            "input": {
+              "claim": "The company will double revenue next year.",
+              "source": "The company announced a new product. No revenue forecast was provided."
+            },
+            "provenance": "authored"
+          }
+        ]
+      },
+      "response": {
+        "model": "typesafe/jev-1.13-20260917",
+        "answers": {
+          "support": {
+            "type": "choice",
+            "choice": "supported",
+            "confidence": 0.67,
+            "probabilities": {
+              "supported": 0.78,
+              "contradicted": 0.22,
+              "insufficient": 0
+            }
+          }
+        },
+        "usage": {
+          "cost": 1.9992e-05
+        }
+      },
+      "answers": {
+        "support": {
+          "type": "choice",
+          "probabilities": {
+            "supported": 0.78,
+            "contradicted": 0.22,
+            "insufficient": 0
+          },
+          "confidence": 0.67,
+          "choice": "supported"
+        }
+      },
+      "compiled": [
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "claim": "Revenue increased in the second quarter.",
+            "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+          },
+          "questions": {
+            "support": {
+              "type": "choice",
+              "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+              "criteria": {
+                "supported": "The source supports the claim.",
+                "contradicted": "The source contradicts the claim.",
+                "insufficient": "The source does not establish either support or contradiction."
+              }
+            }
+          }
+        },
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "claim": "The company will double revenue next year.",
+            "source": "The company announced a new product. No revenue forecast was provided."
+          },
+          "questions": {
+            "support": {
+              "type": "choice",
+              "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+              "criteria": {
+                "supported": "The source supports the claim.",
+                "contradicted": "The source contradicts the claim.",
+                "insufficient": "The source does not establish either support or contradiction."
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "company-news",
+      "document": {
+        "schemaVersion": 1,
+        "name": "Company news",
+        "description": "Assess the reported business implications for a named company. This recipe evaluates the article, not future stock prices.",
+        "tags": [
+          "business",
+          "news",
+          "classification"
+        ],
+        "decisionModel": "~typesafe/jev-latest",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "company": {
+              "type": "string",
+              "title": "Company / ticker",
+              "default": ""
+            },
+            "article": {
+              "type": "string",
+              "title": "Article text",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "company",
+            "article"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "mode": "object"
+        },
+        "questions": {
+          "relevance": {
+            "type": "noul",
+            "instructions": "Does `article` directly concern `company`?",
+            "criteria": {
+              "true": "The named company or its operations are directly discussed.",
+              "false": "The company is absent or only tangentially mentioned."
+            }
+          },
+          "impact": {
+            "type": "choice",
+            "instructions": "What direction of business impact does the event in `article` suggest for `company`?",
+            "criteria": {
+              "favorable": "Beneficial business implications.",
+              "unfavorable": "Adverse business implications.",
+              "mixed": "Material benefits and drawbacks.",
+              "unclear": "Insufficient information to assess implications."
+            }
+          },
+          "materiality": {
+            "type": "score",
+            "instructions": "How material is the event described in `article` to `company`?",
+            "criteria": [
+              "Minor operational detail",
+              "Meaningful business development",
+              "Major company-wide development"
+            ]
+          }
+        },
+        "presentation": {
+          "questions": {
+            "relevance": {
+              "label": "Direct company relevance"
+            },
+            "impact": {
+              "label": "Business impact"
+            },
+            "materiality": {
+              "label": "Materiality"
+            }
+          }
+        },
+        "examples": [
+          {
+            "id": "1",
+            "label": "Growth with costs",
+            "input": {
+              "company": "Acme Semiconductors / ACME",
+              "article": "Acme signed a three-year supply agreement with a major cloud provider and raised revenue guidance. Margins will be lower during its factory expansion."
+            },
+            "provenance": "authored"
+          },
+          {
+            "id": "2",
+            "label": "Limited information",
+            "input": {
+              "company": "Acme Semiconductors / ACME",
+              "article": "An unnamed chip maker is expected to announce a partnership. No financial terms are available."
+            },
+            "provenance": "authored"
+          }
+        ]
+      },
+      "response": {
+        "model": "typesafe/jev-1.13-20260917",
+        "answers": {
+          "relevance": {
+            "type": "noul",
+            "noul": 0.96
+          },
+          "impact": {
+            "type": "choice",
+            "choice": "favorable",
+            "confidence": 0.67,
+            "probabilities": {
+              "favorable": 0.78,
+              "unfavorable": 0.22,
+              "mixed": 0,
+              "unclear": 0
+            }
+          },
+          "materiality": {
+            "type": "score",
+            "score": 1.99,
+            "confidence": 0.99,
+            "probabilities": {
+              "0": 0,
+              "1": 0,
+              "2": 1
+            },
+            "legend": {
+              "0": "Minor operational detail",
+              "1": "Meaningful business development",
+              "2": "Major company-wide development"
+            }
+          }
+        },
+        "usage": {
+          "cost": 1.9992e-05
+        }
+      },
+      "answers": {
+        "relevance": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "impact": {
+          "type": "choice",
+          "probabilities": {
+            "favorable": 0.78,
+            "unfavorable": 0.22,
+            "mixed": 0,
+            "unclear": 0
+          },
+          "confidence": 0.67,
+          "choice": "favorable"
+        },
+        "materiality": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "Minor operational detail",
+            "1": "Meaningful business development",
+            "2": "Major company-wide development"
+          }
+        }
+      },
+      "compiled": [
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "company": "Acme Semiconductors / ACME",
+            "article": "Acme signed a three-year supply agreement with a major cloud provider and raised revenue guidance. Margins will be lower during its factory expansion."
+          },
+          "questions": {
+            "relevance": {
+              "type": "noul",
+              "instructions": "Does `article` directly concern `company`?",
+              "criteria": {
+                "true": "The named company or its operations are directly discussed.",
+                "false": "The company is absent or only tangentially mentioned."
+              }
+            },
+            "impact": {
+              "type": "choice",
+              "instructions": "What direction of business impact does the event in `article` suggest for `company`?",
+              "criteria": {
+                "favorable": "Beneficial business implications.",
+                "unfavorable": "Adverse business implications.",
+                "mixed": "Material benefits and drawbacks.",
+                "unclear": "Insufficient information to assess implications."
+              }
+            },
+            "materiality": {
+              "type": "score",
+              "instructions": "How material is the event described in `article` to `company`?",
+              "criteria": [
+                "Minor operational detail",
+                "Meaningful business development",
+                "Major company-wide development"
+              ]
+            }
+          }
+        },
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "company": "Acme Semiconductors / ACME",
+            "article": "An unnamed chip maker is expected to announce a partnership. No financial terms are available."
+          },
+          "questions": {
+            "relevance": {
+              "type": "noul",
+              "instructions": "Does `article` directly concern `company`?",
+              "criteria": {
+                "true": "The named company or its operations are directly discussed.",
+                "false": "The company is absent or only tangentially mentioned."
+              }
+            },
+            "impact": {
+              "type": "choice",
+              "instructions": "What direction of business impact does the event in `article` suggest for `company`?",
+              "criteria": {
+                "favorable": "Beneficial business implications.",
+                "unfavorable": "Adverse business implications.",
+                "mixed": "Material benefits and drawbacks.",
+                "unclear": "Insufficient information to assess implications."
+              }
+            },
+            "materiality": {
+              "type": "score",
+              "instructions": "How material is the event described in `article` to `company`?",
+              "criteria": [
+                "Minor operational detail",
+                "Meaningful business development",
+                "Major company-wide development"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "email",
+      "document": {
+        "schemaVersion": 1,
+        "name": "Email intent",
+        "description": "Identify the main purpose of an email and whether the sender expects a timely reply.",
+        "tags": [
+          "email",
+          "classification",
+          "prioritization"
+        ],
+        "decisionModel": "~typesafe/jev-latest",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "title": "Email text",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "email"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "mode": "object"
+        },
+        "questions": {
+          "intent": {
+            "type": "choice",
+            "instructions": "What is the primary purpose of `email`?",
+            "criteria": {
+              "question": "Seeking information.",
+              "complaint": "Reporting dissatisfaction or requesting a remedy.",
+              "meeting": "Arranging a meeting.",
+              "invoice": "Invoicing or payment administration.",
+              "sales": "Selling or promoting a product.",
+              "other": "None of these purposes."
+            }
+          },
+          "reply_requested": {
+            "type": "noul",
+            "instructions": "Does `email` ask the recipient to respond?",
+            "criteria": {
+              "true": "An explicit or implied request for an answer or confirmation.",
+              "false": "No response is requested."
+            }
+          },
+          "time_sensitive": {
+            "type": "noul",
+            "instructions": "Does `email` contain a time-sensitive request?",
+            "criteria": {
+              "true": "A deadline or immediate-action request.",
+              "false": "No deadline or immediate-action request."
+            }
+          }
+        },
+        "presentation": {
+          "questions": {
+            "intent": {
+              "label": "Intent"
+            },
+            "reply_requested": {
+              "label": "Reply requested"
+            },
+            "time_sensitive": {
+              "label": "Time sensitive"
+            }
+          }
+        },
+        "examples": [
+          {
+            "id": "1",
+            "label": "Meeting invitation",
+            "input": {
+              "email": "Can we meet Thursday at 2pm? Please confirm before tomorrow so I can book the room."
+            },
+            "provenance": "authored"
+          },
+          {
+            "id": "2",
+            "label": "Monthly update",
+            "input": {
+              "email": "Here is our monthly product update. New features are available in your account. No action is needed."
+            },
+            "provenance": "authored"
+          }
+        ]
+      },
+      "response": {
+        "model": "typesafe/jev-1.13-20260917",
+        "answers": {
+          "intent": {
+            "type": "choice",
+            "choice": "question",
+            "confidence": 0.67,
+            "probabilities": {
+              "question": 0.78,
+              "complaint": 0.22,
+              "meeting": 0,
+              "invoice": 0,
+              "sales": 0,
+              "other": 0
+            }
+          },
+          "reply_requested": {
+            "type": "noul",
+            "noul": 0.96
+          },
+          "time_sensitive": {
+            "type": "noul",
+            "noul": 0.96
+          }
+        },
+        "usage": {
+          "cost": 1.9992e-05
+        }
+      },
+      "answers": {
+        "intent": {
+          "type": "choice",
+          "probabilities": {
+            "question": 0.78,
+            "complaint": 0.22,
+            "meeting": 0,
+            "invoice": 0,
+            "sales": 0,
+            "other": 0
+          },
+          "confidence": 0.67,
+          "choice": "question"
+        },
+        "reply_requested": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "time_sensitive": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "compiled": [
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "email": "Can we meet Thursday at 2pm? Please confirm before tomorrow so I can book the room."
+          },
+          "questions": {
+            "intent": {
+              "type": "choice",
+              "instructions": "What is the primary purpose of `email`?",
+              "criteria": {
+                "question": "Seeking information.",
+                "complaint": "Reporting dissatisfaction or requesting a remedy.",
+                "meeting": "Arranging a meeting.",
+                "invoice": "Invoicing or payment administration.",
+                "sales": "Selling or promoting a product.",
+                "other": "None of these purposes."
+              }
+            },
+            "reply_requested": {
+              "type": "noul",
+              "instructions": "Does `email` ask the recipient to respond?",
+              "criteria": {
+                "true": "An explicit or implied request for an answer or confirmation.",
+                "false": "No response is requested."
+              }
+            },
+            "time_sensitive": {
+              "type": "noul",
+              "instructions": "Does `email` contain a time-sensitive request?",
+              "criteria": {
+                "true": "A deadline or immediate-action request.",
+                "false": "No deadline or immediate-action request."
+              }
+            }
+          }
+        },
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "email": "Here is our monthly product update. New features are available in your account. No action is needed."
+          },
+          "questions": {
+            "intent": {
+              "type": "choice",
+              "instructions": "What is the primary purpose of `email`?",
+              "criteria": {
+                "question": "Seeking information.",
+                "complaint": "Reporting dissatisfaction or requesting a remedy.",
+                "meeting": "Arranging a meeting.",
+                "invoice": "Invoicing or payment administration.",
+                "sales": "Selling or promoting a product.",
+                "other": "None of these purposes."
+              }
+            },
+            "reply_requested": {
+              "type": "noul",
+              "instructions": "Does `email` ask the recipient to respond?",
+              "criteria": {
+                "true": "An explicit or implied request for an answer or confirmation.",
+                "false": "No response is requested."
+              }
+            },
+            "time_sensitive": {
+              "type": "noul",
+              "instructions": "Does `email` contain a time-sensitive request?",
+              "criteria": {
+                "true": "A deadline or immediate-action request.",
+                "false": "No deadline or immediate-action request."
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "feedback",
+      "document": {
+        "schemaVersion": 1,
+        "name": "Feedback tags",
+        "description": "Apply multiple useful tags to customer feedback and rate the reported problem.",
+        "tags": [
+          "feedback",
+          "classification"
+        ],
+        "decisionModel": "~typesafe/jev-latest",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "feedback": {
+              "type": "string",
+              "title": "Customer feedback",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "feedback"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "mode": "object"
+        },
+        "questions": {
+          "feature_request": {
+            "type": "noul",
+            "instructions": "Does `feedback` request a new capability?",
+            "criteria": {
+              "true": "The user asks for functionality that does not exist.",
+              "false": "No new capability is requested."
+            }
+          },
+          "bug_report": {
+            "type": "noul",
+            "instructions": "Does `feedback` describe broken functionality?",
+            "criteria": {
+              "true": "Unexpected failures or defects.",
+              "false": "No defect is described."
+            }
+          },
+          "usability": {
+            "type": "noul",
+            "instructions": "Does `feedback` describe difficulty using the product?",
+            "criteria": {
+              "true": "Confusing or cumbersome interactions.",
+              "false": "No usability issue is described."
+            }
+          },
+          "praise": {
+            "type": "noul",
+            "instructions": "Does `feedback` praise the product?",
+            "criteria": {
+              "true": "Explicit positive appraisal.",
+              "false": "No praise is expressed."
+            }
+          },
+          "severity": {
+            "type": "score",
+            "instructions": "How severe is the problem described in `feedback`?",
+            "criteria": [
+              "No problem or a cosmetic annoyance",
+              "Degraded functionality with a workaround",
+              "Essential functionality blocked without a workaround"
+            ]
+          }
+        },
+        "presentation": {
+          "questions": {
+            "feature_request": {
+              "label": "Feature request"
+            },
+            "bug_report": {
+              "label": "Bug report"
+            },
+            "usability": {
+              "label": "Usability"
+            },
+            "praise": {
+              "label": "Praise"
+            },
+            "severity": {
+              "label": "Severity"
+            }
+          }
+        },
+        "examples": [
+          {
+            "id": "1",
+            "label": "Several signals",
+            "input": {
+              "feedback": "The dashboard looks great, but finding reports is confusing. Please add a search box."
+            },
+            "provenance": "authored"
+          },
+          {
+            "id": "2",
+            "label": "Blocking defect",
+            "input": {
+              "feedback": "Every attempt to export my reports crashes the app. I cannot get the data out at all."
+            },
+            "provenance": "authored"
+          }
+        ]
+      },
+      "response": {
+        "model": "typesafe/jev-1.13-20260917",
+        "answers": {
+          "feature_request": {
+            "type": "noul",
+            "noul": 0.96
+          },
+          "bug_report": {
+            "type": "noul",
+            "noul": 0.96
+          },
+          "usability": {
+            "type": "noul",
+            "noul": 0.96
+          },
+          "praise": {
+            "type": "noul",
+            "noul": 0.96
+          },
+          "severity": {
+            "type": "score",
+            "score": 1.99,
+            "confidence": 0.99,
+            "probabilities": {
+              "0": 0,
+              "1": 0,
+              "2": 1
+            },
+            "legend": {
+              "0": "No problem or a cosmetic annoyance",
+              "1": "Degraded functionality with a workaround",
+              "2": "Essential functionality blocked without a workaround"
+            }
+          }
+        },
+        "usage": {
+          "cost": 1.9992e-05
+        }
+      },
+      "answers": {
+        "feature_request": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "bug_report": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "usability": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "praise": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "severity": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "No problem or a cosmetic annoyance",
+            "1": "Degraded functionality with a workaround",
+            "2": "Essential functionality blocked without a workaround"
+          }
+        }
+      },
+      "compiled": [
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "feedback": "The dashboard looks great, but finding reports is confusing. Please add a search box."
+          },
+          "questions": {
+            "feature_request": {
+              "type": "noul",
+              "instructions": "Does `feedback` request a new capability?",
+              "criteria": {
+                "true": "The user asks for functionality that does not exist.",
+                "false": "No new capability is requested."
+              }
+            },
+            "bug_report": {
+              "type": "noul",
+              "instructions": "Does `feedback` describe broken functionality?",
+              "criteria": {
+                "true": "Unexpected failures or defects.",
+                "false": "No defect is described."
+              }
+            },
+            "usability": {
+              "type": "noul",
+              "instructions": "Does `feedback` describe difficulty using the product?",
+              "criteria": {
+                "true": "Confusing or cumbersome interactions.",
+                "false": "No usability issue is described."
+              }
+            },
+            "praise": {
+              "type": "noul",
+              "instructions": "Does `feedback` praise the product?",
+              "criteria": {
+                "true": "Explicit positive appraisal.",
+                "false": "No praise is expressed."
+              }
+            },
+            "severity": {
+              "type": "score",
+              "instructions": "How severe is the problem described in `feedback`?",
+              "criteria": [
+                "No problem or a cosmetic annoyance",
+                "Degraded functionality with a workaround",
+                "Essential functionality blocked without a workaround"
+              ]
+            }
+          }
+        },
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "feedback": "Every attempt to export my reports crashes the app. I cannot get the data out at all."
+          },
+          "questions": {
+            "feature_request": {
+              "type": "noul",
+              "instructions": "Does `feedback` request a new capability?",
+              "criteria": {
+                "true": "The user asks for functionality that does not exist.",
+                "false": "No new capability is requested."
+              }
+            },
+            "bug_report": {
+              "type": "noul",
+              "instructions": "Does `feedback` describe broken functionality?",
+              "criteria": {
+                "true": "Unexpected failures or defects.",
+                "false": "No defect is described."
+              }
+            },
+            "usability": {
+              "type": "noul",
+              "instructions": "Does `feedback` describe difficulty using the product?",
+              "criteria": {
+                "true": "Confusing or cumbersome interactions.",
+                "false": "No usability issue is described."
+              }
+            },
+            "praise": {
+              "type": "noul",
+              "instructions": "Does `feedback` praise the product?",
+              "criteria": {
+                "true": "Explicit positive appraisal.",
+                "false": "No praise is expressed."
+              }
+            },
+            "severity": {
+              "type": "score",
+              "instructions": "How severe is the problem described in `feedback`?",
+              "criteria": [
+                "No problem or a cosmetic annoyance",
+                "Degraded functionality with a workaround",
+                "Essential functionality blocked without a workaround"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "relevance",
+      "document": {
+        "schemaVersion": 1,
+        "name": "Audience relevance",
+        "description": "Check whether content fits an audience and whether it is promotional.",
+        "tags": [
+          "content",
+          "relevance"
+        ],
+        "decisionModel": "~typesafe/jev-latest",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "audience": {
+              "type": "string",
+              "title": "Audience description",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            },
+            "content": {
+              "type": "string",
+              "title": "Content to assess",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "audience",
+            "content"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "mode": "object"
+        },
+        "questions": {
+          "relevance": {
+            "type": "score",
+            "instructions": "How relevant is `content` to the interests and needs described in `audience`?",
+            "criteria": [
+              "Not relevant",
+              "Somewhat relevant",
+              "Directly relevant"
+            ]
+          },
+          "promotional": {
+            "type": "noul",
+            "instructions": "Is `content` primarily promotional?",
+            "criteria": {
+              "true": "It primarily sells or promotes a product or service.",
+              "false": "It primarily informs, teaches or discusses."
+            }
+          }
+        },
+        "presentation": {
+          "questions": {
+            "relevance": {
+              "label": "Relevance"
+            },
+            "promotional": {
+              "label": "Promotional"
+            }
+          }
+        },
+        "examples": [
+          {
+            "id": "1",
+            "label": "Relevant tutorial",
+            "input": {
+              "audience": "Python developers building small web APIs.",
+              "content": "This tutorial demonstrates request validation and error handling in an aiohttp API."
+            },
+            "provenance": "authored"
+          },
+          {
+            "id": "2",
+            "label": "Product promotion",
+            "input": {
+              "audience": "Python developers building small web APIs.",
+              "content": "Buy our new gaming headphones now. Use code AUDIO for 20% off."
+            },
+            "provenance": "authored"
+          }
+        ]
+      },
+      "response": {
+        "model": "typesafe/jev-1.13-20260917",
+        "answers": {
+          "relevance": {
+            "type": "score",
+            "score": 1.99,
+            "confidence": 0.99,
+            "probabilities": {
+              "0": 0,
+              "1": 0,
+              "2": 1
+            },
+            "legend": {
+              "0": "Not relevant",
+              "1": "Somewhat relevant",
+              "2": "Directly relevant"
+            }
+          },
+          "promotional": {
+            "type": "noul",
+            "noul": 0.96
+          }
+        },
+        "usage": {
+          "cost": 1.9992e-05
+        }
+      },
+      "answers": {
+        "relevance": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "Not relevant",
+            "1": "Somewhat relevant",
+            "2": "Directly relevant"
+          }
+        },
+        "promotional": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "compiled": [
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "audience": "Python developers building small web APIs.",
+            "content": "This tutorial demonstrates request validation and error handling in an aiohttp API."
+          },
+          "questions": {
+            "relevance": {
+              "type": "score",
+              "instructions": "How relevant is `content` to the interests and needs described in `audience`?",
+              "criteria": [
+                "Not relevant",
+                "Somewhat relevant",
+                "Directly relevant"
+              ]
+            },
+            "promotional": {
+              "type": "noul",
+              "instructions": "Is `content` primarily promotional?",
+              "criteria": {
+                "true": "It primarily sells or promotes a product or service.",
+                "false": "It primarily informs, teaches or discusses."
+              }
+            }
+          }
+        },
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "audience": "Python developers building small web APIs.",
+            "content": "Buy our new gaming headphones now. Use code AUDIO for 20% off."
+          },
+          "questions": {
+            "relevance": {
+              "type": "score",
+              "instructions": "How relevant is `content` to the interests and needs described in `audience`?",
+              "criteria": [
+                "Not relevant",
+                "Somewhat relevant",
+                "Directly relevant"
+              ]
+            },
+            "promotional": {
+              "type": "noul",
+              "instructions": "Is `content` primarily promotional?",
+              "criteria": {
+                "true": "It primarily sells or promotes a product or service.",
+                "false": "It primarily informs, teaches or discusses."
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sentiment",
+      "document": {
+        "schemaVersion": 1,
+        "name": "Message sentiment",
+        "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+        "tags": [
+          "email",
+          "sentiment"
+        ],
+        "decisionModel": "~typesafe/jev-latest",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "string",
+              "title": "Email, tweet or comment",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "message"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "mode": "object"
+        },
+        "questions": {
+          "sentiment": {
+            "type": "choice",
+            "instructions": "What overall sentiment does `message` express?",
+            "criteria": {
+              "negative": "An unfavorable attitude.",
+              "neutral": "No favorable or unfavorable attitude.",
+              "positive": "A favorable attitude.",
+              "mixed": "Both favorable and unfavorable attitudes."
+            }
+          },
+          "is_urgent": {
+            "type": "noul",
+            "instructions": "Does `message` express a time-sensitive request?",
+            "criteria": {
+              "true": "An explicit deadline or request for immediate action.",
+              "false": "No time-sensitive request."
+            }
+          }
+        },
+        "presentation": {
+          "questions": {
+            "sentiment": {
+              "label": "Sentiment"
+            },
+            "is_urgent": {
+              "label": "Urgent request"
+            }
+          }
+        },
+        "examples": [
+          {
+            "id": "1",
+            "label": "A delayed delivery",
+            "input": {
+              "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+            },
+            "provenance": "authored"
+          },
+          {
+            "id": "2",
+            "label": "Mixed feedback",
+            "input": {
+              "message": "I love the new design, but the search is frustrating and takes forever."
+            },
+            "provenance": "authored"
+          }
+        ]
+      },
+      "response": {
+        "model": "typesafe/jev-1.13-20260917",
+        "answers": {
+          "sentiment": {
+            "type": "choice",
+            "choice": "negative",
+            "confidence": 0.67,
+            "probabilities": {
+              "negative": 0.78,
+              "neutral": 0.22,
+              "positive": 0,
+              "mixed": 0
+            }
+          },
+          "is_urgent": {
+            "type": "noul",
+            "noul": 0.96
+          }
+        },
+        "usage": {
+          "cost": 1.9992e-05
+        }
+      },
+      "answers": {
+        "sentiment": {
+          "type": "choice",
+          "probabilities": {
+            "negative": 0.78,
+            "neutral": 0.22,
+            "positive": 0,
+            "mixed": 0
+          },
+          "confidence": 0.67,
+          "choice": "negative"
+        },
+        "is_urgent": {
+          "type": "noul",
+          "noul": 0.96
+        }
+      },
+      "compiled": [
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+          },
+          "questions": {
+            "sentiment": {
+              "type": "choice",
+              "instructions": "What overall sentiment does `message` express?",
+              "criteria": {
+                "negative": "An unfavorable attitude.",
+                "neutral": "No favorable or unfavorable attitude.",
+                "positive": "A favorable attitude.",
+                "mixed": "Both favorable and unfavorable attitudes."
+              }
+            },
+            "is_urgent": {
+              "type": "noul",
+              "instructions": "Does `message` express a time-sensitive request?",
+              "criteria": {
+                "true": "An explicit deadline or request for immediate action.",
+                "false": "No time-sensitive request."
+              }
+            }
+          }
+        },
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "message": "I love the new design, but the search is frustrating and takes forever."
+          },
+          "questions": {
+            "sentiment": {
+              "type": "choice",
+              "instructions": "What overall sentiment does `message` express?",
+              "criteria": {
+                "negative": "An unfavorable attitude.",
+                "neutral": "No favorable or unfavorable attitude.",
+                "positive": "A favorable attitude.",
+                "mixed": "Both favorable and unfavorable attitudes."
+              }
+            },
+            "is_urgent": {
+              "type": "noul",
+              "instructions": "Does `message` express a time-sensitive request?",
+              "criteria": {
+                "true": "An explicit deadline or request for immediate action.",
+                "false": "No time-sensitive request."
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "support",
+      "document": {
+        "schemaVersion": 1,
+        "name": "Support triage",
+        "description": "Route a support ticket, identify defects, and assess urgency in one call.",
+        "tags": [
+          "support",
+          "routing",
+          "prioritization"
+        ],
+        "decisionModel": "~typesafe/jev-latest",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "customer_tier": {
+              "type": "string",
+              "title": "Customer tier",
+              "enum": [
+                "Standard",
+                "Business",
+                "Enterprise"
+              ],
+              "default": "Standard"
+            },
+            "ticket": {
+              "type": "string",
+              "title": "Support ticket",
+              "default": "",
+              "format": "textarea",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "ticket",
+            "customer_tier"
+          ],
+          "additionalProperties": false
+        },
+        "state": {
+          "mode": "object"
+        },
+        "questions": {
+          "is_bug": {
+            "type": "noul",
+            "instructions": "Is `ticket` reporting a software defect?",
+            "criteria": {
+              "true": "Broken or unexpected product behavior.",
+              "false": "A question, feature request, or general account issue."
+            }
+          },
+          "team": {
+            "type": "choice",
+            "instructions": "Which team should own `ticket`?",
+            "criteria": {
+              "payments": "Checkout, billing, invoicing or payment failures.",
+              "frontend": "Rendering, layout or browser compatibility.",
+              "account": "Login, permissions or profile issues.",
+              "other": "The ticket does not fit the listed teams."
+            }
+          },
+          "urgency": {
+            "type": "score",
+            "instructions": "How urgent is the issue described in `ticket`?",
+            "criteria": [
+              "Can wait for a future release",
+              "Needs attention this week",
+              "Blocking customer operations or revenue right now"
+            ]
+          }
+        },
+        "presentation": {
+          "questions": {
+            "is_bug": {
+              "label": "Software defect"
+            },
+            "team": {
+              "label": "Owning team"
+            },
+            "urgency": {
+              "label": "Urgency"
+            }
+          }
+        },
+        "examples": [
+          {
+            "id": "1",
+            "label": "Checkout failure",
+            "input": {
+              "customer_tier": "Enterprise",
+              "ticket": "My checkout page shows a blank screen after I click Pay. I have tried two browsers."
+            },
+            "provenance": "authored"
+          },
+          {
+            "id": "2",
+            "label": "Feature question",
+            "input": {
+              "customer_tier": "Standard",
+              "ticket": "Can I change the colour of the chart labels?"
+            },
+            "provenance": "authored"
+          }
+        ]
+      },
+      "response": {
+        "model": "typesafe/jev-1.13-20260917",
+        "answers": {
+          "is_bug": {
+            "type": "noul",
+            "noul": 0.96
+          },
+          "team": {
+            "type": "choice",
+            "choice": "payments",
+            "confidence": 0.67,
+            "probabilities": {
+              "payments": 0.78,
+              "frontend": 0.22,
+              "account": 0,
+              "other": 0
+            }
+          },
+          "urgency": {
+            "type": "score",
+            "score": 1.99,
+            "confidence": 0.99,
+            "probabilities": {
+              "0": 0,
+              "1": 0,
+              "2": 1
+            },
+            "legend": {
+              "0": "Can wait for a future release",
+              "1": "Needs attention this week",
+              "2": "Blocking customer operations or revenue right now"
+            }
+          }
+        },
+        "usage": {
+          "cost": 1.9992e-05
+        }
+      },
+      "answers": {
+        "is_bug": {
+          "type": "noul",
+          "noul": 0.96
+        },
+        "team": {
+          "type": "choice",
+          "probabilities": {
+            "payments": 0.78,
+            "frontend": 0.22,
+            "account": 0,
+            "other": 0
+          },
+          "confidence": 0.67,
+          "choice": "payments"
+        },
+        "urgency": {
+          "type": "score",
+          "probabilities": {
+            "0": 0,
+            "1": 0,
+            "2": 1
+          },
+          "confidence": 0.99,
+          "score": 1.99,
+          "legend": {
+            "0": "Can wait for a future release",
+            "1": "Needs attention this week",
+            "2": "Blocking customer operations or revenue right now"
+          }
+        }
+      },
+      "compiled": [
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "customer_tier": "Enterprise",
+            "ticket": "My checkout page shows a blank screen after I click Pay. I have tried two browsers."
+          },
+          "questions": {
+            "is_bug": {
+              "type": "noul",
+              "instructions": "Is `ticket` reporting a software defect?",
+              "criteria": {
+                "true": "Broken or unexpected product behavior.",
+                "false": "A question, feature request, or general account issue."
+              }
+            },
+            "team": {
+              "type": "choice",
+              "instructions": "Which team should own `ticket`?",
+              "criteria": {
+                "payments": "Checkout, billing, invoicing or payment failures.",
+                "frontend": "Rendering, layout or browser compatibility.",
+                "account": "Login, permissions or profile issues.",
+                "other": "The ticket does not fit the listed teams."
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "instructions": "How urgent is the issue described in `ticket`?",
+              "criteria": [
+                "Can wait for a future release",
+                "Needs attention this week",
+                "Blocking customer operations or revenue right now"
+              ]
+            }
+          }
+        },
+        {
+          "model": "~typesafe/jev-latest",
+          "state": {
+            "customer_tier": "Standard",
+            "ticket": "Can I change the colour of the chart labels?"
+          },
+          "questions": {
+            "is_bug": {
+              "type": "noul",
+              "instructions": "Is `ticket` reporting a software defect?",
+              "criteria": {
+                "true": "Broken or unexpected product behavior.",
+                "false": "A question, feature request, or general account issue."
+              }
+            },
+            "team": {
+              "type": "choice",
+              "instructions": "Which team should own `ticket`?",
+              "criteria": {
+                "payments": "Checkout, billing, invoicing or payment failures.",
+                "frontend": "Rendering, layout or browser compatibility.",
+                "account": "Login, permissions or profile issues.",
+                "other": "The ticket does not fit the listed teams."
+              }
+            },
+            "urgency": {
+              "type": "score",
+              "instructions": "How urgent is the issue described in `ticket`?",
+              "criteria": [
+                "Can wait for a future release",
+                "Needs attention this week",
+                "Blocking customer operations or revenue right now"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "hashes": [
+    {
+      "value": null,
+      "encoded": "null",
+      "hash": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "value": true,
+      "encoded": "true",
+      "hash": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+    },
+    {
+      "value": false,
+      "encoded": "false",
+      "hash": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+    },
+    {
+      "value": {
+        "z": "Quote \" and slash \\ and \n☃   😀",
+        "a": "<>&",
+        "😀": 1,
+        "": 2
+      },
+      "encoded": "{\"a\": \"<>&\", \"z\": \"Quote \\\" and slash \\\\ and \\n☃   😀\", \"\": 2, \"😀\": 1}",
+      "hash": "8dcb275e35da6d1500644a742a71ba1d199b783009e53fa9095df331b871e6b8"
+    },
+    {
+      "value": {
+        "float": 1.0,
+        "negativeZero": -0.0,
+        "tiny": 1e-07,
+        "large": 1e+20,
+        "decimal": 0.0001
+      },
+      "encoded": "{\"decimal\": 0.0001, \"float\": 1.0, \"large\": 1e+20, \"negativeZero\": -0.0, \"tiny\": 1e-07}",
+      "hash": "001ab64c8b3c5595fbc17dc79f1cdf9c7e105cd11192624c9fdf225fae9dbb46"
+    },
+    {
+      "value": [
+        1.2345678901234568e+16,
+        1.23456789e-05,
+        1000000000000000.0,
+        1e-05,
+        1.1
+      ],
+      "encoded": "[1.2345678901234568e+16, 1.23456789e-05, 1000000000000000.0, 1e-05, 1.1]",
+      "hash": "0cbcd677da16c2e2e537d34685134019ee1a1f9e28d8cfed92054935b3088c41"
+    },
+    {
+      "value": {
+        "value": -446.3457979905348
+      },
+      "encoded": "{\"value\": -446.3457979905348}",
+      "hash": "7f58f79a976b7e1fc82065173c352ec841ff87bb1f01920a39eafe893a628e29"
+    },
+    {
+      "value": {
+        "value": -2.003232962713544e-204
+      },
+      "encoded": "{\"value\": -2.003232962713544e-204}",
+      "hash": "c181b3325b10b64cddf6d77af8426b83fc2b57f66a180d1b53c4cef2d725d76b"
+    },
+    {
+      "value": {
+        "value": 1.0680263522114262e-279
+      },
+      "encoded": "{\"value\": 1.0680263522114262e-279}",
+      "hash": "bf236f65d2d242d38d25a5b8c433679d517e508dd89864d5c443d5563a532f47"
+    },
+    {
+      "value": {
+        "value": -8.17004649166102e-07
+      },
+      "encoded": "{\"value\": -8.17004649166102e-07}",
+      "hash": "6bc3b83ed16f83da45d8f4068a5420258f42aff2d0e64e3bcf105a10c240b0dc"
+    },
+    {
+      "value": {
+        "value": 7.163119739955248e+150
+      },
+      "encoded": "{\"value\": 7.163119739955248e+150}",
+      "hash": "036f4b0621b11972d25f463a173dd48d2f2c4b9cc241fff146621b9b7eaea7e3"
+    },
+    {
+      "value": {
+        "value": 2.8161177654963e+299
+      },
+      "encoded": "{\"value\": 2.8161177654963e+299}",
+      "hash": "8bdb033f4c78f4dff745c92eb1e89b320a7802b763448ede68b30274c931143e"
+    },
+    {
+      "value": {
+        "value": 4.1245850706553975e+87
+      },
+      "encoded": "{\"value\": 4.1245850706553975e+87}",
+      "hash": "b865840a1dcb38e281ec1b7842b10c674f8fd0744478ad3f0b110cbf20fab76e"
+    },
+    {
+      "value": {
+        "value": -5.453231053838512e-292
+      },
+      "encoded": "{\"value\": -5.453231053838512e-292}",
+      "hash": "27cadb7f6b227c75cd46905305eb06ee6eb18d451a79a981bb776036eaaa12fc"
+    },
+    {
+      "value": {
+        "value": 7.811410300372171e+74
+      },
+      "encoded": "{\"value\": 7.811410300372171e+74}",
+      "hash": "46ab087db8930205a5423fc8cc9e6ce0dd6c12e19361a56baf7ac50855c52989"
+    },
+    {
+      "value": {
+        "value": -0.18822629201984387
+      },
+      "encoded": "{\"value\": -0.18822629201984387}",
+      "hash": "70d173ad72a44e71c632530b94ef9209c358fd8dcbf0073261673f25b753b705"
+    },
+    {
+      "value": {
+        "value": -249.53992256674096
+      },
+      "encoded": "{\"value\": -249.53992256674096}",
+      "hash": "9774790b27b914ba208635caa9aadcc95d094d6e327e9a5df9d991812a565851"
+    },
+    {
+      "value": {
+        "value": -6.989391587189399e-78
+      },
+      "encoded": "{\"value\": -6.989391587189399e-78}",
+      "hash": "7044259f3e9f1f3f68f6384363f7f4f3295f92312b3281e2898d9e9f2dcfee29"
+    },
+    {
+      "value": {
+        "value": 9.189197832246374e-141
+      },
+      "encoded": "{\"value\": 9.189197832246374e-141}",
+      "hash": "045fef3a5db1605eed2000b6420be85cb493aedafd50994d5a4b1ecb58d4f63f"
+    },
+    {
+      "value": {
+        "value": 9.38488904554086e+17
+      },
+      "encoded": "{\"value\": 9.38488904554086e+17}",
+      "hash": "e454e2f50170e136096ed09f3645a5a6fb1862113ea670f93a03b0043a9cfb2a"
+    },
+    {
+      "value": {
+        "value": 9.752210172536095e+233
+      },
+      "encoded": "{\"value\": 9.752210172536095e+233}",
+      "hash": "4126617ca6bf1dba55409952c633e722227bedb923c86c8792a3a5640db385e8"
+    },
+    {
+      "value": {
+        "value": 4.235604222917646e+210
+      },
+      "encoded": "{\"value\": 4.235604222917646e+210}",
+      "hash": "36d2c7b869188b432629fac3b677a247c5fd9351f3de6832b8d8da2e9158928b"
+    },
+    {
+      "value": {
+        "value": -5.382656154946858e-125
+      },
+      "encoded": "{\"value\": -5.382656154946858e-125}",
+      "hash": "ac1959648c5586fc0d0504ffc5469a84f5e1204a80dd057133f6b55c3f69d245"
+    },
+    {
+      "value": {
+        "value": 4.1639871491920385e-164
+      },
+      "encoded": "{\"value\": 4.1639871491920385e-164}",
+      "hash": "f20c6497cae960440ceeebdf1cf507724d831f8af7efead254714b3fc504b874"
+    },
+    {
+      "value": {
+        "value": -1.5302543659662438e+280
+      },
+      "encoded": "{\"value\": -1.5302543659662438e+280}",
+      "hash": "71f5a3dadad53af87c30455ac4fd5b55297fc73301ca7e1832c9c663deea15f2"
+    },
+    {
+      "value": {
+        "value": -3.559121584688152e-50
+      },
+      "encoded": "{\"value\": -3.559121584688152e-50}",
+      "hash": "70342a97f2bbbe2abdefe9d761baca3cc15c481464cd00d2f561214c8fcc3fa6"
+    },
+    {
+      "value": {
+        "value": -4.831788381292926e-280
+      },
+      "encoded": "{\"value\": -4.831788381292926e-280}",
+      "hash": "d1076323ad9a235abe160d809d4ec2ef496de0cd251d1640d62e0c5f4d369d3d"
+    },
+    {
+      "value": {
+        "value": 2.728576966047156e+140
+      },
+      "encoded": "{\"value\": 2.728576966047156e+140}",
+      "hash": "56207b9e9140ab3387c7d940dc18da0d4b0462481d4fc201397a8c603b8f9fd9"
+    },
+    {
+      "value": {
+        "value": -8.637859365998788e+136
+      },
+      "encoded": "{\"value\": -8.637859365998788e+136}",
+      "hash": "7a9a4a3494c88dc8924a28ac5f5c16b837b3763633c5909bfc4bdd9523c35fe8"
+    },
+    {
+      "value": {
+        "value": 8.660978238489885e-114
+      },
+      "encoded": "{\"value\": 8.660978238489885e-114}",
+      "hash": "26d6f1b3ff6f5a8f395b82b210123da51969ae26edabebdc761e4db59a886bb3"
+    },
+    {
+      "value": {
+        "value": 1.771615111114553e+208
+      },
+      "encoded": "{\"value\": 1.771615111114553e+208}",
+      "hash": "c1c91f00a2ee6d46d18cd3c9d7da59d279c1756db5a0ac8c97e868f3ae8502e8"
+    },
+    {
+      "value": {
+        "value": 5.251462837083713e-231
+      },
+      "encoded": "{\"value\": 5.251462837083713e-231}",
+      "hash": "a8a89f10734c02f9dec884f59b546372661bb8a84d790d92ad49ce174863655a"
+    },
+    {
+      "value": {
+        "value": -6.433806906447119e-299
+      },
+      "encoded": "{\"value\": -6.433806906447119e-299}",
+      "hash": "fdca7b1c1c56635c767b2f2ca96110b74ef2de048e635b61cf180fae544c8bea"
+    },
+    {
+      "value": {
+        "value": 6.15294945067379e+284
+      },
+      "encoded": "{\"value\": 6.15294945067379e+284}",
+      "hash": "696357967f3dce1d267bef8bc230655d10d95c2fe3e09eb9ea61dfe50a9ce80c"
+    },
+    {
+      "value": {
+        "value": -3.9095942202407266e+293
+      },
+      "encoded": "{\"value\": -3.9095942202407266e+293}",
+      "hash": "8780a90dcba1266fd65d52c0de6ffe930efb59d8b13a52053660c310d157e5d1"
+    },
+    {
+      "value": {
+        "value": 8.45156639009503e+16
+      },
+      "encoded": "{\"value\": 8.45156639009503e+16}",
+      "hash": "525f9f6075efae0a85522b58833283eeb370f56251881f5649b4f7806aa4a369"
+    },
+    {
+      "value": {
+        "value": -46650.87946692432
+      },
+      "encoded": "{\"value\": -46650.87946692432}",
+      "hash": "1c966383219d02579b20d671a0c1beecd294e30a95d370cbf0df1123be0ca6c4"
+    },
+    {
+      "value": {
+        "value": -6.659388539356177e-275
+      },
+      "encoded": "{\"value\": -6.659388539356177e-275}",
+      "hash": "cfc466c4be2c1571432b72e0f76fea65ff63c8c8e5105f7b56265ccedc55fcea"
+    },
+    {
+      "value": {
+        "value": 5.186321627599283e+248
+      },
+      "encoded": "{\"value\": 5.186321627599283e+248}",
+      "hash": "4be4629ffc256e654eafc50e3a3f28900072f32bcd6078ad8faf38e1aad0808a"
+    },
+    {
+      "value": {
+        "value": -2.7927336075842588e-21
+      },
+      "encoded": "{\"value\": -2.7927336075842588e-21}",
+      "hash": "0dafef8788cd8ed765f03552ce74c1b2cbda72b96ff18bef9b1f937b650d773d"
+    },
+    {
+      "value": {
+        "value": -6.462895732297391e+64
+      },
+      "encoded": "{\"value\": -6.462895732297391e+64}",
+      "hash": "880fd0f1161e725a160af2520e4e427e37fb7f05eb0539494d6c78f603f20c79"
+    },
+    {
+      "value": {
+        "value": -9.190166257340473e+161
+      },
+      "encoded": "{\"value\": -9.190166257340473e+161}",
+      "hash": "e691e6688f489e5ddc524b919397717b69433008d126055bf7754894b433c5f6"
+    },
+    {
+      "value": {
+        "value": -5.164493924843437e-87
+      },
+      "encoded": "{\"value\": -5.164493924843437e-87}",
+      "hash": "3f7f878ee998c2e7b12c86f64c81127ed00c6a05af09674bdaf71d70b7444768"
+    },
+    {
+      "value": {
+        "value": -49904001.73155203
+      },
+      "encoded": "{\"value\": -49904001.73155203}",
+      "hash": "25616934d64f5beabc9d770983b888b9b334c053885174b486c53cc86a87ec22"
+    },
+    {
+      "value": {
+        "value": 3.165905275925778e+43
+      },
+      "encoded": "{\"value\": 3.165905275925778e+43}",
+      "hash": "ae69316bbded7b97d4b59ab396c8925d0f0de9671647f444b13a67d321ede908"
+    },
+    {
+      "value": {
+        "value": 4.1290232234596956e+287
+      },
+      "encoded": "{\"value\": 4.1290232234596956e+287}",
+      "hash": "badadad9ae7e287207c1741d3e88dbc4630404363f15707b83416127424d95f0"
+    },
+    {
+      "value": {
+        "value": 1.4382208394957585e-258
+      },
+      "encoded": "{\"value\": 1.4382208394957585e-258}",
+      "hash": "8e37cee84a40175df8a7855fd9241a6d0707725ac455047137b370089a9c1d2d"
+    },
+    {
+      "value": {
+        "value": 2.2834637925199506e+133
+      },
+      "encoded": "{\"value\": 2.2834637925199506e+133}",
+      "hash": "24ceff1794b4f48043106f87842a5348c67c2746694e3abe7c7b8852ec9463bf"
+    },
+    {
+      "value": {
+        "value": -0.0007119636259945863
+      },
+      "encoded": "{\"value\": -0.0007119636259945863}",
+      "hash": "5c85b39c572a1535e8e5c827a38e51e59e4c7321736f1483948a35a08acd8d3f"
+    },
+    {
+      "value": {
+        "value": -4.250562740238195e-98
+      },
+      "encoded": "{\"value\": -4.250562740238195e-98}",
+      "hash": "ab127667a4b15b260904ad93e0436d542b66c219cb21efecf0b2f82b0189256b"
+    },
+    {
+      "value": {
+        "value": -7.001736231174532e+289
+      },
+      "encoded": "{\"value\": -7.001736231174532e+289}",
+      "hash": "8f015a64bd758c3307ab0719b159ad14d10a17333990c249af462681278c3298"
+    },
+    {
+      "value": {
+        "value": 6.015014591817009e+111
+      },
+      "encoded": "{\"value\": 6.015014591817009e+111}",
+      "hash": "5436c04661819a9ec4b227de0f71093d991d0bbac8d7defad565e5376f29c4f3"
+    },
+    {
+      "value": {
+        "value": 2.5912516537294047e+252
+      },
+      "encoded": "{\"value\": 2.5912516537294047e+252}",
+      "hash": "9a2f36e3d06bc3a886f02f40d9635101acb326de3b78c523476e932205f571f8"
+    },
+    {
+      "value": {
+        "value": 8.972767262880464e-298
+      },
+      "encoded": "{\"value\": 8.972767262880464e-298}",
+      "hash": "0f52d7e1e6e52f13748c6aef8c2db62e7f4c49605f8d1a58c1a8105f761be397"
+    },
+    {
+      "value": {
+        "value": 3809072589.610716
+      },
+      "encoded": "{\"value\": 3809072589.610716}",
+      "hash": "66d9e27648b05f1177ed989d2d25910ebe7c28bef57c3b68887dae9b2b87c208"
+    },
+    {
+      "value": {
+        "value": 7.316895893179283e-221
+      },
+      "encoded": "{\"value\": 7.316895893179283e-221}",
+      "hash": "8794601924dda40b59ec09d8ce9032e91daea46c4c4c85414546c8547793840e"
+    },
+    {
+      "value": {
+        "value": 5.017250861664417e-45
+      },
+      "encoded": "{\"value\": 5.017250861664417e-45}",
+      "hash": "9ea81c70758f01ad1bed60b8ae2781fb214cbf7c9563394696bec26b719bc6fc"
+    },
+    {
+      "value": {
+        "value": -5.0973639726914555e+95
+      },
+      "encoded": "{\"value\": -5.0973639726914555e+95}",
+      "hash": "cb7659bc18ebe9e7e77f895ed4f81d921fbffdea9cafa414d1bb63bd2f18b456"
+    },
+    {
+      "value": {
+        "value": -2.6477963499599366e-24
+      },
+      "encoded": "{\"value\": -2.6477963499599366e-24}",
+      "hash": "ff7237ee4b9e37c289b722ad2b90556c962214336d634df885594016507cc43e"
+    },
+    {
+      "value": {
+        "value": -3.52318360297232e-57
+      },
+      "encoded": "{\"value\": -3.52318360297232e-57}",
+      "hash": "bdcd1b06ca1e3e2a371a53492dafdd1849db4fdc09c71d04fed6117a5b2aafdb"
+    },
+    {
+      "value": {
+        "value": 1.9737068613747021e-171
+      },
+      "encoded": "{\"value\": 1.9737068613747021e-171}",
+      "hash": "584ac5c1caa8712f3a9441e320b3a6025aa6f87ad939f546799321308496e907"
+    },
+    {
+      "value": {
+        "value": 746991203.0270078
+      },
+      "encoded": "{\"value\": 746991203.0270078}",
+      "hash": "1a9ffa7b46cde4d6268edf05922edd680b6d14505d2277c7bf1955845f66e308"
+    },
+    {
+      "value": {
+        "value": 5.235316633330975e+48
+      },
+      "encoded": "{\"value\": 5.235316633330975e+48}",
+      "hash": "21fc3386cfa3199893e10fb5ca8ae13314d9b6d295f06e79149331608da6167d"
+    },
+    {
+      "value": {
+        "value": 622136912368335.1
+      },
+      "encoded": "{\"value\": 622136912368335.1}",
+      "hash": "0608d8447c938eb17325ef4b2f030320f529210a81d15c89e104af17103f05e6"
+    },
+    {
+      "value": {
+        "value": -8.55147966767308e+146
+      },
+      "encoded": "{\"value\": -8.55147966767308e+146}",
+      "hash": "6db64fc7304cf0e4690a0789f413d1f288b113469e7679b8db6faa93c52b4f48"
+    },
+    {
+      "value": {
+        "value": 4.576772404551119e+57
+      },
+      "encoded": "{\"value\": 4.576772404551119e+57}",
+      "hash": "22ed7587cc12f988cbabf38cdd583ddcdd5d0345b0b87e3869634aaa1ecd0a09"
+    },
+    {
+      "value": {
+        "value": 1.0861197799203471e-294
+      },
+      "encoded": "{\"value\": 1.0861197799203471e-294}",
+      "hash": "8ee21e4dad0cf80ba59fd5a5251c795b20aa3cc901370ded1261bcb0bbf48378"
+    },
+    {
+      "value": {
+        "value": 5.827172139169079e-262
+      },
+      "encoded": "{\"value\": 5.827172139169079e-262}",
+      "hash": "be9333a24413b07c3b3c5ee0ad5d482a4f04b40af5fdff6a5d1919da7d432068"
+    },
+    {
+      "value": {
+        "value": 1.5846851034864162e-236
+      },
+      "encoded": "{\"value\": 1.5846851034864162e-236}",
+      "hash": "c49b658bcbdaa7c56171ebaee4036b3fd957907dbb66be68af44792f367ef329"
+    },
+    {
+      "value": {
+        "value": 1.1633719323355729e+39
+      },
+      "encoded": "{\"value\": 1.1633719323355729e+39}",
+      "hash": "c3b6fe22b33c0055983113defbc262349d7783f91159c47500392ca9a405d6ad"
+    },
+    {
+      "value": {
+        "value": -1.63369931261248e-292
+      },
+      "encoded": "{\"value\": -1.63369931261248e-292}",
+      "hash": "3bcb01fc5d3a4ba3d6a3437560f10d39729272b00c1c1da49008b34417555bf4"
+    },
+    {
+      "value": {
+        "value": -6.080163921548287e-214
+      },
+      "encoded": "{\"value\": -6.080163921548287e-214}",
+      "hash": "3b870b2745e5c865137a60cd17466b88cf9df412ae0a7ed3399b9074b0f2f769"
+    },
+    {
+      "value": {
+        "value": 9.08231189345183e+187
+      },
+      "encoded": "{\"value\": 9.08231189345183e+187}",
+      "hash": "33e53709de26b94f451b34807533e561bde701cd91a61114a9bb0a0a42408eb6"
+    },
+    {
+      "value": {
+        "value": -2.485132175677893e+50
+      },
+      "encoded": "{\"value\": -2.485132175677893e+50}",
+      "hash": "3e473fa6a037089002f25fec279f704e250bf52ea5c3e6d27809a86fe027fe48"
+    },
+    {
+      "value": {
+        "value": 5.1223472808618036e-216
+      },
+      "encoded": "{\"value\": 5.1223472808618036e-216}",
+      "hash": "df88ee32f0498ae96f51bc19a55a147c17949f7498545c4373d67c96b28c014a"
+    },
+    {
+      "value": {
+        "value": -5.585586059498815e-53
+      },
+      "encoded": "{\"value\": -5.585586059498815e-53}",
+      "hash": "e400e7f74f6458faf912190e725cbb1fe046549ab093ee1c3760f98453508b4f"
+    },
+    {
+      "value": {
+        "value": 3.311673630471777e+91
+      },
+      "encoded": "{\"value\": 3.311673630471777e+91}",
+      "hash": "68136ddee5db64e074467d73eb5f58b4ca05fe596dd2d5df67431ce6d16ef9ef"
+    },
+    {
+      "value": {
+        "value": -6.267244434639041e+244
+      },
+      "encoded": "{\"value\": -6.267244434639041e+244}",
+      "hash": "85548c5e379d929163e7d0153a9ae73d50713c7fa67531585b34128111a1ca36"
+    },
+    {
+      "value": {
+        "value": -2.2148908034991253e+265
+      },
+      "encoded": "{\"value\": -2.2148908034991253e+265}",
+      "hash": "1fccb433b91f72634763d74139a4fe80422a724f651cc30f5e6475568b18d9db"
+    },
+    {
+      "value": {
+        "value": -7.0700197510485665e+171
+      },
+      "encoded": "{\"value\": -7.0700197510485665e+171}",
+      "hash": "fb29e4c023aba3ba4c2ff3f6bcd94505af0d110ebd0540876e39cc544cf229a8"
+    },
+    {
+      "value": {
+        "value": -1.6018222683471217e+30
+      },
+      "encoded": "{\"value\": -1.6018222683471217e+30}",
+      "hash": "138e440f40ffba58f0df91a67896b6f5bf1df847f6d1ca66cc53e088511d1416"
+    },
+    {
+      "value": {
+        "value": 9.444726678379377e-274
+      },
+      "encoded": "{\"value\": 9.444726678379377e-274}",
+      "hash": "c8d0118308cd6f4c3f1456517019aa7ca68488e232c8e404248a52818a44675e"
+    },
+    {
+      "value": {
+        "value": -8.355685144740403e-297
+      },
+      "encoded": "{\"value\": -8.355685144740403e-297}",
+      "hash": "5a74266733887dfea50f4642047249420cfd69fe86e63b6caa950e4a3004b254"
+    },
+    {
+      "value": {
+        "value": 1620559220435.629
+      },
+      "encoded": "{\"value\": 1620559220435.629}",
+      "hash": "fb99035dd5a487ea1e79a16be710e91692cac9a074d7d74366d467497ba4c69b"
+    },
+    {
+      "value": {
+        "value": 4.820120642435448e-60
+      },
+      "encoded": "{\"value\": 4.820120642435448e-60}",
+      "hash": "c21297f1fde837ef0e6f66671a885ff262002e0a8e1384ae97a26255bfa7fec2"
+    },
+    {
+      "value": {
+        "value": 1.9718127687743304e-26
+      },
+      "encoded": "{\"value\": 1.9718127687743304e-26}",
+      "hash": "755ac81249edcd1320129912c837f0c8146f763e89393809d2795f0f9989c6f8"
+    },
+    {
+      "value": {
+        "value": -2.288575331693481e+208
+      },
+      "encoded": "{\"value\": -2.288575331693481e+208}",
+      "hash": "8a2d19c87dc721cf2fe32478d0e998b8011d9a3ae92ec7dc79b6d9da90bfc07f"
+    },
+    {
+      "value": {
+        "value": 8.85364204872001e-22
+      },
+      "encoded": "{\"value\": 8.85364204872001e-22}",
+      "hash": "a03ccb5662fac1de14e7aa49f7a5e86e100e7e5e1848b6185fed0da710f02bf2"
+    },
+    {
+      "value": {
+        "value": -4.224072046551994e+281
+      },
+      "encoded": "{\"value\": -4.224072046551994e+281}",
+      "hash": "28e53ec67c141f08cf6e4c7862355ff8f322d22be22ef2634f9bee886dabc1c3"
+    },
+    {
+      "value": {
+        "value": -6.154082986781391e-34
+      },
+      "encoded": "{\"value\": -6.154082986781391e-34}",
+      "hash": "6b8578e6bb7fa4a4d345a3cb6e3c9cf6a45d2099b53a6c106502c58f0c683081"
+    },
+    {
+      "value": {
+        "value": 5.975476600669694e-98
+      },
+      "encoded": "{\"value\": 5.975476600669694e-98}",
+      "hash": "edb20cc5bb1cea05b7d77707d0558e0ceeb1d396048834e21fdf0baf351e98e7"
+    },
+    {
+      "value": {
+        "value": -7.502032284655333e+192
+      },
+      "encoded": "{\"value\": -7.502032284655333e+192}",
+      "hash": "7d6e7f4a5c11ec41e4885cc3cba7d9269cde551ef5081e9f9915b4329e2e861f"
+    },
+    {
+      "value": {
+        "value": -2.000886562696149e-299
+      },
+      "encoded": "{\"value\": -2.000886562696149e-299}",
+      "hash": "409a56e28f32cea5d1d5e1ba97626f89c39b909030c29e7a5b3fe62e79572bed"
+    },
+    {
+      "value": {
+        "value": 2.9160640460211386e+199
+      },
+      "encoded": "{\"value\": 2.9160640460211386e+199}",
+      "hash": "5316f9bbe0a95d19f9e2eedfba55f0691db380c4dfa843ede7ba72e9b8a569cd"
+    },
+    {
+      "value": {
+        "value": -5.0747290911179e-29
+      },
+      "encoded": "{\"value\": -5.0747290911179e-29}",
+      "hash": "81f6eecf479498279145bd060faced982b1789f63ca1a87489326a1432ffa56f"
+    },
+    {
+      "value": {
+        "value": -5.201660963215287e+207
+      },
+      "encoded": "{\"value\": -5.201660963215287e+207}",
+      "hash": "6ca658be19d1260941e410a3faa897d07d3bfad06b9a80d3ed8eb0ff90f7a108"
+    },
+    {
+      "value": {
+        "value": 1.0822383649036714e+100
+      },
+      "encoded": "{\"value\": 1.0822383649036714e+100}",
+      "hash": "8ae6c854b1d354d2607526740f0f62d646be32d5c56099e178d5495f9917df04"
+    },
+    {
+      "value": {
+        "value": -97816861417680.52
+      },
+      "encoded": "{\"value\": -97816861417680.52}",
+      "hash": "4559560b455084267d217c6db1657f6dd04c637c420120a24e48c819032c879c"
+    },
+    {
+      "value": {
+        "value": -9.962455004041306e+255
+      },
+      "encoded": "{\"value\": -9.962455004041306e+255}",
+      "hash": "7c5a64767833f93d995571e838e942b99bc511166eebecd90dcc9a9e41464afb"
+    },
+    {
+      "value": {
+        "value": -2.3401522578784917e-67
+      },
+      "encoded": "{\"value\": -2.3401522578784917e-67}",
+      "hash": "37079d5f5d5cc5910ea81bb511f49b9b7bbbcb7c4193693a59e2f8dcc3f86ab6"
+    },
+    {
+      "value": {
+        "value": -9.550967510512065e+210
+      },
+      "encoded": "{\"value\": -9.550967510512065e+210}",
+      "hash": "cf3439c671f4079cd56b5ffbbd7115d1663e9feb58fee73986aa604ee42db3ac"
+    },
+    {
+      "value": {
+        "value": 8.22035507717102e+150
+      },
+      "encoded": "{\"value\": 8.22035507717102e+150}",
+      "hash": "f8ee0e5b6a8b7dc281c0861604ee6cccb0e2ef55381c224e7a0b439258f3a959"
+    },
+    {
+      "value": {
+        "value": -8.931672690417814e-33
+      },
+      "encoded": "{\"value\": -8.931672690417814e-33}",
+      "hash": "af86c7f85f2f231d9b3fab77ea2872e0921a630cd0c1c91c45230d92cd79c0fe"
+    },
+    {
+      "value": {
+        "value": 7.261807468798254e+131
+      },
+      "encoded": "{\"value\": 7.261807468798254e+131}",
+      "hash": "6bc6ffe9fd766a9438eec924379869d2eb454df159ac7794ee6605ef7e34d60e"
+    },
+    {
+      "value": {
+        "value": -5.950314192880166e-95
+      },
+      "encoded": "{\"value\": -5.950314192880166e-95}",
+      "hash": "5fa26926ce6b0c246dd0f0256ecf87019fd97921502b5f2edda3ffcddf97027e"
+    },
+    {
+      "value": {
+        "value": 2.8162905186354914e-187
+      },
+      "encoded": "{\"value\": 2.8162905186354914e-187}",
+      "hash": "0b1bee470fa42e54027573fea7d4228f311f9580f152239b26eb172ec540fec1"
+    }
+  ]
+}

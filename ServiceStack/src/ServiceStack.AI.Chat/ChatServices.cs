@@ -34,4 +34,29 @@ public class ChatServices : Service
         // write the provider's JSON verbatim (re-serializing would lose provider-specific fields)
         return new HttpResult(response.ToJsonString(ChatJson.Options).ToUtf8Bytes(), MimeTypes.Json);
     }
+
+    /// <summary>
+    /// OpenRouter's Decisions API (POST /api/alpha/decisions) through the configured "openrouter"
+    /// provider. One request, never retried or stored; same authentication as chat completions.
+    /// </summary>
+    public async Task<object> Post(CreateDecision request)
+    {
+        var feature = AssertPlugin<ChatFeature>();
+
+        var (isAuthenticated, _) = feature.ChatAuth.CheckAuth(Request!);
+        if (!isAuthenticated)
+            throw HttpError.Unauthorized("Authentication required");
+        if (feature.ValidateRequest != null)
+        {
+            var error = await feature.ValidateRequest(Request!).ConfigAwait();
+            if (error != null)
+                return error;
+        }
+
+        var decision = Request!.Items.TryGetValue(ChatFeature.DecisionJsonKey, out var oDecision) && oDecision is JsonObject raw
+            ? raw
+            : DecisionJson.ToJson(request);
+        var response = await feature.CreateDecisionAsync(decision, Request.RequestAborted).ConfigAwait();
+        return new HttpResult(response.ToJsonString(ChatJson.Options).ToUtf8Bytes(), MimeTypes.Json);
+    }
 }

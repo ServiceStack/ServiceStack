@@ -10,6 +10,14 @@ namespace ServiceStack.AI;
 public interface IChatClient
 {
     Task<ChatResponse> ChatAsync(ChatCompletion request, CancellationToken token=default);
+
+    /// <summary>
+    /// Ask a decision model (e.g. ~typesafe/jev-latest) typed questions about some state via
+    /// OpenRouter's Decisions API. Implemented by default so existing IChatClient implementations
+    /// continue to compile.
+    /// </summary>
+    Task<DecisionResponse> CreateDecisionAsync(CreateDecision request, CancellationToken token = default) =>
+        throw new NotSupportedException("Decisions are not supported by this IChatClient");
 }
 
 public class ChatClient(ChatFeature feature) : IChatClient
@@ -31,6 +39,18 @@ public class ChatClient(ChatFeature feature) : IChatClient
         var response = await feature.ChatCompletionAsync(chat, context).ConfigAwait();
 
         return FromChatJson(response);
+    }
+
+    /// <summary>
+    /// One OpenRouter Decisions request through the configured "openrouter" provider. Unlike
+    /// ChatAsync it bypasses the chat pipeline: it is never retried, failed over or stored, and runs
+    /// no tools or filters. Throws <see cref="ChatDecisionException"/> (an HttpError) on failure and
+    /// HttpError.BadRequest for an invalid request; answers are validated against the questions.
+    /// </summary>
+    public async Task<DecisionResponse> CreateDecisionAsync(CreateDecision request, CancellationToken token = default)
+    {
+        var response = await feature.CreateDecisionAsync(DecisionJson.ToJson(request), token).ConfigAwait();
+        return DecisionJson.FromJson(response);
     }
 
     /// <summary>
