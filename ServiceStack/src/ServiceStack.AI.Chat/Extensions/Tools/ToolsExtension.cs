@@ -15,7 +15,10 @@ public class ToolsExtension() : ChatExtension("tools")
     public bool EnableCodeExecution { get; set; }
     /// <summary>Allow LLM filesystem tools (computer extension). OFF by default.</summary>
     public bool EnableFilesystemTools { get; set; }
-    /// <summary>Directories LLM filesystem/code tools may access</summary>
+    /// <summary>
+    /// Extra directories explicitly shared with every user's filesystem/code tools. Empty by default:
+    /// each user otherwise works only in their own App_Data/chat/user/&lt;user&gt;/workspace.
+    /// </summary>
     public List<string> AllowedDirectories { get; set; } = [];
     public TimeSpan ToolTimeout { get; set; } = TimeSpan.FromSeconds(60);
 
@@ -102,11 +105,9 @@ public class ToolsExtension() : ChatExtension("tools")
 
     public override void Install(ExtensionContext ctx)
     {
-        if (AllowedDirectories.Count == 0)
-        {
-            AllowedDirectories.Add(ctx.AppData.BasePath.CombineWith("workspace").AssertDir());
-        }
-        
+        // No central workspace: each user works in App_Data/chat/user/<user>/workspace
+        // (ChatFeature.GetUserWorkspace). AllowedDirectories are only explicit host-shared folders.
+
         ctx.AddGet("", async req =>
         {
             var catalog = await ResolveAsync(new ChatContext { User = req.UserName, Request = req.Request, CancellationToken = req.Request.RequestAborted }, "__list").ConfigAwait();

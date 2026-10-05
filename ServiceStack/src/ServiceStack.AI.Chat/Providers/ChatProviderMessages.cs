@@ -383,13 +383,14 @@ public partial class OpenAiCompatibleProvider
         }
 
         // local file paths only when explicitly allowed by the host
-        if ((url.StartsWith('/') || url.StartsWith("~/")) && Feature != null)
+        if ((url.StartsWith('/') || url.StartsWith("~/")) && Feature != null && ProviderUserScope.TryGetUser(out var owner))
         {
             var fullPath = Path.GetFullPath(url.StartsWith("~/")
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), url[2..])
                 : url);
-            var allowed = Feature.ResolveAllowedDirectories()
-                .Any(dir => fullPath.StartsWith(dir, StringComparison.Ordinal));
+            // Only the requesting user's directories, never the 'default' user's for everyone
+            var allowed = Feature.ResolveAllowedDirectories(owner)
+                .Any(dir => { try { return ProjectsExplorer.IsContained(fullPath, ProjectsExplorer.PhysicalPath(dir)); } catch (HttpError) { return false; } });
             if (allowed && File.Exists(fullPath))
             {
                 Log.LogInformation("Reading file: {Path}", fullPath);

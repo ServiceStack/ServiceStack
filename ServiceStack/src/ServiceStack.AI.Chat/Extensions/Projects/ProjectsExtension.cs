@@ -11,10 +11,13 @@ namespace ServiceStack.AI;
 /// The project list is file-backed per user at user/&lt;user&gt;/projects/projects.json and the active
 /// project is a user pref.
 /// </summary>
-public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsApi
+public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsApi, IHasSchema
 {
     public override void Install(ExtensionContext ctx)
     {
+        RegisterOrganizationRoutes(ctx);
+        RegisterExplorerRoutes(ctx);
+        InstallCreation(ctx);
         ctx.AddGet("projects.json", req =>
             Task.FromResult<object?>(GetUserProjectsJson(req.UserName)));
 
@@ -28,6 +31,11 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         {
             var user = ctx.GetUserName(request);
             var activeProject = ctx.GetUserPref("project", user)?.GetValue<string>();
+            if (GetUserProjects(user).Any(p => p.GetBool("archived") && p.GetString("name") == activeProject))
+            {
+                ctx.SetUserPref("project", null, user);
+                activeProject = null;
+            }
             var paths = SetProjectDirectories(activeProject, user);
             Log.LogInformation("Projects [{User}] {Project}: {Paths}",
                 user ?? "default", activeProject ?? "(none)", string.Join(", ", paths));
@@ -62,7 +70,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
 
     /// <summary>&lt;userPath&gt;/projects/&lt;folder&gt; — the only directory a project can access</summary>
     public static string GetProjectDir(string userPath, JsonObject project) =>
-        Path.GetFullPath(Path.Combine(userPath, "projects", GetProjectFolder(project)));
+        ProjectsExplorer.PhysicalPath(Path.Combine(userPath, "projects", GetProjectFolder(project)));
 
     string UserProjectDir(string? user, JsonObject project) => GetProjectDir(Ctx.GetUserPath(user), project);
 
@@ -122,10 +130,11 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
     /// <summary>True when path is root or below it (both are compared as full paths)</summary>
     public static bool IsWithin(string path, string root)
     {
-        var rootFull = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar);
-        var pathFull = Path.GetFullPath(path);
-        return pathFull == rootFull
-            || pathFull.StartsWith(rootFull + Path.DirectorySeparatorChar, StringComparison.Ordinal);
+        var rootFull = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
+        var pathFull = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        return string.Equals(pathFull, rootFull, comparison)
+            || pathFull.StartsWith(Path.EndsInDirectorySeparator(rootFull) ? rootFull : rootFull + Path.DirectorySeparatorChar, comparison);
     }
 
     // ── Persistence ──
@@ -196,6 +205,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
             catch (Exception e)
             {
                 Log.LogError(e, "Failed to parse projects.json");
+                throw new HttpError(500, "ProjectStorageError", "Unable to read project configuration");
             }
         }
         return [];
@@ -240,6 +250,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
             project["id"] = projectId;
             if (existing != null && !project.ContainsKey("showInSidebar") && existing.ContainsKey("showInSidebar"))
                 project["showInSidebar"] = existing["showInSidebar"]?.DeepClone();
+            PreserveServerFields(project, existing);
             if (!seen.Add(projectId))
                 throw HttpError.BadRequest("Duplicate project");
         }
@@ -250,7 +261,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
     }
 
     /// <summary>Project names, folders and visibility appear in the chat sidebar</summary>
-    void NotifySidebar() => (Ctx.Threads as DbThreadApi)?.Updates.NotifySidebar();
+    void NotifySidebar() => Ctx.NotifySidebar();
 
     /// <summary>Move chats of deleted projects to Recents (idempotent; also run by the sidebar)</summary>
     void ReconcileThreads(JsonArray projects, string? user)
@@ -273,7 +284,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         NormalizeProject(project, user);
         project.Remove("paths"); // dropped in v4: a project is a single folder
         var projectDir = UserProjectDir(user, project);
-        var projectsRoot = Path.GetFullPath(Path.Combine(Ctx.GetUserPath(user), "projects"));
+        var projectsRoot = ProjectsExplorer.PhysicalPath(Path.Combine(Ctx.GetUserPath(user), "projects"));
         if (!IsWithin(projectDir, projectsRoot) || Path.GetFullPath(projectDir) == projectsRoot)
             throw HttpError.BadRequest("Project folder must be inside the projects directory");
         try
@@ -299,7 +310,12 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
 
         using (await LockProjectsAsync().ConfigAwait())
         {
-            PreserveIds(projects, ReadUserProjectsJson(user).OfType<JsonObject>().ToList(), user);
+            var previous = ReadUserProjectsJson(user).OfType<JsonObject>().ToList();
+            if (projects.Any(p => p is not JsonObject)) throw HttpError.BadRequest("Expected project objects");
+            var submitted = projects.OfType<JsonObject>().SelectMany(p => new[] { p.GetString("id"), p.GetString("name") }).ToHashSet();
+            foreach (var archived in previous.Where(p => p.GetBool("archived") && !submitted.Contains(p.GetString("id")) && !submitted.Contains(p.GetString("name"))))
+                projects.Add(archived.Clone());
+            PreserveIds(projects, previous, user);
             foreach (var project in projects.OfType<JsonObject>())
             {
                 PrepareProjectForSave(project, user);
@@ -341,6 +357,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
             if (existing != null)
             {
                 projectData["id"] = existing.GetString("id");
+                PreserveServerFields(projectData, existing);
                 if (!projectData.ContainsKey("showInSidebar") && existing.ContainsKey("showInSidebar"))
                     projectData["showInSidebar"] = existing["showInSidebar"]?.DeepClone();
                 projects[projects.IndexOf(existing)] = projectData.Clone();
@@ -348,6 +365,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
             else
             {
                 projectData["id"] = Guid.NewGuid().ToString();
+                PreserveServerFields(projectData, null);
                 projects.Add(projectData.Clone());
             }
             WriteProjects(user, projects);
@@ -383,6 +401,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         var projects = ReadUserProjectsJson(user);
         var project = projects.OfType<JsonObject>().FirstOrDefault(p => p.GetString("id") == projectId)
             ?? throw HttpError.NotFound("Project not found");
+        if (visible && project.GetBool("archived")) throw HttpError.Conflict("Unarchive this project before showing it in the sidebar.");
         project["showInSidebar"] = visible;
         WriteProjects(user, projects);
         NotifySidebar();
@@ -394,7 +413,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         var project = GetUserProjects(user).FirstOrDefault(p => p.GetString("id") == projectId)
             ?? throw new ArgumentException("Project not found");
         var directory = UserProjectDir(user, project);
-        var root = Path.GetFullPath(Path.Combine(Ctx.GetUserPath(user), "projects"));
+        var root = ProjectsExplorer.PhysicalPath(Path.Combine(Ctx.GetUserPath(user), "projects"));
         if (!IsWithin(directory, root) || directory == root)
             throw new ArgumentException("Project folder must be inside the projects directory");
         return new JsonObject { ["projectId"] = projectId, ["directories"] = new JsonArray(directory) };
@@ -417,6 +436,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         var project = GetUserProjects(user).FirstOrDefault(p => p.GetString("name") == name)
             ?? throw new Exception($"Project '{name}' not found");
 
+        if (project.GetBool("archived")) throw HttpError.Conflict("Unarchive this project before selecting it.");
         Ctx.SetUserPref("project", name, user);
         var paths = SetProjectDirectories(name, user);
         Log.LogInformation("Switched active project to '{Name}': {Paths}", name, string.Join(", ", paths));
@@ -425,16 +445,15 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
 
     /// <summary>
     /// Restrict the user's allowed directories to the active project's folder (port of
-    /// set_project_directories). llms-py grants nothing when there's no active project; this host
-    /// instead falls back to the explicitly configured ToolsConfig.AllowedDirectories, which is
-    /// empty by default and is the only thing that enables the filesystem tools here anyway.
+    /// set_project_directories). Without an active project a user gets their own workspace plus
+    /// any host-shared ToolsConfig.AllowedDirectories, never another user's or a central folder.
     /// </summary>
     List<string> SetProjectDirectories(string? projectName, string? user)
     {
-        var paths = Ctx.Tools.AllowedDirectories.ToList();
+        var paths = Ctx.Feature.DefaultWorkspaceDirectories(user);
         if (projectName != null)
         {
-            var project = GetUserProjects(user).FirstOrDefault(p => p.GetString("name") == projectName);
+            var project = GetUserProjects(user).FirstOrDefault(p => p.GetString("name") == projectName && !p.GetBool("archived"));
             paths = project != null ? [UserProjectDir(user, project)] : [];
         }
         Ctx.SetAllowedDirectories(paths, user);

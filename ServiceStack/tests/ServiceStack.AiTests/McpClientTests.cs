@@ -548,10 +548,12 @@ public class McpClientTests
     public async Task MCP_approval_executes_edited_arguments_once_and_keeps_batch_paused()
     {
         using var host = new BasicAppHost().Init();
+        // Production ChatFeature initialization supplies AppData; approval submission leases need it.
+        var data = Path.Combine(Path.GetTempPath(), "ai-chat-mcp-approval-" + Guid.NewGuid().ToString("N"));
         var factory = new OrmLiteConnectionFactory($"DataSource=file:mcp{Guid.NewGuid():N}?mode=memory&cache=shared", SqliteDialect.Provider);
         using var conn = factory.OpenDbConnection();
         var db = new ChatDb(factory); db.InitSchema();
-        var feature = new ChatFeature { ChatDb = db, ChatAuth = new Auth(),
+        var feature = new ChatFeature { AppData = new ChatAppData(data), ChatDb = db, ChatAuth = new Auth(),
             ThreadApi = new DbThreadApi(db, new ThreadUpdates(), Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance) };
         var extension = feature.McpClient; extension.Enabled = true; extension.Servers.Add(Server());
         extension.Ctx = new ExtensionContext(feature, "mcp_client"); extension.Install(extension.Ctx);
@@ -585,6 +587,6 @@ public class McpClientTests
             Assert.That(session.Calls, Is.EqualTo(1));
             await coordinator.CancelThreadAsync(context.ThreadId.Value, "alice");
             Assert.That(conn.Select<ChatToolApproval>().Single(x => x.ToolCallId == "two").Status, Is.EqualTo("canceled"));
-        } finally { await feature.RunAsyncShutdownHandlers(); }
+        } finally { await feature.RunAsyncShutdownHandlers(); if (Directory.Exists(data)) Directory.Delete(data, true); }
     }
 }

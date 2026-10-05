@@ -25,6 +25,7 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
             InitSchema();
         }
 
+        ctx.Feature.SidebarNotification = Updates.NotifySidebar;
         threadApi = new DbThreadApi(Db, Updates, ctx.Log);
         ctx.Threads = threadApi;
 
@@ -200,6 +201,7 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
         if (!isAuthenticated)
             return ChatResult.Unauthorized(Ctx.Feature.ErrorAuthRequired());
 
+        using var workspaceLease = Ctx.WorkspaceOperations.AcquireSubmission(Ctx.GetHomePath(), req.Request.RequestAborted);
         var submissionLock = submissionLocks.GetOrAdd(ThreadId(req), _ => new SemaphoreSlim(1, 1));
         await submissionLock.WaitAsync().ConfigAwait();
         try
@@ -310,6 +312,8 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
     /// <summary>Continue a paused tool-call turn without inventing another user message.</summary>
     internal async Task QueueContinuationAsync(long id, string? user, IRequest request)
     {
+        Ctx.AssertUserName(request);
+        using var workspaceLease = Ctx.WorkspaceOperations.AcquireSubmission(Ctx.GetHomePath(), request.RequestAborted);
         var row = Db.GetThread(id, user, includeMessages: false) ?? throw new Exception("Thread not found");
         if (row.CompletedAt != null || row.Error != null)
             throw new Exception("Thread is no longer active");
@@ -325,7 +329,7 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
         var run = Db.GetActiveAgentRun(id, user);
         if (run == null)
         {
-            run = Db.GetAgentRun(Db.CreateAgentRun(id, user, row.Model), user)!;
+            run = Db.GetAgentRun(Db.CreateAgentRun(id, user, row.Model, workspace: ResolveWorkspace(row.ProjectId, row.User ?? user)), user)!;
         }
         else
         {

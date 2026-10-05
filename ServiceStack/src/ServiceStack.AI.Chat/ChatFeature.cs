@@ -233,6 +233,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new AppExtension(),
             new AgentsExtension(),
             new ProjectsExtension(),
+            new GitExtension(),
             new ToolsExtension(),
             new CoreToolsExtension(),
             new ComputerExtension(),

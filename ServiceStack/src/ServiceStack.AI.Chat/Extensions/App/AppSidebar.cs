@@ -40,8 +40,8 @@ public partial class AppExtension
     }
 
     /// <summary>
-    /// The workspace a thread's runs execute in. Without a project it's the host's default policy
-    /// (ToolsConfig.AllowedDirectories), never a stale global project selection.
+    /// The workspace a thread's runs execute in. Without a project it's the owner's own workspace
+    /// plus host-shared directories, never a stale global project selection or a central folder.
     /// </summary>
     JsonObject ResolveWorkspace(string? projectId, string? user)
     {
@@ -49,7 +49,7 @@ public partial class AppExtension
             return new JsonObject
             {
                 ["projectId"] = null,
-                ["directories"] = new JsonArray(Ctx.Tools.AllowedDirectories
+                ["directories"] = new JsonArray(Ctx.Feature.DefaultWorkspaceDirectories(user)
                     .Select(x => Ctx.ResolveDirectory(x)).Where(x => x != null)
                     .Select(x => (JsonNode)x!).ToArray()),
             };
@@ -71,7 +71,7 @@ public partial class AppExtension
     string ComputeSidebarRevision(string? user)
     {
         var projects = string.Join('\n', ProjectHeaders(user).Select(p =>
-            $"{p.GetString("id")}|{p.GetString("name")}|{p["showInSidebar"]?.ToJsonString() ?? "true"}"));
+            $"{p.GetString("id")}|{p.GetString("name")}|{p["showInSidebar"]?.ToJsonString() ?? "true"}|{p.GetBool("archived")}"));
         var hash = SHA256.HashData(Encoding.UTF8.GetBytes(Db.SidebarRevision(user) + "\n" + projects));
         return Convert.ToHexString(hash)[..24].ToLowerInvariant();
     }
@@ -90,7 +90,7 @@ public partial class AppExtension
         {
             var id = project.GetString("id");
             var hidden = project["showInSidebar"] is JsonValue shown && shown.TryGetValue<bool>(out var visible) && !visible;
-            if (id == null || !active.Contains(id) || hidden)
+            if (id == null || !active.Contains(id) || hidden || project.GetBool("archived"))
                 continue;
             var group = Db.SidebarPage(user, id, ProjectPageSize);
             group["id"] = id;

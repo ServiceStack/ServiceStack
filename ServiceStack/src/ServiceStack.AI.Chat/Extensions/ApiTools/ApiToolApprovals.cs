@@ -286,6 +286,9 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
         var row = GetApproval(id, user) ?? throw HttpError.NotFound("Approval not found");
         if (row.Source == "mcp_client") McpClientExtension.AssertMutation(req);
         AssertThreadActive(row.ThreadId, user);
+        // Take the submission lease before the approved call's side effect: a repository write in
+        // progress must reject the approval up front, not after executing it (AfterDecision nests it).
+        using var workspaceLease = ctx.WorkspaceOperations.AcquireSubmission(ctx.GetHomePath(), req.Request.RequestAborted);
 
         if (row.Status == ApiToolApprovalStatus.Pending && Claim(id, user, ApiToolApprovalStatus.Executing))
         {
@@ -375,6 +378,9 @@ public class ApiToolApprovalCoordinator(ApiToolsExtension apiTools, ExtensionCon
 
     async Task AfterDecisionAsync(string batchId, long threadId, string user, IRequest request)
     {
+        // Acquire before adding canonical tool results or creating a legacy continuation run.
+        // QueueContinuation takes a nested shared lease in the same order.
+        using var workspaceLease = ctx.WorkspaceOperations.AcquireSubmission(ctx.GetHomePath(), request.RequestAborted);
         using (var conn = db.OpenDb())
         {
             var remaining = conn.Count(conn.From<ChatToolApproval>()
