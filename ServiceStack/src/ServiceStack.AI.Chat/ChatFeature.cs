@@ -243,6 +243,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new VoiceExtension(),
             new PublishExtension(),
             new JevExtension(),
+            new OpenAiAuthExtension(),
             new GeminiExtension(),
             new KatexExtension(),
             new PdfExtension(),
