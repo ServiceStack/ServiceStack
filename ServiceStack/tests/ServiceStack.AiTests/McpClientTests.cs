@@ -16,7 +16,7 @@ using ServiceStack.OrmLite;
 using ServiceStack.Testing;
 using ServiceStack.Web;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [NonParallelizable]
 public class McpClientTests

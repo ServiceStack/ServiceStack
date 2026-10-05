@@ -7,7 +7,7 @@ using NUnit.Framework;
 using ServiceStack.AI;
 using ServiceStack.IO;
 
-namespace ServiceStack.Extensions.Tests
+namespace ServiceStack.AiTests
 {
     [TestFixture]
     public class AiModernizationTests

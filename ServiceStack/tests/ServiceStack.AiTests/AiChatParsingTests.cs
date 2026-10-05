@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using ServiceStack.AI;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 public class AiChatParsingTests
 {

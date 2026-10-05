@@ -7,7 +7,7 @@ using ServiceStack.AI;
 
 #nullable enable
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [TestFixture]
 public class PdfRendererApiTests

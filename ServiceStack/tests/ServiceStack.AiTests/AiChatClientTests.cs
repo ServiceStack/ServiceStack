@@ -9,7 +9,7 @@ using ServiceStack.AI;
 using ServiceStack.Text;
 using JsonObject = System.Text.Json.Nodes.JsonObject;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 /// <summary>Captures the JSON the pipeline hands a provider and replies with a canned response</summary>
 public class FakeChatProvider(JsonObject reply) : ChatProvider

@@ -9,7 +9,7 @@ using NUnit.Framework;
 using ServiceStack.AI;
 using ServiceStack.OrmLite;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 /// <summary>
 /// Project sidebar, thread metadata and title contracts (ports of llms-py

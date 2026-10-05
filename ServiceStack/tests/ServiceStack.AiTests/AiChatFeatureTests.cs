@@ -11,7 +11,7 @@ using ServiceStack.Host;
 using ServiceStack.NativeTypes;
 using ServiceStack.Testing;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 public class AiChatFeatureTests
 {

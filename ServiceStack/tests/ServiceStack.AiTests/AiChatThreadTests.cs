@@ -11,7 +11,7 @@ using ServiceStack.AI;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 public class ChatThreadTests
 {

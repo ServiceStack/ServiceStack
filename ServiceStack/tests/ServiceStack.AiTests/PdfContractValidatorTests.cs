@@ -4,7 +4,7 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.AI;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [TestFixture]
 public class PdfContractValidatorTests

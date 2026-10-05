@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ServiceStack.AI;
 using ServiceStack.OrmLite;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [TestFixture, Category("Integration")]
 public class AiChatGeminiMySqlTests

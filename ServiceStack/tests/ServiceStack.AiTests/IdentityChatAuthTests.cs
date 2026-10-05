@@ -7,7 +7,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 public class IdentityChatAuthTests
 {

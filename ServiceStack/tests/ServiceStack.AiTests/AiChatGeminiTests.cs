@@ -8,7 +8,7 @@ using ServiceStack.AI;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 /// <summary>
 /// Exercises the gemini extension's SQL against SQLite: the schema (incl. its unique constraints),

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.AI;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 /// <summary>
 /// Anthropic uses a different wire format to OpenAI in all three directions, so each is pinned here:

@@ -3,7 +3,7 @@ using System.IO;
 using NUnit.Framework;
 using ServiceStack.AI;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [TestFixture]
 public class PdfExtensionFileTests

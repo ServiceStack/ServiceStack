@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [NonParallelizable]
 public class ApiDescribeSchemaTests

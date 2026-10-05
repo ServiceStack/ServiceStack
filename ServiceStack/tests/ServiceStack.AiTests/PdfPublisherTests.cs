@@ -5,7 +5,7 @@ using NUnit.Framework;
 using ServiceStack.AI;
 using ServiceStack.Text;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [TestFixture]
 public class PdfPublisherTests

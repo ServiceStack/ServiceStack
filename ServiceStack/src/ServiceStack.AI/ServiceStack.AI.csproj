@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="ServiceStack.Extensions.Tests" />
+        <InternalsVisibleTo Include="ServiceStack.AiTests" />
     </ItemGroup>
 
 </Project>

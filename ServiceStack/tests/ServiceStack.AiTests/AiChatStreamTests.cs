@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.AI;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 /// <summary>
 /// Verifies SSE delta accumulation reassembles a standard non-streaming OpenAI response,

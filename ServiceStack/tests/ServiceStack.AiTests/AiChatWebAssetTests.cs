@@ -17,7 +17,7 @@ using ServiceStack.AI;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 [NonParallelizable]
 public class AiChatWebAssetTests

@@ -5,7 +5,7 @@ using System.Text.Json.Nodes;
 using NUnit.Framework;
 using ServiceStack.AI;
 
-namespace ServiceStack.Extensions.Tests;
+namespace ServiceStack.AiTests;
 
 /// <summary>
 /// The projects folder model (llms-py v4). Expectations are the output of llms-py's
