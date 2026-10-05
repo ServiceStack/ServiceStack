@@ -417,7 +417,7 @@ Phase 6 implements stdio and subsequent capabilities independently after the fir
 | `Extensions/Mcp/McpExtension.cs` only if necessary | Explicit exclusion of contextual imported tools; preserve server behavior |
 | `README.md`, `AGENTS.md`, `MCP.md`, client guide | Configuration, ownership, compatibility, and troubleshooting documentation |
 
-Place focused tests in `../../tests/ServiceStack.Extensions.Tests`, following the existing AI.Chat and MCP test conventions. Prefer deterministic in-process fixture servers and a fake clock/client over external SaaS dependencies.
+Place focused tests in `../../tests/ServiceStack.AiTests`, following the existing AI.Chat and MCP test conventions. Prefer deterministic in-process fixture servers and a fake clock/client over external SaaS dependencies.
 
 ### Required test matrix
 

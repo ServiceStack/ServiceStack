@@ -59,8 +59,11 @@ From `ServiceStack.AI.Chat`:
 ```
 
 The default upstream package is `../../../../llms/llms`. An explicit package directory can be passed as
-the first argument. The script uses `rsync --delete` for synchronized directories, so do not keep C#-only
-files inside a synchronized directory unless the script explicitly preserves that directory.
+the first argument. The script uses Python 3 to copy shared bytes and remove stale files only within synchronized
+directories. Keep C#-only assets in `chat/custom` or C# extension directories, not inside shared roots.
+Full sync never writes upstream or host App_Data/custom components. `--check` verifies source parity
+without mutation; `--dry-run` lists effects. The generated `chat/shared-assets.json` drives packaged
+resource checks and records extension ownership for safe obsolete-extension cleanup.
 
 After syncing, at minimum:
 
@@ -184,12 +187,21 @@ short-lived confirmation tokens.
   to the API-key implementation because a web host should not reuse a local CLI subscription.
 - C# includes ServiceStack API Tools, PDF runtime integration, Admin UI integration, and host-specific
   configuration surfaces. Determine whether a feature is shared or C#-only before changing upstream.
+- `IChatClient.CreateDecisionAsync` and `POST /v1/decisions` (`CreateDecision.cs`,
+  `Providers/ChatDecisions.cs`) are a C#-only typed API over OpenRouter's Decisions API. They bypass the
+  chat pipeline (never retried, failed over or stored). Jev's `DecisionClient` uses the same
+  `ChatDecisions` transport, so keep its bounds, error mapping and no-replay rule shared; llms-py's
+  `extensions/jev/client.py` remains the reference for request/response behavior.
 - Project chat threads (upstream `docs/CHAT_THREADS.md`) share the same routes and contracts, with
   these implementation differences:
   - a durable run's captured workspace is applied through `WorkspaceScope` (an `AsyncLocal`, the
     equivalent of Python's `ContextVar`), which `ResolveAllowedDirectories` consults;
-  - a thread without a project uses `ToolsConfig.AllowedDirectories` (the host's default policy),
-    where Python grants no directories;
+  - there is no central workspace: each user has `App_Data/chat/user/<user>/workspace`
+    (`ChatFeature.GetUserWorkspace`; unauthenticated requests use `default`'s). A thread without a
+    project uses that workspace plus any explicitly host-shared `ToolsConfig.AllowedDirectories`
+    (empty by default), where Python grants no directories. The workspace explorer and Git show a
+    user only their own workspace; host-shared directories are browsable by admins only, and
+    Gemini import roots and local-file message references use only the requesting user's directories;
   - `projects.json` read-modify-write is serialized with an in-process lock plus atomic replace,
     not Python's cross-process file lock, because one web host owns `App_Data`;
   - `run_bash` already starts a fresh shell per command in the first allowed directory, so there
@@ -197,6 +209,38 @@ short-lived confirmation tokens.
   - sidebar and compare-and-set SQL in `Db/ChatDb.Sidebar.cs` is built from dialect-quoted
     identifiers and parameters (subqueries use `UnsafeAnd`) so it stays portable across OrmLite
     databases.
+
+### Migration additions (2026-10-05)
+
+- `Extensions/Git` supplies hosted-safe provisioning and reviewed repository operations; credentials,
+  process execution and filesystem authority come from explicit host policy. Active captured agent
+  workspaces block writes. `WorkspaceOperations` coordinates submissions and mutations process-wide
+  for the normalized App_Data root; one process owns that root.
+- `Extensions/Jev` implements restricted Decision Studio recipes, file-backed journals/history,
+  recorded examples, raw decision execution and immutable publisher retries. It intentionally does
+  not read legacy `jev.sqlite`. Read [Jev README](Extensions/Jev/README.md) before storage/sharing changes.
+- `Extensions/OpenAiAuth` supplies per-identity grants and pending flows, atomic rotation, hosted manual
+  callbacks and public Responses inference. It never borrows operator credentials implicitly or places
+  bearer/account headers on shared providers. Read [OpenAI auth README](Extensions/OpenAiAuth/README.md)
+  for protocol defaults, imports and unrun live OAuth limits.
+- `ChatProviderRequestException` prevents the orchestrator from replaying/failing over a provider
+  request with an uncertain outcome. Keep the bounded 401 refresh retry inside the subscription
+  transport. Subscription model display names resolve against the originating user's catalog.
+- `Extensions/Publish` owns the reusable bounded `PublisherClient` and per-user grants. Capture its
+  immutable origin/account before network I/O; late responses cannot restore disconnected grants or
+  overwrite unrelated concurrent project edits.
+- Projects archive/order/title changes preserve canonical history and `lastActivityAt`; drafts stay
+  browser-only. Submission leases precede queue/approval writes. Gemini saved imports reserve exact
+  owner/source/physical-manifest/key identities portably; do not revert to null-source adoption.
+
+The main chat selector (`chat/ui/modules/model-selector.mjs`) remains unchanged. Shared `ModelPicker`
+is for its existing extension uses. Do not stack focus indicators or change dimensions on focus.
+Full `sync.sh`, as well as `--core` and `--extension NAME`, preserves upstream files, host App_Data,
+C# identity/credentials/custom UI and unknown C# extensions. The script includes runtime `prompts`,
+`examples` and Jev `recipes`; Gemini is packaged, not LLMS_HOME. The generated shared-assets manifest
+tracks current source hashes; changed bytes receive fresh build-visible timestamps. Verify packaging
+and browser/backend contracts with `ServiceStack.AiTests` after synchronization. See
+[migration and rollback notes](Extensions/MIGRATION.md) for storage constraints and validation commands.
 
 ## Architecture orientation
 

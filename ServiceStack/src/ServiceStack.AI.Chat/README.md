@@ -10,7 +10,9 @@ platforms; only the backend is re-implemented.
 ## Quick start
 
 ```csharp
+// Register plugins before AddServiceStack so its async startup loader sees them.
 services.AddPlugin(new ChatFeature());
+services.AddServiceStack(typeof(MyServices).Assembly);
 ```
 
 Provider API keys are read from environment variables (`GROQ_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`,
@@ -60,6 +62,37 @@ services.AddPlugin(new ChatFeature {
 });
 ```
 
+## Calling chat and decisions from code (C# only)
+
+`ChatFeature` registers an `IChatClient` for in-process calls. `ChatAsync` runs a completion through
+the full chat pipeline (provider failover, tools, filters, usage), the same as `POST /v1/chat/completions`.
+
+`CreateDecisionAsync` calls OpenRouter's [Decisions API](https://openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-questions-and-answers-request)
+(e.g. TypeSafe's Jev decision model) through the configured `openrouter` provider and its API key. The
+model answers narrow, typed questions about some state; your code owns the workflow:
+
+```csharp
+var decision = await chatClient.CreateDecisionAsync(new CreateDecision {
+    Model = "~typesafe/jev-latest",   // the default
+    State = "Help! My payouts have been failing for 3 days.",  // text, or an object/array of context
+    Questions = {
+        ["is_urgent"]   = DecisionQuestion.Noul("Does this message convey urgency?", "Explicitly time-sensitive", "No urgency expressed"),
+        ["department"]  = DecisionQuestion.Choice("Which team should handle this?", new() {
+            ["billing"] = "Payments, invoicing, refunds", ["technical"] = "Bugs, outages, integrations", ["sales"] = "Pricing, upgrades, new accounts" }),
+        ["frustration"] = DecisionQuestion.Score("How frustrated is the customer?", "Calm", "Frustrated", "Very angry"),
+    },
+});
+if (decision.Noul("is_urgent") > 0.8 && decision.Choice("department") == "billing") { /* escalate */ }
+var distribution = decision.Answers["department"].Probabilities;
+```
+
+A decision is one paid request: unlike chat it is never retried or failed over, never stored in chat
+history, and runs no tools or chat filters. Requests are validated before sending and answers are
+validated against the questions. Failures throw `ChatDecisionException` (an `HttpError`; its
+`ProviderStatus` keeps OpenRouter's status). `User` and `SessionId` are sent to OpenRouter only when you
+set them. The same API is available over HTTP as `POST /v1/decisions`, with the same authentication as
+`/v1/chat/completions`. Decision usage/cost is returned in `Usage` but not recorded in chat analytics.
+
 ## Auth
 
 | `AuthType` | Sign-in flow |
@@ -84,11 +117,16 @@ App_Data/chat/
   .agent/skills/                                    shared skills
   user/<username>/                                  per-user prefs, profiles, themes, skills, avatars
   user/<username>/projects/<folder>/                a project's working folder (created on save)
+  user/<username>/jev/                              portable recipes, immutable history and journals
+  user/<username>/credentials/openai_subscription.json  private subscription grant
+  user/<username>/publish/config.json                    identity-specific publisher settings/grant
+  openai-agent-host.json                            stable subscription host identity
 ```
 
 Threads, per-request accounting and the media gallery are stored via OrmLite in `ChatThread`,
 `ChatRequest` and `ChatMedia`, partitioned by a `user` column. Missing columns are added
-automatically on startup, so upgrades don't need a manual migration.
+automatically on startup. Back up the database and App_Data before upgrading; newer identity constraints
+and journals require restoring the matching backup for rollback. See [migration notes](Extensions/MIGRATION.md).
 
 ## Extensions
 
@@ -100,7 +138,10 @@ Ported from llms-py's modular extensions (`ChatFeature.Extensions`); add your ow
 | `app` | Threads, queued completions, long-poll streaming, token/cost accounting, avatars, themes |
 | `agents` | Agent profiles (chat/coder/planner), system prompts, per-profile actions |
 | `system_prompts` | The system prompt library |
-| `projects` | Per-user project folders the filesystem tools are sandboxed to |
+| `projects` | Ordered/archived projects, read-only explorer, durable owned folder/Git creation |
+| `git` | Hosted-safe repository provisioning, status/history/diffs, reviewed commits and fast-forward sync |
+| `jev` | Decision Studio recipes, recorded examples/history, imports, publisher sharing and stars |
+| `openai_auth` | Per-user ChatGPT subscription settings, hosted manual PKCE/OIDC and Responses inference |
 | `tools` | Tool listing + direct execution for the tools UI |
 | `core_tools` | `calc`, `get_current_time`, and code execution (opt-in) |
 | `computer` | Filesystem tools + `run_bash` (opt-in) |
@@ -198,8 +239,11 @@ ToolsConfig = new() {
 Code runs in a temp directory with a stripped environment and (on Linux/macOS) `ulimit` CPU/memory caps.
 Treat enabling these as granting the model shell access to the host.
 
-`AllowedDirectories` is the baseline a user gets when no project is active. Selecting a project
-*replaces* it with that project's folder alone, so the model can only touch
+There is no central workspace. Each user works in their own `App_Data/chat/user/<user>/workspace`
+(anonymous requests use the `default` user's), which is the baseline when no project is active.
+`AllowedDirectories` is empty by default; any directories listed there are explicitly shared with every
+user's tools, and only admins can browse them in the workspace explorer or Git view. Selecting a project
+*replaces* the baseline with that project's folder alone, so the model can only touch
 `App_Data/chat/user/<user>/projects/<folder>` for as long as it's active.
 
 ### Gemini File Search (RAG)
@@ -267,16 +311,61 @@ Re-copies the UI and seed configs from a local llms-py checkout:
 ./sync.sh [path-to-llms/llms]     # defaults to ../../../../llms/llms
 ```
 
-It copies `ui/**`, each ported extension's `ui/` folder into `chat/ext/<name>/`, the app themes, agent
-profiles and `llms.json`/`providers.json`/`providers-extra.json`; it skips the unported extensions and
-preserves the C#-only `chat/ext/identity/`.
+It copies `ui/**`, shared extension `ui/` folders, runtime `prompts`/`examples`/Jev `recipes`, app
+themes, agent profiles and seed configs. Gemini comes from the packaged `extensions/gemini`, as do Git,
+Jev and OpenAI auth. Python `credentials`, `github_auth` and `browser` are skipped; C# `identity` and
+`credentials` UI are preserved.
 
-`gemini` is a user extension rather than a packaged one, so its UI is synced from `$LLMS_HOME/extensions`
-(default `<llms>/llms-home`, override with `LLMS_HOME=`) — add any further user extensions to `HOME_EXT`.
+Full sync updates only synchronized assets inside the library's `chat/` directory. It never writes
+upstream, clears deployed/Northwind App_Data, copies host custom components, or changes C# Identity and
+credentials UI. Unknown C# extension directories and `chat/custom` are preserved. Source and destination
+symlinks in synchronized paths are rejected. Inputs are checked before any asset mutation; interrupted
+or failed writes roll back on ordinary process exceptions. Run one sync at a time.
 
-The synced files are used **as-is**. The single platform difference is applied when serving `ai.mjs`:
-`const base = ''` becomes the configured `RoutePrefix`. Anything else the prefix affects is handled by
-the UI itself, so a sync can't clobber it.
+The script needs Python 3 (standard library only), available with the llms-py development checkout;
+`rsync` is no longer required. Bash is just a launcher; Windows can run `python sync.py` directly.
+UI files, styles, prompts, examples, recipes, themes, profiles and library seed configs are copied
+verbatim. `ui/tailwind/` is development input and is excluded. Existing deployed `llms.json` is untouched.
+
+```sh
+./sync.sh                         # synchronize all shared assets
+./sync.sh --check                 # read-only parity check; exits nonzero on differences
+./sync.sh --dry-run               # list proposed copies/deletions
+./sync.sh --core                  # optional core-only synchronization
+./sync.sh --extension jev         # optional extension-only synchronization
+```
+
+`chat/shared-assets.json` records current synchronized paths and hashes, and is updated automatically.
+The packaged-resource test reads that embedded manifest; normal UI updates do not require hand-editing
+frozen test hashes. Changed bytes get fresh destination timestamps so ordinary incremental builds
+refresh embedded resources. Unchanged assets retain their timestamps. Stale files are removed only
+inside shared directories; an obsolete extension is removed only if a prior sync recorded ownership.
+
+Shared files stay byte-identical. The host supplies prefix mappings in the SPA/import map and replaces
+`const base = ''` in served `ai.mjs`. Persisted links stay prefix-free. Never hand-edit `chat/ui/**` or
+replace the main chat selector. After sync, build and run `ServiceStack.AiTests` to verify packaging and
+backend/browser contracts. Syncing copies assets; it does not implement newly introduced backend APIs.
+
+## New extension deployment boundaries
+
+Git defaults to approved public HTTPS hosts without operator Git credentials, hooks or filters. Local
+credential use requires explicit `GitExtension.UseLocalCredentials`; host filesystem policies remain
+in force. Repository writes use the shared submission coordinator and reject active captured runs.
+One process must own each App_Data root; this coordinator is not a cross-process filesystem lease.
+
+Jev uses portable JSON recipes/history and sends raw decisions only to the configured OpenRouter
+provider. Sharing uses the current user's publisher client. It does not migrate legacy `jev.sqlite`
+directly or port the public publishing server. See [Jev storage/import/rollback](Extensions/Jev/README.md).
+
+OpenAI auth is separate from host Identity. Its default public SIWC dynamic registration and Responses
+endpoints are configurable. It supports manual full callback URLs, not hosted loopback/automatic OAuth.
+Operator CLI import is disabled unless the host supplies both an identity-specific resolver and an
+authorization policy. Expired grants do not silently fall back to API billing; disconnect clears only
+that user's local grant. See [subscription configuration and live validation limits](Extensions/OpenAiAuth/README.md).
+
+Publisher settings are isolated per user; only the public base URL/HTTP policy can be inherited. Deploy
+with HTTPS and protect local subscription/publisher grants and backups. Project/Gemini/Jev upgrade and
+rollback procedures and verification commands are in [migration notes](Extensions/MIGRATION.md).
 
 ## Migrating from the previous (llms-py v2) release
 
@@ -297,8 +386,8 @@ Existing `projects.json` files are migrated in place on read: each project gains
 kebab-case slug of its name unless set), its `publish` becomes a path relative to that folder, and the
 old `paths` array — along with the `$WORKSPACE`/`$TEMP` aliases — is dropped the next time the project
 is saved. Projects that pointed at directories outside `App_Data/chat` no longer reach them; move the
-files under `user/<user>/projects/<folder>/` (created for you on save) or keep them available to every
-user via `ToolsConfig.AllowedDirectories`.
+files under `user/<user>/projects/<folder>/` (created for you on save) or `user/<user>/workspace/`, or
+explicitly share them with every user's tools via `ToolsConfig.AllowedDirectories`.
 
 ## Outbound MCP tools (C# only)
 
