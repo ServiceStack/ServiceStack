@@ -1,3 +1,9 @@
+export function displayPublicationUrl(url) {
+    if (!url) return ''
+    try { return decodeURIComponent(url) }
+    catch { return url }
+}
+
 export function publicationDestination(path) {
     // Exports always end in <user>/<project>; keep the host's export root private.
     return path ? '~/' + path.replace(/\\/g, '/').split('/').filter(Boolean).slice(-2).join('/') : ''

@@ -1,5 +1,5 @@
 import { computed, inject, onMounted, onUnmounted, ref, watch } from 'vue'
-import { publicationAge, publicationDestination, publicationUrl, publishProjectOutput } from '../../ui/modules/shareProject.mjs'
+import { displayPublicationUrl, publicationAge, publicationDestination, publicationUrl, publishProjectOutput } from '../../ui/modules/shareProject.mjs'
 
 let ext
 const resolveActiveProject = ctx => {
@@ -29,8 +29,8 @@ const StaticSharePanel = {
             <div class="space-y-1 text-xs" :class="$styles.muted">
                 <div v-if="publication"><span :title="new Date(publication.publishedAt).toLocaleString()">Published {{ publishedAge(publication.publishedAt) }}</span> to <code class="break-all select-all">{{ publicationDestination(publication.publishedPath) }}</code></div>
                 <div v-else>Publish to <code class="break-all select-all">{{ destination }}</code></div>
-                <a v-if="publishedUrl" :href="publishedUrl" target="_blank" rel="noopener noreferrer" class="block text-blue-600 dark:text-blue-400 hover:underline break-all">{{ publishedUrl }}</a>
-                <div v-else-if="publication">URL path: <code class="select-all">{{ publication.urlPath }}</code></div>
+                <a v-if="publishedUrl" :href="publishedUrl" target="_blank" rel="noopener noreferrer" class="block text-blue-600 dark:text-blue-400 hover:underline break-all">{{ displayPublicationUrl(publishedUrl) }}</a>
+                <div v-else-if="publication">URL path: <code class="select-all">{{ displayPublicationUrl(publication.urlPath) }}</code></div>
             </div>
             <div class="flex items-center justify-between pt-2">
                 <span class="text-xs" :class="$styles.muted">Publishing project: <strong>{{ activeProjectName }}</strong></span>
@@ -274,7 +274,7 @@ const StaticSharePanel = {
             } catch (e) { setPublishError(e, 'Failed to publish project', details) }
             finally { isPublishing.value = false }
         }
-        return { publishError, clearPublishError, config, activeProjectName, activeProjectFolder, publication, publishedUrl, destination, publishedAge, publicationDestination,
+        return { publishError, clearPublishError, config, activeProjectName, activeProjectFolder, publication, publishedUrl, destination, publishedAge, publicationDestination, displayPublicationUrl,
             isPublishing, overrideDistPath, isDetectingDist, publishProject, showFolderBrowser, isBrowsing,
             browserCurrentPath, browserDisplayPath, browserParentPath, browserSubdirs, openFolderBrowser,
             closeFolderBrowser, navigateToFolder, goUpFolder, selectCurrentFolder }

@@ -3,7 +3,7 @@ import { ref, computed, inject, onMounted, onUnmounted, nextTick, watch } from "
 import { CheckBox } from '../../ui/components/CheckBox.mjs'
 import ProjectCreateForm from './ProjectCreateForm.mjs'
 import { useProjectOrganization } from './projectOrganization.mjs'
-import { publicationDestination } from '../../ui/modules/shareProject.mjs'
+import { displayPublicationUrl, publicationDestination } from '../../ui/modules/shareProject.mjs'
 
 let ext
 
@@ -38,6 +38,7 @@ function useProjects(ext) {
         get active() { return ctx.ctx.state.prefs.project },
         getProject,
         publicationDestination,
+        displayPublicationUrl,
         publicationUrl(project) {
             const publication = project?.staticPublication
             return publication?.publishedUrl || ctx.ai.resolveStaticPublishUrl?.(publication?.urlPath) || null
@@ -393,7 +394,7 @@ const ProjectsManagerModal = {
                                                 <div class="flex items-center gap-2">
                                                     <a :href="editForm.publishedUrl" target="_blank" rel="noopener noreferrer"
                                                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate">
-                                                        {{ editForm.publishedUrl }}
+                                                        {{ $projects.displayPublicationUrl(editForm.publishedUrl) }}
                                                     </a>
                                                 </div>
                                             </div>

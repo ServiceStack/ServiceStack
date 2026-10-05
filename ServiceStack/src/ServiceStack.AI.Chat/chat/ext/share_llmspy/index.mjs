@@ -1,4 +1,4 @@
-import { publicationAge, publishProjectOutput } from '../../ui/modules/shareProject.mjs'
+import { displayPublicationUrl, publicationAge, publishProjectOutput } from '../../ui/modules/shareProject.mjs'
 import { registrationUrl, registrationMessage, initiateRegistration } from './PublisherAccount.mjs'
 import { ref, computed, inject, onMounted, onUnmounted, watch } from "vue"
 
@@ -181,7 +181,7 @@ const LlmspySharePanel = {
                                                     <svg class="size-3.5 shrink-0 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                     </svg>
-                                                    <span class="truncate">{{ currentThread.publishedUrl }}</span>
+                                                    <span class="truncate">{{ displayPublicationUrl(currentThread.publishedUrl) }}</span>
                                                 </a>
                                             </div>
                                             <!-- Right side: copy/check icon -->
@@ -266,7 +266,7 @@ const LlmspySharePanel = {
                                                 <svg class="size-3.5 shrink-0 opacity-70" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                                                 </svg>
-                                                <span class="truncate">{{ publishedProjectUrl }}</span>
+                                                <span class="truncate">{{ displayPublicationUrl(publishedProjectUrl) }}</span>
                                             </a>
                                         </div>
                                         <!-- Right side: copy/check icon -->
@@ -689,6 +689,7 @@ const LlmspySharePanel = {
 
         return {
             publishError, clearPublishError,
+            displayPublicationUrl,
             ext,
             publish,
             publishedAge,
