@@ -19,6 +19,9 @@ public sealed class OpenAiSubscriptionOptions
     public string Scope { get; set; } = "openid profile email offline_access resource.invoke chatgpt.tokens.use.direct";
     public string AgentName { get; set; } = "ServiceStack AI.Chat";
     public string RedirectUri { get; set; } = "http://127.0.0.1:1455/auth/callback";
+    /// <summary>Complete callbacks automatically. Local hosts start a loopback listener before sign-in.
+    /// Remote hosts require a registered HTTPS RedirectUri pointing at /ext/openai_auth/callback.</summary>
+    public bool AutomaticCallback { get; set; } = true;
     public string DefaultModel { get; set; } = "gpt-5.5";
     public List<string> Models { get; set; } = ["gpt-5.5", "gpt-6-astra", "gpt-6.1-sol", "gpt-6-sol", "gpt-6-luna", "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-reserve", "codex-auto-review"];
     public TimeSpan TokenTimeout { get; set; } = TimeSpan.FromSeconds(20);

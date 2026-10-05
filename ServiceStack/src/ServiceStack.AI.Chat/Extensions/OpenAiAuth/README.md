@@ -17,19 +17,33 @@ are configurable through `OpenAiAuthExtension.Options`.
 
 ## Supported callback behavior
 
-This implementation provides manual callbacks. Sign in, then use **Manual redirect entry** to paste the
-complete registered callback URL from the browser, including `code`, `state` and issued `client_id`.
-A bare code cannot verify flow ownership and is rejected even though the unchanged upstream panel
-mentions that alternative. Pending flows expire after ten minutes and are consumed before exchange.
-The default registered URI is `http://127.0.0.1:1455/auth/callback`; the web host does not create a
-loopback listener. A remote browser's loopback redirect does not reach the server.
+Automatic callbacks are enabled by default (`Options.AutomaticCallback = true`). For a local .NET app,
+**Continue with ChatGPT** starts a loopback HTTP receiver before returning the authorization URL.
+It prefers `http://127.0.0.1:1455/auth/callback`; if the port is occupied, it selects an available port.
+Authorization and token exchange use the exact same selected URI. The receiver validates the pending
+state to resolve the initiating user's partition, then applies the existing redirect, PKCE, client ID,
+OIDC signature/nonce, account and scope checks. It activates the subscription provider, closes the
+sign-in tab, and the settings panel observes the connection through status polling. No URL copying is
+required. The listener binds only to `127.0.0.1`, does not log callback URLs, and stops with the host.
 
-OpenAI's [remote deployment guidance](https://developers.openai.com/siwc/token-sharing-open-source/self-hosted-vms)
-requires a supported local sign-in or secure credential transfer for a remote VM. Configure a registered
-host callback only when OpenAI supports that exact deployment. `automatic_callback=false` is explicit;
-no hosted automatic OAuth mode is claimed. Controlled signed-issuer tests and real C# manual-callback
-browser tests pass; live account authorization, deployment eligibility and plan inference remain an
-operator release gate. Tests never call paid inference or a live issuer.
+Callbacks cannot select a username from query parameters. Replayed, expired, disconnected or superseded
+flows cannot exchange credentials. Sign-in errors appear in the initiating user's settings panel.
+Pending flows expire after ten minutes. The optional `return_url` from the UI must belong to the same
+origin and Chat route prefix; it supplies the return link/navigation if the browser cannot close the tab.
+
+The loopback receiver requires the .NET process and browser to run on the same computer. For an eligible
+hosted deployment with an OpenAI-registered HTTPS callback, configure `Options.RedirectUri` to
+`https://your-host/chat/ext/openai_auth/callback` (adjust `/chat` to `ChatFeature.RoutePrefix`) and the
+registered `Options.ClientId`. The protected host callback additionally verifies the current host identity
+matches the sign-in initiator. A dynamic OSS registration does not support an arbitrary HTTPS redirect.
+See OpenAI's [sign-in requirements](https://developers.openai.com/siwc/token-sharing-open-source/sign-in)
+and [remote deployment guidance](https://developers.openai.com/siwc/token-sharing-open-source/self-hosted-vms).
+
+Hosts explicitly choosing manual completion can set `Options.AutomaticCallback = false`. Only that mode
+shows the callback URL entry in the shared UI; it requires the complete URL with `code`, `state` and
+issued `client_id`. Bare codes are rejected. Controlled signed-issuer and real C# browser tests cover
+both modes. Live account authorization and plan inference still require live verification; tests never
+call paid inference or a live issuer.
 
 ## Credentials and import
 

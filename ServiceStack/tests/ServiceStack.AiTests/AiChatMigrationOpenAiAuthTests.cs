@@ -38,7 +38,7 @@ public partial class AiChatMigrationOpenAiAuthTests
         public List<string?> Bearers=new();
         public Fixture(string prefix="")
         {
-            Host=new(prefix);Ext=Host.Install(new OpenAiAuthExtension {Options=new(){Clock=Host.Clock,HttpHandlerFactory=()=>new AiChatMigrationHttpHandler(Send)}});
+            Host=new(prefix);Ext=Host.Install(new OpenAiAuthExtension {Options=new(){AutomaticCallback=false,Clock=Host.Clock,HttpHandlerFactory=()=>new AiChatMigrationHttpHandler(Send)}});
         }
         public JsonObject Claims(string nonce="",string sub="account-alice")=>new(){["iss"]=Ext.Options.Issuer,["aud"]="issued-client",["sub"]=sub,["exp"]=Host.Clock.Now.ToUnixTimeSeconds()+3600,["nonce"]=nonce,["email"]="alice@example.test",["name"]="Alice",["https://api.openai.com/auth"]=new JsonObject {["chatgpt_account_id"]=sub,["chatgpt_plan_type"]="plus"}};
         public string Jwt(JsonObject claims,string alg="RS256",string kid="fixture")
@@ -70,7 +70,7 @@ public partial class AiChatMigrationOpenAiAuthTests
         }
         public JsonObject Connect(string user="alice")
         {var result=Ext.Flows.Connect(user);Authorization=Query(result.GetString("auth_url")!);return result;}
-        public string Callback(string? state=null,string client="issued-client",string code="fixture-code")=>Ext.Options.RedirectUri+"?code="+code+"&state="+Uri.EscapeDataString(state??Authorization["state"])+"&client_id="+client;
+        public string Callback(string? state=null,string client="issued-client",string code="fixture-code")=>Authorization["redirect_uri"]+"?code="+code+"&state="+Uri.EscapeDataString(state??Authorization["state"])+"&client_id="+client;
         public async Task Grant(string user="alice") {Connect(user);await Ext.Flows.CallbackAsync(user,Callback(),CancellationToken.None);Ext.Activate();}
         public void Save(string user="alice",long expires=3600,string token="alice-access")=>Ext.Credentials.Save(user,new JsonObject {["client_id"]="issued-client",["subject"]="account-"+user,["access_token"]=token,["refresh_token"]="fixture-refresh",["scope"]=Scope,["expires_at"]=Host.Clock.Now.ToUnixTimeSeconds()+expires,["account_id"]="account-"+user,["account"]=new JsonObject {["email"]=user+"@example.test"}});
         public OpenAiSubscriptionProvider Provider {get{Ext.Activate();return (OpenAiSubscriptionProvider)Host.Feature.Providers["openai"];}}

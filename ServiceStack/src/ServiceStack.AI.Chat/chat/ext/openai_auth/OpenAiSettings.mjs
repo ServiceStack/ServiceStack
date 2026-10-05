@@ -86,6 +86,9 @@ export default {
             <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                 Connect your personal ChatGPT Plus or Pro account to use OpenAI models directly through your existing subscription instead of consumption-based API billing.
             </p>
+            <p v-if="status.manual_callback" class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                Sign-in opens another browser tab. After authorizing, its localhost callback page may show “Connection refused” because this app does not run a callback listener. Copy that page’s complete address, return here, and paste it into the callback field to finish signing in.
+            </p>
 
             <div v-if="status.has_api_key" class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                 <svg class="w-4 h-4 text-blue-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
@@ -142,7 +145,7 @@ export default {
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Waiting for authorization in browser...
+                        {{ status.automatic_callback ? 'Waiting for sign-in to complete...' : 'Complete sign-in in the browser, then return here.' }}
                     </span>
                     <button
                         v-if="authUrl"
@@ -168,7 +171,8 @@ export default {
                     </button>
                 </div>
 
-                <button 
+                <button
+                    v-if="status.manual_callback"
                     type="button" 
                     @click="showManual = !showManual"
                     class="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 underline underline-offset-2 transition-colors ml-auto"
@@ -177,10 +181,13 @@ export default {
                 </button>
             </div>
 
+            <p v-if="status.callback_error" class="mt-4 text-sm text-red-500">{{ status.callback_error }}</p>
+
             <!-- Manual URL/Code fallback section -->
             <div v-if="showManual" class="mt-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 space-y-3">
+                <p class="text-sm font-semibold" :class="$styles.heading">Finish sign-in here</p>
                 <p class="text-xs text-gray-600 dark:text-gray-400">
-                    After authorizing, copy the complete callback URL from your browser’s address bar and paste it below, including state and client_id. The callback page may not load. A bare authorization code cannot verify this sign-in.
+                    If the localhost callback page shows “Connection refused”, copy its complete URL from the browser’s address bar, return here, and paste it below. Include code, state, and client_id, then click Submit. A bare authorization code cannot verify this sign-in.
                 </p>
                 <div class="flex gap-2">
                     <input 
@@ -236,6 +243,10 @@ export default {
                 const res = api?.response || api
                 if (res) {
                     status.value = res
+                    if (res.callback_error) {
+                        connecting.value = false
+                        stopPolling()
+                    }
                     if (res.connected && res.plan_enabled !== false && !res.pending) {
                         connecting.value = false
                         authUrl.value = ''
@@ -255,7 +266,7 @@ export default {
             pollInterval = setInterval(async () => {
                 count++
                 await fetchStatus()
-                if (count > 60 || status.value.connected) {
+                if (count >= 300 || status.value.connected && !status.value.pending) {
                     stopPolling()
                     connecting.value = false
                 }
@@ -283,10 +294,12 @@ export default {
             manualError.value = ''
             authUrl.value = ''
             try {
-                const api = await ext.postJson('/connect', {})
+                const api = await ext.postJson('/connect', { return_url: window.location?.href })
                 const res = api?.response || api
                 if (res && res.auth_url) {
                     authUrl.value = res.auth_url
+                    status.value = { ...status.value, manual_callback: res.manual_callback === true,
+                        automatic_callback: res.automatic_callback === true, callback_error: '', pending: true }
                     showManual.value = res.manual_callback === true
                     if (openWindow) {
                         window.open(res.auth_url, '_blank')

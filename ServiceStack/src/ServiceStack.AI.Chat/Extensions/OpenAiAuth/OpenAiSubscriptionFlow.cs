@@ -6,34 +6,41 @@ namespace ServiceStack.AI;
 
 public sealed class OpenAiSubscriptionFlow(OpenAiSubscriptionOptions options, OpenAiSubscriptionStore store)
 {
-    sealed record Pending(string State, string Nonce, string Verifier, string ClientId, string Redirect, DateTimeOffset Created, long Generation, string? Previous, string? Subject);
+    sealed record Pending(string State, string Nonce, string Verifier, string ClientId, string Redirect, DateTimeOffset Created, long Generation, string? Previous, string? Subject, bool Automatic, string? ReturnUrl);
     readonly Dictionary<string, Pending> pending = new(StringComparer.Ordinal);
+    readonly Dictionary<string, (string Message, DateTimeOffset Created)> errors = new(StringComparer.Ordinal);
     readonly object flowsGate = new();
     readonly CancellationTokenSource shutdown = new();
     readonly OpenAiSubscriptionHttp http = new(options);
     public OpenAiSubscriptionIdentity Identity { get; } = new(options, new OpenAiSubscriptionHttp(options));
     public bool HasPending(string user)
     { lock (flowsGate) { Expire(); return pending.ContainsKey(user); } }
+    public string? CallbackError(string user)
+    { lock (flowsGate) { Expire(); return errors.GetValueOrDefault(user).Message; } }
     void Expire()
-    { foreach (var entry in pending.Where(x => options.Clock.GetUtcNow() - x.Value.Created >= options.FlowLifetime).ToArray()) pending.Remove(entry.Key); }
+    {
+        foreach (var entry in pending.Where(x => options.Clock.GetUtcNow() - x.Value.Created >= options.FlowLifetime).ToArray()) pending.Remove(entry.Key);
+        foreach (var entry in errors.Where(x => options.Clock.GetUtcNow() - x.Value.Created >= options.FlowLifetime).ToArray()) errors.Remove(entry.Key);
+    }
     static string Random() => OpenAiSubscriptionIdentity.Base64Url(RandomNumberGenerator.GetBytes(48));
-    public JsonObject Connect(string user)
+    public JsonObject Connect(string user, string? redirectUri = null, bool automatic = false, string? returnUrl = null)
     {
         shutdown.Token.ThrowIfCancellationRequested();
+        redirectUri ??= options.RedirectUri;
         OpenAiSubscriptionHttp.Endpoint(options.AuthorizationUrl);
-        if (!Uri.TryCreate(options.RedirectUri, UriKind.Absolute, out var redirect) || redirect.UserInfo.Length != 0 || redirect.Query.Length != 0 || redirect.Fragment.Length != 0
+        if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var redirect) || redirect.UserInfo.Length != 0 || redirect.Query.Length != 0 || redirect.Fragment.Length != 0
             || redirect.Scheme != "https" && !(redirect.Scheme == "http" && redirect.Host == "127.0.0.1" && redirect.AbsolutePath == "/auth/callback"))
-            throw HttpError.BadRequest("Configure the registered callback URI. Hosted users complete the full callback URL manually.");
+            throw HttpError.BadRequest("Configure the registered callback URI.");
         var state = store.State(user); Pending flow;
         lock (state.Gate)
         {
             var credentials = store.Load(user); var client = credentials.GetString("client_id") ?? options.ClientId;
             state.Generation++;
-            flow = new(Random(), Random(), Random(), client, options.RedirectUri, options.Clock.GetUtcNow(), state.Generation, OpenAiSubscriptionStore.Fingerprint(credentials), credentials.GetString("subject"));
+            flow = new(Random(), Random(), Random(), client, redirectUri, options.Clock.GetUtcNow(), state.Generation, OpenAiSubscriptionStore.Fingerprint(credentials), credentials.GetString("subject"), automatic, returnUrl);
         }
         lock (flowsGate)
         {
-            Expire(); if (pending.Count >= 1024 && !pending.ContainsKey(user)) throw new HttpError(429, "TooManyFlows", "Too many pending sign-ins. Try again later."); pending[user] = flow;
+            Expire(); if (pending.Count >= 1024 && !pending.ContainsKey(user)) throw new HttpError(429, "TooManyFlows", "Too many pending sign-ins. Try again later."); pending[user] = flow; errors.Remove(user);
         }
         var query = new Dictionary<string, string> {
             ["response_type"] = "code", ["client_id"] = flow.ClientId, ["redirect_uri"] = flow.Redirect,
@@ -44,7 +51,31 @@ public sealed class OpenAiSubscriptionFlow(OpenAiSubscriptionOptions options, Op
         if (flow.ClientId == "dynamic_agent_client") query["agent_name_hint"] = options.AgentName;
         // Avoid returning retained ID-token hints to the browser; the account selector still supports reauthorization.
         var authorization = options.AuthorizationUrl + (options.AuthorizationUrl.Contains('?') ? "&" : "?") + string.Join("&", query.Select(x => Uri.EscapeDataString(x.Key) + "=" + Uri.EscapeDataString(x.Value)));
-        return new() { ["auth_url"] = authorization, ["redirect_uri"] = flow.Redirect, ["port"] = redirect.Port, ["manual_callback"] = true, ["automatic_callback"] = false };
+        return new() { ["auth_url"] = authorization, ["redirect_uri"] = flow.Redirect, ["port"] = redirect.Port, ["manual_callback"] = !automatic, ["automatic_callback"] = automatic };
+    }
+    /// <summary>The random state selects its initiating identity; loopback requests do not carry host cookies.
+    /// The normal callback still verifies redirect, state, registration, PKCE and signed identity before saving.</summary>
+    public async Task<(string User, string? ReturnUrl)> AutomaticCallbackAsync(string callback, CancellationToken token, string? requiredUser = null)
+    {
+        if (callback.Length > 16384 || !Uri.TryCreate(callback, UriKind.Absolute, out var uri)) throw HttpError.BadRequest("Invalid OpenAI callback URL.");
+        var query = Query(uri); string user; Pending flow;
+        lock (flowsGate)
+        {
+            Expire();
+            var entry = pending.FirstOrDefault(x => x.Value.Automatic && x.Value.State == query.GetValueOrDefault("state"));
+            if (entry.Key == null || requiredUser != null && entry.Key != requiredUser)
+                throw HttpError.BadRequest("No matching active OpenAI sign-in. Start a new sign-in.");
+            user = entry.Key; flow = entry.Value;
+        }
+        try { await CallbackAsync(user, callback, token).ConfigureAwait(false); }
+        catch (HttpError e)
+        {
+            // Errors are server-generated and never contain the callback or credential response.
+            lock (flowsGate)
+                if (store.State(user).Generation == flow.Generation) errors[user] = (e.Message, options.Clock.GetUtcNow());
+            throw;
+        }
+        return (user, flow.ReturnUrl);
     }
     static Dictionary<string, string> Query(Uri uri)
     {
@@ -141,6 +172,6 @@ public sealed class OpenAiSubscriptionFlow(OpenAiSubscriptionOptions options, Op
         finally { state.Refresh.Release(); }
     }
     public void Disconnect(string user)
-    { store.Disconnect(user); lock (flowsGate) pending.Remove(user); }
-    public void Close() { shutdown.Cancel(); lock (flowsGate) pending.Clear(); }
+    { store.Disconnect(user); lock (flowsGate) { pending.Remove(user); errors.Remove(user); } }
+    public void Close() { shutdown.Cancel(); lock (flowsGate) { pending.Clear(); errors.Clear(); } }
 }

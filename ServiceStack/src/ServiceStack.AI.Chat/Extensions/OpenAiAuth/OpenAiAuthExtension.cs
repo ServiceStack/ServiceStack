@@ -9,6 +9,7 @@ public sealed class OpenAiAuthExtension() : ChatExtension("openai_auth")
     public OpenAiSubscriptionOptions Options { get; set; } = new();
     public OpenAiSubscriptionStore Credentials { get; private set; } = null!;
     public OpenAiSubscriptionFlow Flows { get; private set; } = null!;
+    OpenAiSubscriptionCallback callback = null!;
     readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string Fingerprint, DateTimeOffset Time, JsonArray Models)> catalogs = new(StringComparer.Ordinal);
     readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> catalogGates = new(StringComparer.Ordinal);
     // IdentityChatAuth returns null in RequireAuth=false mode; the storage partition is still "default".
@@ -35,7 +36,17 @@ public sealed class OpenAiAuthExtension() : ChatExtension("openai_auth")
     {
         Credentials = new(ctx); Flows = new(Options, Credentials); ctx.RegisterShutdownHandler(Flows.Close);
         ctx.AddGet("status", request => Task.FromResult<object?>(Status(request)));
-        ctx.AddPost("connect", request => Task.FromResult<object?>(Flows.Connect(User(request))));
+        callback = new(Flows, user => { Activate(); catalogs.TryRemove(user, out _); });
+        ctx.RegisterShutdownHandler(callback.CloseAsync);
+        ctx.AddPost("connect", ConnectAsync);
+        ctx.AddGet("callback", async request =>
+        {
+            if (!Options.AutomaticCallback || new Uri(Options.RedirectUri).Scheme != "https") return ChatResult.NotFound();
+            var result = await Flows.AutomaticCallbackAsync(request.Request.AbsoluteUri, request.Request.RequestAborted, User(request)).ConfigureAwait(false);
+            Activate(); catalogs.TryRemove(result.User, out _);
+            var page = ChatResult.Html(OpenAiSubscriptionCallback.Page(result.ReturnUrl));
+            page.Headers = new() { ["Cache-Control"] = "no-store", ["Referrer-Policy"] = "no-referrer" }; return page;
+        });
         ctx.AddPost("callback_manual", async request =>
         {
             var user = User(request); var body = await Body(request).ConfigureAwait(false);
@@ -60,6 +71,38 @@ public sealed class OpenAiAuthExtension() : ChatExtension("openai_auth")
             var filtered = new JsonArray(models.OfType<JsonObject>().Where(m => m.GetString("provider") != "openai").Select(m => (JsonNode)m.Clone()).ToArray());
             foreach (var model in accountModels) filtered.Add(model?.DeepClone()); return filtered;
         };
+    }
+    async Task<object?> ConnectAsync(ChatRequestContext request)
+    {
+        var user = User(request); var body = await Body(request).ConfigureAwait(false);
+        var returnUrl = ReturnUrl(request, body.GetString("return_url"));
+        var redirect = Options.RedirectUri;
+        if (Options.AutomaticCallback)
+        {
+            if (!Uri.TryCreate(redirect, UriKind.Absolute, out var configured)) throw HttpError.BadRequest("Configure a valid OpenAI callback URI.");
+            if (configured.Scheme == "https")
+            {
+                var path = Feature.RoutePrefix.TrimEnd('/') + "/ext/openai_auth/callback";
+                if (configured.AbsolutePath != path) throw HttpError.BadRequest("Set the registered HTTPS OpenAI callback to " + path + ".");
+            }
+            else redirect = await callback.StartAsync(redirect, request.Request.RequestAborted).ConfigureAwait(false);
+        }
+        return Flows.Connect(user, redirect, Options.AutomaticCallback, returnUrl);
+    }
+    string? ReturnUrl(ChatRequestContext request, string? supplied)
+    {
+        if (!Uri.TryCreate(request.Request.AbsoluteUri, UriKind.Absolute, out var origin))
+        {
+            if (!string.IsNullOrEmpty(supplied)) throw HttpError.BadRequest("Cannot verify the sign-in return URL.");
+            return null;
+        }
+        var root = Feature.RoutePrefix.TrimEnd('/') + "/";
+        if (string.IsNullOrEmpty(supplied)) return origin.GetLeftPart(UriPartial.Authority) + root;
+        if (supplied.Length > 8192 || !Uri.TryCreate(supplied, UriKind.Absolute, out var target) || target.Scheme is not ("http" or "https")
+            || target.UserInfo.Length != 0 || target.GetLeftPart(UriPartial.Authority) != origin.GetLeftPart(UriPartial.Authority)
+            || !target.AbsolutePath.StartsWith(root, StringComparison.Ordinal) && target.AbsolutePath != root.TrimEnd('/'))
+            throw HttpError.BadRequest("The sign-in return URL must belong to this Chat UI.");
+        return target.AbsoluteUri;
     }
     public void Activate()
     {
@@ -86,7 +129,7 @@ public sealed class OpenAiAuthExtension() : ChatExtension("openai_auth")
         return new() { ["connected"] = connected, ["email"] = account.GetString("email") ?? "", ["name"] = account.GetString("name") ?? "", ["plan"] = account.GetString("plan") ?? "",
             ["account_id"] = grant.GetString("account_id") ?? account.GetString("account_id") ?? "", ["expires_at"] = expires, ["expired"] = connected && Options.Clock.GetUtcNow().ToUnixTimeSeconds() >= expires,
             ["has_api_key"] = !string.IsNullOrEmpty(baseProvider?.ApiKey), ["has_codex_auth"] = canImport,
-            ["pending"] = Flows.HasPending(user), ["manual_callback"] = true, ["automatic_callback"] = false };
+            ["pending"] = Flows.HasPending(user), ["manual_callback"] = !Options.AutomaticCallback, ["automatic_callback"] = Options.AutomaticCallback, ["callback_error"] = Flows.CallbackError(user) };
     }
     async Task<object?> ImportAsync(ChatRequestContext request)
     {

@@ -192,7 +192,7 @@
     "chat/ext/katex/katex.min.mjs": "2a67ce55f80558c75d23753ffa50390493ff1340ffb67a25e6b75035b5252a1a",
     "chat/ext/katex/katex.mjs": "d6a028e5261337ccaaeae2180756a55d7f81630fc90e74d274eb0244dc4fb89f",
     "chat/ext/mcp_client/index.mjs": "fb7d828a6232e8d03e3efee7615443ff8c4afe8dbef3d4cc0e3cc2e7797a650a",
-    "chat/ext/openai_auth/OpenAiSettings.mjs": "0ae0448dae0be2587f34daf5c27e65f811c9f2a20361d5b5d2e2e801ab902963",
+    "chat/ext/openai_auth/OpenAiSettings.mjs": "4f28fdf3f3637535935cb27c6d90ac38cca08501edd62e3539872b52630deda3",
     "chat/ext/openai_auth/index.mjs": "92842e83c05f8ed308128f1681b8009655acb7ee5bd51c66cd08e8fb356ca5da",
     "chat/ext/pdf/attachments.mjs": "d6b254f273bb100fb470b56f4779c42a68ebb7ac6451d4fcd2b79929c7532297",
     "chat/ext/pdf/examples/invoice.json": "3174fe5b23c727ae923067cb2354a1e584c470c1828447f59b272680006249d2",

@@ -220,8 +220,9 @@ short-lived confirmation tokens.
 - `Extensions/Jev` implements restricted Decision Studio recipes, file-backed journals/history,
   recorded examples, raw decision execution and immutable publisher retries. It intentionally does
   not read legacy `jev.sqlite`. Read [Jev README](Extensions/Jev/README.md) before storage/sharing changes.
-- `Extensions/OpenAiAuth` supplies per-identity grants and pending flows, atomic rotation, hosted manual
-  callbacks and public Responses inference. It never borrows operator credentials implicitly or places
+- `Extensions/OpenAiAuth` supplies per-identity grants and pending flows, atomic rotation, automatic local loopback
+  callbacks (and registered HTTPS host callbacks) and public Responses inference. Python retains manual
+  callbacks; the shared UI follows each backend's advertised capabilities. It never borrows operator credentials implicitly or places
   bearer/account headers on shared providers. Read [OpenAI auth README](Extensions/OpenAiAuth/README.md)
   for protocol defaults, imports and unrun live OAuth limits.
 - `ChatProviderRequestException` prevents the orchestrator from replaying/failing over a provider
