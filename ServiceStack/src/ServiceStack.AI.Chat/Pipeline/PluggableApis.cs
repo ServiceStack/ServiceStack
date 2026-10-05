@@ -36,6 +36,17 @@ public interface IProjectsApi
     /// client-supplied directory is never authority for filesystem access.
     /// </summary>
     JsonObject ResolveWorkspace(string projectId, string? user = null);
+
+    /// <summary>Explorer baseline must never inherit the legacy active project selection.</summary>
+    JsonObject ResolveExplorerWorkspace(string? projectId, string? user = null, bool isAdmin = false) => projectId == null
+        ? new JsonObject { ["projectId"] = null, ["directories"] = new JsonArray() }
+        : ResolveWorkspace(projectId, user);
+
+    /// <summary>Unavailable by default; Projects installs durable creation in its owning stage.</summary>
+    bool CreationAvailable => false;
+
+    /// <summary>Update only publication metadata after I/O, preserving current organization/settings.</summary>
+    Task UpdatePublicationAsync(JsonObject captured, string publishedUrl, string? user = null) => Task.CompletedTask;
 }
 
 public class NullThreadApi : IThreadApi

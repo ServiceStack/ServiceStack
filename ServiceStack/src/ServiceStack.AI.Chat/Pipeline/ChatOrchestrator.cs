@@ -12,6 +12,7 @@ public partial class ChatFeature
 {
     public virtual async Task<JsonObject> ChatCompletionAsync(JsonObject chat, ChatContext context)
     {
+        if (context.ModelOnly) context.NoHistory = true;
         List<string> candidateProviders;
         string model;
         try
@@ -25,11 +26,20 @@ public partial class ChatFeature
             if (candidateProviders.Count == 0)
                 throw HttpError.NotFound($"Model {model} not found");
 
+            var preferred = context.PreferredProvider ?? chat.GetString("provider");
+            if (string.IsNullOrEmpty(preferred) && model.Contains('/'))
+            {
+                var prefix = model[..model.IndexOf('/')];
+                if (Providers.ContainsKey(prefix)) preferred = prefix;
+            }
+            if (preferred != null && candidateProviders.Remove(preferred))
+                candidateProviders.Insert(0, preferred);
+
             // pre-populate provider/model info for pre-chat filters
             var firstProvider = Providers[candidateProviders[0]];
-            context.Provider ??= firstProvider;
-            context.ModelInfo ??= firstProvider.ModelInfo(model);
-            context.ModelCost ??= context.ModelInfo.GetObject("cost")
+            context.Provider = firstProvider;
+            context.ModelInfo = firstProvider.ModelInfo(model);
+            context.ModelCost = context.ModelInfo.GetObject("cost")
                 ?? firstProvider.ModelCost(model)
                 ?? new JsonObject { ["input"] = 0, ["output"] = 0 };
         }
@@ -49,7 +59,8 @@ public partial class ChatFeature
         // inject global tools + apply pre-chat filters ONCE
         var baseChat = await CreateChatWithToolsAsync(chat, context).ConfigAwait();
         context.Chat = baseChat;
-        await Filters.OnChatRequestAsync(baseChat, context).ConfigAwait();
+        if (!context.ModelOnly)
+            await Filters.OnChatRequestAsync(baseChat, context).ConfigAwait();
 
         var attemptRound = 0;
         var candidateIndex = 0;
@@ -97,7 +108,9 @@ public partial class ChatFeature
                     // working history.
                     var providerChat = Tools.Providers.Count == 0 ? currentChat.Clone()
                         : await CreateChatWithToolsAsync(currentChat, context).ConfigAwait();
-                    var response = await provider.ChatAsync(providerChat, context).ConfigAwait();
+                    JsonObject response;
+                    using (ProviderUserScope.Enter(context.User))
+                        response = await provider.ChatAsync(providerChat, context).ConfigAwait();
 
                     if (ShouldCancelThread(context))
                         return CancelledResponse(model);
@@ -120,7 +133,7 @@ public partial class ChatFeature
                         : null;
                     var message = choice.GetObject("message");
                     var toolCalls = message.GetArray("tool_calls");
-                    var supportsToolCalls = modelInfo.GetBool("tool_call");
+                    var supportsToolCalls = !context.ModelOnly && modelInfo.GetBool("tool_call");
 
                     if (toolCalls is { Count: > 0 } && supportsToolCalls && message != null)
                     {
@@ -251,6 +264,16 @@ public partial class ChatFeature
             {
                 throw;
             }
+            catch (ChatProviderRequestException e)
+            {
+                // The provider has already sent a request with an uncertain outcome. Never replay it or fail over.
+                await Filters.OnChatErrorAsync(e, context).ConfigAwait();
+                throw;
+            }
+            catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 firstException ??= e;
@@ -304,6 +327,15 @@ public partial class ChatFeature
     /// <summary>Inject registered tool definitions into the chat (port of create_chat_with_tools)</summary>
     public async Task<JsonObject> CreateChatWithToolsAsync(JsonObject chat, ChatContext context)
     {
+        if (context.ModelOnly)
+        {
+            context.ResolvedTools = new ResolvedChatTools([]);
+            var helper = chat.Clone();
+            helper.Remove("tools");
+            helper.Remove("tool_choice");
+            helper["messages"] ??= new JsonArray();
+            return helper;
+        }
         context.ResolvedTools = chat["response_format"] != null
             ? new ResolvedChatTools([])
             : await Tools.ResolveAsync(context).ConfigAwait();

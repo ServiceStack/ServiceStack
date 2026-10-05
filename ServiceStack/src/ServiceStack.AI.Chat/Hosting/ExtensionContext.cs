@@ -119,6 +119,17 @@ public class ExtensionContext(ChatFeature feature, string name)
     /// <summary>Register a provider type resolvable by its npm sdk id (port of ctx.add_provider)</summary>
     public void AddProvider(string sdk, Func<ChatProvider> factory) => feature.ProviderTypes[sdk] = factory;
 
+    /// <summary>Install a deliberately constructed live provider (including wrappers without API keys).</summary>
+    public void RegisterProvider(string id, ChatProvider provider)
+    {
+        provider.Id = id;
+        provider.Feature = feature;
+        feature.Providers[id] = provider;
+    }
+
+    public void NotifySidebar() => feature.NotifySidebar();
+    public WorkspaceOperations WorkspaceOperations => feature.WorkspaceOperations;
+
     public Dictionary<string, ChatProvider> GetProviders() => feature.Providers;
 
     // ── Auth / users ──

@@ -30,3 +30,32 @@ public sealed record WorkspaceScope(string? ProjectId, List<string> Directories,
         public void Dispose() => current.Value = previous;
     }
 }
+
+/// <summary>
+/// The user a provider request is prepared for. Local file references in messages are only read
+/// from that user's allowed directories; without an ambient owner none are read.
+/// </summary>
+public static class ProviderUserScope
+{
+    sealed record Owner(string? User);
+    static readonly AsyncLocal<Owner?> current = new();
+
+    public static bool TryGetUser(out string? user)
+    {
+        user = current.Value?.User;
+        return current.Value != null;
+    }
+
+    public static IDisposable Enter(string? user)
+    {
+        var previous = current.Value;
+        current.Value = new Owner(user);
+        return new Restore(previous);
+    }
+
+    sealed class Restore(Owner? previous) : IDisposable
+    {
+        Owner? value = previous;
+        public void Dispose() => current.Value = value;
+    }
+}

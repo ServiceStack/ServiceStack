@@ -29,6 +29,9 @@ public abstract class ChatExtension(string name)
     /// <summary>Async post-install hook, run concurrently for all extensions (port of __load__(ctx))</summary>
     public virtual Task LoadAsync(ExtensionContext ctx, CancellationToken token = default) => Task.CompletedTask;
     
+    /// <summary>Reapply extension providers/wrappers after runtime provider rebuilds.</summary>
+    public virtual Task ReloadProvidersAsync(ExtensionContext ctx, CancellationToken token = default) => Task.CompletedTask;
+
     public ExtensionContext Ctx { get; set; } = null!;
     public ILogger Log => Ctx.Log;
     public ChatFeature Feature => Ctx.Feature;

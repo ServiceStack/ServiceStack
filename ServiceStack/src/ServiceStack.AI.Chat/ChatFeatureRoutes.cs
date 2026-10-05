@@ -26,8 +26,8 @@ public partial class ChatFeature
         // ai.init() fetches /models + /prefs before it knows whether anyone is signed in, so these
         // answer anonymously with an empty payload rather than 401 - the UI only ever reads them as
         // an array/object and a 401's error body would break it before it could render SignIn
-        Routes.AddGet("/models", ctx => Task.FromResult<object?>(
-            IsAuthenticated(ctx) ? GetActiveModels() : new JsonArray()), allowAnon: true);
+        Routes.AddGet("/models", async ctx =>
+            IsAuthenticated(ctx) ? await GetActiveModelsAsync(ctx).ConfigureAwait(false) : new JsonArray(), allowAnon: true);
         Routes.AddGet("/providers", _ => Task.FromResult<object?>(ApiProviders()));
         Routes.AddGet("/status", _ =>
         {

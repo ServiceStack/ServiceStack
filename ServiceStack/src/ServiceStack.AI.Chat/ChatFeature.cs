@@ -77,7 +77,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
 
     /// <summary>
     /// Bundled configuration files to preserve (not overwrite) in App_Data/chat on startup.
-    /// Starts empty — all bundled configs are overwritten unless listed here.
+    /// Provider catalogs update unless listed here; llms.json is always seeded once and preserved.
     /// </summary>
     public List<string> PreserveConfigs { get; set; } = [];
 
@@ -344,12 +344,9 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         Setup?.Invoke(this);
         InstallExtensions(appHost);
 
-        // seed the "default" user's allowed directories before extensions install, so the projects
-        // extension inherits them as the baseline when a user has no active project
-        if (Tools.AllowedDirectories.Count > 0)
-        {
-            SetAllowedDirectories(Tools.AllowedDirectories);
-        }
+        // seed the "default" user's baseline: its own workspace plus any host-shared directories.
+        // Other users get theirs on first use (see ResolveAllowedDirectories).
+        SetAllowedDirectories(DefaultWorkspaceDirectories());
 
         // extensions register cleanup with ctx.RegisterShutdownHandler; run it when the AppHost is
         // disposed (before the IOC is), which also covers hosts recreated in-process (e.g. tests)
@@ -377,6 +374,15 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         (appHost as IAppHostNetCore).MapEndpoints(endpoints =>
         {
             var route = RoutePrefix.Length == 0 ? "/{**path}" : RoutePrefix + "/{**path}";
+            // ServiceStack's built-in /ui/{*path} endpoint otherwise shadows the unprefixed
+            // Chat assets. Claim only paths that are Chat UI files, ahead of the built-in route,
+            // so ServiceStack's /ui API Explorer keeps working with an empty RoutePrefix.
+            if (RoutePrefix.Length == 0)
+                endpoints.Map(Microsoft.AspNetCore.Routing.Patterns.RoutePatternFactory.Parse("/ui/{**path}",
+                        defaults: null, parameterPolicies: new { path = new ChatUiAssetConstraint() }), async context =>
+                    await context.ProcessRequestAsync(new ChatHttpHandler(this,
+                        context.Request.Path.Value ?? "/ui/")).ConfigAwait())
+                    .Add(builder => ((Microsoft.AspNetCore.Routing.RouteEndpointBuilder)builder).Order = -1);
             endpoints.Map(route, async context =>
                 await context.ProcessRequestAsync(new ChatHttpHandler(this,
                     context.Request.Path.Value ?? RoutePrefix)).ConfigAwait());
@@ -416,7 +422,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
                 return AppData.TextFromFile(AppData.GetHomePath(fileName)) ?? "";
             }
             return AppData.SeedOrUpdateFile(fileName, bundled,
-                !PreserveConfigs.Contains(fileName, StringComparer.OrdinalIgnoreCase));
+                fileName != "llms.json" && !PreserveConfigs.Contains(fileName, StringComparer.OrdinalIgnoreCase));
         }
 
         // llms.json: programmatic Config > App_Data/chat/llms.json > embedded chat/llms.json (seeded to App_Data)
@@ -630,6 +636,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         SaveConfig();
         CreateProviders();
         await LoadProvidersAsync().ConfigAwait();
+        await ReloadExtensionProvidersAsync().ConfigAwait();
         return null;
     }
 
@@ -642,6 +649,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         SaveConfig();
         CreateProviders();
         await LoadProvidersAsync().ConfigAwait();
+        await ReloadExtensionProvidersAsync().ConfigAwait();
     }
 
     public void SaveConfig()
@@ -696,6 +704,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         ProviderModels = filtered;
         CreateProviders();
         await LoadProvidersAsync(token).ConfigAwait();
+        await ReloadExtensionProvidersAsync(token).ConfigAwait();
 
         Log.LogInformation("Updated {Count} providers from models.dev", filtered.Count);
         return filtered.Count;
@@ -767,6 +776,23 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
                      .Reverse())
         {
             extension.DropSchema();
+        }
+    }
+
+    /// <summary>Restore installed extension wrappers after rebuilding the provider registry.</summary>
+    public async Task ReloadExtensionProvidersAsync(CancellationToken token = default)
+    {
+        foreach (var (extension, ctx) in installedExtensions)
+        {
+            token.ThrowIfCancellationRequested();
+            if (extension.Disabled || ctx.Disabled) continue;
+            try { await extension.ReloadProvidersAsync(ctx, token).ConfigAwait(); }
+            catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
+            catch (Exception)
+            {
+                // Provider errors can contain headers/tokens; log only the owning extension.
+                Log.LogError("Provider reload hook failed for extension {Name}", extension.Name);
+            }
         }
     }
 
@@ -872,12 +898,33 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         dirs.AddIfNotExists(absPath);
     }
 
+    /// <summary>
+    /// The user's private workspace, App_Data/chat/user/&lt;user&gt;/workspace. There is no shared
+    /// central workspace: unauthenticated requests use the 'default' user's workspace.
+    /// </summary>
+    public string GetUserWorkspace(string? user = null) =>
+        Directory.CreateDirectory(Path.Combine(AppData.GetUserPath(user), "workspace")).FullName;
+
+    /// <summary>
+    /// A user's baseline when no project is active: their own workspace plus any directories the
+    /// host explicitly shares via ToolsConfig.AllowedDirectories (empty by default).
+    /// </summary>
+    public List<string> DefaultWorkspaceDirectories(string? user = null) =>
+        [GetUserWorkspace(user), ..SharedDirectories];
+
+    /// <summary>Directories the host explicitly shares with every user's tools (never a default).</summary>
+    public List<string> SharedDirectories =>
+        Extensions.OfType<ToolsExtension>().FirstOrDefault()?.AllowedDirectories
+            .Where(x => !string.IsNullOrWhiteSpace(x)).ToList() ?? [];
+
     public List<string> ResolveAllowedDirectories(string? user = null)
     {
         // A durable run's captured workspace wins over the user's standalone selection
         if (WorkspaceScope.Current is { } scope && scope.AppliesTo(user))
             return scope.Directories.ToList();
-        var dirs = AllowedDirectories.GetValueOrDefault(user ?? "default") ?? [];
+        // A user without a selection yet gets their own baseline (none before App_Data is configured)
+        var dirs = AllowedDirectories.GetValueOrDefault(user ?? "default")
+            ?? (AppData != null ? DefaultWorkspaceDirectories(user) : []);
         var ret = new List<string>();
         foreach (var dir in dirs)
         {
@@ -897,6 +944,13 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     }
 
     /// <summary>Model catalog across live providers (port of get_active_models)</summary>
+    /// <summary>Optional identity-scoped catalog projection; providers retain their shared base catalogs.</summary>
+    public Func<ChatRequestContext, JsonArray, Task<JsonArray>>? ModelCatalogFilter { get; set; }
+    public async Task<JsonArray> GetActiveModelsAsync(ChatRequestContext request)
+    {
+        var models = GetActiveModels();
+        return ModelCatalogFilter != null ? await ModelCatalogFilter(request, models).ConfigureAwait(false) : models;
+    }
     public JsonArray GetActiveModels()
     {
         var ret = new List<JsonObject>();
@@ -914,6 +968,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
                 if (!existingNames.Add(name))
                     continue;
                 var item = model.Clone();
+                item["id"] ??= name;
                 item["provider"] = entry.Key;
                 ret.Add(item);
             }
@@ -965,4 +1020,17 @@ public class ChatApiKey
     public const string Nvidia = "NVIDIA_API_KEY";
     public const string Anthropic = "ANTHROPIC_API_KEY";
     public const string Moonshot = "MOONSHOT_API_KEY";
+}
+
+/// <summary>Matches only files that exist under the embedded/virtual chat/ui directory.</summary>
+sealed class ChatUiAssetConstraint : Microsoft.AspNetCore.Routing.IRouteConstraint
+{
+    public bool Match(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.IRouter? route,
+        string routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection)
+    {
+        var path = values.TryGetValue(routeKey, out var value) ? value?.ToString() : null;
+        if (string.IsNullOrEmpty(path) || path.Contains("..") || path.StartsWith('/') || path.Contains('\\') || path.Contains(':'))
+            return false;
+        return HostContext.VirtualFileSources?.GetFile("chat/ui/" + path) != null;
+    }
 }

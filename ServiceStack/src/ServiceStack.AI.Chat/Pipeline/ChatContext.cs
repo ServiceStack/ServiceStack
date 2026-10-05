@@ -32,7 +32,7 @@ public class ChatContext
         var child = new ChatContext {
             Chat = Chat, User = User, Request = Request, ThreadId = ThreadId, RunId = RunId, StepId = StepId,
             Tools = Tools, ResolvedTools = ResolvedTools, ToolInvocationId = ToolInvocationId, CompletionCorrelationId = CompletionCorrelationId, ProjectedContext = ProjectedContext,
-            NoStore = NoStore, NoHistory = NoHistory, Provider = Provider, ModelInfo = ModelInfo,
+            NoStore = NoStore, NoHistory = NoHistory, ModelOnly = ModelOnly, PreferredProvider = PreferredProvider, Provider = Provider, ModelInfo = ModelInfo,
             ModelCost = ModelCost, ProviderResponse = ProviderResponse, CancellationToken = cancellationToken,
             lastMessageTimestamp = lastMessageTimestamp,
         };
@@ -79,6 +79,11 @@ public class ChatContext
     public string Tools { get; set; } = "all";
     public bool NoStore { get; set; }
     public bool NoHistory { get; set; }
+
+    /// <summary>Trusted helper call: skip request filters and tools; accounting still follows NoStore.</summary>
+    public bool ModelOnly { get; set; }
+    /// <summary>Explicit selection, separate from Provider populated by an earlier attempt.</summary>
+    public string? PreferredProvider { get; set; }
 
     public ChatProvider? Provider { get; set; }
     public JsonObject? ModelInfo { get; set; }
