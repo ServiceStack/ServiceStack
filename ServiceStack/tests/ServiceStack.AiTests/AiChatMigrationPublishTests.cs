@@ -26,24 +26,45 @@ public class AiChatMigrationPublishTests
     [TestCase("")] [TestCase("/chat")]
     public async Task Named_accounts_inherit_only_public_defaults_and_connect_disconnect_preserve_others(string prefix)
     {
-        using var host=new AiChatMigrationTestHost(prefix);var extension=host.Install(new PublishExtension {Enabled=true});var configuration=new PublisherConfiguration(extension.Ctx);
+        using var host=new AiChatMigrationTestHost(prefix);var extension=host.Install(new ShareLlmspyExtension {Enabled=true});var configuration=new PublisherConfiguration(extension.Ctx);
         configuration.Save(null,new JsonObject { ["baseUrl"]="http://127.0.0.1:5000",["allowHttp"]=true,["apiKey"]="default-key",["userId"]="default-owner",["userName"]="Default" });
         Assert.That(host.Feature.PublisherApi.Available,Is.True);var alice=extension.GetConfiguration("alice");Assert.That(alice.GetString("apiKey"),Is.Null);Assert.That(alice.GetString("userName"),Is.Null);Assert.That(alice.GetString("userId"),Is.Null);Assert.That(alice.GetString("baseUrl"),Is.EqualTo("http://127.0.0.1:5000"));
-        foreach(var user in new[]{"alice","bob"})await host.SendAsync("POST",prefix+"/ext/publish/config.json",user,new JsonObject { ["apiKey"]=user+"-key",["userName"]=user,["userId"]=user+"-owner" });
-        var shown=(JsonObject)(await host.SendAsync("GET",prefix+"/ext/publish/config.json","alice"))!;Assert.That(shown.GetString("apiKey"),Is.EqualTo(PublisherConfiguration.Mask("alice-key")));
-        await host.SendAsync("POST",prefix+"/ext/publish/config.json","alice",new JsonObject { ["apiKey"]=shown.GetString("apiKey"),["userName"]="Alice renamed" });Assert.That(extension.GetConfiguration("alice").GetString("apiKey"),Is.EqualTo("alice-key"));
-        await host.SendAsync("POST",prefix+"/ext/publish/disconnect","alice");Assert.That(extension.GetConfiguration("alice").GetString("apiKey"),Is.Null);Assert.That(extension.GetConfiguration("bob").GetString("apiKey"),Is.EqualTo("bob-key"));Assert.That(configuration.Get(null,false).GetString("apiKey"),Is.EqualTo("default-key"));
+        foreach(var user in new[]{"alice","bob"})await host.SendAsync("POST",prefix+"/ext/share_llmspy/config.json",user,new JsonObject { ["apiKey"]=user+"-key",["userName"]=user,["userId"]=user+"-owner" });
+        var shown=(JsonObject)(await host.SendAsync("GET",prefix+"/ext/share_llmspy/config.json","alice"))!;Assert.That(shown.GetString("apiKey"),Is.EqualTo(PublisherConfiguration.Mask("alice-key")));
+        await host.SendAsync("POST",prefix+"/ext/share_llmspy/config.json","alice",new JsonObject { ["apiKey"]=shown.GetString("apiKey"),["userName"]="Alice renamed" });Assert.That(extension.GetConfiguration("alice").GetString("apiKey"),Is.EqualTo("alice-key"));
+        await host.SendAsync("POST",prefix+"/ext/share_llmspy/disconnect","alice");Assert.That(extension.GetConfiguration("alice").GetString("apiKey"),Is.Null);Assert.That(extension.GetConfiguration("bob").GetString("apiKey"),Is.EqualTo("bob-key"));Assert.That(configuration.Get(null,false).GetString("apiKey"),Is.EqualTo("default-key"));
         extension.Disabled=true;Assert.That(host.Feature.PublisherApi.Available,Is.False);
     }
+    [Test]
+    public void Legacy_publisher_grants_migrate_on_save_and_disconnect_cannot_restore_them()
+    {
+        using var host=new AiChatMigrationTestHost();
+        var extension=host.Install(new ShareLlmspyExtension());
+        var legacy=Path.Combine(extension.Ctx.GetUserPath("alice"),"publish","config.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(legacy)!);
+        File.WriteAllText(legacy,"{\"apiKey\":\"legacy-key\",\"userName\":\"Alice\"}");
+        var store=new PublisherConfiguration(extension.Ctx);
+        Assert.That(store.Get("alice",false).GetString("apiKey"),Is.EqualTo("legacy-key"));
+        store.Save("alice",new JsonObject { ["userName"]="Alice renamed" });
+        Assert.That(File.Exists(legacy),Is.False);
+        Assert.That(File.Exists(Path.Combine(extension.Ctx.GetUserPath("alice"),"share_llmspy","config.json")),Is.True);
+        Assert.That(store.Get("alice",false).GetString("apiKey"),Is.EqualTo("legacy-key"));
+        Directory.CreateDirectory(Path.GetDirectoryName(legacy)!);
+        File.WriteAllText(legacy,"{\"apiKey\":\"old-key\"}");
+        store.Disconnect("alice");
+        Assert.That(File.Exists(legacy),Is.False);
+        Assert.That(store.Get("alice",false).GetString("apiKey"),Is.Null);
+    }
+
     [TestCase("x"),TestCase("abc"),TestCase("abcdef"),TestCase("long-secret-key")]
     public void Short_keys_are_always_obscured_and_late_avatar_receipts_do_not_restore_disconnected_grants(string key)
     {
-        using var host=new AiChatMigrationTestHost();var extension=host.Install(new PublishExtension {Enabled=true});var store=new PublisherConfiguration(extension.Ctx);store.Save("alice",new JsonObject { ["apiKey"]=key });Assert.That(store.Get("alice").GetString("apiKey"),Is.Not.EqualTo(key));var captured=store.Get("alice",false);store.Disconnect("alice");Assert.That(store.SaveAvatar("alice",captured,"default","https://publisher.example/avatar"),Is.False);Assert.That(store.Get("alice",false).GetString("apiKey"),Is.Null);
+        using var host=new AiChatMigrationTestHost();var extension=host.Install(new ShareLlmspyExtension {Enabled=true});var store=new PublisherConfiguration(extension.Ctx);store.Save("alice",new JsonObject { ["apiKey"]=key });Assert.That(store.Get("alice").GetString("apiKey"),Is.Not.EqualTo(key));var captured=store.Get("alice",false);store.Disconnect("alice");Assert.That(store.SaveAvatar("alice",captured,"default","https://publisher.example/avatar"),Is.False);Assert.That(store.Get("alice",false).GetString("apiKey"),Is.Null);
     }
     [TestCase("http://publisher.example"),TestCase("https://user:secret@publisher.example"),TestCase("https://publisher.example/path"),TestCase("https://publisher.example/path/.."),TestCase("https://publisher.example?q=x"),TestCase("https://publisher.example#fragment"),TestCase("file:///tmp/publish")]
     public void Invalid_origin_or_registration_is_rejected_before_credentials_are_saved(string value)
     {
-        using var host=new AiChatMigrationTestHost();var extension=host.Install(new PublishExtension {Enabled=true});var store=new PublisherConfiguration(extension.Ctx);
+        using var host=new AiChatMigrationTestHost();var extension=host.Install(new ShareLlmspyExtension {Enabled=true});var store=new PublisherConfiguration(extension.Ctx);
         Assert.Throws<HttpError>(()=>store.Save("alice",new JsonObject { ["baseUrl"]=value,["apiKey"]="new-key" }));Assert.That(store.Get("alice",false).GetString("apiKey"),Is.Null);
         Assert.Throws<HttpError>(()=>store.Save("alice",new JsonObject { ["registerUrl"]="https://another.example/register",["apiKey"]="new-key" }));Assert.That(store.Get("alice",false).GetString("apiKey"),Is.Null);
     }
@@ -99,10 +120,10 @@ public class AiChatMigrationPublishTests
     public async Task Existing_thread_publication_uses_own_grant_and_does_not_write_metadata_after_provider_failure()
     {
         using var host=new AiChatMigrationTestHost();var fail=false;var seen=new List<string?>();var threads=new Threads();host.Feature.ThreadApi=threads;
-        var extension=host.Install(new PublishExtension {Enabled=true,HttpHandlerFactory=Handler(async(request,token)=>{seen.Add(request.Headers.Authorization?.Parameter);Assert.That(await request.Content!.ReadAsStringAsync(token),Does.Contain("Preserved"));return Response("{\"publishedUrl\":\"https://publisher.example/chat/1\"}",fail?500:200);})});
-        await host.SendAsync("POST","/ext/publish/config.json","alice",new JsonObject { ["apiKey"]="alice-key" });
-        await host.SendAsync("POST","/ext/publish/thread/1","alice");Assert.That(threads.LastWrite.GetString("publishedUrl"),Is.EqualTo("https://publisher.example/chat/1"));Assert.That(seen.Single(),Is.EqualTo("alice-key"));
-        threads.LastWrite=null;fail=true;Assert.ThrowsAsync<HttpError>(async()=>await host.SendAsync("POST","/ext/publish/thread/1","alice"));Assert.That(threads.LastWrite,Is.Null);
+        var extension=host.Install(new ShareLlmspyExtension {Enabled=true,HttpHandlerFactory=Handler(async(request,token)=>{seen.Add(request.Headers.Authorization?.Parameter);Assert.That(await request.Content!.ReadAsStringAsync(token),Does.Contain("Preserved"));return Response("{\"publishedUrl\":\"https://publisher.example/chat/1\"}",fail?500:200);})});
+        await host.SendAsync("POST","/ext/share_llmspy/config.json","alice",new JsonObject { ["apiKey"]="alice-key" });
+        await host.SendAsync("POST","/ext/share_llmspy/thread/1","alice");Assert.That(threads.LastWrite.GetString("publishedUrl"),Is.EqualTo("https://publisher.example/chat/1"));Assert.That(seen.Single(),Is.EqualTo("alice-key"));
+        threads.LastWrite=null;fail=true;Assert.ThrowsAsync<HttpError>(async()=>await host.SendAsync("POST","/ext/share_llmspy/thread/1","alice"));Assert.That(threads.LastWrite,Is.Null);
     }
     sealed class Media : IMediaApi
     {
@@ -114,7 +135,7 @@ public class AiChatMigrationPublishTests
     public async Task Existing_project_and_media_use_the_originating_account_and_preserve_concurrent_project_edits(string prefix)
     {
         using var host=new AiChatMigrationTestHost(prefix);host.Install(new ProjectsExtension());var media=new Media();host.Feature.MediaApi=media;var fail=false;var calls=new List<string>();
-        var extension=host.Install(new PublishExtension { Enabled=true,HttpHandlerFactory=Handler(async(request,token)=>{
+        var extension=host.Install(new ShareLlmspyExtension { Enabled=true,HttpHandlerFactory=Handler(async(request,token)=>{
             Assert.That(request.Headers.Authorization!.Parameter,Is.EqualTo("alice-key"));calls.Add(request.RequestUri!.AbsolutePath);
             Assert.That(await request.Content!.ReadAsStringAsync(token),Does.Contain("Content-Disposition"));
             if(request.RequestUri.AbsolutePath.StartsWith("/publish/project")) {
@@ -123,13 +144,13 @@ public class AiChatMigrationPublishTests
             }
             return Response("{\"publishedUrl\":\"https://publisher.example/shared\"}",fail?500:200);
         })});
-        await host.SendAsync("POST",prefix+"/ext/publish/config.json","alice",new JsonObject { ["apiKey"]="alice-key" });
+        await host.SendAsync("POST",prefix+"/ext/share_llmspy/config.json","alice",new JsonObject { ["apiKey"]="alice-key" });
         await host.SendAsync("POST",prefix+"/ext/projects/save/Site","alice",new JsonObject { ["name"]="Site",["folder"]="site",["publish"]="",["description"]="Before upload" });
         var project=host.Feature.ProjectsApi.GetUserProjects("alice").Single();var dir=ProjectsExtension.GetProjectDir(extension.Ctx.GetUserPath("alice"),project);Directory.CreateDirectory(dir);await File.WriteAllTextAsync(Path.Combine(dir,"index.html"),"Example site");
-        await host.SendAsync("POST",prefix+"/ext/publish/project/Site","alice");var saved=host.Feature.ProjectsApi.GetUserProjects("alice").Single();Assert.That(saved.GetString("description"),Is.EqualTo("Edited during upload"));Assert.That(saved.GetString("publishedUrl"),Is.EqualTo("https://publisher.example/shared"));
+        await host.SendAsync("POST",prefix+"/ext/share_llmspy/project/Site","alice");var saved=host.Feature.ProjectsApi.GetUserProjects("alice").Single();Assert.That(saved.GetString("description"),Is.EqualTo("Edited during upload"));Assert.That(saved.GetString("publishedUrl"),Is.EqualTo("https://publisher.example/shared"));
         var cache=extension.Ctx.GetCachePath("aa/fixture.png");Directory.CreateDirectory(Path.GetDirectoryName(cache)!);await File.WriteAllBytesAsync(cache,[1,2,3]);
-        await host.SendAsync("POST",prefix+"/ext/publish/media/1","alice");Assert.That(media.LastWrite.GetString("publishedUrl"),Is.EqualTo("https://publisher.example/shared"));
-        media.LastWrite=null;fail=true;Assert.ThrowsAsync<HttpError>(async()=>await host.SendAsync("POST",prefix+"/ext/publish/media/1","alice"));Assert.That(media.LastWrite,Is.Null);Assert.That(calls,Does.Contain("/publish/project/Site"));Assert.That(calls,Does.Contain("/publish/media"));
+        await host.SendAsync("POST",prefix+"/ext/share_llmspy/media/1","alice");Assert.That(media.LastWrite.GetString("publishedUrl"),Is.EqualTo("https://publisher.example/shared"));
+        media.LastWrite=null;fail=true;Assert.ThrowsAsync<HttpError>(async()=>await host.SendAsync("POST",prefix+"/ext/share_llmspy/media/1","alice"));Assert.That(media.LastWrite,Is.Null);Assert.That(calls,Does.Contain("/publish/project/Site"));Assert.That(calls,Does.Contain("/publish/media"));
     }
     [Test]
     public async Task Default_socket_transport_does_not_follow_real_redirects_and_bounds_stalled_response_reads()

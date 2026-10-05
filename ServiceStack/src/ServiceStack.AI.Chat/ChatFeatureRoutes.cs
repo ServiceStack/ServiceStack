@@ -339,21 +339,23 @@ public partial class ChatFeature
         if (file == null)
             return ChatResult.NotFound();
 
-        var body = baseDir == "chat/ui" && path == "ai.mjs" && RoutePrefix.Length > 0
+        var body = baseDir == "chat/ui" && path == "ai.mjs"
             ? System.Text.Encoding.UTF8.GetBytes(TransformUiFile(path, await file.ReadAllTextAsync().ConfigAwait())!)
             : await file.ReadAllBytesAsync().ConfigAwait();
         return ChatWebAssets.AssetResult(ctx.Request, body, MimeTypes.GetMimeType(file.Name));
     }
 
     /// <summary>
-    /// llms-py serves its UI from the site root, so the synced UI defaults to `base = ''` — we
-    /// mount it under RoutePrefix instead. These are the only differences we maintain against the
-    /// synced files, applied as they're served so sync.sh never clobbers them (everything else the
-    /// prefix affects is handled by the UI itself). Returns null when a file needs no transform.
+    /// Adapt the shared ai.mjs API to the host: mount requests under RoutePrefix and resolve
+    /// static publication links against the current origin when BaseUrl is omitted. Apply these
+    /// differences at serve time so sync.sh keeps the UI sources identical.
+    /// Returns null when a file needs no transform.
     /// </summary>
     string? TransformUiFile(string path, string contents) => path switch
     {
-        "ai.mjs" => ReplaceUiSource(path, contents, "const base = ''", $"const base = '{RoutePrefix}'"),
+        "ai.mjs" => ReplaceUiSource(path,
+            ReplaceUiSource(path, contents, "const base = ''", $"const base = '{RoutePrefix}'"),
+            "const staticPublishUseCurrentOrigin = false", "const staticPublishUseCurrentOrigin = true"),
 
         _ => null,
     };
@@ -362,8 +364,8 @@ public partial class ChatFeature
     {
         if (!contents.Contains(find))
         {
-            Log.LogWarning("chat/ui/{Path} no longer contains \"{Find}\", RoutePrefix '{RoutePrefix}' " +
-                           "may not be applied correctly", path, find, RoutePrefix);
+            Log.LogWarning("chat/ui/{Path} no longer contains \"{Find}\", the host UI adaptation " +
+                           "may not be applied correctly", path, find);
             return contents;
         }
         return contents.Replace(find, replace);

@@ -47,6 +47,10 @@ public interface IProjectsApi
 
     /// <summary>Update only publication metadata after I/O, preserving current organization/settings.</summary>
     Task UpdatePublicationAsync(JsonObject captured, string publishedUrl, string? user = null) => Task.CompletedTask;
+
+    /// <summary>Commit static export metadata; failure restores the prior files.</summary>
+    Task UpdateStaticPublicationAsync(JsonObject captured, JsonObject publication, string? user = null) =>
+        throw new NotSupportedException("Static project publication metadata is unavailable");
 }
 
 public class NullThreadApi : IThreadApi

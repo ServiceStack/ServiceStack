@@ -84,7 +84,7 @@ const TopBar = {
     `,
     setup() {
         const tooltip = ref('')
-        const last2 = ref(Object.keys($ctx.top).slice(-2))
+        const last2 = computed(() => Object.keys($ctx.top).slice(-2))
         return {
             tooltip,
             last2,

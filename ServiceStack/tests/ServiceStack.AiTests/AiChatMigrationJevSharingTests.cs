@@ -53,9 +53,9 @@ public class AiChatMigrationJevSharingTests
             if(LoseUpdate){LoseUpdate=false;throw new HttpRequestException("Controlled update response loss");}return Reply(row.Clone());
         }
     }
-    static PublishExtension InstallPublisher(AiChatMigrationTestHost host,Remote remote)
+    static ShareLlmspyExtension InstallPublisher(AiChatMigrationTestHost host,Remote remote)
     {
-        var publisher=host.Install(new PublishExtension {Enabled=true,HttpHandlerFactory=()=>new AiChatMigrationHttpHandler(remote.Send)});
+        var publisher=host.Install(new ShareLlmspyExtension {Enabled=true,HttpHandlerFactory=()=>new AiChatMigrationHttpHandler(remote.Send)});
         var config=new PublisherConfiguration(publisher.Ctx);foreach(var user in new[]{"alice","bob"})config.Save(user,new JsonObject {["baseUrl"]="https://publisher.example",["apiKey"]=user+"-key",["userId"]=user+"-publisher",["userName"]=user});return publisher;
     }
     static (JevStore Store,JsonObject Recipe,string Run) Local(AiChatMigrationTestHost host,string user="alice")
@@ -140,7 +140,7 @@ public class AiChatMigrationJevSharingTests
         const string origin="http://127.0.0.1:5129";using var network=new HttpClient(new SocketsHttpHandler {AllowAutoRedirect=false,UseCookies=false}) {Timeout=TimeSpan.FromSeconds(15)};
         Assert.That(await network.GetStringAsync(origin+"/fixture/health"),Is.EqualTo("isolated-ai-chat-migration-publisher"));
         using var host=new AiChatMigrationTestHost();var loseCreate=true;var loseUpdate=false;var posts=0;var puts=0;
-        var publisher=host.Install(new PublishExtension {Enabled=true,HttpHandlerFactory=()=>new AiChatMigrationHttpHandler(async(request,token)=>{
+        var publisher=host.Install(new ShareLlmspyExtension {Enabled=true,HttpHandlerFactory=()=>new AiChatMigrationHttpHandler(async(request,token)=>{
             if(request.Method==HttpMethod.Post)posts++;if(request.Method==HttpMethod.Put&&!request.RequestUri!.AbsolutePath.EndsWith("/star"))puts++;
             using var forwarded=new HttpRequestMessage(request.Method,request.RequestUri);
             foreach(var header in request.Headers)forwarded.Headers.TryAddWithoutValidation(header.Key,header.Value);

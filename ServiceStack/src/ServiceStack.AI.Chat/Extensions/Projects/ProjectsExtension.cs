@@ -45,7 +45,7 @@ public partial class ProjectsExtension() : ChatExtension("projects"), IProjectsA
         ctx.Projects = this;
     }
 
-    // ── Folder model (shared with PublishExtension) ──
+    // ── Folder model (shared with ShareLlmspyExtension) ──
 
     [GeneratedRegex(@"[^\w\s-]")] private static partial Regex NonSlugChars();
     [GeneratedRegex(@"[\s_]+")] private static partial Regex SlugSeparators();

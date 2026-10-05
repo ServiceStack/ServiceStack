@@ -1,6 +1,7 @@
 
 import { reactive, markRaw, watch } from 'vue'
 import WorkspaceFilesIcon from './modules/WorkspaceFilesIcon.mjs'
+import SharePanel, { ShareIcon } from './modules/SharePanel.mjs'
 import { EventBus, humanize, combinePaths, pick } from "@servicestack/client"
 import { storageObject, isHtml, sanitizeHtml } from './utils.mjs'
 
@@ -127,6 +128,9 @@ export class ExtensionScope {
     setSettings(componentMap) {
         return this.ctx.setSettings(componentMap)
     }
+    setShareOptions(options) {
+        return this.ctx.setShareOptions(options)
+    }
 }
 
 export class AppContext {
@@ -164,7 +168,8 @@ export class AppContext {
         this.messageContentFilters = []
         this.toolCallBodyComponents = {}
         this.userMenuItemComponents = {}
-        this.top = {}
+        this.top = reactive({})
+        this.shareOptions = reactive({})
         this.left = {}
         this.right = reactive({})
         this.setRightIcons({ files: { name: 'Files', title: 'File explorer', component: WorkspaceFilesIcon } })
@@ -397,6 +402,27 @@ export class AppContext {
     }
     setTopIcons(icons) {
         Object.assign(this.top, this._validateIcons(icons))
+    }
+    /** Sharing tabs: {id: {name, component, order = 100, props?, isVisible?}}. Null unregisters a tab. */
+    setShareOptions(options) {
+        for (const [id, option] of Object.entries(options)) {
+            if (option == null) {
+                delete this.shareOptions[id]
+            } else {
+                if (!option.component) throw new Error(`Share option ${id} requires a component`)
+                this.shareOptions[id] = { ...option, id, name: option.name || humanize(id),
+                    order: Number.isFinite(option.order) ? option.order : 100, component: markRaw(option.component) }
+            }
+        }
+        if (Object.keys(this.shareOptions).length) {
+            this.components({ SharePanel })
+            this.setTopIcons({ share: { name: 'Share', title: 'Share', component: markRaw(ShareIcon),
+                isVisible: () => Object.keys(this.visibleComponents(this.shareOptions, this)).length > 0,
+                isActive: ({ top }) => top === 'SharePanel' } })
+        } else {
+            delete this.top.share
+            if (this.layout.top === 'SharePanel') this.toggleTop('SharePanel', false)
+        }
     }
     setLeftIcons(icons) {
         Object.assign(this.left, this._validateIcons(icons))

@@ -16,7 +16,7 @@ export default {
         ShareSnapshotPreview,
         StudioIcon,
         PublisherAccount: defineAsyncComponent(
-            () => import('../publish/PublisherAccount.mjs'),
+            () => import('../share_llmspy/PublisherAccount.mjs'),
         ),
     },
     props: { open: Boolean, recipeId: String, dirty: Boolean, api: Function },

@@ -3,6 +3,7 @@ import { ref, computed, inject, onMounted, onUnmounted, nextTick, watch } from "
 import { CheckBox } from '../../ui/components/CheckBox.mjs'
 import ProjectCreateForm from './ProjectCreateForm.mjs'
 import { useProjectOrganization } from './projectOrganization.mjs'
+import { publicationDestination } from '../../ui/modules/shareProject.mjs'
 
 let ext
 
@@ -13,10 +14,10 @@ function useProjects(ext) {
         return (ctx.state.projects || []).find(p => p.name === name)
     }
 
-    async function saveProject(originalName, updatedProject) {
+    async function saveProject(originalName, updatedProject, { reportError = true } = {}) {
         const api = await ext.postJson(`/save/${encodeURIComponent(originalName)}`, updatedProject)
         if (api.error) {
-            ctx.setError(api.error, "Failed to save project")
+            if (reportError) ctx.setError(api.error, "Failed to save project")
         } else {
             const projects = api.response
             ctx.setState({ projects })
@@ -36,6 +37,11 @@ function useProjects(ext) {
         get archived() { return (ctx.state.projects || []).filter(p => p.archived) },
         get active() { return ctx.ctx.state.prefs.project },
         getProject,
+        publicationDestination,
+        publicationUrl(project) {
+            const publication = project?.staticPublication
+            return publication?.publishedUrl || ctx.ai.resolveStaticPublishUrl?.(publication?.urlPath) || null
+        },
         saveProject,
         openNewProject() {
             ctx.projectCreationRequest = { startNew: true }
@@ -122,6 +128,9 @@ const ProjectsSelector = {
                         <div class="flex-1 min-w-0">
                             <div class="font-medium text-gray-900 dark:text-gray-100 flex items-center justify-between">
                                 <span class="truncate font-semibold">{{ project.name }}</span>
+                                <a v-if="$projects.publicationUrl(project)" :href="$projects.publicationUrl(project)" target="_blank" rel="noopener noreferrer" @click.stop
+                                   class="text-[10px] text-blue-600 dark:text-blue-400 hover:underline shrink-0 ml-1">folder</a>
+                                <span v-else-if="project.staticPublication" class="text-[10px] shrink-0 ml-1" :class="$styles.muted" :title="$projects.publicationDestination(project.staticPublication.publishedPath)">folder published</span>
                                 <a v-if="project.publishedUrl" :href="project.publishedUrl" target="_blank" rel="noopener noreferrer" @click.stop
                                    class="inline-flex items-center gap-0.5 text-[10px] text-blue-600 dark:text-blue-400 hover:underline shrink-0 ml-1">
                                     <svg class="size-2.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -372,9 +381,15 @@ const ProjectsManagerModal = {
                                                 </span>
                                             </div>
 
+                                            <div v-if="localProjects[selectedIdx]?.staticPublication" class="text-xs space-y-1">
+                                                <label class="block text-sm font-medium" :class="$styles.labelInput">Published folder</label>
+                                                <code class="break-all select-all">{{ $projects.publicationDestination(localProjects[selectedIdx].staticPublication.publishedPath) }}</code>
+                                                <a v-if="$projects.publicationUrl(localProjects[selectedIdx])" :href="$projects.publicationUrl(localProjects[selectedIdx])" target="_blank" rel="noopener noreferrer"
+                                                   class="block text-blue-600 dark:text-blue-400 hover:underline">Open site</a>
+                                            </div>
                                             <!-- Published URL -->
                                             <div v-if="editForm.publishedUrl">
-                                                <label class="block text-sm font-medium mb-1" :class="[$styles.labelInput]">Published URL</label>
+                                                <label class="block text-sm font-medium mb-1" :class="[$styles.labelInput]">ai.llmspy.org URL</label>
                                                 <div class="flex items-center gap-2">
                                                     <a :href="editForm.publishedUrl" target="_blank" rel="noopener noreferrer"
                                                        class="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate">

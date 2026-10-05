@@ -1,18 +1,18 @@
+import { publicationAge, publishProjectOutput } from '../../ui/modules/shareProject.mjs'
 import { registrationUrl, registrationMessage, initiateRegistration } from './PublisherAccount.mjs'
 import { ref, computed, inject, onMounted, onUnmounted, watch } from "vue"
 
 let ext
 
-const SharePanel = {
+const LlmspySharePanel = {
     template: `
-    <div class="relative px-4 py-3 overflow-y-auto border-b transition-all duration-300" :class="$styles.panel">
-        <button type="button" @click="close" aria-label="Close publishing panel" title="Close"
-                class="absolute top-2 right-4 z-40 flex items-center justify-center p-1.5 rounded-lg border-0 bg-transparent text-gray-400 hover:bg-black/5 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200 transition-colors focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-blue-500 focus-visible:outline-offset-2">
-            <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-        <div class="max-w-4xl mx-auto pt-8">
+    <div>
+            <div v-if="publishError" role="alert" class="relative mb-4 rounded-lg border border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-3 pr-10 text-sm text-red-800 dark:text-red-200">
+            <button type="button" @click="clearPublishError" aria-label="Dismiss publishing error" class="absolute top-2 right-2 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500">×</button>
+            <p class="font-semibold">{{ publishError.title }}</p>
+            <p class="mt-1 whitespace-pre-wrap break-words">{{ publishError.message }}</p>
+            <p v-if="publishError.details" class="mt-2 text-xs whitespace-pre-line break-all">{{ publishError.details }}</p>
+        </div>
 
             <!-- Content Area with Transition -->
             <transition enter-active-class="transition duration-300 ease-out"
@@ -64,7 +64,7 @@ const SharePanel = {
                 <div v-else key="dashboard" class="relative text-left">
                     
                     <!-- Collapsible Account Connected Widget -->
-                    <div class="absolute top-0 right-0 z-40">
+                    <div  class="absolute top-0 right-0 z-40">
                         <div class="relative" ref="accountMenuContainer">
                             <button type="button" @click="toggleAccountMenu"
                                     class="flex items-center gap-2 px-3 py-1.5 rounded-lg border text-xs font-semibold shadow-sm transition-colors"
@@ -113,11 +113,11 @@ const SharePanel = {
                     <div class="mr-48 pr-4">
                         <h4 class="text-base font-bold text-gray-950 dark:text-white mb-2">Publishing & Sharing</h4>
                         <p class="text-xs mb-6" :class=[$styles.muted]>
-                            Configure options below to share your conversations or projects directly to the public web.
+                            Share your conversations or projects on ai.llmspy.org.
                         </p>
 
                         <!-- Tabs -->
-                        <div class="flex border-b mb-6" :class="$styles.chromeBorder">
+                        <div  class="flex border-b mb-6" :class="$styles.chromeBorder">
                             <!-- Thread Tab -->
                             <button type="button" @click="publishType = 'thread'"
                                     class="px-4 py-2.5 text-sm font-semibold border-b-2 transition-colors -mb-px"
@@ -135,8 +135,6 @@ const SharePanel = {
                                 Publish Project ({{ activeProjectName }})
                             </button>
                         </div>
-
-                        <ErrorSummary v-if="$state.error" class="mb-3" :status="$state.error" />
 
                         <!-- Details Section -->
                         <div class="p-4 rounded-xl border bg-gray-50/50 dark:bg-gray-950/10 mb-6" :class="$styles.borderInput">
@@ -168,8 +166,8 @@ const SharePanel = {
                                                     {{ currentThread.publishedUrl ? 'Published' : 'Not Published' }}
                                                 </span>
                                             </div>
-                                            <span v-if="currentThread.publishedAt" class="text-xs text-gray-400 dark:text-gray-500">
-                                                Published at: {{ new Date(currentThread.publishedAt).toLocaleString() }}
+                                            <span v-if="currentThread.publishedAt" :title="new Date(currentThread.publishedAt).toLocaleString()" class="text-xs text-gray-400 dark:text-gray-500">
+                                                Published {{ publishedAge(currentThread.publishedAt) }}
                                             </span>
                                         </div>
                                         <div v-if="currentThread.publishedUrl" @click="copyThreadUrl" 
@@ -212,13 +210,13 @@ const SharePanel = {
                             </div>
 
                             <!-- Case B: Project Publishing -->
-                            <div v-else-if="publishType === 'project'" class="space-y-4">
+                            <div v-else-if="activeProjectName && publishType === 'project'" class="space-y-4">
                                 <div>
                                     <label class="block text-xs font-bold uppercase tracking-wider mb-1.5" :class=[$styles.muted]>Build Directory (dist)</label>
                                     <div class="flex items-stretch gap-2">
                                         <div class="relative flex-1">
                                             <input type="text" v-model="overrideDistPath" placeholder="deploy root project folder"
-                                                   class="block w-full rounded-lg px-3.5 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none border font-mono bg-white dark:bg-gray-900 placeholder:text-gray-400"
+                                                   class="block w-full rounded-lg px-3.5 py-2 text-sm border font-mono bg-white dark:bg-gray-900 placeholder:text-gray-400"
                                                    :class="[$styles.textInput, $styles.borderInput]" spellcheck="false" />
                                             <span v-if="isDetectingDist" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs text-gray-400">
                                                 Detecting...
@@ -372,13 +370,25 @@ const SharePanel = {
                     </div>
                 </div>
             </transition>
-        </div>
     </div>
     `,
     setup() {
         const ctx = inject('ctx')
+        const publishError = ref(null)
+        const clearPublishError = () => { publishError.value = null }
+        const setPublishError = (error, title = 'Publishing failed', details = '') => {
+            const status = error?.error || error?.responseStatus || error
+            publishError.value = {
+                title,
+                message: typeof status === 'string' ? status : status?.message || status?.errorCode || 'The server returned no error details. Please check the server logs.',
+                details,
+            }
+        }
         const publish = computed(() => ext.state.publish || {})
         const isConfigured = computed(() => !!(publish.value.userName && publish.value.apiKey))
+        const now = ref(Date.now())
+        const publishedAge = timestamp => publicationAge(timestamp, now.value)
+        let publicationClock
 
         const activeProjectName = computed(() => {
             const thread = ctx.threads?.currentThread.value
@@ -392,6 +402,7 @@ const SharePanel = {
         })
 
         const publishType = ref(activeProjectName.value ? 'project' : 'thread')
+        const activeProject = computed(() => ctx.projects?.getProject(activeProjectName.value))
         const currentThread = computed(() => ctx.threads?.currentThread?.value || null)
 
         const isPublishing = ref(false)
@@ -422,6 +433,7 @@ const SharePanel = {
             const data = event.data
             if ((ctx.ai.auth?.userName || 'default') === registrationOwner && registrationMessage(event, registrationFrame.value, registerUrl.value, registrationNonce)) {
                 const { apiKey, userName, userId } = data
+                clearPublishError()
                 try {
                     const api = await ext.postJson('/config.json', { apiKey, userName, userId })
                     if ((ctx.ai.auth?.userName || 'default') !== registrationOwner) return
@@ -430,25 +442,26 @@ const SharePanel = {
                         showAccountMenu.value = false
                         ext.toast('API Key was generated successfully!')
                     } else if (api.error) {
-                        ext.setError(api.error, 'Failed to save configuration')
+                        setPublishError(api.error, 'Failed to save configuration')
                     }
                 } catch (e) {
-                    ext.setError(e, 'Error linking account')
+                    setPublishError(e, 'Error linking account')
                 }
             }
         }
 
         const disconnect = async () => {
+            clearPublishError()
             try {
                 const api = await ext.postJson('/disconnect')
                 if (api.response) {
                     ext.setState({ publish: api.response })
                     ext.toast('Account disconnected successfully')
                 } else if (api.error) {
-                    ext.setError(api.error, 'Failed to disconnect account')
+                    setPublishError(api.error, 'Failed to disconnect account')
                 }
             } catch (e) {
-                ext.setError(e, 'Error disconnecting account')
+                setPublishError(e, 'Error disconnecting account')
             }
         }
 
@@ -474,7 +487,9 @@ const SharePanel = {
             return parts.join('/')
         }
 
+        let distVersion = 0
         const detectDistFolder = async () => {
+            const version = ++distVersion
             isDetectingDist.value = true
             try {
                 const project = activeProjectName.value ? ctx.projects?.getProject(activeProjectName.value) : null
@@ -483,7 +498,8 @@ const SharePanel = {
                     overrideDistPath.value = sanitizePublishPath(project.publish, folder)
                     return
                 }
-                const api = await ext.getJson('/detect-dist' + (ctx.threads?.currentThread.value?.id ? '?threadId=' + ctx.threads.currentThread.value.id : ''))
+                const api = await ext.getJson('/detect-dist' + (ctx.threads?.currentThread.value?.id ? '?threadId=' + encodeURIComponent(ctx.threads.currentThread.value.id) : ''))
+                if (version !== distVersion) return
                 if (api.response && api.response.dist !== undefined) {
                     overrideDistPath.value = sanitizePublishPath(api.response.dist, folder)
                 } else {
@@ -492,7 +508,7 @@ const SharePanel = {
             } catch (e) {
                 console.warn('Failed to auto-detect dist folder', e)
             } finally {
-                isDetectingDist.value = false
+                if (version === distVersion) isDetectingDist.value = false
             }
         }
 
@@ -574,6 +590,7 @@ const SharePanel = {
         })
 
         onMounted(async () => {
+            publicationClock = setInterval(() => { now.value = Date.now() }, 1000)
             window.addEventListener('message', handleMessage)
             document.addEventListener('click', onDocClick)
             updatePublishedProjectUrl()
@@ -581,6 +598,7 @@ const SharePanel = {
         })
 
         onUnmounted(() => {
+            clearInterval(publicationClock)
             window.removeEventListener('message', handleMessage)
             document.removeEventListener('click', onDocClick)
         })
@@ -588,73 +606,62 @@ const SharePanel = {
         const registerUrl = computed(() => registrationUrl(ext.state.publish.registerUrl, ctx.ai.auth.userName, registrationNonce))
 
         const publishThread = async () => {
-            if (!currentThread.value) return
+            if (!currentThread.value || isPublishing.value) return
+            const target = currentThread.value
+            const owner = ctx.ai.auth?.userName || 'default'
+            clearPublishError()
             isPublishing.value = true
-
-            const api = await ext.postJson(`/thread/${currentThread.value.id}`)
-            if (api.response) {
-                console.log(`/thread/${currentThread.value.id}`, api.response)
-                const data = api.response
-                if (data.publishedUrl) {
-                    currentThread.value.publishedAt = data.publishedAt
-                    currentThread.value.publishedUrl = data.publishedUrl
-                    ext.toast('Thread published successfully!')
-                    const thread = await ctx.threads.getThread(currentThread.value.id)
-                    if (thread) {
-                        ctx.threads.replaceThread(thread)
-                    }
+            try {
+                const api = await ext.postJson(`/thread/${target.id}`)
+                if ((ctx.ai.auth?.userName || 'default') !== owner) return
+                if (api.error) {
+                    setPublishError(api.error, 'Failed to publish chat thread')
+                    return
                 }
-            } else {
-                console.log(api.error)
-                ctx.setError(api.error, 'Failed to publish to remote platform')
+                const data = api.response
+                if (data?.publishedUrl) {
+                    target.publishedAt = data.publishedAt
+                    target.publishedUrl = data.publishedUrl
+                    ext.toast('Thread published successfully!')
+                    const thread = await ctx.threads.getThread(target.id)
+                    if (thread && (ctx.ai.auth?.userName || 'default') === owner) ctx.threads.replaceThread(thread)
+                } else {
+                    setPublishError('The server did not return a publication link.', 'Failed to publish chat thread')
+                }
+            } catch (e) {
+                setPublishError(e, 'Failed to publish chat thread')
+            } finally {
+                isPublishing.value = false
             }
-            isPublishing.value = false
         }
 
         const publishProject = async () => {
-            if (!activeProjectName.value) return
+            const project = activeProject.value
+            if (!project || isPublishing.value) return
+            const target = { ...project }
+            const owner = ctx.ai.auth?.userName || 'default'
+            const source = sanitizePublishPath(overrideDistPath.value, target.folder)
+            overrideDistPath.value = source
+            clearPublishError()
             isPublishing.value = true
-            publishedProjectUrl.value = ''
-
-            const project = ctx.projects.getProject(activeProjectName.value)
-            if (!project) {
-                ext.setError('Project not found', 'Failed to publish project')
-                isPublishing.value = false
-                return
-            }
-
-            const cleanPublish = sanitizePublishPath(overrideDistPath.value, project.folder)
-            overrideDistPath.value = cleanPublish
-
-            if (cleanPublish != project.publish) {
-                project.publish = cleanPublish
-                const api = await ctx.projects.saveProject(project.name, project)
+            try {
+                const api = await publishProjectOutput(ctx, ext, target, source, 'remote')
+                if ((ctx.ai.auth?.userName || 'default') !== owner) return
                 if (api.error) {
-                    ext.setError(api.error, 'Failed to save project publish path')
-                    isPublishing.value = false
+                    setPublishError(api.error, 'Failed to publish project')
                     return
                 }
-            }
-
-            try {
-                const api = await ext.postJson(`/project/${encodeURIComponent(activeProjectName.value)}`)
-                if (api.response) {
-                    const data = api.response
-                    if (data.publishedUrl) {
-                        publishedProjectUrl.value = data.publishedUrl
-                        ext.toast('Project published successfully!')
-                        const proj = ctx.projects.getProject(activeProjectName.value)
-                        if (proj) {
-                            proj.publishedUrl = data.publishedUrl
-                        }
-                    } else {
-                        ext.setError('Missing publishedUrl in response', 'Failed to publish project')
-                    }
-                } else if (api.error) {
-                    ext.setError(api.error, 'Failed to publish project')
+                const data = api.response
+                const resultProject = (ctx.state.projects || []).find(p => p.id === target.id)
+                if (data?.publishedUrl) {
+                    if (resultProject) resultProject.publishedUrl = data.publishedUrl
+                    if (activeProject.value?.id === target.id) publishedProjectUrl.value = data.publishedUrl
+                    ext.toast('Project published successfully!')
+                } else {
+                    setPublishError('Missing publication result', 'Failed to publish project')
                 }
             } catch (e) {
-                ext.setError(e, 'Error publishing project')
+                setPublishError(e, 'Error publishing project')
             } finally {
                 isPublishing.value = false
             }
@@ -680,14 +687,11 @@ const SharePanel = {
             }, 2000)
         }
 
-        const close = () => {
-            ctx.toggleTop('SharePanel', false)
-        }
-
         return {
-            close,
+            publishError, clearPublishError,
             ext,
             publish,
+            publishedAge,
             isConfigured,
             registerUrl,
             registrationFrame,
@@ -869,21 +873,10 @@ export default {
     order: 100,
 
     install(ctx) {
-        ext = ctx.scope('publish')
+        ext = ctx.scope('share_llmspy')
 
-        ctx.components({
-            SharePanel,
-        })
-
-        ctx.setTopIcons({
-            publish: {
-                component: {
-                    template: `
-                    <svg @click="$ctx.toggleTop('SharePanel')" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none" /><path fill="currentColor" d="m11 11.85l-1.875 1.875q-.3.3-.712.288T7.7 13.7q-.275-.3-.288-.7t.288-.7l3.6-3.6q.15-.15.325-.212T12 8.425t.375.063t.325.212l3.6 3.6q.3.3.288.7t-.288.7q-.3.3-.712.313t-.713-.288L13 11.85V19q0 .425-.288.713T12 20t-.712-.288T11 19zM4 8V6q0-.825.588-1.412T6 4h12q.825 0 1.413.588T20 6v2q0 .425-.288.713T19 9t-.712-.288T18 8V6H6v2q0 .425-.288.713T5 9t-.712-.288T4 8" /></svg>`,
-                },
-                isActive({ top }) { return top === 'SharePanel' },
-                get title() { return 'Share' }
-            }
+        ctx.setShareOptions({
+            share_llmspy: { name: 'ai.llmspy.org', order: 100, component: LlmspySharePanel },
         })
 
         ctx.gallery.setLightboxFooters({

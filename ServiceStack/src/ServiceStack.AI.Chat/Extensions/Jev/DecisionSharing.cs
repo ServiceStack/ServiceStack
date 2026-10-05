@@ -6,7 +6,7 @@ namespace ServiceStack.AI;
 /// <summary>Immutable publication reservations, account-bound receipts and independent attributed imports.</summary>
 public sealed class DecisionSharing(ChatFeature feature,DecisionImporter importer)
 {
-    PublisherClient Client(string user)=>feature.PublisherApi.Available?feature.PublisherApi.CreateClient(user):throw HttpError.ServiceUnavailable("Enable the publish extension to share and browse recipes.");
+    PublisherClient Client(string user)=>feature.PublisherApi.Available?feature.PublisherApi.CreateClient(user):throw HttpError.ServiceUnavailable("Enable the share_llmspy extension to share and browse recipes.");
     static JsonObject Object(JsonNode? value)=>value as JsonObject??throw new JevValidationException("source","Expected a publication.");
     static JsonObject Meta(JsonObject index,string id)=>(JsonObject)index["recipes"]![id]!;
     // A share belongs to the publisher origin and account (Python parity), not to one API key:

@@ -2,6 +2,7 @@ import { reactive } from "vue"
 import { ApiResult, combinePaths } from "@servicestack/client"
 
 const base = ''
+const staticPublishUseCurrentOrigin = false
 const headers = { 'Accept': 'application/json' }
 const prefsKey = 'llms.prefs'
 
@@ -23,6 +24,9 @@ export const o = {
 
     resolvePath(path) {
         return this.base ? combinePaths(this.base, path) : path
+    },
+    resolveStaticPublishUrl(path) {
+        return staticPublishUseCurrentOrigin && path ? new URL(path, location.origin).href : null
     },
     resolveUrl(url) {
         // urls built from ctx.ai.base (e.g. ExtensionScope.baseUrl) are already resolved
@@ -67,17 +71,22 @@ export const o = {
                 return new ApiResult({ error: response.responseStatus })
             }
             if (!res.ok) {
-                return new ApiResult({ error: { errorCode: 'Error', message: res.statusText } })
+                const message = response?.message || response?.error?.message
+                    || (typeof response?.error === 'string' ? response.error : null)
+                    || `${res.status} ${res.statusText || 'Request failed'}`
+                return new ApiResult({ error: { errorCode: response?.errorCode || 'Error', message } })
             }
             return new ApiResult({ response })
         } catch (e) {
             console.error('Failed to parse JSON', e, msg, txt)
+            const plainText = !/^\s*</.test(txt) && txt.trim()
             const responseStatus = {
-                errorCode: 'Error',
-                message: `${e.message ?? e}`,
+                errorCode: res.ok ? 'InvalidResponse' : 'Error',
+                message: res.ok ? `The server returned an invalid JSON response${msg ? ` for ${msg}` : ''}.`
+                    : plainText ? txt.trim().slice(0, 4000) : `${res.status} ${res.statusText || 'Request failed'}${msg ? ` (${msg})` : ''}`,
                 stackTrace: msg ? `${msg}\n${txt}` : txt,
             }
-            return { responseStatus }
+            return new ApiResult({ error: responseStatus })
         }
     },
     createErrorStatus({ message, errorCode, stackTrace, errors, meta }) {

@@ -4790,6 +4790,9 @@
   .whitespace-pre {
     white-space: pre;
   }
+  .whitespace-pre-line {
+    white-space: pre-line;
+  }
   .whitespace-pre-wrap {
     white-space: pre-wrap;
   }
@@ -7413,6 +7416,9 @@
   }
   .focus-visible\:outline-indigo-600:focus-visible {
     outline-color: var(--color-indigo-600);
+  }
+  .focus-visible\:outline-red-500:focus-visible {
+    outline-color: var(--color-red-500);
   }
   .focus-visible\:outline-none:focus-visible {
     --tw-outline-style: none;
@@ -10160,6 +10166,9 @@
     }
     .dark\:hover\:bg-red-700:where(.dark, .dark *):hover {
       background-color: var(--color-red-700);
+    }
+    .dark\:hover\:bg-red-900:where(.dark, .dark *):hover {
+      background-color: var(--color-red-900);
     }
     .dark\:hover\:bg-red-900\/20:where(.dark, .dark *):hover {
       background-color: color-mix(in srgb, oklch(39.6% 0.141 25.723) 20%, transparent);

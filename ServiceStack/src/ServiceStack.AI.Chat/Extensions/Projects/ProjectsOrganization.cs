@@ -15,9 +15,21 @@ public partial class ProjectsExtension
         WriteProjects(user,projects);
     }
 
+    public async Task UpdateStaticPublicationAsync(JsonObject captured, JsonObject publication, string? user=null)
+    {
+        using var lease=await LockProjectsAsync().ConfigAwait();
+        var projects=ReadUserProjectsJson(user);
+        var current=projects.OfType<JsonObject>().FirstOrDefault(p=>p.GetString("id")==captured.GetString("id"))
+            ?? throw HttpError.NotFound("Project not found");
+        if(current.GetString("folder")!=captured.GetString("folder") || current.GetString("publish")!=captured.GetString("publish"))
+            throw HttpError.Conflict("Project output settings changed during publishing. Retry publishing.");
+        current["staticPublication"]=publication.DeepClone();
+        WriteProjects(user,projects);
+    }
+
     static void PreserveServerFields(JsonObject project, JsonObject? existing)
     {
-        foreach (var key in new[] { "archived", "archivedSidebarVisibility", "gitSource" })
+        foreach (var key in new[] { "archived", "archivedSidebarVisibility", "gitSource", "staticPublication" })
         {
             if (existing?.ContainsKey(key) == true) project[key] = existing[key]?.DeepClone();
             else project.Remove(key);

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-10-05 14:41:31
+Date: 2026-10-05 23:19:15
 Version: 10.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -572,6 +572,22 @@ export class Tool {
      * @type {?AiToolFunction}
      * @description The function definition the model may call. */
     function;
+}
+export class DecisionQuestion {
+    /** @param {{type?:string,instructions?:Object,criteria?:Object}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /**
+     * @type {string}
+     * @description noul, choice or score */
+    type;
+    /**
+     * @type {Object}
+     * @description What to decide: text, or a JSON object/array of guidance */
+    instructions;
+    /**
+     * @type {?Object}
+     * @description noul: {true,false} descriptions; choice: {option: description}; score: ordered descriptions */
+    criteria;
 }
 export class QueryBase {
     /** @param {{skip?:number,take?:number,orderBy?:string,orderByDesc?:string,include?:string,fields?:string,meta?:{ [index:string]: string; }}} [init] */
@@ -2842,6 +2858,44 @@ export class AiUsage {
      * @description Seconds spent servicing the completion, including every request in the tool loop. */
     duration;
 }
+export class DecisionAnswer {
+    /** @param {{type?:string,noul?:number,choice?:string,score?:number,confidence?:number,probabilities?:{ [index:string]: number; },legend?:{ [index:string]: string; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {string} */
+    type;
+    /**
+     * @type {?number}
+     * @description noul: probability from 0 (no) to 1 (yes) */
+    noul;
+    /**
+     * @type {?string}
+     * @description choice: the selected option */
+    choice;
+    /**
+     * @type {?number}
+     * @description score: position on the scale, 0 = first description */
+    score;
+    /** @type {?number} */
+    confidence;
+    /**
+     * @type {?{ [index:string]: number; }}
+     * @description choice/score: probability of each option (score options are "0", "1", ...) */
+    probabilities;
+    /**
+     * @type {?{ [index:string]: string; }}
+     * @description score: description of each scale position */
+    legend;
+}
+export class DecisionUsage {
+    /** @param {{input_tokens?:number,output_tokens?:number,cost?:number}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {number} */
+    input_tokens;
+    /** @type {number} */
+    output_tokens;
+    /** @type {?number} */
+    cost;
+}
 /** @typedef T {any} */
 export class QueryResponse {
     /** @param {{offset?:number,total?:number,results?:T[],meta?:{ [index:string]: string; },responseStatus?:ResponseStatus}} [init] */
@@ -3555,6 +3609,22 @@ export class ChatResponse {
     metadata;
     /** @type {?ResponseStatus} */
     responseStatus;
+}
+export class DecisionResponse {
+    /** @param {{id?:string,model?:string,provider?:string,answers?:{ [index:string]: DecisionAnswer; },usage?:DecisionUsage}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /** @type {?string} */
+    id;
+    /** @type {string} */
+    model;
+    /** @type {?string} */
+    provider;
+    /**
+     * @type {{ [index:string]: DecisionAnswer; }}
+     * @description Answers by question name, validated against the submitted questions */
+    answers = {};
+    /** @type {?DecisionUsage} */
+    usage;
 }
 export class AuthenticateResponse {
     /** @param {{userId?:string,sessionId?:string,userName?:string,displayName?:string,referrerUrl?:string,bearerToken?:string,refreshToken?:string,refreshTokenExpiry?:string,profileUrl?:string,roles?:string[],permissions?:string[],authProvider?:string,responseStatus?:ResponseStatus,meta?:{ [index:string]: string; }}} [init] */
@@ -4627,6 +4697,37 @@ export class ChatCompletion {
     getTypeName() { return 'ChatCompletion' }
     getMethod() { return 'POST' }
     createResponse() { return new ChatResponse() }
+}
+export class CreateDecision {
+    /** @param {{model?:string,state?:Object,questions?:{ [index:string]: DecisionQuestion; },session_id?:string,user?:string,provider?:{ [index:string]: Object; }}} [init] */
+    constructor(init) { Object.assign(this, init) }
+    /**
+     * @type {string}
+     * @description The decision model, e.g. ~typesafe/jev-latest */
+    model;
+    /**
+     * @type {Object}
+     * @description The content to evaluate: a plain string, or a JSON object or array of related context */
+    state;
+    /**
+     * @type {{ [index:string]: DecisionQuestion; }}
+     * @description Named noul (yes/no probability), choice (one option) or score (ordered scale) questions */
+    questions = {};
+    /**
+     * @type {?string}
+     * @description A unique identifier for grouping related requests */
+    session_id;
+    /**
+     * @type {?string}
+     * @description End-user identifier sent to OpenRouter. Omitted unless you set it. */
+    user;
+    /**
+     * @type {?{ [index:string]: Object; }}
+     * @description OpenRouter provider routing preferences */
+    provider;
+    getTypeName() { return 'CreateDecision' }
+    getMethod() { return 'POST' }
+    createResponse() { return new DecisionResponse() }
 }
 export class Authenticate {
     /** @param {{provider?:string,userName?:string,password?:string,rememberMe?:boolean,accessToken?:string,accessTokenSecret?:string,returnUrl?:string,errorView?:string,meta?:{ [index:string]: string; }}} [init] */

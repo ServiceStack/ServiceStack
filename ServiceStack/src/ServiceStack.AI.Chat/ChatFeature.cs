@@ -241,7 +241,8 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
             new GalleryExtension(),
             new SkillsExtension(),
             new VoiceExtension(),
-            new PublishExtension(),
+            new ShareLlmspyExtension(),
+            new ShareStaticExtension(),
             new JevExtension(),
             new OpenAiAuthExtension(),
             new GeminiExtension(),
@@ -274,7 +275,8 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public GalleryExtension Gallery => AssertExtension<GalleryExtension>();
     public SkillsExtension Skills => AssertExtension<SkillsExtension>();
     public VoiceExtension Voice => AssertExtension<VoiceExtension>();
-    public PublishExtension Publish => AssertExtension<PublishExtension>();
+    public ShareLlmspyExtension ShareLlmspy => AssertExtension<ShareLlmspyExtension>();
+    public ShareStaticExtension ShareStatic => AssertExtension<ShareStaticExtension>();
     public GeminiExtension Gemini => AssertExtension<GeminiExtension>();
     public KatexExtension Katex => AssertExtension<KatexExtension>();
     public PdfExtension Pdf => AssertExtension<PdfExtension>();

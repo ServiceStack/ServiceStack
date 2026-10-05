@@ -1,6 +1,6 @@
 # Decision Studio (Jev)
 
-`JevExtension` installs the frozen shared Decision Studio UI and `/ext/jev` routes. Decisions use one raw OpenRouter decision request, separate from chat completions and durable agents. Enable OpenRouter and configure its API key to execute decisions; editing and importing recipes remain available without it. `PublishExtension.Enabled` and a connected per-user publisher account are required to publish or star community recipes.
+`JevExtension` installs the frozen shared Decision Studio UI and `/ext/jev` routes. Decisions use one raw OpenRouter decision request, separate from chat completions and durable agents. Enable OpenRouter and configure its API key to execute decisions; editing and importing recipes remain available without it. `ShareLlmspyExtension.Enabled` and a connected per-user publisher account are required to publish or star community recipes.
 
 Data lives below `App_Data/chat/user/<identity>/jev`: portable `recipes/*.json`, readable `history/*.md`, the recipe/run index, initialization receipt, and private import/publication journals. A single host process must own this App_Data root. Back up the whole directory, including dotfiles and pending publication receipts, before moving or upgrading it. Filenames preserve Unicode and Python case folding; saved names are metadata, not implicit filename renames. Revision and replacement controls prevent stale writes. Expired runs become interrupted and are never automatically retried as paid work.
 

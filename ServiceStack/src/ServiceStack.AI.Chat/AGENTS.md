@@ -87,6 +87,7 @@ The C# project does not maintain a hand-edited fork of `ai.mjs`. `ChatFeatureRou
 applies deployment-specific transformations while serving synchronized files:
 
 - it changes `const base = ''` in `ai.mjs` to the configured `ChatFeature.RoutePrefix`;
+- it enables `staticPublishUseCurrentOrigin`, so an omitted static publication BaseUrl uses the browser origin;
 - shared `index.mjs` now resolves startup navigation through `ai.resolvePath()`, so it needs no source rewrite.
 
 URLs persisted by the application remain prefix-free; `RoutePrefix` is a deployment concern. If upstream
@@ -226,9 +227,17 @@ short-lived confirmation tokens.
 - `ChatProviderRequestException` prevents the orchestrator from replaying/failing over a provider
   request with an uncertain outcome. Keep the bounded 401 refresh retry inside the subscription
   transport. Subscription model display names resolve against the originating user's catalog.
-- `Extensions/Publish` owns the reusable bounded `PublisherClient` and per-user grants. Capture its
-  immutable origin/account before network I/O; late responses cannot restore disconnected grants or
-  overwrite unrelated concurrent project edits.
+- `Extensions/ShareStatic` exports projects independently of remote sharing. `ShareStaticExtension.StaticPublish`
+  accepts a typed `StaticPublishConfig` override; otherwise settings deserialize from
+  `user/default/share_static/config.json` (enabled, web content directory/p, /p/, empty baseUrl defaults).
+  An omitted Directory resolves under the host's web root; an explicit relative Directory uses the working
+  directory. Empty BaseUrl uses the UI's current origin through ai.mjs's resolveStaticPublishUrl hook;
+  ChatFeatureRoutes enables that fallback at serve time, including a root-mounted UI.
+  Exports rewrite only copied HTML; metadata is separate and server-owned, using an in-process semaphore.
+- `Extensions/ShareLlmspy` owns the bounded `PublisherClient` and per-user grants, with legacy publish
+  grants migrated on save and removed on disconnect. Capture immutable origin/account before network I/O.
+  Core `ctx.setShareOptions` owns ordered sharing tabs and the optional share icon; neither extension
+  depends on the other. Edit upstream UI first and sync it with `sync.sh`.
 - Projects archive/order/title changes preserve canonical history and `lastActivityAt`; drafts stay
   browser-only. Submission leases precede queue/approval writes. Gemini saved imports reserve exact
   owner/source/physical-manifest/key identities portably; do not revert to null-source adoption.

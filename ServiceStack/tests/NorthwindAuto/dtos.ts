@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-10-05 14:41:31
+Date: 2026-10-05 23:19:14
 Version: 10.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -624,6 +624,24 @@ export class Tool
     public function?: AiToolFunction;
 
     public constructor(init?: Partial<Tool>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class DecisionQuestion
+{
+    /** @description noul, choice or score */
+    // @DataMember(Name="type")
+    public type: string;
+
+    /** @description What to decide: text, or a JSON object/array of guidance */
+    // @DataMember(Name="instructions")
+    public instructions: Object;
+
+    /** @description noul: {true,false} descriptions; choice: {option: description}; score: ordered descriptions */
+    // @DataMember(Name="criteria")
+    public criteria?: Object;
+
+    public constructor(init?: Partial<DecisionQuestion>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -2740,6 +2758,53 @@ export class AiUsage
 }
 
 // @DataContract
+export class DecisionAnswer
+{
+    // @DataMember(Name="type")
+    public type: string;
+
+    /** @description noul: probability from 0 (no) to 1 (yes) */
+    // @DataMember(Name="noul")
+    public noul?: number;
+
+    /** @description choice: the selected option */
+    // @DataMember(Name="choice")
+    public choice?: string;
+
+    /** @description score: position on the scale, 0 = first description */
+    // @DataMember(Name="score")
+    public score?: number;
+
+    // @DataMember(Name="confidence")
+    public confidence?: number;
+
+    /** @description choice/score: probability of each option (score options are "0", "1", ...) */
+    // @DataMember(Name="probabilities")
+    public probabilities?: { [index:string]: number; };
+
+    /** @description score: description of each scale position */
+    // @DataMember(Name="legend")
+    public legend?: { [index:string]: string; };
+
+    public constructor(init?: Partial<DecisionAnswer>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class DecisionUsage
+{
+    // @DataMember(Name="input_tokens")
+    public input_tokens: number;
+
+    // @DataMember(Name="output_tokens")
+    public output_tokens: number;
+
+    // @DataMember(Name="cost")
+    public cost?: number;
+
+    public constructor(init?: Partial<DecisionUsage>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
 export class QueryResponse<T>
 {
     // @DataMember(Order=1)
@@ -3396,6 +3461,28 @@ export class ChatResponse
     public responseStatus?: ResponseStatus;
 
     public constructor(init?: Partial<ChatResponse>) { (Object as any).assign(this, init); }
+}
+
+// @DataContract
+export class DecisionResponse
+{
+    // @DataMember(Name="id")
+    public id?: string;
+
+    // @DataMember(Name="model")
+    public model: string;
+
+    // @DataMember(Name="provider")
+    public provider?: string;
+
+    /** @description Answers by question name, validated against the submitted questions */
+    // @DataMember(Name="answers")
+    public answers: { [index:string]: DecisionAnswer; } = {};
+
+    // @DataMember(Name="usage")
+    public usage?: DecisionUsage;
+
+    public constructor(init?: Partial<DecisionResponse>) { (Object as any).assign(this, init); }
 }
 
 // @DataContract
@@ -4593,6 +4680,41 @@ export class ChatCompletion implements IReturn<ChatResponse>, IPost
     public getTypeName() { return 'ChatCompletion'; }
     public getMethod() { return 'POST'; }
     public createResponse() { return new ChatResponse(); }
+}
+
+/** @description Decisions API (OpenRouter) */
+// @Route("/v1/decisions", "POST")
+// @DataContract
+export class CreateDecision implements IReturn<DecisionResponse>, IPost
+{
+    /** @description The decision model, e.g. ~typesafe/jev-latest */
+    // @DataMember(Name="model")
+    public model: string;
+
+    /** @description The content to evaluate: a plain string, or a JSON object or array of related context */
+    // @DataMember(Name="state")
+    public state: Object;
+
+    /** @description Named noul (yes/no probability), choice (one option) or score (ordered scale) questions */
+    // @DataMember(Name="questions")
+    public questions: { [index:string]: DecisionQuestion; } = {};
+
+    /** @description A unique identifier for grouping related requests */
+    // @DataMember(Name="session_id")
+    public session_id?: string;
+
+    /** @description End-user identifier sent to OpenRouter. Omitted unless you set it. */
+    // @DataMember(Name="user")
+    public user?: string;
+
+    /** @description OpenRouter provider routing preferences */
+    // @DataMember(Name="provider")
+    public provider?: { [index:string]: Object; };
+
+    public constructor(init?: Partial<CreateDecision>) { (Object as any).assign(this, init); }
+    public getTypeName() { return 'CreateDecision'; }
+    public getMethod() { return 'POST'; }
+    public createResponse() { return new DecisionResponse(); }
 }
 
 /** @description Sign In */

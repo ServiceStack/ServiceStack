@@ -9,7 +9,10 @@ public sealed class PublisherConfiguration(ExtensionContext ctx)
     public const string DefaultOrigin="https://ai.llmspy.org";
     public const string RegisterPath="/embed/register.html?domain=llmspy.org";
     static readonly ConcurrentDictionary<string,object> Locks=new(StringComparer.Ordinal);
-    string PathOf(string? user)=>Path.Combine(ctx.GetUserPath(user),"publish","config.json");
+    string PathOf(string? user)=>Path.Combine(ctx.GetUserPath(user),"share_llmspy","config.json");
+    string LegacyPathOf(string? user)=>Path.Combine(ctx.GetUserPath(user),"publish","config.json");
+    JsonObject ReadFor(string? user)=>Read(File.Exists(PathOf(user))?PathOf(user):LegacyPathOf(user));
+    void ClearLegacy(string? user) { var path=LegacyPathOf(user);if(File.Exists(path))File.Delete(path); }
     object Gate(string? user)=>Locks.GetOrAdd(PathOf(user),_=>new object());
     static JsonObject Read(string path)
     {
@@ -19,9 +22,9 @@ public sealed class PublisherConfiguration(ExtensionContext ctx)
     }
     public JsonObject Get(string? user,bool obscure=true)
     {
-        var own=Read(PathOf(user));var result=new JsonObject();
+        var own=ReadFor(user);var result=new JsonObject();
         if(!string.IsNullOrEmpty(user) && PathOf(user)!=PathOf(null)) {
-            var defaults=Read(PathOf(null));
+            var defaults=ReadFor(null);
             foreach(var field in new[]{"baseUrl","allowHttp"})if(defaults.ContainsKey(field))result[field]=defaults[field]?.DeepClone();
         }
         result["apiKey"]=null;result["userName"]=null;result["userId"]=null;
@@ -53,18 +56,18 @@ public sealed class PublisherConfiguration(ExtensionContext ctx)
             if(before.GetString("baseUrl")!=current.GetString("baseUrl") && !patch.ContainsKey("registerUrl"))current["registerUrl"]=current.GetString("baseUrl")!.TrimEnd('/')+RegisterPath;
             if(current.GetString("registerUrl") is { } registration && (!Uri.TryCreate(registration,UriKind.Absolute,out var url) || url.UserInfo.Length>0 || url.GetLeftPart(UriPartial.Authority)!=PublisherClient.Origin(current)))throw HttpError.BadRequest("Registration must use the configured publisher origin");
             if(AccountIdentity(before)!=AccountIdentity(current))current.Remove("avatars");
-            Write(PathOf(user),current);return Get(user);
+            Write(PathOf(user),current);ClearLegacy(user);return Get(user);
         }
     }
     public JsonObject Disconnect(string? user)
     {
-        lock(Gate(user)){var path=PathOf(user);if(File.Exists(path))File.Delete(path);return Get(user);}
+        lock(Gate(user)){var path=PathOf(user);if(File.Exists(path))File.Delete(path);ClearLegacy(user);return Get(user);}
     }
     public bool SaveAvatar(string? user,JsonObject captured,string profile,string publishedUrl)
     {
         lock(Gate(user)) {
             var current=Get(user,false);if(AccountIdentity(current)!=AccountIdentity(captured))return false;
-            var avatars=current.GetObject("avatars")??new JsonObject();avatars[profile]=publishedUrl;current["avatars"]=avatars;Write(PathOf(user),current);return true;
+            var avatars=current.GetObject("avatars")??new JsonObject();avatars[profile]=publishedUrl;current["avatars"]=avatars;Write(PathOf(user),current);ClearLegacy(user);return true;
         }
     }
     static void Write(string path,JsonObject value)

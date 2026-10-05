@@ -99,7 +99,7 @@ export default {
     setup() {
         const ctx = inject('ctx'),
             ext = ctx.scope('jev'),
-            publishExt = ctx.scope('publish'),
+            publishExt = ctx.scope('share_llmspy'),
             api = createApi(ext)
         const tagCacheScope = computed(() =>
             JSON.stringify([

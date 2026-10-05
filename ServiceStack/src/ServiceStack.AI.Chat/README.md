@@ -119,7 +119,8 @@ App_Data/chat/
   user/<username>/projects/<folder>/                a project's working folder (created on save)
   user/<username>/jev/                              portable recipes, immutable history and journals
   user/<username>/credentials/openai_subscription.json  private subscription grant
-  user/<username>/publish/config.json                    identity-specific publisher settings/grant
+  user/<username>/share_llmspy/config.json               identity-specific publisher settings/grant
+  user/default/share_static/config.json                 global static sharing settings
   openai-agent-host.json                            stable subscription host identity
 ```
 
@@ -148,7 +149,8 @@ Ported from llms-py's modular extensions (`ChatFeature.Extensions`); add your ow
 | `gallery` | Catalogue of uploaded/generated media |
 | `skills` | Anthropic-style skill packages |
 | `voice` | Speech-to-text via any OpenAI-compatible transcription API, or a local CLI (self-disables when no backend is available) |
-| `publish` | Publish threads/media/projects to a remote llms.py site |
+| `share_static` | Account-free static project exports |
+| `share_llmspy` | Public threads/media/projects and per-user publisher accounts for Jev |
 | `gemini` | Gemini File Search stores for RAG (self-disables without a Gemini API key) |
 | `analytics`, `katex`, `identity` | UI-only |
 
@@ -396,3 +398,84 @@ HTTP servers. It supports contextual selection, host credentials, user OAuth, sh
 remote results without exporting imported tools through the inbound MCP server. See
 [MCP_CLIENT_USER.md](MCP_CLIENT_USER.md) for configuration, defaults, tested compatibility and the
 remaining release-validation gates.
+
+## Sharing destinations
+
+The core UI owns the Share icon and top panel. Extensions register tabs with
+`ctx.setShareOptions({ id: { name, component, order } })`; lower orders appear first. No registered
+options means no Share icon. `share_static` (Folder, order 10) and `share_llmspy` (ai.llmspy.org,
+order 100) can each be disabled independently. For neither:
+
+```csharp
+var chat = new ChatFeature {
+    DisableExtensions = ["share_static", "share_llmspy"],
+};
+```
+
+`share_static` is enabled by default; `share_llmspy` is disabled by default, including when a host
+supplies its own `Config`. To opt into remote sharing, set `chat.ShareLlmspy.Enabled = true` before
+registering the plugin, and remove `share_llmspy` from any configured `DisableExtensions` or
+`disable_extensions` list.
+
+`ShareLlmspyExtension` publishes threads, media and project builds to the remote host, and provides
+publisher accounts for Jev. Grants use `user/<user>/share_llmspy/config.json`. Legacy
+`publish/config.json` grants remain readable, migrate on save, and are also removed on disconnect.
+Static sharing requires no publisher account and does not install any remote account routes.
+
+`ShareStaticExtension` exports to `<web-content-directory>/p/<local-user>/<project-folder>/`
+(`wwwroot/p` in a typical ASP.NET Core host). With no configuration, publishing is enabled,
+`BasePath = "/p/"` and `BaseUrl = ""`. Omit `Directory` to use the host's web content directory;
+explicit relative directories resolve against the host's working directory at installation.
+
+Configure global settings in `App_Data/chat/user/default/share_static/config.json`:
+
+```json
+{
+  "enabled": true,
+  "basePath": "/p/",
+  "baseUrl": ""
+}
+```
+
+Alternatively, supply the typed code override before plugin installation:
+
+```csharp
+var chat = new ChatFeature();
+chat.ShareStatic.StaticPublish = new StaticPublishConfig {
+    // Omit Directory to publish under the host web content directory.
+    BaseUrl = "http://127.0.0.1:8080/p",
+};
+```
+
+The code override replaces the whole file configuration, using class defaults for unspecified fields.
+Otherwise, the global extension file deserializes into `StaticPublishConfig`. Named-user settings and
+remote account changes cannot override it. Restart the host after file changes. Set `Enabled = false`
+or the file's `enabled` to false to omit the Folder option.
+
+`baseUrl` includes the static mount path and determines the exported HTML base path. Null or empty
+uses the current Chat UI origin with `basePath` (e.g. `https://example.com/p/default/site/`),
+independently of the `/chat` UI prefix. An explicit URL overrides this fallback. Links open in a new window. The
+panel shows **Published 15m ago to ~/user/project** with the full date/time in its title.
+Exports rewrite the copied root `index.html`, preserve existing bases/scripts/comments/external
+links, and convert root-relative HTML src/href attributes. Build CSS/JavaScript and SPA routing must
+support the chosen mount path. Source files remain unchanged. Staged republishes remove stale files
+and roll back on copy/rewrite/metadata failure, rejecting links/junctions, traversal, overlapping
+paths and unrelated existing destinations. Metadata remains separate from the remote link.
+
+The default exports are served by the host's normal static-file middleware; AI.Chat does not register
+a `/p/` API route. Put static-file middleware before routing so a root-mounted Chat UI does not capture
+export requests:
+
+```csharp
+app.UseDefaultFiles();
+app.UseStaticFiles();
+app.UseRouting();
+app.UseServiceStack(new AppHost(), options => options.MapEndpoints());
+```
+
+For a custom export directory, serve it with static-file middleware or an independent
+static server mounted at the configured URL path. One host owns App_Data, and publication uses
+an in-process semaphore, matching project metadata storage.
+
+The former `publish` extension and top-level `staticPublish` configuration are replaced by these
+extension IDs and the global static file. Update old disable lists and move static settings accordingly.

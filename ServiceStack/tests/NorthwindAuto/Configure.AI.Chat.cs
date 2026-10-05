@@ -41,7 +41,7 @@ public class ConfigureAiChat : IHostingStartup
                     EnableFilesystemTools = true,
                 },
                 // Share your best Projects, Threads or AI Media with everyone
-                Publish = { Enabled = true },
+                // ShareLlmspy = { Enabled = true },
                 McpClient = { Enabled = true, OAuthRedirectUri = new Uri("https://localhost:5001/chat/ext/mcp_client/oauth/callback") },
 #endif
                 ApiTools = {
