@@ -39,6 +39,7 @@ export default {
               <button type="button" role="menuitem" class="w-full text-left text-sm px-2 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="menu = null; newChat(group.id)">New chat</button>
               <button type="button" role="menuitem" class="w-full text-left text-sm px-2 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="menu = null; $ctx.projects.editProject(group.id)">Edit project…</button>
               <button type="button" role="menuitem" class="w-full text-left text-sm px-2 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="hideFolder(group)">Hide from sidebar</button>
+              <button type="button" role="menuitem" class="w-full text-left text-sm px-2 py-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="archiveFolder(group)">Archive project</button>
             </div>
           </div>
           <div v-if="group.expanded">
@@ -146,7 +147,7 @@ export default {
         const visibleGroups = computed(() => {
             const ids = new Set(ctx.chat.drafts.list().map(d => d.projectId).filter(Boolean))
             const existing = new Set(groups.value.map(g => g.id))
-            const extra = (ctx.state.projects || []).filter(p => ids.has(p.id) && !existing.has(p.id) && p.showInSidebar !== false)
+            const extra = (ctx.state.projects || []).filter(p => ids.has(p.id) && !existing.has(p.id) && p.showInSidebar !== false && !p.archived)
                 .map(p => {
                     const key = prefKey() + ':' + p.id
                     if (!draftGroups.value[key]) draftGroups.value[key] = {
@@ -155,7 +156,12 @@ export default {
                     draftGroups.value[key].name = p.name
                     return draftGroups.value[key]
                 })
-            return [...groups.value.filter(g => g.id), ...extra, ...groups.value.filter(g => !g.id)]
+            const projects = ctx.state.projects || []
+            const archived = new Set(projects.filter(p => p.archived).map(p => p.id))
+            const order = new Map(projects.map((p, index) => [p.id, index]))
+            const folders = [...groups.value.filter(g => g.id && !archived.has(g.id)), ...extra]
+                .sort((a, b) => (order.get(a.id) ?? Infinity) - (order.get(b.id) ?? Infinity))
+            return [...folders, ...groups.value.filter(g => !g.id)]
         })
         function expansion() { try { return JSON.parse(localStorage.getItem(prefKey()) || '{}') } catch { return {} } }
         function toggle(group) {
@@ -255,6 +261,14 @@ export default {
             ctx.setState({projects: api.response})
             await refresh()
         }
+        async function archiveFolder(group) {
+            menu.value = null
+            const api = await ctx.scope('projects').patchJson('/archive/' + encodeURIComponent(group.id), {archived:true})
+            if (api.error) { error.value = api.error.message || 'Unable to archive project'; return }
+            ctx.setState({projects: api.response})
+            if (ctx.state.prefs.project === group.name) ctx.state.prefs.project = null
+            await refresh()
+        }
         function openProjectMenu(event, group) {
             if (!group.id) return
             event.preventDefault()
@@ -287,6 +301,6 @@ export default {
         }
         onMounted(async () => { window.addEventListener('scroll', hidePreview, true); window.addEventListener('resize', hidePreview); try { projectsExpanded.value = JSON.parse(localStorage.getItem(prefKey() + ':projects') || 'true') } catch {} await refresh(); if (!disposed) subscribe(); globalThis.addEventListener('focus', refresh); document.addEventListener('click', dismissMenu); document.addEventListener('keydown', dismissMenuKey) })
         onUnmounted(() => { window.removeEventListener('scroll', hidePreview, true); window.removeEventListener('resize', hidePreview); disposed = true; source?.close(); clearTimeout(timer); globalThis.removeEventListener('focus', refresh); document.removeEventListener('click', dismissMenu); document.removeEventListener('keydown', dismissMenuKey) })
-        return { confirming, onRowFocusOut, draftsIn, rowsIn, rowIndent, isActiveDraft, isNewChatActive, runLabel, plural, preview, previewElement, previewPosition, previewStats, showPreview, showDraftPreview, groups, visibleGroups, selected, toggle, toggleProjects, projectsExpanded, manageProjects, openProjectManager, error, refresh, more, newChat, selectDraft, removeDraft, remove, hideFolder, openProjectMenu, menu }
+        return { confirming, onRowFocusOut, draftsIn, rowsIn, rowIndent, isActiveDraft, isNewChatActive, runLabel, plural, preview, previewElement, previewPosition, previewStats, showPreview, showDraftPreview, groups, visibleGroups, selected, toggle, toggleProjects, projectsExpanded, manageProjects, openProjectManager, error, refresh, more, newChat, selectDraft, removeDraft, remove, hideFolder, archiveFolder, openProjectMenu, menu }
     }
 }

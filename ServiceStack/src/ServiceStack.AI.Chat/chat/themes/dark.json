@@ -102,6 +102,7 @@
         "voiceButtonProcessing": "bg-blue-900/30 text-blue-400 animate-spin",
         "threadItemActiveBorder": "border-blue-600",
         "threadItemActive": "bg-blue-900 border-blue-700",
+        "threadItemHover": "hover:bg-gray-800",
         "threadItem": "border-transparent hover:bg-gray-800",
         "tabButton": "text-gray-400 hover:text-white hover:bg-white"
     }

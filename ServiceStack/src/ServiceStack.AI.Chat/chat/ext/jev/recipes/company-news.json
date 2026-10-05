@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "name": "Company news",
+  "description": "Assess the reported business implications for a named company. This recipe evaluates the article, not future stock prices.",
+  "tags": [
+    "business",
+    "news",
+    "classification"
+  ],
+  "decisionModel": "~typesafe/jev-latest",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "company": {
+        "type": "string",
+        "title": "Company / ticker",
+        "default": ""
+      },
+      "article": {
+        "type": "string",
+        "title": "Article text",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "company",
+      "article"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "mode": "object"
+  },
+  "questions": {
+    "relevance": {
+      "type": "noul",
+      "instructions": "Does `article` directly concern `company`?",
+      "criteria": {
+        "true": "The named company or its operations are directly discussed.",
+        "false": "The company is absent or only tangentially mentioned."
+      }
+    },
+    "impact": {
+      "type": "choice",
+      "instructions": "What direction of business impact does the event in `article` suggest for `company`?",
+      "criteria": {
+        "favorable": "Beneficial business implications.",
+        "unfavorable": "Adverse business implications.",
+        "mixed": "Material benefits and drawbacks.",
+        "unclear": "Insufficient information to assess implications."
+      }
+    },
+    "materiality": {
+      "type": "score",
+      "instructions": "How material is the event described in `article` to `company`?",
+      "criteria": [
+        "Minor operational detail",
+        "Meaningful business development",
+        "Major company-wide development"
+      ]
+    }
+  },
+  "presentation": {
+    "questions": {
+      "relevance": {
+        "label": "Direct company relevance"
+      },
+      "impact": {
+        "label": "Business impact"
+      },
+      "materiality": {
+        "label": "Materiality"
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "1",
+      "label": "Growth with costs",
+      "input": {
+        "company": "Acme Semiconductors / ACME",
+        "article": "Acme signed a three-year supply agreement with a major cloud provider and raised revenue guidance. Margins will be lower during its factory expansion."
+      },
+      "provenance": "authored"
+    },
+    {
+      "id": "2",
+      "label": "Limited information",
+      "input": {
+        "company": "Acme Semiconductors / ACME",
+        "article": "An unnamed chip maker is expected to announce a partnership. No financial terms are available."
+      },
+      "provenance": "authored"
+    }
+  ]
+}

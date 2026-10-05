@@ -1,0 +1,52 @@
+/* Shared checkbox appearance, including schema-generated and extension controls.
+   Switches keep their track/thumb design. Native bindings retain boolean/array semantics. */
+input[type='checkbox']:not(.switch):not(.sr-only) {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #fff no-repeat center;
+    background-size: 100% 100%;
+    cursor: pointer;
+    vertical-align: middle;
+    transition:
+        background-color 0.15s,
+        border-color 0.15s;
+}
+.dark input[type='checkbox']:not(.switch):not(.sr-only) {
+    border-color: #4b5563;
+    background-color: #111827;
+}
+input[type='checkbox']:not(.switch):not(.sr-only):checked {
+    border-color: #2563eb;
+    background-color: #2563eb;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M16.7 5.3a1 1 0 0 1 0 1.4l-7.5 7.5a1 1 0 0 1-1.4 0L3.3 9.7a1 1 0 0 1 1.4-1.4l3.8 3.8 6.8-6.8a1 1 0 0 1 1.4 0z' clip-rule='evenodd'/%3E%3C/svg%3E");
+}
+input[type='checkbox']:not(.switch):not(.sr-only):indeterminate {
+    border-color: #2563eb;
+    background-color: #2563eb;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 10h10' stroke='white' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+input[type='checkbox']:not(.switch):not(.sr-only):focus {
+    outline: none;
+}
+input[type='checkbox']:not(.switch):not(.sr-only):focus-visible {
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 40%);
+}
+input[type='checkbox']:not(.switch):not(.sr-only):disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+@media (forced-colors: active) {
+    input[type='checkbox']:not(.switch):not(.sr-only) {
+        appearance: auto;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    input[type='checkbox']:not(.switch):not(.sr-only) {
+        transition: none;
+    }
+}

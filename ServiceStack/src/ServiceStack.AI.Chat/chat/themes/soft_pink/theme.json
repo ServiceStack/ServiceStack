@@ -84,6 +84,7 @@
         "voiceButtonProcessing": "bg-pink-100 text-pink-600 border border-pink-300 rounded-full shadow-sm animate-spin",
         "threadItemActiveBorder": "border-pink-400",
         "threadItemActive": "bg-pink-100/60 border-pink-400 text-pink-900 shadow-sm",
+        "threadItemHover": "hover:bg-pink-50/80 hover:text-pink-900 transition-colors",
         "threadItem": "border-transparent hover:bg-pink-50/80 text-pink-700 hover:text-pink-900 transition-colors",
         "tabButton": "text-pink-600/80 hover:text-pink-900 hover:bg-pink-100/60 rounded-md transition-all font-medium",
         "messageUser": "bg-slate-100/90 backdrop-blur-sm text-slate-800 border border-slate-400/60 shadow-sm rounded-2xl",

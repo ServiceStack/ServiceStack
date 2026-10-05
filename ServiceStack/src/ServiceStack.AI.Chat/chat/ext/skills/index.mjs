@@ -1,4 +1,6 @@
-import { ref, inject, computed, nextTick } from "vue"
+import { ref, inject, computed, nextTick, watch, onUnmounted } from "vue"
+import { useRoute, useRouter, onBeforeRouteUpdate, onBeforeRouteLeave } from "vue-router"
+import { workspaceQuery } from "../../../ui/modules/explorerState.mjs"
 import { leftPart } from "@servicestack/client"
 
 let ext
@@ -266,10 +268,10 @@ const SkillPage = {
                                     <div v-show="isSkillExpanded(skill.name)" class="pl-4" :class="[$styles.chromeBorder, $styles.bgBody]">
                                         <div v-if="isEditable(skill)" class="px-3 py-1 flex items-center gap-1 border-b" :class="[$styles.chromeBorder]">
                                             <button @click.stop="selectSkill(skill); showAddFileDialog = true" type="button" title="Add File" class="p-1 rounded text-xs" :class="[$styles.muted, $styles.threadItemHover]">+ file</button>
-                                            <button @click.stop="selectSkill(skill); confirmDeleteSkill()" type="button" title="Delete Skill" class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-xs ml-auto" :class="[$styles.muted, $styles.threadItemHover]">delete</button>
+                                            <button @click.stop="selectSkill(skill); confirmDeleteSkill(skill)" type="button" title="Delete Skill" class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-xs ml-auto" :class="[$styles.muted, $styles.threadItemHover]">delete</button>
                                         </div>
                                         <div v-for="node in getFileTree(skill)" :key="node.path">
-                                            <SkillFileNode :node="node" :skill="skill" :selected-file="selectedSkill?.name === skill.name ? selectedFile : null" :is-editable="isEditable(skill)" @select="onFileSelect(skill, $event)" @delete="onFileDelete(skill, $event)" />
+                                            <SkillFileNode :node="node" :skill="skill" :selected-file="selectedSkill?.name === skill.name ? selectedFile : null" :selected-directory="selectedSkill?.name === skill.name ? selectedDirectory : null" :is-editable="isEditable(skill)" @directory="selectDirectory($event, skill)" @select="onFileSelect(skill, $event)" @delete="onFileDelete(skill, $event)" />
                                         </div>
                                     </div>
                                 </div>
@@ -281,8 +283,11 @@ const SkillPage = {
                     <template v-if="selectedFile">
                         <div class="px-4 py-2 flex items-center justify-between border-b" :class="[$styles.chromeBorder, $styles.cardTitleActive]">
                             <div class="flex items-center gap-2 min-w-0">
-                                <span class="text-xs text-gray-500 dark:text-gray-400">{{ selectedSkill?.name }} /</span>
-                                <span class="text-sm font-mono text-gray-700 dark:text-gray-300 truncate">{{ selectedFile }}</span>
+                                <nav aria-label="Skill file breadcrumbs" class="flex flex-wrap items-center gap-2 text-sm">
+                                    <button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" @click="selectDirectory('')">{{selectedSkill?.name}}</button><span>/</span>
+                                    <template v-for="crumb in skillBreadcrumbs" :key="crumb.path"><button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" @click="selectDirectory(crumb.path)">{{crumb.name}}</button><span>/</span></template>
+                                    <span class="font-mono">{{selectedFile.split('/').pop()}}</span>
+                                </nav>
                                 <span v-if="isEditing" class="text-xs px-1.5 py-0.5 rounded bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300">editing</span>
                                 <span v-if="hasUnsavedChanges" class="text-xs text-orange-500">•</span>
                             </div>
@@ -304,6 +309,7 @@ const SkillPage = {
                     </template>
                     <template v-else-if="selectedSkill">
                         <div class="p-6">
+                            <nav aria-label="Skill directory breadcrumbs" class="flex flex-wrap gap-2 mb-4 text-sm"><button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" @click="selectDirectory('')">{{selectedSkill.name}}</button><template v-for="crumb in skillBreadcrumbs" :key="crumb.path"><span>/</span><button type="button" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors" @click="selectDirectory(crumb.path)">{{crumb.name}}</button></template></nav>
                             <h2 class="text-2xl font-bold mb-2" :class="[$styles.heading]">{{ selectedSkill.name }}</h2>
                             <p class="mb-4" :class="[$styles.muted]">{{ selectedSkill.description }}</p>
                             <div class="grid grid-cols-2 gap-4 text-sm">
@@ -413,57 +419,68 @@ const SkillPage = {
             }).map(([name, skills]) => ({ name, skills: skills.sort((a, b) => a.name.localeCompare(b.name)) }))
         })
         function getFileTree(skill) {
-            if (!skill?.files) return []
-            const files = [...skill.files].sort()
             const tree = []
-            const dirs = {}
-            files.forEach(filePath => {
-                const parts = filePath.split('/')
-                if (parts.length === 1) {
-                    tree.push({ name: filePath, path: filePath, isFile: true })
-                } else {
-                    const dirName = parts[0]
-                    if (!dirs[dirName]) { dirs[dirName] = { name: dirName, path: dirName, isFile: false, children: [] }; tree.push(dirs[dirName]) }
-                    dirs[dirName].children.push({ name: parts.slice(1).join('/'), path: filePath, isFile: true })
-                }
-            })
-            return tree.sort((a, b) => { if (a.isFile !== b.isFile) return a.isFile ? 1 : -1; return a.name.localeCompare(b.name) })
+            for (const path of [...(skill?.files || [])].sort()) {
+                const parts = path.split('/'); let children = tree, prefix = ''
+                parts.forEach((name, index) => {
+                    prefix = prefix ? prefix + '/' + name : name
+                    let node = children.find(n => n.path === prefix)
+                    if (!node) { node = { name, path: prefix, isFile: index === parts.length - 1, children: [] }; children.push(node) }
+                    children = node.children
+                })
+            }
+            function sort(nodes) { nodes.sort((a, b) => Number(a.isFile) - Number(b.isFile) || a.name.localeCompare(b.name)); nodes.forEach(n => sort(n.children)) }
+            sort(tree); return tree
         }
         const hasUnsavedChanges = computed(() => isEditing.value && editContent.value !== fileContent.value)
         function isGroupEditable(groupName) { return Object.values(skills.value).some(s => s.group === groupName && s.writable) }
         function isEditable(skill) { return skill?.writable }
         function isSkillExpanded(name) { return !!expandedSkills.value[name] }
+        const route = useRoute(), router = useRouter()
+        const selectedDirectory = computed(() => typeof route.query.dir === 'string' ? route.query.dir : '')
+        const skillBreadcrumbs = computed(() => {
+            const directory = selectedFile.value ? selectedFile.value.split('/').slice(0, -1).join('/') : selectedDirectory.value
+            let path = ''
+            return directory.split('/').filter(Boolean).map(name => { path = path ? path + '/' + name : name; return { name, path } })
+        })
+        function selectionQuery(skill, file = null, dir = null) {
+            return workspaceQuery(route.query, { skill: skill?.name, file, dir })
+        }
+        function selectSkill(skill) { return router.push({ query: selectionQuery(skill) }) }
         function toggleSkillExpand(skill) {
-            expandedSkills.value[skill.name] = !expandedSkills.value[skill.name]
-            if (expandedSkills.value[skill.name]) {
-                selectedSkill.value = skill
-                selectedFile.value = null
-                fileContent.value = ''
-                isEditing.value = false
-            }
+            if (selectedSkill.value?.name === skill.name && expandedSkills.value[skill.name]) expandedSkills.value[skill.name] = false
+            else { expandedSkills.value[skill.name] = true; selectSkill(skill) }
         }
-        function selectSkill(skill) {
-            if (hasUnsavedChanges.value && !confirm('Discard unsaved changes?')) return
-            selectedSkill.value = skill; selectedFile.value = null; fileContent.value = ''; isEditing.value = false
-            expandedSkills.value[skill.name] = true
+        function selectDirectory(path, skill = selectedSkill.value) {
+            searchQuery.value = ''; expandedSkills.value[skill.name] = true
+            return router.push({ query: selectionQuery(skill, null, path) })
         }
-        async function selectFile(filePath) {
-            if (hasUnsavedChanges.value && !confirm('Discard unsaved changes?')) return
-            selectedFile.value = filePath; isEditing.value = false; loadingFile.value = true
+        function selectFile(filePath) { return router.push({ query: selectionQuery(selectedSkill.value, filePath) }) }
+        function onFileSelect(skill, filePath) { return router.push({ query: selectionQuery(skill, filePath) }) }
+        function mayNavigate(to, from) {
+            if (to.path === from.path && to.query.skill === from.query.skill && to.query.file === from.query.file && to.query.dir === from.query.dir) return true
+            return !hasUnsavedChanges.value || confirm('Discard unsaved changes?')
+        }
+        onBeforeRouteUpdate(mayNavigate)
+        onBeforeRouteLeave(mayNavigate)
+        let fileGeneration = 0
+        onUnmounted(() => fileGeneration++)
+        watch(() => [route.query.skill, route.query.file, route.query.dir, Object.keys(skills.value).join('\0')], async () => {
+            const generation = ++fileGeneration
+            selectedSkill.value = skills.value[route.query.skill] || null
+            selectedFile.value = typeof route.query.file === 'string' && selectedSkill.value ? route.query.file : null
+            fileContent.value = ''; isEditing.value = false; loadingFile.value = false
+            if (selectedSkill.value) expandedSkills.value[selectedSkill.value.name] = true
+            if (!selectedFile.value) return
+            loadingFile.value = true
             try {
-                const res = await ext.getJson(`/file/${selectedSkill.value.name}/${filePath}`)
-                fileContent.value = res.response ? res.response.content : `Error: ${res.error?.message || 'Failed to load'}`
-            } catch (e) { fileContent.value = `Error: ${e.message}` }
-            finally { loadingFile.value = false }
-        }
-        function onFileSelect(skill, filePath) {
-            if (hasUnsavedChanges.value && !confirm('Discard unsaved changes?')) return
-            selectedSkill.value = skill
-            selectFile(filePath)
-        }
+                const res = await ext.getJson(`/file/${encodeURIComponent(selectedSkill.value.name)}/${selectedFile.value.split('/').map(encodeURIComponent).join('/')}`)
+                if (generation === fileGeneration) fileContent.value = res.response ? res.response.content : `Error: ${res.error?.message || 'Failed to load'}`
+            } catch (e) { if (generation === fileGeneration) fileContent.value = `Error: ${e.message}` }
+            finally { if (generation === fileGeneration) loadingFile.value = false }
+        }, { immediate: true })
         function onFileDelete(skill, filePath) {
-            selectedSkill.value = skill
-            confirmDeleteFile(filePath)
+            deleteConfirm.value = { type: 'file', path: filePath, skillName: skill.name }
         }
         function startEdit() { editContent.value = fileContent.value; isEditing.value = true; nextTick(() => editorRef.value?.focus()) }
         function cancelEdit() { if (hasUnsavedChanges.value && !confirm('Discard changes?')) return; isEditing.value = false; editContent.value = '' }
@@ -491,7 +508,7 @@ const SkillPage = {
                 const res = await ext.postJson('/create', { name: newSkillName.value.trim() })
                 if (res.response) {
                     ctx.setState({ skills: { ...skills.value, [res.response.skill.name]: res.response.skill } })
-                    selectedSkill.value = res.response.skill
+                    await selectSkill(res.response.skill)
                     expandedSkills.value[res.response.skill.name] = true
                     showCreateDialog.value = false
                     newSkillName.value = ''
@@ -504,29 +521,29 @@ const SkillPage = {
             addFileError.value = ''; addingFile.value = true
             try {
                 const res = await ext.postJson(`/file/${selectedSkill.value.name}`, { path: newFilePath.value.trim(), content: '' })
-                if (res.response) { if (res.response.skill) { ctx.setState({ skills: { ...skills.value, [res.response.skill.name]: res.response.skill } }); selectedSkill.value = res.response.skill }; selectedFile.value = newFilePath.value.trim(); fileContent.value = ''; showAddFileDialog.value = false; newFilePath.value = ''; startEdit() }
+                if (res.response) { if (res.response.skill) { ctx.setState({ skills: { ...skills.value, [res.response.skill.name]: res.response.skill } }); selectedSkill.value = res.response.skill }; isEditing.value = false; await selectFile(newFilePath.value.trim()); fileGeneration++; loadingFile.value = false; fileContent.value = ''; showAddFileDialog.value = false; newFilePath.value = ''; startEdit() }
                 else { addFileError.value = res.error?.message || 'Failed' }
             } catch (e) { addFileError.value = e.message }
             finally { addingFile.value = false }
         }
-        function confirmDeleteSkill() { deleteConfirm.value = { type: 'skill', name: selectedSkill.value.name } }
+        function confirmDeleteSkill(skill = selectedSkill.value) { deleteConfirm.value = { type: 'skill', name: skill.name } }
         function confirmDeleteFile(filePath) { deleteConfirm.value = { type: 'file', path: filePath, skillName: selectedSkill.value.name } }
         async function executeDelete() {
             deleting.value = true
             try {
                 if (deleteConfirm.value.type === 'skill') {
                     const res = await ext.deleteJson(`/skill/${deleteConfirm.value.name}`)
-                    if (res.response?.deleted) { const s = { ...skills.value }; delete s[deleteConfirm.value.name]; ctx.setState({ skills: s }); selectedSkill.value = null; selectedFile.value = null; delete expandedSkills.value[deleteConfirm.value.name] }
+                    if (res.response?.deleted) { const s = { ...skills.value }; delete s[deleteConfirm.value.name]; ctx.setState({ skills: s }); isEditing.value = false; await router.replace({query: selectionQuery(null)}); delete expandedSkills.value[deleteConfirm.value.name] }
                     else { alert(`Error: ${res.error?.message || 'Failed'}`) }
                 } else {
                     const res = await ext.deleteJson(`/file/${deleteConfirm.value.skillName}?path=${encodeURIComponent(deleteConfirm.value.path)}`)
-                    if (res.response) { if (res.response.skill) { ctx.setState({ skills: { ...skills.value, [res.response.skill.name]: res.response.skill } }); selectedSkill.value = res.response.skill }; if (selectedFile.value === deleteConfirm.value.path) { selectedFile.value = null; fileContent.value = '' } }
+                    if (res.response) { if (res.response.skill) { ctx.setState({ skills: { ...skills.value, [res.response.skill.name]: res.response.skill } }); if (selectedSkill.value?.name === res.response.skill.name) selectedSkill.value = res.response.skill }; if (selectedSkill.value?.name === deleteConfirm.value.skillName && selectedFile.value === deleteConfirm.value.path) { isEditing.value = false; await router.replace({query: selectionQuery(selectedSkill.value)}) } }
                     else { alert(`Error: ${res.error?.message || 'Failed'}`) }
                 }
             } catch (e) { alert(`Error: ${e.message}`) }
             finally { deleting.value = false; deleteConfirm.value = null }
         }
-        return { skills, searchQuery, skillGroups, selectedSkill, selectedFile, fileContent, editContent, isEditing, loadingFile, saving, hasUnsavedChanges, editorRef, showCreateDialog, showAddFileDialog, deleteConfirm, newSkillName, creating, createError, newFilePath, addingFile, addFileError, deleting, isEditable, isGroupEditable, selectSkill, selectFile, startEdit, cancelEdit, saveFile, createSkill, addFile, confirmDeleteSkill, confirmDeleteFile, executeDelete, expandedSkills, isSkillExpanded, toggleSkillExpand, getFileTree, onFileSelect, onFileDelete, onSkillNameInput }
+        return { selectedDirectory, skillBreadcrumbs, selectDirectory, skills, searchQuery, skillGroups, selectedSkill, selectedFile, fileContent, editContent, isEditing, loadingFile, saving, hasUnsavedChanges, editorRef, showCreateDialog, showAddFileDialog, deleteConfirm, newSkillName, creating, createError, newFilePath, addingFile, addFileError, deleting, isEditable, isGroupEditable, selectSkill, selectFile, startEdit, cancelEdit, saveFile, createSkill, addFile, confirmDeleteSkill, confirmDeleteFile, executeDelete, expandedSkills, isSkillExpanded, toggleSkillExpand, getFileTree, onFileSelect, onFileDelete, onSkillNameInput }
     }
 }
 
@@ -569,19 +586,25 @@ const SkillFileNode = {
                 </button>
             </div>
             <div v-else>
-                <div @click="expanded = !expanded" class="flex items-center gap-1.5 px-2 py-0.5 text-xs cursor-pointer text-gray-500 dark:text-gray-400" :class="[$styles.threadItemHover]">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition-transform" :class="{ '-rotate-90': !expanded }" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
-                    <span class="select-none font-medium">{{ node.name }}/</span>
+                <div @click="expanded = true; $emit('directory', node.path)" class="flex items-center gap-1.5 px-2 py-0.5 text-xs cursor-pointer text-gray-500 dark:text-gray-400" :class="selectedDirectory === node.path ? $styles.threadItemActive : $styles.threadItemHover">
+                    <button type="button" @click.stop="expanded = !expanded" :aria-expanded="expanded" :aria-label="'Toggle ' + node.name"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 transition-transform" :class="{ '-rotate-90': !expanded }" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg></button>
+                    <button type="button" class="select-none font-medium flex-1 min-w-0 text-left truncate">{{ node.name }}/</button>
                 </div>
                 <div v-show="expanded" class="pl-3">
-                    <SkillFileNode v-for="child in node.children" :key="child.path" :node="child" :skill="skill" :selected-file="selectedFile" :is-editable="isEditable" @select="$emit('select', $event)" @delete="$emit('delete', $event)" />
+                    <SkillFileNode v-for="child in node.children" :key="child.path" :node="child" :skill="skill" :selected-file="selectedFile" :selected-directory="selectedDirectory" :is-editable="isEditable" @directory="$emit('directory', $event)" @select="$emit('select', $event)" @delete="$emit('delete', $event)" />
                 </div>
             </div>
         </div>
     `,
-    props: { node: { type: Object, required: true }, skill: { type: Object, required: true }, selectedFile: { type: String, default: null }, isEditable: { type: Boolean, default: false } },
-    emits: ['select', 'delete'],
-    setup() { return { expanded: ref(true) } }
+    props: { node: { type: Object, required: true }, skill: { type: Object, required: true }, selectedFile: { type: String, default: null }, selectedDirectory: { type: String, default: null }, isEditable: { type: Boolean, default: false } },
+    emits: ['select', 'delete', 'directory'],
+    setup(props) {
+        const expanded = ref(true)
+        watch(() => [props.selectedDirectory, props.selectedFile], selections => {
+            if (selections.some(path => path === props.node.path || path?.startsWith(props.node.path + '/'))) expanded.value = true
+        })
+        return { expanded }
+    }
 }
 
 // Skill Store Component - Search and install available skills

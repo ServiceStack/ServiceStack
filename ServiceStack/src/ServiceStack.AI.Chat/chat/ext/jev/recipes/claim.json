@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "name": "Claim support",
+  "description": "Compare a claim with supplied evidence, including contradictory or insufficient sources.",
+  "tags": [
+    "content",
+    "verification"
+  ],
+  "decisionModel": "~typesafe/jev-latest",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "claim": {
+        "type": "string",
+        "title": "Claim",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      },
+      "source": {
+        "type": "string",
+        "title": "Source material",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "claim",
+      "source"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "mode": "object"
+  },
+  "questions": {
+    "support": {
+      "type": "choice",
+      "instructions": "Does `source` support `claim`? Evaluate only the supplied source.",
+      "criteria": {
+        "supported": "The source supports the claim.",
+        "contradicted": "The source contradicts the claim.",
+        "insufficient": "The source does not establish either support or contradiction."
+      }
+    }
+  },
+  "presentation": {
+    "questions": {
+      "support": {
+        "label": "Support"
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "1",
+      "label": "Supported claim",
+      "input": {
+        "claim": "Revenue increased in the second quarter.",
+        "source": "Second-quarter revenue was $120 million, compared with $100 million in the previous quarter."
+      },
+      "provenance": "authored"
+    },
+    {
+      "id": "2",
+      "label": "Missing evidence",
+      "input": {
+        "claim": "The company will double revenue next year.",
+        "source": "The company announced a new product. No revenue forecast was provided."
+      },
+      "provenance": "authored"
+    }
+  ]
+}

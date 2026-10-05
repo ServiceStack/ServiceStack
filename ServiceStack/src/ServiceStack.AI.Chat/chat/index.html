@@ -24,6 +24,9 @@
     <title>llms.py</title>
     <link rel="stylesheet" href="/ui/app.css">
     <link rel="stylesheet" href="/ui/typography.css">
+    <link rel="stylesheet" href="/ui/components/CheckBox.css">
+    <link rel="stylesheet" href="/ui/components/ModelPicker.css">
+    <link rel="stylesheet" href="/ui/components/TextInput.css">
     <link rel="icon" type="image/svg" href="/ui/fav.svg">
     <style>
         [type='button'],
@@ -52,6 +55,7 @@
         #startup-status { min-height: 100vh; display: flex; align-items: center; justify-content: center; font: 16px system-ui, sans-serif; }
     </style>
 
+  <!-- llms-loading-styles:start -->
   <style>
     .llms-loading-orbit { transform-origin: 48px 48px; animation: llms-loading-orbit 2.4s linear infinite; }
     .llms-loading-dot { animation: llms-loading-breathe 1.5s ease-in-out infinite; }
@@ -66,9 +70,11 @@
       .llms-loading-orbit, .llms-loading-dot { animation: none; }
     }
   </style>
+  <!-- llms-loading-styles:end -->
 </head>
 
 <body>
+    <!-- llms-loading-sprite:start -->
     <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
         style="position:absolute;width:0;height:0;overflow:hidden">
       <defs>
@@ -92,6 +98,7 @@
         </symbol>
       </defs>
     </svg>
+    <!-- llms-loading-sprite:end -->
 
     <div id="app">
         <div id="startup-status" role="status" aria-live="polite" aria-label="Loading llms.py">

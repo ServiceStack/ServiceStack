@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "name": "Feedback tags",
+  "description": "Apply multiple useful tags to customer feedback and rate the reported problem.",
+  "tags": [
+    "feedback",
+    "classification"
+  ],
+  "decisionModel": "~typesafe/jev-latest",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "feedback": {
+        "type": "string",
+        "title": "Customer feedback",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "feedback"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "mode": "object"
+  },
+  "questions": {
+    "feature_request": {
+      "type": "noul",
+      "instructions": "Does `feedback` request a new capability?",
+      "criteria": {
+        "true": "The user asks for functionality that does not exist.",
+        "false": "No new capability is requested."
+      }
+    },
+    "bug_report": {
+      "type": "noul",
+      "instructions": "Does `feedback` describe broken functionality?",
+      "criteria": {
+        "true": "Unexpected failures or defects.",
+        "false": "No defect is described."
+      }
+    },
+    "usability": {
+      "type": "noul",
+      "instructions": "Does `feedback` describe difficulty using the product?",
+      "criteria": {
+        "true": "Confusing or cumbersome interactions.",
+        "false": "No usability issue is described."
+      }
+    },
+    "praise": {
+      "type": "noul",
+      "instructions": "Does `feedback` praise the product?",
+      "criteria": {
+        "true": "Explicit positive appraisal.",
+        "false": "No praise is expressed."
+      }
+    },
+    "severity": {
+      "type": "score",
+      "instructions": "How severe is the problem described in `feedback`?",
+      "criteria": [
+        "No problem or a cosmetic annoyance",
+        "Degraded functionality with a workaround",
+        "Essential functionality blocked without a workaround"
+      ]
+    }
+  },
+  "presentation": {
+    "questions": {
+      "feature_request": {
+        "label": "Feature request"
+      },
+      "bug_report": {
+        "label": "Bug report"
+      },
+      "usability": {
+        "label": "Usability"
+      },
+      "praise": {
+        "label": "Praise"
+      },
+      "severity": {
+        "label": "Severity"
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "1",
+      "label": "Several signals",
+      "input": {
+        "feedback": "The dashboard looks great, but finding reports is confusing. Please add a search box."
+      },
+      "provenance": "authored"
+    },
+    {
+      "id": "2",
+      "label": "Blocking defect",
+      "input": {
+        "feedback": "Every attempt to export my reports crashes the app. I cannot get the data out at all."
+      },
+      "provenance": "authored"
+    }
+  ]
+}

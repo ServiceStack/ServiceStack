@@ -1,11 +1,18 @@
+import { registrationUrl, registrationMessage, initiateRegistration } from './PublisherAccount.mjs'
 import { ref, computed, inject, onMounted, onUnmounted, watch } from "vue"
 
 let ext
 
 const SharePanel = {
     template: `
-    <div class="px-4 py-3 overflow-y-auto border-b transition-all duration-300" :class="$styles.panel">
-        <div class="max-w-4xl mx-auto">
+    <div class="relative px-4 py-3 overflow-y-auto border-b transition-all duration-300" :class="$styles.panel">
+        <button type="button" @click="close" aria-label="Close publishing panel" title="Close"
+                class="absolute top-2 right-4 z-40 flex items-center justify-center p-1.5 rounded-lg border-0 bg-transparent text-gray-400 hover:bg-black/5 hover:text-gray-600 dark:hover:bg-white/5 dark:hover:text-gray-200 transition-colors focus-visible:outline-2 focus-visible:outline-solid focus-visible:outline-blue-500 focus-visible:outline-offset-2">
+            <svg class="size-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <div class="max-w-4xl mx-auto pt-8">
 
             <!-- Content Area with Transition -->
             <transition enter-active-class="transition duration-300 ease-out"
@@ -17,7 +24,7 @@ const SharePanel = {
                         mode="out-in">
                 
                 <!-- 1. NOT CONFIGURED: Show register iframe and info -->
-                <div v-if="!isConfigured" key="register" class="flex flex-col lg:flex-row gap-6 items-stretch">
+                <div v-if="!isConfigured" key="register" class="relative flex flex-col lg:flex-row gap-6 items-stretch">
                     <!-- Benefits & Info -->
                     <div class="flex-1 flex flex-col justify-between p-6 rounded-xl border border-gray-200 dark:border-gray-700/80 bg-white dark:bg-gray-900/60 shadow-sm">
                         <div class="space-y-4">
@@ -48,7 +55,7 @@ const SharePanel = {
                     <!-- Iframe Container -->
                     <div class="w-full lg:w-[500px] shrink-0 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-sm flex flex-col">
                         <div class="flex-1 bg-white dark:bg-gray-900 min-h-[460px] flex items-center justify-center">
-                            <iframe :src="registerUrl" class="w-full h-[550px] border-none" allow="clipboard-write"></iframe>
+                            <iframe ref="registrationFrame" @load="startRegistration" :src="registerUrl" class="w-full h-[550px] border-none" allow="clipboard-write"></iframe>
                         </div>
                     </div>
                 </div>
@@ -56,7 +63,7 @@ const SharePanel = {
                 <!-- 2. CONFIGURED: Show account dashboard -->
                 <div v-else key="dashboard" class="relative text-left">
                     
-                    <!-- Collapsible Account Connected Widget in Top Right -->
+                    <!-- Collapsible Account Connected Widget -->
                     <div class="absolute top-0 right-0 z-40">
                         <div class="relative" ref="accountMenuContainer">
                             <button type="button" @click="toggleAccountMenu"
@@ -406,12 +413,18 @@ const SharePanel = {
             }
         }
 
+        const registrationFrame = ref(null)
+        const registrationNonce = crypto.randomUUID()
+        const registrationOwner = ctx.ai.auth?.userName || 'default'
+        const startRegistration = () => initiateRegistration(registrationFrame.value, registerUrl.value, registrationNonce)
+
         const handleMessage = async (event) => {
             const data = event.data
-            if (data && data.type === 'register-success') {
+            if ((ctx.ai.auth?.userName || 'default') === registrationOwner && registrationMessage(event, registrationFrame.value, registerUrl.value, registrationNonce)) {
                 const { apiKey, userName, userId } = data
                 try {
                     const api = await ext.postJson('/config.json', { apiKey, userName, userId })
+                    if ((ctx.ai.auth?.userName || 'default') !== registrationOwner) return
                     if (api.response) {
                         ext.setState({ publish: api.response })
                         showAccountMenu.value = false
@@ -572,17 +585,7 @@ const SharePanel = {
             document.removeEventListener('click', onDocClick)
         })
 
-        const registerUrl = computed(() => {
-            const args = {}
-            if (ctx.ai.auth.userName) {
-                args['username'] = ctx.ai.auth.userName
-            }
-            let url = ext.state.publish.registerUrl || ''
-            if (Object.keys(args).length) {
-                url = `${url}${url.includes('?') ? '&' : '?'}${new URLSearchParams(args)}`
-            }
-            return url
-        })
+        const registerUrl = computed(() => registrationUrl(ext.state.publish.registerUrl, ctx.ai.auth.userName, registrationNonce))
 
         const publishThread = async () => {
             if (!currentThread.value) return
@@ -677,11 +680,18 @@ const SharePanel = {
             }, 2000)
         }
 
+        const close = () => {
+            ctx.toggleTop('SharePanel', false)
+        }
+
         return {
+            close,
             ext,
             publish,
             isConfigured,
             registerUrl,
+            registrationFrame,
+            startRegistration,
             disconnect,
             publishType,
             activeProjectName,

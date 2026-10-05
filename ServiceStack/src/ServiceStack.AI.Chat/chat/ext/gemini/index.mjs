@@ -187,7 +187,7 @@ const SyncReport = {
             <div class="flex justify-between items-start mb-4">
                 <div>
                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Sync Store</h3>
-                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Synchronize local and remote documents to detect any issues.</p>
+                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Refresh all enabled saved imports using their import.json settings, queue new and changed files, and reconcile with Gemini.</p>
                 </div>
                 <button type="button"
                     @click="$emit('sync')"
@@ -241,6 +241,8 @@ const SyncReport = {
                     <IssueCard name="Unmatched Fields" :issue="syncResult['Unmatched Fields']" />
                     <IssueCard name="Duplicate Documents" :issue="syncResult['Duplicate Documents']" />
                     <IssueCard name="Source Changes" :issue="syncResult['Source Changes']" />
+                    <IssueCard name="Source Errors" :issue="syncResult['Source Errors']" />
+                    <IssueCard name="Pending Uploads" :issue="syncResult['Pending Uploads']" />
                     <IssueCard name="New Source Documents" :issue="syncResult['New Source Documents']" />
                 </div>
 
@@ -249,7 +251,7 @@ const SyncReport = {
                         <div>
                             <p class="text-sm font-semibold">Choose new documents to add</p>
                             <p class="text-xs mt-0.5" :class="[$styles.muted]">
-                                Existing documents are synchronized automatically. Newly discovered files require your approval.
+                                These files were left out of the selected sync. Choose which ones to add.
                             </p>
                         </div>
                         <label class="inline-flex items-center gap-2 text-xs cursor-pointer select-none">
@@ -321,6 +323,8 @@ const SyncReport = {
                 (props.syncResult['Unmatched Fields']?.count || 0) > 0 ||
                 (props.syncResult['Duplicate Documents']?.count || 0) > 0 ||
                 (props.syncResult['Source Changes']?.count || 0) > 0 ||
+                (props.syncResult['Source Errors']?.count || 0) > 0 ||
+                (props.syncResult['Pending Uploads']?.count || 0) > 0 ||
                 (props.syncResult['New Source Documents']?.count || 0) > 0
             )
         })
@@ -357,306 +361,33 @@ const SyncReport = {
     }
 }
 
-const GeminiModelSelector = {
+export const GeminiModelSelector = {
     props: {
         modelValue: { type: String, default: undefined },
-        defaultText: String,
-        helpText: String,
+        defaultText: String, helpText: String,
     },
     emits: ['update:modelValue'],
-    template: `
-        <div data-tag="GeminiModelSelector" class="flex items-center space-x-2">
-            <button type="button" @click="openModelPicker"
-                class="flex items-center justify-between rounded-lg px-3.5 py-2 transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300 text-sm cursor-pointer">
-                <span class="flex items-center space-x-2 truncate">
-                    <ProviderIcon v-if="selectedModelObj?.provider" :provider="selectedModelObj.provider" class="size-4 shrink-0" />
-                    <span class="font-medium truncate">
-                        {{ overrideModelName ? selectedModelName : resolvedDefaultText }}
-                    </span>
-                </span>
-                <svg class="size-4 opacity-70 shrink-0 ml-2" :class="$styles.icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
-            </button>
-            <button v-if="overrideModelName" type="button" @click="clearModelOverride"
-                class="px-2.5 py-2 text-xs font-medium text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 border border-gray-300 dark:border-gray-600 rounded-md transition-colors cursor-pointer shrink-0"
-                title="Clear model override">
-                Clear Override
-            </button>
-        </div>
-
-        <!-- Inner Model Selection Sub-Dialog -->
-        <Teleport to="body">
-            <div v-if="isModelPickerOpen" class="fixed inset-0 z-[200] !z-[200] overflow-hidden text-gray-900 dark:text-gray-100" @keydown.escape.stop="isModelPickerOpen = false">
-                <div class="fixed inset-0 bg-black/60 transition-opacity" @click="isModelPickerOpen = false"></div>
-                <div class="fixed inset-4 md:inset-10 lg:inset-16 flex items-center justify-center" @click.self="isModelPickerOpen = false">
-                    <div class="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full h-full max-w-5xl max-h-[85vh] flex flex-col overflow-hidden border border-gray-200 dark:border-gray-700">
-                        <div class="shrink-0 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                            <div>
-                                <h3 class="text-lg font-semibold">Select Model</h3>
-                                <p class="text-xs" :class="$styles.muted">{{ helpText || 'Select a model for Gemini File Stores requests' }}</p>
-                            </div>
-                            <button type="button" @click="isModelPickerOpen = false" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-                                <svg class="size-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                                    <path fill="currentColor" d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12z"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 space-y-3">
-                            <div class="flex flex-col sm:flex-row gap-3">
-                                <div class="relative flex-1">
-                                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
-                                    </svg>
-                                    <input type="text" v-model="modelSearchQuery" placeholder="Search models by name or ID..."
-                                        class="w-full pl-10 pr-8 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" />
-                                    <button v-if="modelSearchQuery" type="button" @click="modelSearchQuery = ''"
-                                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-0.5 rounded-full cursor-pointer"
-                                        title="Clear search">
-                                        <svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                        </svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center space-x-2">
-                                    <label class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">Sort by:</label>
-                                    <select v-model="modelSortBy"
-                                        class="px-3 py-2 pr-8 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
-                                        <option v-for="opt in modelSortOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</option>
-                                    </select>
-                                    <button type="button" @click="modelSortAsc = !modelSortAsc"
-                                        class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                                        :title="modelSortAsc ? 'Ascending' : 'Descending'">
-                                        <svg v-if="modelSortAsc" class="size-5 text-gray-600 dark:text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                            <path fill="currentColor" d="M19 7h3l-4-4l-4 4h3v14h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z"/>
-                                        </svg>
-                                        <svg v-else class="size-5 text-gray-600 dark:text-gray-400" style="transform: scaleY(-1)" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                                            <path fill="currentColor" d="M19 7h3l-4-4l-4 4h3v14h2M2 17h10v2H2M6 5v2H2V5m0 6h7v2H2z"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex-1 overflow-y-auto p-4">
-                            <div v-if="filteredModelList.length === 0" class="text-center py-12 text-gray-500 dark:text-gray-400 text-sm">
-                                No models found matching your search.
-                            </div>
-                            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                <button v-for="m in filteredModelList" :key="m.id + '-' + m.provider"
-                                    type="button"
-                                    @click="selectModelOverride(m)"
-                                    :class="[
-                                        'text-left p-3.5 rounded-lg border transition-all cursor-pointer group hover:scale-[1.01]',
-                                        isSelectedModel(m)
-                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 ring-2 ring-blue-500/50'
-                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                                    ]">
-                                    <div class="flex items-start justify-between mb-1.5">
-                                        <div class="flex items-center space-x-2 min-w-0">
-                                            <ProviderIcon :provider="m.provider" class="size-4 shrink-0" />
-                                            <span class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">{{ m.name }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="text-[11px] text-gray-500 dark:text-gray-400 font-mono truncate mb-2">{{ m.id }}</div>
-                                    <div class="flex flex-wrap gap-1 text-[10px] text-gray-600 dark:text-gray-400">
-                                        <span v-if="m.limit?.context" class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono" :title="(m.limit.context ? m.limit.context.toLocaleString() : '') + ' token context limit'">
-                                            {{ formatShortNumber(m.limit.context) }}
-                                        </span>
-                                        <span v-if="m.release_date" class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono">
-                                            {{ m.release_date }}
-                                        </span>
-                                        <span v-if="isFreeModel(m)" class="px-1.5 py-0.5 rounded bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 font-medium">
-                                            Free
-                                        </span>
-                                        <span v-else-if="m.cost && (m.cost.input != null || m.cost.output != null)" class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 font-mono" :title="'Input: $' + formatCostNum(m.cost.input) + ' / Output: $' + formatCostNum(m.cost.output) + ' per 1M tokens'">
-                                            {{ formatCostNum(m.cost.input) }}/{{ formatCostNum(m.cost.output) }}
-                                        </span>
-                                        <span v-if="m.reasoning" class="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300">reasoning</span>
-                                        <span v-if="m.tool_call" class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">tools</span>
-                                    </div>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 flex justify-between items-center text-xs">
-                            <span :class="$styles.muted">{{ filteredModelList.length }} models</span>
-                            <button type="button" @click="isModelPickerOpen = false"
-                                class="px-4 py-1.5 font-medium rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer">
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </Teleport>
-    `,
+    template: `<div data-tag="GeminiModelSelector" class="flex items-center gap-2">
+        <ModelPicker provider="google" provider-label="Gemini" :output-modalities="['text']" initial-search="Gemini" trigger-label="Choose Gemini model"
+            :models="models" :model-value="overrideModelName" :placeholder="overrideModelName ? undefined : resolvedDefaultText"
+            :help-text="helpText || 'Select a model for Gemini File Stores requests.'" @select="selectModelOverride" />
+        <button v-if="overrideModelName" type="button" @click="clearModelOverride"
+            class="px-2.5 py-2 text-xs font-medium text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer shrink-0"
+            title="Clear model override">Clear Override</button>
+    </div>`,
     setup(props, { emit }) {
-        const isModelPickerOpen = ref(false)
-        const modelSearchQuery = ref('')
-        const modelSortBy = ref('release_date')
-        const modelSortAsc = ref(false)
-        const modelSortOptions = [
-            { id: 'release_date', label: 'Release Date' },
-            { id: 'name', label: 'Name' },
-            { id: 'knowledge', label: 'Knowledge Cutoff' },
-            { id: 'last_updated', label: 'Last Updated' },
-            { id: 'cost_input', label: 'Cost (Input)' },
-            { id: 'cost_output', label: 'Cost (Output)' },
-            { id: 'context', label: 'Context Limit' },
-        ]
-
         const controlled = computed(() => props.modelValue !== undefined)
         const overrideModelName = computed(() => controlled.value ? props.modelValue || '' : ext.getPrefs()?.model || '')
-        const defaultModelObj = computed(() => getDefaultGeminiModel())
-        const defaultModelDisplay = computed(() => defaultModelObj.value?.name || defaultModelObj.value?.id || 'gemini-flash-latest')
-        const resolvedDefaultText = computed(() => props.defaultText || ('Default (' + defaultModelDisplay.value + ')'))
-
-        const selectedModelObj = computed(() => {
-            const override = overrideModelName.value
-            if (override) {
-                return ctx.state.models?.find(x => x.name === override || x.id === override) || { name: override, provider: 'google' }
-            }
-            return defaultModelObj.value
-        })
-
-        const selectedModelName = computed(() => selectedModelObj.value?.name || overrideModelName.value)
-
-        function openModelPicker() {
-            modelSearchQuery.value = 'Gemini'
-            isModelPickerOpen.value = true
+        const resolvedDefaultText = computed(() => props.defaultText || 'Default (' + (getDefaultGeminiModel()?.name || 'gemini-flash-latest') + ')')
+        const excluded = ['-model', '-tts', '-embedding', '-customtools', '-robotics', '-computer-use', '-image', '-translate', '-omni', '-research', 'gemma-', 'lyria-', 'veo-']
+        const models = computed(() => (ctx.state.models || []).filter(m => m.provider === 'google' && !excluded.some(x => m.id?.toLowerCase().includes(x))))
+        function setOverride(value) {
+            if (controlled.value) emit('update:modelValue', value)
+            else ext.setPrefs({ model: value })
         }
-
-        function selectModelOverride(model) {
-            const modelName = controlled.value ? model.id || model.name : model.name || model.id
-            if (controlled.value) {
-                emit('update:modelValue', modelName)
-                isModelPickerOpen.value = false
-                return
-            }
-            const prefs = ext.getPrefs()
-            prefs.model = modelName
-            ext.setPrefs(prefs)
-            isModelPickerOpen.value = false
-        }
-
-        function clearModelOverride() {
-            if (controlled.value) {
-                emit('update:modelValue', '')
-                return
-            }
-            const prefs = ext.getPrefs()
-            prefs.model = ''
-            ext.setPrefs(prefs)
-        }
-
-        function isSelectedModel(model) {
-            return overrideModelName.value === model.id || overrideModelName.value === model.name
-        }
-
-        const excludedSubstrings = [
-            '-model',
-            '-tts',
-            '-embedding',
-            '-customtools',
-            '-robotics',
-            '-computer-use',
-            '-image',
-            '-translate',
-            '-omni',
-            '-research',
-            'gemma-',
-            'lyria-',
-            'veo-',
-        ]
-
-        const filteredModelList = computed(() => {
-            let list = ctx.state.models || []
-            // Only allow google provider models for Gemini File Stores
-            list = list.filter(m => m.provider === 'google')
-
-            // Exclude non-valid / non-chat models with specified substrings in model id
-            list = list.filter(m => {
-                if (!m.id) return true
-                const lowerId = m.id.toLowerCase()
-                return !excludedSubstrings.some(sub => lowerId.includes(sub))
-            })
-
-            if (modelSearchQuery.value?.trim()) {
-                const q = modelSearchQuery.value.trim().toLowerCase()
-                list = list.filter(m =>
-                    (m.name && m.name.toLowerCase().includes(q)) ||
-                    (m.id && m.id.toLowerCase().includes(q))
-                )
-            }
-            list = [...list]
-            list.sort((a, b) => {
-                let cmp = 0
-                switch (modelSortBy.value) {
-                    case 'release_date':
-                        cmp = (a.release_date || '').localeCompare(b.release_date || '')
-                        break
-                    case 'name':
-                        cmp = (a.name || '').localeCompare(b.name || '')
-                        break
-                    case 'knowledge':
-                        cmp = (a.knowledge || '').localeCompare(b.knowledge || '')
-                        break
-                    case 'last_updated':
-                        cmp = (a.last_updated || '').localeCompare(b.last_updated || '')
-                        break
-                    case 'cost_input':
-                        cmp = (parseFloat(a.cost?.input) || 0) - (parseFloat(b.cost?.input) || 0)
-                        break
-                    case 'cost_output':
-                        cmp = (parseFloat(a.cost?.output) || 0) - (parseFloat(b.cost?.output) || 0)
-                        break
-                    case 'context':
-                        cmp = (a.limit?.context || 0) - (b.limit?.context || 0)
-                        break
-                }
-                return modelSortAsc.value ? cmp : -cmp
-            })
-            return list
-        })
-
-        function formatShortNumber(num) {
-            if (num == null) return '-'
-            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M'
-            if (num >= 1000) return (num / 1000).toFixed(0) + 'K'
-            return num.toLocaleString()
-        }
-
-        function formatCostNum(val) {
-            if (val == null) return '0'
-            const num = parseFloat(val)
-            return num === 0 ? 'Free' : '$' + num.toFixed(2)
-        }
-
-        function isFreeModel(m) {
-            return m.cost && parseFloat(m.cost.input) === 0 && parseFloat(m.cost.output) === 0
-        }
-
-        return {
-            isModelPickerOpen,
-            modelSearchQuery,
-            modelSortBy,
-            modelSortAsc,
-            modelSortOptions,
-            overrideModelName,
-            defaultModelObj,
-            defaultModelDisplay,
-            resolvedDefaultText,
-            selectedModelObj,
-            selectedModelName,
-            openModelPicker,
-            selectModelOverride,
-            clearModelOverride,
-            isSelectedModel,
-            filteredModelList,
-            formatShortNumber,
-            formatCostNum,
-            isFreeModel,
-        }
+        function selectModelOverride(model) { setOverride(controlled.value ? model.id || model.name : model.name || model.id) }
+        function clearModelOverride() { setOverride('') }
+        return { models, overrideModelName, resolvedDefaultText, selectModelOverride, clearModelOverride }
     }
 }
 
@@ -921,7 +652,7 @@ const FileStoreDetailsView = {
         <div data-tag="FileStoreDetails" class="mx-auto px-4 sm:px-6 lg:px-8 py-8"
             :class="[bulkCount ? 'pb-24' : '', ['assistants','search'].includes(view) ? 'max-w-7xl' : 'max-w-5xl']" v-if="store">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-                 <div class="flex items-center gap-4">
+                 <div class="flex items-center gap-4 grow min-w-0">
                      <button type="button"
                         @click="$emit('back')"
                         class="p-2 rounded-full transition-colors focus:outline-none"
@@ -929,7 +660,7 @@ const FileStoreDetailsView = {
                      >
                         <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                      </button>
-                     <div>
+                     <div class="grow min-w-0">
                         <h1 class="text-2xl font-bold" :class="$styles.heading">{{ store.displayName }}</h1>
                         <p class="text-sm" :class="$styles.muted">Upload documents to this store</p>
                      </div>
@@ -1000,6 +731,7 @@ const FileStoreDetailsView = {
                                    </svg>
                                </button>
                            </div>
+                           <div class="flex items-center gap-3">
                            <select v-model="ext.prefs.sortBy" class="block rounded-md sm:text-sm py-1.5 pl-3 pr-8 cursor-pointer transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 focus:outline-none dark:border-gray-600 dark:bg-gray-900 dark:hover:bg-gray-800 dark:text-gray-300">
                                <option value="-uploadedAt">Newest First</option>
                                <option value="uploadedAt">Oldest First</option>
@@ -1013,6 +745,20 @@ const FileStoreDetailsView = {
                                <option value="failed">Failed</option>
                                <option value="uploading">Uploading</option>
                            </select>
+                                <button type="button" data-tag="StoreOperationStatus" :title="storeOperationStatus.title"
+                                    @click="storeOperationStatus.paused ? resumeUploads('store') : coverageOpen = true"
+                                    :disabled="resumingUploads" aria-live="polite"
+                                    class="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs tabular-nums disabled:opacity-40"
+                                    :class="[storeOperationStatus.color, $styles.chromeBorder]">
+                                    <svg v-if="storeOperationStatus.running" class="size-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/>
+                                    </svg>
+                                    <svg v-else class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+                                    </svg>
+                                    {{ storeOperationStatus.label }}
+                                </button>
+                           </div>
                          </div>
                          <div class="flex items-center gap-2">
                              <button type="button" @click="createNewChat(storeId, { metadataFilter: filterExpression, filters: chatFilters })"
@@ -1056,14 +802,25 @@ const FileStoreDetailsView = {
                                {{ folderCount }} folder{{ folderCount === 1 ? '' : 's' }}
                            </span>
                            <button type="button" @click="openCategoryDelete(ext.prefs.category, currentCategoryTotal)"
-                               class="px-2.5 py-1 rounded-md border text-xs font-medium inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
-                               :class="[$styles.chromeBorder]" :title="'Recursively delete /' + ext.prefs.category">
+                               :disabled="currentCategoryTotal >= facetTotal"
+                               class="px-2.5 py-1 rounded-md border text-xs font-medium inline-flex items-center gap-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 disabled:cursor-not-allowed"
+                               :class="[$styles.chromeBorder]" :title="currentCategoryTotal >= facetTotal
+                                   ? 'Delete the filestore to remove all documents' : 'Recursively delete /' + ext.prefs.category">
                                <svg class="size-3.5" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zM17 6H7v13h10zM9 17h2V8H9zm4 0h2V8h-2z"/></svg>
                                Delete category
                            </button>
                        </div>
                    </div>
 
+                   <div v-if="pending.uploading" class="px-4 py-2 sm:px-6 flex flex-wrap items-center justify-between gap-3 text-xs border-b" :class="[$styles.chromeBorder]">
+                       <span :class="[$styles.muted]">{{ pending.uploading.toLocaleString() }} uploads pending in this store.
+                           {{ pendingWorker.running ? 'The upload worker is running.' : 'The upload worker is stopped.' }}</span>
+                       <button type="button" @click="resumeUploads" :disabled="resumingUploads"
+                           class="px-3 py-1.5 rounded-md border text-sm font-medium disabled:opacity-40" :class="[$styles.secondaryButton]"
+                           :title="ext.prefs.category ? 'Resume queued uploads in this folder and below' : 'Resume queued uploads in this store'">
+                           {{ resumingUploads ? 'Resuming…' : 'Resume uploads' }}
+                       </button>
+                   </div>
                    <!-- Select, then filter state, then the two panels that produce it. Filters
                         live next to the rows they act on rather than in a permanent column. -->
                    <div class="pl-4 pr-2 py-2 sm:pl-6 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs border-b"
@@ -1161,9 +918,11 @@ const FileStoreDetailsView = {
                                    {{ f.total.toLocaleString() }}
                                </span>
                            </button>
-                           <button type="button" @click.stop="openCategoryDelete(f.path, f.total)"
-                               class="shrink-0 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                               :title="'Recursively delete ' + f.path + ' and its ' + f.total + ' document' + (f.total === 1 ? '' : 's')">
+                           <button v-if="f.path" type="button" @click.stop="openCategoryDelete(f.path, f.total)"
+                               :disabled="f.total >= facetTotal"
+                               class="shrink-0 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                               :title="f.total >= facetTotal ? 'Delete the filestore to remove all documents'
+                                   : 'Recursively delete ' + f.path + ' and its ' + f.total + ' document' + (f.total === 1 ? '' : 's')">
                                <svg class="size-5" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zM17 6H7v13h10zM9 17h2V8H9zm4 0h2V8h-2z"/></svg>
                            </button>
                        </li>
@@ -1227,32 +986,39 @@ const FileStoreDetailsView = {
                                     </div>
                                 </div>
                                 <div class="shrink-0 flex items-center gap-2">
+                                    <span v-if="doc.error" class="text-red-600 text-xs whitespace-nowrap" :title="doc.error">Failed</span>
+                                    <span v-else-if="doc.localFileExists === false" class="text-red-600 text-xs whitespace-nowrap" title="The local cached file is missing">Cache missing</span>
+                                    <span v-else-if="!doc.uploadedAt && !doc.tombstonedAt" class="text-amber-600 dark:text-amber-400 text-xs whitespace-nowrap"
+                                        :title="doc.startedAt ? 'Local document; Gemini upload is in progress' : 'Local document; waiting for its Gemini upload'">
+                                        {{ doc.startedAt ? 'Uploading' : 'Queued' }}
+                                    </span>
+                                    <span v-else-if="['STATE_UNSPECIFIED','STATE_PENDING'].includes(doc.state)" class="text-amber-600 dark:text-amber-400 text-xs whitespace-nowrap">Processing</span>
+                                    <span v-else-if="['MISSING_METADATA','DUPLICATE_FILE','MISSING_FROM_REMOTE','METADATA_MISMATCH'].includes(doc.state)" class="text-red-600 dark:text-red-400 text-xs whitespace-nowrap">{{ doc.state }}</span>
                                     <span v-if="deletingDocs.has(doc.id)" class="ml-2 p-1 text-red-600 dark:text-red-400" title="Deleting document…">
                                         <svg class="size-5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                             <circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/>
                                         </svg>
                                     </span>
-                                    <button v-else type="button" @click.stop="deleteDocument(doc)" class="ml-2 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Delete document">
+                                    <button v-else type="button" @click.stop="deleteDocument(doc)" :disabled="facetTotal <= 1" class="ml-2 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed" :title="facetTotal <= 1 ? 'Delete the filestore to remove all documents' : 'Delete document'">
                                         <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M7 21q-.825 0-1.412-.587T5 19V6H4V4h5V3h6v1h5v2h-1v13q0 .825-.587 1.413T17 21zM17 6H7v13h10zM9 17h2V8H9zm4 0h2V8h-2zM7 6v13z"/></svg>
                                     </button>
                                     <!-- Show loading indicator if document is being uploaded/processed -->
                                     <span v-if="doc.startedAt && !doc.uploadedAt && !doc.error" class="p-1 text-blue-600" title="Uploading to Gemini...">
                                         <svg class="size-5 animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity=".5"/><path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"/></svg>
                                     </span>
-                                    <!-- Uploaded, failed and orphaned local documents can all be queued again -->
-                                    <button v-else-if="doc.uploadedAt || doc.error || doc.state === 'MISSING_FROM_REMOTE'" type="button" @click.stop="reuploadDocument(doc)" :disabled="reuploadingDocs.has(doc.id)" class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Upload document to Gemini">
+                                    <!-- Queued documents can resume without re-queueing healthy copies. -->
+                                    <button v-else type="button" @click.stop="doc.uploadedAt || doc.error ? reuploadDocument(doc) : resumeQueuedDocument(doc)" :disabled="reuploadingDocs.has(doc.id) || doc.localFileExists === false" class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" :title="doc.uploadedAt || doc.error ? 'Upload document to Gemini' : 'Resume upload to Gemini'">
                                         <svg v-if="!reuploadingDocs.has(doc.id)" class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentColor" d="m346.231 284.746l-90.192-90.192l-90.192 90.192l22.627 22.627l51.565-51.565V496h32V255.808l51.565 51.565z"/><path fill="currentColor" d="M400 161.453V160c0-79.4-64.6-144-144-144S112 80.6 112 160v2.491A122.3 122.3 0 0 0 49.206 195.2A109.4 109.4 0 0 0 16 273.619c0 31.119 12.788 60.762 36.01 83.469C74.7 379.275 105.338 392 136.07 392H200v-32h-63.93C89.154 360 48 319.635 48 273.619c0-42.268 35.64-77.916 81.137-81.155L144 191.405V160a112 112 0 0 1 224 0v32.04l15.8.2c46.472.588 80.2 34.813 80.2 81.379C464 322.057 428.346 360 382.83 360H312v32h70.83a109.75 109.75 0 0 0 81.14-35.454c20.655-22.207 32.03-51.657 32.03-82.927c0-58.437-40.284-104.227-96-112.166"/></svg>
                                         <svg v-else class="size-5 animate-spin" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2A10 10 0 1 0 22 12A10 10 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8 8 0 0 1 12 20Z" opacity=".5"/><path fill="currentColor" d="M20 12h2A10 10 0 0 0 12 2V4A8 8 0 0 1 20 12Z"/></svg>
                                     </button>
                                     <span v-if="doc.error" class="text-red-600" :title="doc.error">
                                         <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-2h2zm0-4h-2V7h2z"/></svg>
                                     </span>
-                                    <span v-else-if="doc.state === 'STATE_ACTIVE'" class="text-green-600" title="Active">
+                                    <span v-else-if="doc.uploadedAt && doc.state === 'STATE_ACTIVE' && doc.name" class="text-green-600"
+                                        :title="doc.localFileExists ? 'Local + Gemini: cached file exists and Gemini reported an active copy at the last upload or Sync Store'
+                                            : 'Gemini reported an active copy at the last upload or Sync Store; local cache existence is not confirmed'">
                                         <svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" fill-rule="evenodd" d="M12 21a9 9 0 1 0 0-18a9 9 0 0 0 0 18m-.232-5.36l5-6l-1.536-1.28l-4.3 5.159l-2.225-2.226l-1.414 1.414l3 3l.774.774z" clip-rule="evenodd"/></svg>
-                                    </span>                                
-                                    <span v-else-if="doc.state && ['STATE_UNSPECIFIED','STATE_PENDING'].includes(doc.state)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">{{ doc.state }}</span>
-                                    <span v-else-if="doc.state && ['MISSING_METADATA','DUPLICATE_FILE','MISSING_FROM_REMOTE','METADATA_MISMATCH'].includes(doc.state)" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">{{ doc.state }}</span>
-                                    <span v-else-if="doc.state" class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">{{ doc.state }}</span>
+                                    </span>
                                     <span @click.prevent.stop="createNewChat(storeId, { document: doc })"
                                         class="cursor-pointer text-2xl text-gray-600" :title="'Ask Gemini RAG about ' + doc.displayName">
                                         <svg class="size-6" :class="[$styles.muted,$styles.mutedHover]" xmlns="http://www.w3.org/2000/svg" width="21" height="21" viewBox="0 0 21 21"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" d="M13.418 4.214A9.3 9.3 0 0 0 10.5 3.75c-4.418 0-8 3.026-8 6.759c0 1.457.546 2.807 1.475 3.91L3 19l3.916-2.447a9.2 9.2 0 0 0 3.584.714c4.418 0 8-3.026 8-6.758c0-.685-.12-1.346-.345-1.969M16.5 3.5v4m2-2h-4" stroke-width="1"/></svg>
@@ -1282,16 +1048,16 @@ const FileStoreDetailsView = {
                 <div class="mb-6">
                     <ImportPanel ref="importPanel" :storeId="storeId" :facets="facets" :preset-category="importCategory"
                         :route-tab="routeQuery.import" :route-crawl="routeQuery.crawl" @navigate="onImportNavigate"
-                        @previewing="onImportPreviewing" @preview="onImportPreview" @imported="onUploadImported" />
+                        @previewing="onImportPreviewing" @preview="onImportPreview" @imported="onUploadImported" @saved="onImported" />
                 </div>
                 <div v-if="uploadProgress" class="mb-6 px-4 py-3 rounded-lg border flex flex-wrap items-center justify-between gap-3"
                     :class="[$styles.chromeBorder]">
                     <div class="flex items-center gap-2.5 min-w-0 text-sm">
-                        <svg v-if="pending.uploading" class="size-5 shrink-0 animate-spin text-blue-600 dark:text-blue-400"
+                        <svg v-if="uploadCounts.pending" class="size-5 shrink-0 animate-spin text-blue-600 dark:text-blue-400"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <circle cx="12" cy="12" r="9" opacity=".25"/><path d="M21 12a9 9 0 0 0-9-9"/>
                         </svg>
-                        <svg v-else class="size-5 shrink-0 text-emerald-600 dark:text-emerald-400"
+                        <svg v-else class="size-5 shrink-0" :class="uploadCounts.failed ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
                             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/>
@@ -1300,13 +1066,14 @@ const FileStoreDetailsView = {
                     </div>
                     <button type="button" @click="viewUploads"
                         class="px-3 py-1.5 rounded-md text-sm font-semibold border shrink-0"
-                        :class="[$styles.chromeBorder]">View uploads</button>
+                        :class="[$styles.chromeBorder]">{{ uploadProgress.queued ? 'View uploads' : 'View documents' }}</button>
                 </div>
                 <div v-if="importPreview" class="mb-6">
                     <RunReport :run="importPreview.run" @confirm="confirmImport" @dismiss="dismissImport" />
                 </div>
                 <div class="mb-8">
-                    <SourcesPanel :key="sourceListVersion" :storeId="storeId" @imported="onImported" />
+                    <SourcesPanel :key="sourceListVersion" :storeId="storeId" @imported="onImported" @saved="onImported"
+                        @edit="importPanel?.editSource($event)" @removed="onSourceRemoved" />
                     <TrustedFolders />
                 </div>
             </div>
@@ -1381,7 +1148,9 @@ const FileStoreDetailsView = {
 
             <ConfirmDialog :open="bulkDeleteOpen" :busy="bulkDeleting"
                 :title="deleteTargetLabel || ('Delete ' + deleteSelectionCount.toLocaleString() + ' document' + (deleteSelectionCount === 1 ? '' : 's') + '?')"
-                :confirm-label="'Delete ' + deleteSelectionCount.toLocaleString()" busy-label="Deleting…"
+                :confirm-label="'Delete ' + deleteSelectionCount.toLocaleString()"
+                :busy-label="deleteProgress === deleteSelectionCount && deleteSelectionCount > 0
+                    ? 'Updating store…' : 'Deleting ' + deleteProgress.toLocaleString() + ' of ' + deleteSelectionCount.toLocaleString() + '…'"
                 @confirm="confirmBulkDelete" @close="closeBulkDelete">
                 <p>They are removed from Gemini as well as from here. This cannot be undone.</p>
                 <p v-if="deleteTargetLabel" class="mt-2 text-xs text-amber-600 dark:text-amber-400">
@@ -1462,6 +1231,7 @@ const FileStoreDetailsView = {
         const pending = ref({ count: 0 })
         const pendingWorker = ref({})
         const pushing = ref(false)
+        const resumingUploads = ref(false)
         const coverageOpen = ref(false)
         let pendingTimer = null
 
@@ -1486,6 +1256,18 @@ const FileStoreDetailsView = {
                 if (api.error) return ext.setError(api.error)
                 await reload()
             } finally { pushing.value = false }
+        }
+
+        async function resumeUploads(scope = 'folder') {
+            if (resumingUploads.value) return
+            resumingUploads.value = true
+            try {
+                const category = scope === 'store' ? null : ext.prefs.category
+                const body = category ? {categoryUnder:category} : category === '' ? {category:''} : {}
+                const api = await ext.postJson(`/filestores/${props.storeId}/resume-uploads`, body)
+                if (api.error) return ext.setError(api.error)
+                await refreshPending()
+            } finally { resumingUploads.value = false }
         }
 
         async function cancelPush() {
@@ -1696,11 +1478,42 @@ const FileStoreDetailsView = {
         const bulkEditOpen = ref(false)
         const bulkDeleteOpen = ref(false)
         const bulkDeleting = ref(false)
+        const deleteProgress = ref(0)
+        let deleteProgressTimer = null
+        let deleteProgressVersion = 0
         const deleteSample = ref([])
         const bulkDeleteSelector = ref(null)
         const deleteSelectionCount = ref(0)
         const deleteTargetLabel = ref('')
         const editDoc = ref(null)
+        const storeOperationStatus = computed(() => {
+            const sources = Object.values(pending.value.sources || {})
+            const active = pendingWorker.value.running
+                ? sources.reduce((count, source) => count + Number(source.uploading || 0), 0) : 0
+            const queued = Number(pending.value.uploading || 0)
+            const failed = sources.reduce((count, source) => count + Number(source.failed || 0), 0)
+            const details = `${active} uploading; ${Math.max(0, queued - active)} queued; ${failed} failed in this filestore.`
+            const status = (label, running = false, paused = false, color = 'text-gray-500 dark:text-gray-400', title = details) =>
+                ({label, running, paused, color, title})
+            const busyColor = 'text-blue-600 dark:text-blue-400'
+            const waitingColor = 'text-amber-600 dark:text-amber-400'
+            if (deleting.value) return status('Deleting store…', true, false, busyColor)
+            if (bulkDeleting.value) return status(`Deleting ${deleteProgress.value}/${deleteSelectionCount.value}…`, true, false, busyColor)
+            if (deletingDocs.value.size) return status(`Deleting ${deletingDocs.value.size}…`, true, false, busyColor)
+            if (syncing.value) return status('Syncing…', true, false, busyColor)
+            if (pruning.value) return status('Cleaning duplicates…', true, false, busyColor)
+            if (uploading.value) return status('Importing files…', true, false, busyColor)
+            if (importPanel.value?.busy) return status(importPanel.value.runningImport ? 'Importing…' : 'Preparing import…', true, false, busyColor)
+            if (pushing.value || resumingUploads.value) return status('Resuming uploads…', true, false, busyColor)
+            if (active) return status(`Uploading ${active}`, true, false, busyColor)
+            if (queued && !pendingWorker.value.running) return status(`Paused · ${queued} queued`, false, true, waitingColor,
+                `${details} Click to resume this filestore's queued uploads.`)
+            if (queued) return status(`Queued ${queued}`, false, false, waitingColor,
+                `${details} Waiting for the shared worker. Click for details.`)
+            if (failed) return status(`${failed} failed`, false, false, 'text-red-600 dark:text-red-400')
+            if (pending.value.count) return status(`${pending.value.count} need sync`, false, false, waitingColor)
+            return status('Idle', false, false, 'text-gray-500 dark:text-gray-400', 'No operations currently running for this filestore. Click for details.')
+        })
 
         async function onBulkApplied() {
             bulkEditOpen.value = false
@@ -1748,32 +1561,37 @@ const FileStoreDetailsView = {
         }
 
         async function openBulkDelete() {
+            await prepareDeleteDialog(bulkSelector.value, bulkCount.value, '')
+        }
+
+        const rootDeleteMessage = 'Cannot delete the filestore root or all its documents. Delete the filestore using its confirmation dialog instead.'
+
+        async function prepareDeleteDialog(selector, count, label) {
+            bulkDeleteOpen.value = false
             deleteSample.value = []
-            bulkDeleteSelector.value = bulkSelector.value
-            deleteSelectionCount.value = bulkCount.value
-            deleteTargetLabel.value = ''
-            bulkDeleteOpen.value = true
+            bulkDeleteSelector.value = JSON.parse(JSON.stringify(selector))
+            deleteSelectionCount.value = Number(count || 0)
+            deleteTargetLabel.value = label
             // Named documents, from the same selector the delete will use. "Delete 412 documents"
             // is otherwise a number taken on trust - and a filter selection has no rows on screen
             // to check it against.
             const api = await ext.postJson('/documents/summary', { ...bulkDeleteSelector.value, fields: [] })
-            if (!api.error) {
-                deleteSample.value = api.response?.sample || []
-                deleteSelectionCount.value = api.response?.count ?? deleteSelectionCount.value
+            if (api.error) return ext.setError(api.error)
+            deleteSelectionCount.value = api.response?.count ?? deleteSelectionCount.value
+            if (api.response?.deleteAllowed === false || deleteSelectionCount.value >= facetTotal.value) {
+                return ext.setError({ message:api.response?.deleteError || rootDeleteMessage })
             }
+            deleteSample.value = api.response?.sample || []
+            bulkDeleteOpen.value = true
         }
 
         async function openCategoryDelete(path, count) {
-            deleteSample.value = []
-            bulkDeleteSelector.value = { filter: { filestoreId: Number(props.storeId), categoryUnder: path } }
-            deleteSelectionCount.value = Number(count || 0)
-            deleteTargetLabel.value = `Delete /${path} and all nested categories?`
-            bulkDeleteOpen.value = true
-            const api = await ext.postJson('/documents/summary', { ...bulkDeleteSelector.value, fields: [] })
-            if (!api.error) {
-                deleteSample.value = api.response?.sample || []
-                deleteSelectionCount.value = api.response?.count ?? deleteSelectionCount.value
+            const folder = String(path || '').trim().replace(/^[/\\]+|[/\\]+$/g, '')
+            if (!folder || folder === '.' || folder === '..' || Number(count) >= facetTotal.value) {
+                return ext.setError({ message:rootDeleteMessage })
             }
+            await prepareDeleteDialog({ filter: { filestoreId:Number(props.storeId), categoryUnder:path } },
+                count, `Delete /${path} and all nested categories?`)
         }
 
         function closeBulkDelete() {
@@ -1783,16 +1601,51 @@ const FileStoreDetailsView = {
             deleteTargetLabel.value = ''
         }
 
-        async function confirmBulkDelete() {
-            bulkDeleting.value = true
+        function stopDeleteProgress() {
+            deleteProgressVersion++
+            if (deleteProgressTimer) clearTimeout(deleteProgressTimer)
+            deleteProgressTimer = null
+        }
+
+        async function pollDeleteProgress(selector, version) {
             try {
-                const api = await ext.postJson('/documents/delete', bulkDeleteSelector.value || bulkSelector.value)
+                const api = await ext.postJson('/documents/summary', { ...selector, fields: [] })
+                if (version !== deleteProgressVersion || !bulkDeleting.value) return
+                if (!api.error && api.response?.count != null) {
+                    deleteProgress.value = Math.max(0, deleteSelectionCount.value - api.response.count)
+                }
+            } catch (e) {
+                console.error('Deletion progress failed', e)
+            }
+            if (version === deleteProgressVersion && bulkDeleting.value) {
+                deleteProgressTimer = setTimeout(() => pollDeleteProgress(selector, version), 1500)
+            }
+        }
+
+        async function confirmBulkDelete() {
+            if (bulkDeleting.value) return
+            if (!bulkDeleteOpen.value || deleteSelectionCount.value >= facetTotal.value) {
+                return ext.setError({ message:rootDeleteMessage })
+            }
+            const selector = JSON.parse(JSON.stringify(bulkDeleteSelector.value || bulkSelector.value))
+            bulkDeleting.value = true
+            deleteProgress.value = 0
+            stopDeleteProgress()
+            pollDeleteProgress(selector, deleteProgressVersion)
+            try {
+                const api = await ext.postJson('/documents/delete', selector)
                 if (api.error) return ext.setError(api.error)
                 const failed = api.response?.errors || []
                 bulkDeleteOpen.value = false
                 bulkDeleteSelector.value = null
                 deleteTargetLabel.value = ''
                 clearSelection()
+                const folder = selector.filter?.categoryUnder
+                if (!failed.length && folder && (ext.prefs.category === folder
+                    || ext.prefs.category?.startsWith(folder + '/'))) {
+                    ext.setPrefs({ category:null, page:1 })
+                    updateExploreCategory(null)
+                }
                 await loadFilestores()
                 await refresh()
                 // Deleted what it could and named what it couldn't, rather than reporting success
@@ -1801,7 +1654,10 @@ const FileStoreDetailsView = {
                     message:
                         `Deleted ${api.response.deleted} of ${api.response.selected}. ${failed[0].displayName}: ${failed[0].error}`
                 })
-            } finally { bulkDeleting.value = false }
+            } finally {
+                bulkDeleting.value = false
+                stopDeleteProgress()
+            }
         }
 
         function docMeta(doc) {
@@ -1887,14 +1743,28 @@ const FileStoreDetailsView = {
         const sourceListVersion = ref(0)
         const importPanel = ref(null)
         const uploadProgress = ref(null)
+        const uploadCounts = computed(() => {
+            const progress = uploadProgress.value
+            const total = Number(progress?.queued || 0)
+            if (progress?.sourceId) return pending.value.sources?.[progress.sourceId]
+                || { pending:total, uploading:0, failed:0 }
+            return { pending:Math.min(total, Number(pending.value.uploading || 0)),
+                uploading:pendingWorker.value.running ? Math.min(total, Number(pending.value.uploading || 0)) : 0,
+                failed:0 }
+        })
         const uploadStatus = computed(() => {
             const total = Number(uploadProgress.value?.queued || 0)
-            const remaining = Math.min(total, Number(pending.value.uploading || 0))
-            const done = Math.max(0, total - remaining)
+            if (!total) return 'No source changes or pending uploads.'
+            const remaining = Math.min(total, Number(uploadCounts.value.pending || 0))
+            const failed = Math.min(total, Number(uploadCounts.value.failed || 0))
+            const done = Math.max(0, total - remaining - failed)
             const noun = total === 1 ? 'document' : 'documents'
             const destination = uploadProgress.value?.category || 'Gemini'
-            return remaining
+            if (remaining) return uploadCounts.value.uploading
                 ? `Uploading ${done.toLocaleString()}/${total.toLocaleString()} ${noun} to ${destination}…`
+                : `Queued ${remaining.toLocaleString()} ${noun} to ${destination}. ${pendingWorker.value.running ? 'Waiting for earlier uploads.' : 'Waiting for upload.'}`
+            return failed
+                ? `Uploaded ${done.toLocaleString()}/${total.toLocaleString()} ${noun} to ${destination}. ${failed.toLocaleString()} failed.`
                 : `Uploaded ${total.toLocaleString()}/${total.toLocaleString()} ${noun} to ${destination}.`
         })
 
@@ -1914,7 +1784,10 @@ const FileStoreDetailsView = {
             view.value = 'import'
         }
 
-        function onImportPreviewing() { uploadProgress.value = null }
+        function onImportPreviewing() {
+            uploadProgress.value = null
+            importPreview.value = null
+        }
 
         function onImportPreview(payload) {
             uploadProgress.value = null
@@ -1928,7 +1801,8 @@ const FileStoreDetailsView = {
 
         async function onUploadImported(result) {
             uploadProgress.value = {
-                queued: Number(result?.queued || 0),
+                queued: Number(result?.uploadTotal ?? result?.queued ?? 0),
+                sourceId: result?.sourceId || null,
                 category: result?.category || null,
             }
             await onImported()
@@ -1950,30 +1824,29 @@ const FileStoreDetailsView = {
         }
 
         async function confirmImport() {
-            const { source, keep } = importPreview.value || {}
+            const { source } = importPreview.value || {}
             if (!source) return
-            const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun: false, saveConfig: !!keep })
+            const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun: false })
             if (api.error) return ext.setError(api.error)
-            // A one-off leaves no source behind; it existed only to carry the config through
-            // the same pipeline a recurring import uses.
-            if (!keep) await ext.deleteJson(`/sources/${source.id}?documents=keep`)
             uploadProgress.value = {
-                queued: Number(api.response?.queued || 0),
+                queued: Number(api.response?.uploadTotal ?? api.response?.queued ?? 0),
+                sourceId: source.id,
                 category: source.category?.prefix || null,
             }
             importPreview.value = null
-            importPanel.value?.resetAfterImport()
             await onImported()
+            const errors = api.response.deleteErrors || []
+            if (errors.length) ext.setError({message:`Could not remove ${errors.length} upstream document(s). ${errors[0].displayName}: ${errors[0].error}. Run again to retry.`})
         }
 
         async function dismissImport() {
-            const { source } = importPreview.value || {}
-            // Always clean up, even when "Save as a recurring import" was ticked: a preview that
-            // was never confirmed has never run, and a saved import that has never imported
-            // anything is just a confusing "Not run yet" row nobody asked for. Ticking the box
-            // states an intent; completing the import is what acts on it.
-            if (source) await ext.deleteJson(`/sources/${source.id}?documents=keep`)
             importPreview.value = null
+            await loadSourceCount()
+        }
+
+        async function onSourceRemoved(id) {
+            if (importPanel.value?.loadedManifest?.id === id) importPanel.value.finishEditing()
+            if (importPreview.value?.source?.id === id) importPreview.value = null
             await loadSourceCount()
         }
 
@@ -2191,6 +2064,7 @@ const FileStoreDetailsView = {
 
         onUnmounted(() => {
             if (pollTimer) clearTimeout(pollTimer)
+            stopDeleteProgress()
         })
 
         async function openDeleteDialog() {
@@ -2242,6 +2116,7 @@ const FileStoreDetailsView = {
 
         async function deleteDocument(doc) {
             if (deletingDocs.value.has(doc.id)) return
+            if (facetTotal.value <= 1) return ext.setError({ message:rootDeleteMessage })
             if (!confirm(`Are you sure you want to delete "${doc.displayName}"? This cannot be undone.`)) return
 
             deletingDocs.value.add(doc.id)
@@ -2257,6 +2132,19 @@ const FileStoreDetailsView = {
             } finally {
                 deletingDocs.value.delete(doc.id)
                 deletingDocs.value = new Set(deletingDocs.value)
+            }
+        }
+
+        async function resumeQueuedDocument(doc) {
+            if (reuploadingDocs.value.has(doc.id)) return
+            reuploadingDocs.value = new Set([...reuploadingDocs.value, doc.id])
+            try {
+                const api = await ext.postJson(`/filestores/${props.storeId}/resume-uploads`, {ids:[doc.id]})
+                if (api.error) return ext.setError(api.error)
+                await refreshPending()
+            } finally {
+                reuploadingDocs.value.delete(doc.id)
+                reuploadingDocs.value = new Set(reuploadingDocs.value)
             }
         }
 
@@ -2386,6 +2274,7 @@ const FileStoreDetailsView = {
             bulkEditOpen,
             bulkDeleteOpen,
             bulkDeleting,
+            deleteProgress,
             deleteSample,
             deleteSelectionCount,
             deleteTargetLabel,
@@ -2401,6 +2290,7 @@ const FileStoreDetailsView = {
             docListFields: META_LIST_FIELDS,
             totalDocs,
             pending, pendingWorker, pushing, coverageOpen, pushToGemini, cancelPush,
+            resumingUploads, resumeUploads, resumeQueuedDocument, storeOperationStatus,
             filterChips, removeFilter, availableQuickFilters, quickFilterLabel,
             matchCount,
             searching, browsingRoot, parentCategory, childFolders, folderCount, currentCategoryTotal, folderTotal,
@@ -2408,10 +2298,10 @@ const FileStoreDetailsView = {
             docMeta,
             reload,
             view, routeQuery, selectView, onImportNavigate, onAssistantNavigate, onSearchNavigate,
-            sourceCount, assistantCount, searchCount, sourceListVersion, importPanel, uploadProgress, uploadStatus,
+            sourceCount, assistantCount, searchCount, sourceListVersion, importPanel, uploadProgress, uploadCounts, uploadStatus,
             importCategory,
             importInto,
-            onImported, onUploadImported, viewUploads,
+            onImported, onUploadImported, onSourceRemoved, viewUploads,
             importPreview,
             onImportPreviewing,
             onImportPreview,

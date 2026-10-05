@@ -1019,3 +1019,39 @@
         background-color: rgb(128 128 128 / .12);
     }
 }
+
+/* Workspace file viewer syntax colors (Xcode light / VS Code dark).
+   Unlayered and scoped so they beat typography.css's global One Dark .hljs-* rules used by chat. */
+[data-workspace-source] [class*=hljs-] {
+    color: inherit; background-color: transparent; font-weight: 400; font-style: normal; text-decoration-line: none;
+}
+[data-workspace-source] :is(.hljs-comment, .hljs-quote) { color: #007400; }
+[data-workspace-source] :is(.hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-name, .hljs-tag, .hljs-attribute) { color: #aa0d91; }
+[data-workspace-source] :is(.hljs-variable, .hljs-template-variable, .hljs-code) { color: #3f6e74; }
+[data-workspace-source] :is(.hljs-string, .hljs-meta .hljs-string) { color: #c41a16; }
+[data-workspace-source] :is(.hljs-regexp, .hljs-link) { color: #0e0eff; }
+[data-workspace-source] :is(.hljs-title, .hljs-symbol, .hljs-bullet, .hljs-number) { color: #1c00cf; }
+[data-workspace-source] .hljs-section { color: #245e92; font-weight: 600; }
+[data-workspace-source] .hljs-meta { color: #643820; }
+[data-workspace-source][data-workspace-xml] .hljs-meta { color: #c0c0c0; }
+[data-workspace-source] :is(.hljs-title.class_, .hljs-class .hljs-title, .hljs-type, .hljs-built_in, .hljs-params) { color: #5c2699; }
+[data-workspace-source] .hljs-attr { color: #836c28; }
+[data-workspace-source] .hljs-subst { color: #000; }
+[data-workspace-source] :is(.hljs-selector-id, .hljs-selector-class) { color: #9b703f; }
+[data-workspace-source] .hljs-formula { font-style: italic; background-color: #eee; }
+[data-workspace-source] .hljs-addition { background-color: #baeeba; }
+[data-workspace-source] .hljs-deletion { background-color: #ffc8bd; }
+[data-workspace-source] :is(.hljs-doctag, .hljs-strong) { font-weight: 700; }
+[data-workspace-source] .hljs-emphasis { font-style: italic; }
+
+.dark [data-workspace-source] :is(.hljs-comment, .hljs-quote, .hljs-variable) { color: #6a9954; }
+.dark [data-workspace-source] .hljs-doctag { color: #6a9954; font-weight: 400; }
+.dark [data-workspace-source] :is(.hljs-keyword, .hljs-selector-tag, .hljs-name, .hljs-tag, .hljs-built_in) { color: #579cd6; }
+.dark [data-workspace-source] :is(.hljs-string, .hljs-attribute, .hljs-literal, .hljs-template-variable, .hljs-template-tag, .hljs-title, .hljs-type, .hljs-addition) { color: #ce9178; }
+.dark [data-workspace-source] :is(.hljs-link, .hljs-symbol, .hljs-bullet) { color: #00b0e8; }
+.dark [data-workspace-source] .hljs-section { color: #9ddcfe; }
+.dark [data-workspace-source] .hljs-attr { color: #9ddcfe; }
+.dark [data-workspace-source] :is(.hljs-meta, .hljs-deletion, .hljs-selector-attr, .hljs-selector-pseudo) { color: #d4d4d4; }
+.dark [data-workspace-source][data-workspace-xml] .hljs-meta { color: #d4d4d4; }
+.dark [data-workspace-source] :is(.hljs-code, .hljs-meta .hljs-string, .hljs-regexp, .hljs-number, .hljs-title.class_, .hljs-class .hljs-title, .hljs-params, .hljs-subst, .hljs-selector-id, .hljs-selector-class) { color: inherit; }
+.dark [data-workspace-source] :is(.hljs-formula, .hljs-addition, .hljs-deletion) { font-style: normal; background-color: transparent; }

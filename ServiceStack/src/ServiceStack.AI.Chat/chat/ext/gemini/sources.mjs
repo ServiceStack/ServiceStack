@@ -22,12 +22,13 @@ export const RunReport = {
         <div v-if="run" class="rounded-lg border p-4 space-y-3" :class="[$styles.chromeBorder]">
             <div class="flex items-center justify-between gap-3 flex-wrap">
                 <h4 class="font-semibold text-sm">
-                    {{ run.dryRun ? 'Preview — nothing written yet' : 'Run complete' }}
+                    {{ run.dryRun ? 'Preview — documents unchanged' : 'Run complete' }}
                 </h4>
                 <div v-if="run.dryRun" class="flex gap-2">
-                    <button type="button" @click="$emit('confirm')" :disabled="!run.embeds"
+                    <button type="button" @click="$emit('confirm')" :disabled="!run.embeds && !run.pendingUploads && !run.removed"
                         class="px-4 py-2 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
-                        Import {{ (run.embeds || 0).toLocaleString() }} document{{ run.embeds === 1 ? '' : 's' }}
+                        {{ run.embeds ? 'Import' : run.pendingUploads ? 'Resume' : 'Apply changes' }}
+                        <template v-if="run.embeds || run.pendingUploads">{{ ((run.embeds || 0) + (run.pendingUploads || 0)).toLocaleString() }} document{{ ((run.embeds || 0) + (run.pendingUploads || 0)) === 1 ? '' : 's' }}</template>
                     </button>
                     <!-- No Discard: a preview costs nothing and changes nothing, so there is
                          nothing to discard. Whatever opened this closes it. -->
@@ -37,13 +38,18 @@ export const RunReport = {
             <div v-if="run.deleteRefused" class="px-3 py-2 rounded border text-xs border-red-500 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20">
                 {{ run.deleteRefused }}
             </div>
+            <div v-if="run.deleteErrors?.length" class="px-3 py-2 rounded border text-xs border-red-500 text-red-600 dark:text-red-400">
+                <p>Some upstream documents could not be removed. Run again to retry.</p>
+                <p v-for="error in run.deleteErrors" :key="error.id">{{ error.displayName }}: {{ error.error }}</p>
+            </div>
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm">
                 <div class="flex justify-between"><span :class="[$styles.muted]">Discovered</span><span class="tabular-nums">{{ (run.discovered||0).toLocaleString() }}</span></div>
                 <div class="flex justify-between"><span :class="[$styles.muted]">New</span><span class="tabular-nums font-semibold">{{ (run.added||0).toLocaleString() }}</span></div>
                 <div class="flex justify-between"><span :class="[$styles.muted]">Changed</span><span class="tabular-nums font-semibold">{{ (run.changed||0).toLocaleString() }}</span></div>
                 <div class="flex justify-between"><span :class="[$styles.muted]">Metadata only</span><span class="tabular-nums">{{ (run.metadataOnly||0).toLocaleString() }}</span></div>
-                <div class="flex justify-between text-emerald-600 dark:text-emerald-400"><span>Unchanged</span><span class="tabular-nums">{{ (run.unchanged||0).toLocaleString() }}</span></div>
+                <div class="flex justify-between text-emerald-600 dark:text-emerald-400"><span>Unchanged locally</span><span class="tabular-nums">{{ (run.unchanged||0).toLocaleString() }}</span></div>
+                <div v-if="run.pendingUploads" class="flex justify-between text-amber-600 dark:text-amber-400"><span>Awaiting Gemini upload</span><span class="tabular-nums">{{ run.pendingUploads.toLocaleString() }}</span></div>
                 <div class="flex justify-between"><span :class="[$styles.muted]">Removed</span><span class="tabular-nums">{{ (run.removed||0).toLocaleString() }}</span></div>
                 <div class="flex justify-between"><span :class="[$styles.muted]">Skipped</span><span class="tabular-nums">{{ (run.skipped||0).toLocaleString() }}</span></div>
                 <div class="flex justify-between"><span :class="[$styles.muted]">Failed</span><span class="tabular-nums">{{ (run.failed||0).toLocaleString() }}</span></div>
@@ -106,9 +112,57 @@ export const SourcesPanel = {
     components: { RunReport, PathText },
     template: `
         <div class="space-y-4">
-            <div>
-                <h3 class="font-semibold" :class="[$styles.heading]">Saved imports</h3>
-                <p class="text-xs" :class="[$styles.muted]">Re-run these to pick up changes. Create one by ticking “Save as a recurring import” above.</p>
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <h3 class="font-semibold" :class="[$styles.heading]">Saved imports</h3>
+                    <p class="text-xs" :class="[$styles.muted]">Folder and web crawl imports. Edit their settings above, or run them to update this store.</p>
+                </div>
+                <button type="button" @click="manifestLoaderOpen = !manifestLoaderOpen"
+                    class="px-3 py-1.5 rounded-md text-sm border shrink-0" :class="[$styles.secondaryButton]">Load import.json</button>
+            </div>
+            <div v-if="manifestLoaderOpen" class="space-y-2">
+                <label for="gemini-manifest-path" class="block text-xs font-semibold">import.json path</label>
+                <div class="flex gap-2">
+                    <button type="button" @click="browseManifests(null)" :disabled="loadingManifest"
+                        class="px-3 py-1.5 rounded-md text-sm border disabled:opacity-50 disabled:cursor-not-allowed" :class="[$styles.secondaryButton]">Browse</button>
+                    <input id="gemini-manifest-path" type="text" v-model="manifestPath" placeholder="/path/to/import.json" @keydown.enter="manifestPath && loadManifest(manifestPath)"
+                        class="flex-1 min-w-0 px-2.5 py-1.5 rounded-md text-sm font-mono border bg-white dark:bg-gray-900">
+                    <button type="button" @click="loadManifest(manifestPath)" :disabled="loadingManifest || !manifestPath"
+                        class="px-3 py-1.5 rounded-md text-sm border disabled:opacity-50 disabled:cursor-not-allowed" :class="[$styles.secondaryButton]">{{ loadingManifest ? 'Loading…' : 'Load' }}</button>
+                </div>
+                <div v-if="manifestBrowser" class="border rounded-md p-3 space-y-2" :class="[$styles.chromeBorder]">
+                    <div class="flex justify-between gap-2 text-xs">
+                        <PathText :path="manifestBrowser.path" />
+                        <button type="button" @click="manifestBrowser = null" class="px-1.5 rounded hover:underline" :class="[$styles.muted]">Close</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <button v-if="manifestBrowser.parent" type="button" @click="browseManifests(manifestBrowser.parent)"
+                            title="Parent folder" aria-label="Parent folder"
+                            class="px-2 py-1 rounded border cursor-pointer transition-colors duration-150 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400" :class="[$styles.chromeBorder]">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M0 0h24v24H0z" fill="none" />
+                                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+                                    <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Zm-8-10v6" />
+                                    <path d="m9 13l3-3l3 3" />
+                                </g>
+                            </svg>
+                        </button>
+                        <button v-for="root in folderRoots.all || []" :key="root" type="button" @click="browseManifests(root)"
+                            class="px-2 py-1 rounded border cursor-pointer transition-colors duration-150 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-400 dark:hover:bg-blue-900/30 dark:hover:text-blue-400" :class="[$styles.chromeBorder]"><PathText :path="root" :max="35" /></button>
+                    </div>
+                    <div class="max-h-56 overflow-auto">
+                        <button v-for="entry in manifestEntries" :key="entry.path" type="button"
+                            @click="entry.directory ? browseManifests(entry.path) : loadManifest(entry.path)"
+                            :disabled="loadingManifest" :title="entry.directory ? undefined : 'Load this import.json'"
+                            :class="entry.directory ? 'hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400' : [$styles.primaryButton, 'font-semibold']"
+                            class="flex items-center gap-2 w-full text-left px-2 py-1.5 text-sm rounded cursor-pointer transition-colors duration-150 disabled:opacity-50 disabled:cursor-default">
+                            <svg v-if="entry.directory" class="size-4 opacity-70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>{{ entry.name }}
+                        </button>
+                        <p v-if="!manifestBrowser.entries.length" class="text-xs" :class="[$styles.muted]">No folders or import.json files here.</p>
+                    </div>
+                </div>
             </div>
 
             <div v-for="s in sources" :key="s.id" class="rounded-lg border p-4 sm:p-5 space-y-4" :class="[$styles.chromeBorder]">
@@ -116,7 +170,7 @@ export const SourcesPanel = {
                     <div class="min-w-0 flex-1 space-y-2">
                         <div class="flex items-center gap-2 flex-wrap">
                             <span class="shrink-0 px-2 py-0.5 rounded text-[11px] font-medium"
-                                :class="[$styles.tagLabel]" :title="'Import type: ' + s.type">{{ s.type }}</span>
+                                :class="[$styles.tagLabel]" :title="'Import type: ' + importType(s)">{{ importType(s) }}</span>
                             <span class="font-medium text-sm">{{ s.name }}</span>
                             <!-- Where the import lands. A folder import without one scatters into
                                  the root, which is worth seeing rather than guessing. -->
@@ -138,14 +192,18 @@ export const SourcesPanel = {
                         </div>
                     </div>
                     <div class="flex gap-2 shrink-0 self-start">
+                        <button type="button" @click="$emit('edit', s)" :disabled="running === s.id"
+                            class="px-3 py-1.5 rounded-md text-xs border disabled:opacity-50 disabled:cursor-not-allowed" :class="[$styles.secondaryButton]">Edit</button>
+                        <button type="button" @click="run(s, false)" :disabled="running === s.id"
+                            class="px-3 py-1.5 rounded-md text-xs font-semibold disabled:opacity-50" :class="[$styles.primaryButton]">Run</button>
                         <!-- A toggle, so the button always describes what pressing it does. -->
                         <button type="button" @click="reports[s.id] ? reports[s.id] = null : run(s, true)"
                             :disabled="running === s.id"
                             class="px-3 py-1.5 rounded-md text-xs border font-semibold disabled:opacity-50" :class="[$styles.secondaryButton]">
                             {{ running === s.id ? 'Scanning…' : (reports[s.id] ? 'Close' : 'Preview') }}
                         </button>
-                        <button type="button" @click="remove(s)"
-                            class="px-3 py-1.5 rounded-md text-xs border" :class="[$styles.secondaryButton]">Delete</button>
+                        <button type="button" @click="remove(s)" :disabled="running === s.id" title="Remove this saved import; keep import.json and its imported documents"
+                            class="px-3 py-1.5 rounded-md text-xs border disabled:opacity-50 disabled:cursor-not-allowed" :class="[$styles.secondaryButton]">Remove</button>
                     </div>
                 </div>
 
@@ -154,16 +212,47 @@ export const SourcesPanel = {
             </div>
 
             <p v-if="!sources.length" class="text-sm py-6 text-center" :class="[$styles.muted]">
-                No saved imports. One-off imports don't appear here.
+                No saved imports yet. Load an import.json or create a folder or web crawl import above.
             </p>
         </div>
     `,
     props: { storeId: [String, Number] },
-    emits: ['imported'],
+    emits: ['imported', 'edit', 'saved', 'removed'],
     setup(props, { emit }) {
         const sources = ref([])
         const reports = ref({})
         const running = ref(null)
+        const manifestLoaderOpen = ref(false)
+        const manifestPath = ref('')
+        const manifestBrowser = ref(null)
+        const manifestEntries = computed(() => [...(manifestBrowser.value?.entries || [])]
+            .sort((a, b) => Number(a.directory) - Number(b.directory) || a.name.localeCompare(b.name)))
+        const folderRoots = ref({})
+        const loadingManifest = ref(false)
+        const importType = source => source.importOptions?.crawl?.url ? 'Web crawl' : source.type === 'folder' ? 'Folder' : source.type
+
+        async function browseManifests(path) {
+            const roots = await ext.getJson('/source-types')
+            if (!roots.error) folderRoots.value = (roots.response || []).find(t => t.type === 'folder')?.roots || {}
+            const api = await ext.getJson('/imports/browse' + (path ? `?path=${encodeURIComponent(path)}` : ''))
+            if (api.error) return ext.setError(api.error)
+            manifestBrowser.value = api.response
+        }
+        async function loadManifest(path) {
+            if (loadingManifest.value) return
+            manifestPath.value = path
+            loadingManifest.value = true
+            try {
+                const api = await ext.postJson('/sources/load', {path, filestoreId:Number(props.storeId)})
+                if (api.error) return ext.setError(api.error)
+                manifestPath.value = api.response.config?.manifestPath || path
+                manifestBrowser.value = null
+                manifestLoaderOpen.value = false
+                await load()
+                emit('edit', api.response)
+                emit('saved', api.response)
+            } finally { loadingManifest.value = false }
+        }
 
         async function load() {
             const s = await ext.getJson(`/sources?filestoreId=${props.storeId}`)
@@ -179,18 +268,22 @@ export const SourcesPanel = {
                 if (!dryRun) {
                     await load()
                     emit('imported', api.response)
+                    const errors = api.response.deleteErrors || []
+                    if (errors.length) ext.setError({message:`Could not remove ${errors.length} upstream document(s). ${errors[0].displayName}: ${errors[0].error}. Run again to retry.`})
                 }
             } finally { running.value = null }
         }
 
         async function remove(source) {
-            const api = await ext.deleteJson(`/sources/${source.id}`)
+            const api = await ext.deleteJson(`/sources/${source.id}?documents=keep`)
             if (api.error) return ext.setError(api.error)
             await load()
+            emit('removed', source.id)
         }
 
         onMounted(load)
-        return { sources, reports, running, run, remove }
+        return { sources, reports, running, load, run, remove, importType,
+            manifestLoaderOpen, manifestPath, manifestBrowser, manifestEntries, folderRoots, loadingManifest, browseManifests, loadManifest }
     },
 }
 

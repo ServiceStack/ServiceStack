@@ -403,6 +403,14 @@ export const SyncState = {
                 </div>
             </div>
 
+            <div v-else-if="pending.uploading" class="text-sm space-y-2">
+                <p>{{ pending.uploading.toLocaleString() }} document{{ pending.uploading === 1 ? '' : 's' }} awaiting Gemini upload.</p>
+                <button type="button" @click="$emit('push')" :disabled="busy"
+                    class="px-3 py-1.5 rounded-md text-sm font-medium disabled:opacity-50" :class="[$styles.primaryButton]">
+                    {{ busy ? 'Queueing…' : 'Resume uploads' }}
+                </button>
+            </div>
+
             <div v-else-if="!pending.count" class="text-sm" :class="[$styles.muted]">
                 Every document's metadata matches the copy in Gemini. Nothing to push.
             </div>

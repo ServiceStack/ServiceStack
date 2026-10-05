@@ -6,7 +6,7 @@ const headers = { 'Accept': 'application/json' }
 const prefsKey = 'llms.prefs'
 
 export const o = {
-    version: '4.0.18',
+    version: '4.0.21',
     base,
     prefsKey,
     welcome: 'Welcome to llms.py',
@@ -355,6 +355,7 @@ export const o = {
             "voiceButtonProcessing": "bg-blue-100 text-blue-600 animate-spin",
             "threadItemActiveBorder": "border-blue-300",
             "threadItemActive": "bg-blue-100 border-blue-200",
+            "threadItemHover": "hover:bg-gray-100",
             "threadItem": "border-transparent hover:bg-gray-100",
             "tabButton": "text-gray-500 hover:text-gray-900 hover:bg-gray-200",
         },
@@ -480,6 +481,7 @@ export const o = {
             "voiceButtonProcessing": "bg-blue-900/30 text-blue-400 animate-spin",
             "threadItemActiveBorder": "border-blue-600",
             "threadItemActive": "bg-blue-900 border-blue-700",
+            "threadItemHover": "hover:bg-gray-800",
             "threadItem": "border-transparent hover:bg-gray-800",
             "tabButton": "text-gray-400 hover:text-white hover:bg-white",
         },

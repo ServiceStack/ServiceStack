@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "name": "Message sentiment",
+  "description": "Understand the tone of an email, tweet or comment, and whether it asks for urgent action.",
+  "tags": [
+    "email",
+    "sentiment"
+  ],
+  "decisionModel": "~typesafe/jev-latest",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "message": {
+        "type": "string",
+        "title": "Email, tweet or comment",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "message"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "mode": "object"
+  },
+  "questions": {
+    "sentiment": {
+      "type": "choice",
+      "instructions": "What overall sentiment does `message` express?",
+      "criteria": {
+        "negative": "An unfavorable attitude.",
+        "neutral": "No favorable or unfavorable attitude.",
+        "positive": "A favorable attitude.",
+        "mixed": "Both favorable and unfavorable attitudes."
+      }
+    },
+    "is_urgent": {
+      "type": "noul",
+      "instructions": "Does `message` express a time-sensitive request?",
+      "criteria": {
+        "true": "An explicit deadline or request for immediate action.",
+        "false": "No time-sensitive request."
+      }
+    }
+  },
+  "presentation": {
+    "questions": {
+      "sentiment": {
+        "label": "Sentiment"
+      },
+      "is_urgent": {
+        "label": "Urgent request"
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "1",
+      "label": "A delayed delivery",
+      "input": {
+        "message": "My package is late again. Nobody has answered my emails. Please fix this today."
+      },
+      "provenance": "authored"
+    },
+    {
+      "id": "2",
+      "label": "Mixed feedback",
+      "input": {
+        "message": "I love the new design, but the search is frustrating and takes forever."
+      },
+      "provenance": "authored"
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 
 import { reactive, markRaw, watch } from 'vue'
+import WorkspaceFilesIcon from './modules/WorkspaceFilesIcon.mjs'
 import { EventBus, humanize, combinePaths, pick } from "@servicestack/client"
 import { storageObject, isHtml, sanitizeHtml } from './utils.mjs'
 
@@ -123,6 +124,9 @@ export class ExtensionScope {
             this.router.push(route)
         }
     }
+    setSettings(componentMap) {
+        return this.ctx.setSettings(componentMap)
+    }
 }
 
 export class AppContext {
@@ -162,8 +166,11 @@ export class AppContext {
         this.userMenuItemComponents = {}
         this.top = {}
         this.left = {}
+        this.right = reactive({})
+        this.setRightIcons({ files: { name: 'Files', title: 'File explorer', component: WorkspaceFilesIcon } })
         this.leftTop = {}
         this.composerTop = {}
+        this.settings = reactive({})
         this.pdf = {
             previewActions: reactive({}),
             setPreviewActions: (components) => {
@@ -369,6 +376,10 @@ export class AppContext {
     setComposerTop(componentMap) {
         Object.assign(this.composerTop, this._validateComponents(componentMap))
     }
+    /** Custom cards or components rendered on the Settings page */
+    setSettings(componentMap) {
+        Object.assign(this.settings, this._validateComponents(componentMap))
+    }
     _validateIcons(icons) {
         Object.entries(icons).forEach(([id, icon]) => {
             if (!icon.component) {
@@ -390,10 +401,20 @@ export class AppContext {
     setLeftIcons(icons) {
         Object.assign(this.left, this._validateIcons(icons))
     }
-    visibleComponents(componentsMap) {
+    /** Workspace tabs: icon, optional panel (workspace/projectId/refreshKey), optional main preview.
+     * Panels emit `file` with {path, preview: tabId, directoryPath} or `busy` while refreshing. */
+    setRightIcons(icons) {
+        for (const def of Object.values(icons)) {
+            if (def.component) def.component = markRaw(def.component)
+            if (def.panel) def.panel = markRaw(def.panel)
+            if (def.preview) def.preview = markRaw(def.preview)
+        }
+        Object.assign(this.right, this._validateIcons(icons))
+    }
+    visibleComponents(componentsMap, context) {
         const to = {}
         Object.entries(componentsMap).forEach(([name, def]) => {
-            if (typeof def.isVisible == 'function' && !def.isVisible()) {
+            if (typeof def.isVisible == 'function' && !def.isVisible(context)) {
                 return
             }
             to[name] = def
@@ -416,7 +437,11 @@ export class AppContext {
         return this._components
     }
     scope(extension) {
-        return new ExtensionScope(this, extension)
+        if (!this._scopes) this._scopes = {}
+        if (!this._scopes[extension]) {
+            this._scopes[extension] = new ExtensionScope(this, extension)
+        }
+        return this._scopes[extension]
     }
     modals(modals) {
         Object.keys(modals).forEach(name => {

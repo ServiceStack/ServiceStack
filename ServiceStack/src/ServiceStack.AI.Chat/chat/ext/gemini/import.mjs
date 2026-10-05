@@ -10,6 +10,10 @@ export function initImport(extScope) {
 // Vue wraps form values in reactive proxies, which structuredClone() rejects in browsers.
 // Crawl rules are deliberately JSON-only because they are persisted in import.json.
 const cloneJson = value => JSON.parse(JSON.stringify(value ?? null))
+const defaultImportName = path => {
+    const folder = String(path || '').trim().split(/[\\/]/).filter(Boolean).pop()
+    return folder ? `Import ${folder}` : ''
+}
 
 // One entry per import option. `fields` drives the form, so a tab only ever shows what that
 // option actually needs - the folder tab has no upload zone, the upload tab has no path.
@@ -17,12 +21,11 @@ export const IMPORT_TABS = [
     {
         id: 'upload', label: 'Upload files',
         blurb: 'Drop files in, including a .zip archive - which are expanded and individually imported with its folder structure becoming the category. HTML and Razor .cshtml files are converted to Markdown.',
-        recurring: false, fields: [],
+        fields: [],
     },
     {
         id: 'folder', label: 'Folder', sourceType: 'folder',
         blurb: 'Index a folder on this machine and keep it in sync. HTML and Razor .cshtml files are converted to Markdown before import.',
-        recurring: true,
         // A `pair` shares one grid cell, so the two settings that both shape the category sit
         // together and the glob fields get a row of their own.
         fields: [
@@ -41,14 +44,17 @@ export const IMPORT_TABS = [
             ] },
             { key: 'include', label: 'Include only', placeholder: '**/*.md', mono: true },
             { key: 'exclude', label: 'Exclude', placeholder: '**/drafts/**', mono: true },
+            { key: 'ignore', label: 'Ignore files and folders', placeholder: 'drafts/, private.md', mono: true,
+              hint: 'Comma or newline separated paths or globs' },
         ],
     },
     {
         id: 'crawl', label: 'Web crawl',
         blurb: 'Fetch a website into an inspectable Markdown folder, transform it, then import it.',
-        recurring: false, fields: [],
+        fields: [],
     },
 ]
+
 
 export const ImportPanel = {
     components: { MetadataDialog, MetadataInput, Popover, RootsPanel, PathText, CheckBox },
@@ -83,6 +89,19 @@ export const ImportPanel = {
             </div>
 
             <div class="p-5 space-y-4">
+                <div v-if="tab !== 'upload' && loadedManifest?.id" class="flex flex-wrap items-center justify-between gap-2 text-sm border-b pb-4" :class="[$styles.chromeBorder]">
+                    <span>Editing <strong class="font-semibold">{{ loadedManifest.name }}</strong></span>
+                    <div class="ml-auto flex items-center justify-end gap-3">
+                        <button v-if="loadedManifest.importOptions?.crawl" type="button" @click="select(tab === 'crawl' ? 'folder' : 'crawl')"
+                            class="text-xs" :class="[$styles.muted]">{{ tab === 'crawl' ? 'Edit folder settings' : 'Edit crawl settings' }}</button>
+                        <button type="button" @click="closeEditor" :disabled="busy" title="Close editor" aria-label="Close editor"
+                            class="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40" :class="[$styles.muted]">
+                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                <path d="m6 6 12 12M18 6 6 18" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
                 <p class="text-sm" :class="[$styles.muted]">{{ active.blurb }}</p>
 
                 <div v-if="active.unavailable" class="px-3 py-2 rounded border text-sm border-amber-500 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20">
@@ -90,6 +109,7 @@ export const ImportPanel = {
                 </div>
 
                 <template v-else>
+                    <p v-if="savedMessage" class="text-sm text-emerald-600 dark:text-emerald-400">{{ savedMessage }}</p>
                     <div v-if="tab === 'crawl'" class="space-y-4">
                         <div class="grid sm:grid-cols-[1fr_14rem_7rem] gap-3">
                             <div><label class="block text-xs font-semibold mb-1">Start URL</label>
@@ -145,37 +165,22 @@ export const ImportPanel = {
                             {{ busy ? 'Crawling…' : 'Crawl website' }}
                         </button>
 
-                        <div class="border-t pt-4" :class="[$styles.chromeBorder]">
-                            <div class="flex items-center justify-between mb-2"><h3 class="text-sm font-semibold">Saved crawl imports</h3>
-                                <button type="button" @click="loadImports" class="text-xs underline" :class="[$styles.muted]">refresh</button></div>
-                            <p v-if="!crawlImports.length" class="text-sm" :class="[$styles.muted]">No crawled imports yet.</p>
-                            <div v-else class="grid sm:grid-cols-[14rem_1fr] gap-4">
-                                <div class="space-y-1">
-                                    <button v-for="item in crawlImports" :key="item.name" type="button" @click="toggleImport(item)"
-                                        class="w-full text-left rounded-md px-3 py-2" :class="[$styles.secondaryButton, selectedImport?.name === item.name ? 'bg-blue-50 dark:bg-blue-900/20' : '']">
-                                        <span class="block text-sm font-medium truncate">{{ item.name }}</span>
-                                        <span class="text-xs" :class="[$styles.muted]">{{ item.pages }} page{{ item.pages === 1 ? '' : 's' }}</span>
-                                    </button>
-                                </div>
-                                <div v-if="selectedImport" class="space-y-3 min-w-0">
-                                    <div class="text-xs font-mono break-all" :class="[$styles.muted]">{{ selectedImport.path }}</div>
-                                    <label class="block text-xs font-semibold">Regex transforms</label>
-                                    <JsonSchemaForm :schema="transformSchema" :data="transforms"
-                                        :show-title="false" @change="setTransforms" />
-                                    <p class="text-xs" :class="[$styles.muted]">Applying transforms also saves them to this crawl's import.json.</p>
-                                    <ErrorSummary v-if="transformError" :status="transformError" />
-                                    <p v-else-if="transformMessage" class="text-xs text-green-600 dark:text-green-400">{{ transformMessage }}</p>
-                                    <div class="flex gap-2 flex-wrap">
-                                        <button type="button" @click="viewCrawledPages" class="px-3 py-1.5 rounded-md text-sm border font-medium inline-flex items-center gap-1.5" :class="[$styles.secondaryButton]">
-                                            <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                                                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
-                                            </svg>
-                                            View crawled pages
-                                        </button>
-                                        <button type="button" @click="applyTransforms" class="px-3 py-1.5 rounded-md text-sm" :class="[$styles.secondaryButton]">Apply &amp; save transforms</button>
-                                        <button type="button" @click="importCrawlFolder" class="px-3 py-1.5 rounded-md text-sm" :class="[$styles.primaryButton]">Import this folder</button>
-                                    </div>
-                                </div>
+                        <div v-if="selectedImport" class="border-t pt-4 space-y-3 min-w-0" :class="[$styles.chromeBorder]">
+                            <div class="text-xs font-mono break-all" :class="[$styles.muted]">{{ selectedImport.path }}</div>
+                            <label class="block text-xs font-semibold">Regex transforms</label>
+                            <JsonSchemaForm :schema="transformSchema" :data="transforms"
+                                :show-title="false" @change="setTransforms" />
+                            <p class="text-xs" :class="[$styles.muted]">Applying transforms also saves them to this crawl's import.json.</p>
+                            <ErrorSummary v-if="transformError" :status="transformError" />
+                            <p v-else-if="transformMessage" class="text-xs text-green-600 dark:text-green-400">{{ transformMessage }}</p>
+                            <div class="flex gap-2 flex-wrap">
+                                <button type="button" @click="viewCrawledPages" class="px-3 py-1.5 rounded-md text-sm border font-medium inline-flex items-center gap-1.5" :class="[$styles.secondaryButton]">
+                                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                        <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    View crawled pages
+                                </button>
+                                <button type="button" @click="applyTransforms" class="px-3 py-1.5 rounded-md text-sm" :class="[$styles.secondaryButton]">Apply &amp; save transforms</button>
                             </div>
                         </div>
                     </div>
@@ -298,30 +303,35 @@ export const ImportPanel = {
                         </span>
                     </label>
 
-                    <!-- Only offered where re-running actually means something -->
-                    <label v-if="active.recurring" class="flex items-start gap-2.5 text-sm cursor-pointer">
-                        <CheckBox v-model="saveSource" class="mt-0.5" />
-                        <span>
-                            <span class="font-medium">Save as a recurring import</span>
-                            <span class="block text-xs" :class="[$styles.muted]">
-                                Keep it so you can re-sync later and pick up changes. Unchecked, this is a one-off.
-                            </span>
-                        </span>
-                    </label>
-                    <div v-if="active.recurring && saveSource" class="sm:w-1/2">
+                    <div v-if="tab === 'folder' || editingSource || loadedManifest" class="sm:w-1/2">
                         <label class="block text-xs font-semibold mb-1">Name</label>
-                        <input type="text" v-model="name" placeholder="Product docs"
+                        <input type="text" v-model="name" placeholder="Import docs"
                             class="w-full px-2.5 py-1.5 rounded-md" :class="[$styles.textInput, $styles.bgInput, $styles.borderInput]">
                     </div>
 
-                    <div v-if="tab !== 'crawl'" class="flex items-center gap-3 pt-1">
+                    <div v-if="tab !== 'crawl' || loadedManifest?.id" class="flex flex-wrap items-center gap-3 pt-1">
                         <button type="button" @click="submit" :disabled="!canSubmit || busy"
                             class="px-4 py-2 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed">
-                            {{ busy ? busyLabel : submitLabel }}
+                            {{ busy && !runningImport ? busyLabel : submitLabel }}
+                        </button>
+                        <button v-if="tab === 'crawl' && loadedManifest?.id" type="button" @click="select('folder')" :disabled="!canSubmit || busy"
+                            class="px-4 py-2 rounded-md text-sm font-semibold border disabled:opacity-40 disabled:cursor-not-allowed" :class="[$styles.secondaryButton]">
+                            Import folder
+                        </button>
+                        <button v-else-if="loadedManifest?.id" type="button" @click="runImport" :disabled="!canSubmit || busy || importCompleted"
+                            class="px-4 py-2 rounded-md text-sm font-semibold border disabled:opacity-40 disabled:cursor-not-allowed" :class="[$styles.secondaryButton]">
+                            {{ runningImport ? 'Running…' : 'Run import' }}
                         </button>
                         <span v-if="tab !== 'upload'" class="text-xs" :class="[$styles.muted]">
-                            Preview costs nothing — you confirm before anything is indexed.
+                            <template v-if="tab === 'crawl'">Import folder opens the crawled Markdown folder so you can set attributes before importing.</template>
+                            <template v-else>Preview saves settings and scans files without indexing. Run imports the current settings.</template>
                         </span>
+                    </div>
+                    <div v-if="tab !== 'upload' && loadedManifest?.id" class="flex flex-wrap justify-end items-center gap-3 border-t pt-4" :class="[$styles.chromeBorder]">
+                        <button type="button" @click="closeEditor" :disabled="busy"
+                            class="px-3 py-1.5 rounded-md text-sm border disabled:opacity-40" :class="[$styles.secondaryButton]">Close editor</button>
+                        <button type="button" @click="saveImport" :disabled="busy || !canSubmit"
+                            class="px-3 py-1.5 rounded-md text-sm disabled:opacity-40" :class="[$styles.primaryButton]">Save changes</button>
                     </div>
                 </template>
             </div>
@@ -374,28 +384,41 @@ export const ImportPanel = {
     `,
     props: { storeId: [String, Number], facets: Object, presetCategory: String,
         routeTab: String, routeCrawl: String },
-    emits: ['previewing', 'preview', 'imported', 'navigate'],
+    emits: ['previewing', 'preview', 'imported', 'navigate', 'saved'],
     setup(props, { emit }) {
         const tabs = ref(IMPORT_TABS.map(t => ({ ...t })))
         // The URL is authoritative for reload/back/forward; preferences are only a fallback for
         // old links that predate deep-linking.
-        const saved = props.routeCrawl ? 'crawl' : IMPORT_TABS.some(t => t.id === props.routeTab) ? props.routeTab
+        const routeTab = props.routeTab === 'saved' ? 'folder' : props.routeTab
+        const saved = props.routeCrawl ? 'crawl' : IMPORT_TABS.some(t => t.id === routeTab) ? routeTab
             : IMPORT_TABS.some(t => t.id === ext.prefs.importTab) ? ext.prefs.importTab : 'upload'
         const tab = ref(saved)
         const config = ref({})
+        const editingSource = ref(null)
+        const savedMessage = ref('')
+        const loadedManifest = ref(null)
+        const loadedMetadata = ref(null)
         const metadata = ref({ defaults: {}, rules: [] })
         const requireSourceUrl = ref(false)
-        const saveSource = ref(false)
         const name = ref('')
+        watch(() => config.value.path, (path, previousPath) => {
+            if (editingSource.value || loadedManifest.value) return
+            if (!name.value || name.value === defaultImportName(previousPath)) {
+                name.value = defaultImportName(path)
+            }
+        })
         const files = ref([])
         const dragover = ref(false)
         const dialogOpen = ref(false)
         const busy = ref(false)
+        const runningImport = ref(false)
+        const importCompleted = ref(false)
         const fileInput = ref(null)
-        const crawlForm = ref({ url: '', name: '', maxPages: 500, maxDepth: 10,
+        const newCrawlForm = () => ({ url: '', name: '', maxPages: 500, maxDepth: 10,
             includeText: '/**', excludeText: '',
             queryMode: 'ignore', queryAllowText: '', allowedHostsText: '', respectRobots: true,
             respectNoIndex: true, followNoFollow: false, useCanonical: true, dedupeContent: true })
+        const crawlForm = ref(newCrawlForm())
         const crawlNameEdited = ref(false)
         const crawlRuleSchema = ref({ type: 'array', items: { type: 'object' } })
         const crawlRules = ref([])
@@ -404,6 +427,9 @@ export const ImportPanel = {
         const selectedImport = ref(null)
         const transformSchema = ref({ type: 'array', items: { type: 'object' } })
         const transforms = ref([])
+        watch([config, metadata, requireSourceUrl, name, crawlForm, crawlRules, transforms], () => {
+            importCompleted.value = false
+        }, { deep: true, flush: 'sync' })
         const transformError = ref(null)
         const transformMessage = ref('')
         const pageBrowserOpen = ref(false)
@@ -442,6 +468,7 @@ export const ImportPanel = {
         // folder import it's a prefix the discovered structure nests under - build_plan derives
         // category from the path, so a plain default would just be overwritten.
         watch(() => props.presetCategory, cat => {
+            if (loadedManifest.value) return
             const defaults = { ...(metadata.value.defaults || {}) }
             if (cat) defaults.category = cat
             else delete defaults.category
@@ -506,8 +533,7 @@ export const ImportPanel = {
 
         function select(id) {
             tab.value = id
-            config.value = {}
-            requireSourceUrl.value = false
+            if (!loadedManifest.value || id === 'upload') finishEditing()
             ext.setPrefs({ importTab: id })
             emit('navigate', { import:id, crawl:id === 'crawl' ? selectedImport.value?.name || null : null })
         }
@@ -531,7 +557,7 @@ export const ImportPanel = {
             transforms.value = cloneJson(item.config?.transforms || [])
             const saved = item.config?.crawl || {}
             if (saved.url) {
-                crawlForm.value = { ...crawlForm.value, ...saved,
+                crawlForm.value = { ...newCrawlForm(), ...saved, name: saved.name || item.name,
                     includeText: (saved.include || []).join(', '), excludeText: (saved.exclude || []).join(', '),
                     queryMode: saved.query?.mode || 'ignore', queryAllowText: (saved.query?.allow || []).join(', '),
                     allowedHostsText: (saved.allowedHosts || []).join(', ') }
@@ -542,26 +568,16 @@ export const ImportPanel = {
             transformMessage.value = ''
             if (navigate) emit('navigate', { import:'crawl', crawl:item.name })
         }
-        function openImport(item) { showImport(item, true) }
-        function toggleImport(item) {
-            if (selectedImport.value?.name === item.name) {
-                selectedImport.value = null
-                transforms.value = []
-                transformError.value = null
-                transformMessage.value = ''
-                emit('navigate', { import:'crawl', crawl:null })
-            } else showImport(item, true)
-        }
         function syncRouteState() {
             const nextTab = props.routeCrawl ? 'crawl'
                 : IMPORT_TABS.some(t => t.id === props.routeTab) ? props.routeTab : tab.value
             if (tab.value !== nextTab) {
                 tab.value = nextTab
-                config.value = {}
+                if (!loadedManifest.value) config.value = {}
                 ext.setPrefs({ importTab:nextTab })
             }
             if (nextTab !== 'crawl' || !props.routeCrawl) {
-                selectedImport.value = null
+                if (!loadedManifest.value?.importOptions?.crawl) selectedImport.value = null
                 return
             }
             const item = crawlImports.value.find(x => x.name === props.routeCrawl)
@@ -570,34 +586,158 @@ export const ImportPanel = {
         }
         watch([() => props.routeTab, () => props.routeCrawl], syncRouteState)
         const splitValues = value => String(value || '').split(/[\n,]/).map(x => x.trim()).filter(Boolean)
+        function fillSource(source) {
+            importCompleted.value = false
+            loadedManifest.value = cloneJson(source)
+            config.value = { ...source.config, ...source.category,
+                include: (source.config.include || []).join(', '),
+                exclude: (source.config.exclude || []).join(', '),
+                ignore: (source.config.ignore || []).join(', ') }
+            metadata.value = { ...source.rules,
+                defaults: { ...source.rules?.defaults,
+                    ...(Object.hasOwn(source.category || {}, 'prefix') ? { category: source.category.prefix } : {}) },
+                rules: (source.rules?.rules || []).flatMap(r => r.set
+                    ? Object.entries(r.set).map(([field, value]) => ({ match: r.match, field,
+                        value: Array.isArray(value) ? value.join(', ') : value }))
+                    : [r.skip ? { match: r.match, field: '', value: '' } : r]) }
+            loadedMetadata.value = cloneJson(metadata.value)
+            requireSourceUrl.value = !!source.config.requireSourceUrl
+            name.value = source.name || ''
+            savedMessage.value = ''
+            if (source.importOptions?.crawl) showImport({ name: source.config.path.split(/[\\/]/).pop(), path: source.config.path,
+                config: source.importOptions })
+        }
+        async function editSource(source, nextTab = null, manageBusy = true) {
+            if (manageBusy) busy.value = true
+            try {
+                const api = await ext.getJson(`/sources/${source.id}`)
+                if (api.error) return ext.setError(api.error)
+                editingSource.value = api.response
+                fillSource(api.response)
+                nextTab ||= api.response.importOptions?.crawl?.url ? 'crawl' : 'folder'
+                tab.value = nextTab
+                ext.setPrefs({ importTab:nextTab })
+                emit('navigate', { import:nextTab, crawl:null })
+                return api.response
+            } finally { if (manageBusy) busy.value = false }
+        }
+        function closeEditor() {
+            if (busy.value) return
+            finishEditing()
+            emit('previewing')
+            emit('navigate', { import:tab.value, crawl:null })
+        }
+        function finishEditing() {
+            importCompleted.value = false
+            if (loadedManifest.value?.importOptions?.crawl) {
+                crawlForm.value = newCrawlForm()
+                crawlNameEdited.value = false
+                crawlRules.value = []
+                transforms.value = []
+            }
+            editingSource.value = null
+            loadedManifest.value = null
+            loadedMetadata.value = null
+            savedMessage.value = ''
+            config.value = {}
+            metadata.value = { defaults:props.presetCategory ? {category:props.presetCategory} : {}, rules:[] }
+            requireSourceUrl.value = false
+            name.value = ''
+            selectedImport.value = null
+        }
+        async function saveImport() {
+            if (busy.value) return
+            busy.value = true
+            try {
+                emit('previewing')
+                if (!await persistSource()) return
+                savedMessage.value = 'Settings saved. Preview or run the import when ready.'
+            } finally { busy.value = false }
+        }
+        async function persistSource() {
+            const completed = importCompleted.value
+            const id = editingSource.value?.id || loadedManifest.value?.id
+            const body = { ...sourcePayload(), saveConfig:true }
+            const api = id ? await ext.patchJson(`/sources/${id}`, body) : await ext.postJson('/sources', body)
+            if (api.error) {
+                ext.setError(api.error)
+                return null
+            }
+            emit('saved', api.response)
+            const source = await editSource(api.response, tab.value === 'crawl' ? 'crawl' : 'folder', false)
+            importCompleted.value = completed
+            return source
+        }
+        async function runImport() {
+            if (busy.value || !canSubmit.value || importCompleted.value) return
+            busy.value = true
+            runningImport.value = true
+            emit('previewing')
+            try {
+                const source = await persistSource()
+                if (!source) return
+                const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun:false })
+                if (api.error) return ext.setError(api.error)
+                const errors = api.response.deleteErrors || []
+                importCompleted.value = errors.length === 0
+                savedMessage.value = errors.length ? 'Import applied with deletion errors. Run again to retry.'
+                    : (api.response.uploadTotal ?? api.response.queued) ? 'Import queued for upload.'
+                    : 'No source changes or pending uploads.'
+                if (errors.length) ext.setError({message:`Could not remove ${errors.length} upstream document(s). ${errors[0].displayName}: ${errors[0].error}. Run again to retry.`})
+                emit('imported', { ...api.response, category: source.category?.prefix || null })
+            } finally {
+                runningImport.value = false
+                busy.value = false
+            }
+        }
         function setCrawlRules(value) { crawlRules.value = value }
         function setTransforms(value) {
             transforms.value = value
             transformError.value = null
             transformMessage.value = ''
         }
+        function crawlPayload() {
+            const savedQuery = loadedManifest.value?.importOptions?.crawl?.query || {}
+            const body = { ...crawlForm.value,
+                    include: splitValues(crawlForm.value.includeText), exclude: splitValues(crawlForm.value.excludeText),
+                    allowedHosts: splitValues(crawlForm.value.allowedHostsText), rules: cloneJson(crawlRules.value),
+                    query: { ...savedQuery, mode: crawlForm.value.queryMode, allow: splitValues(crawlForm.value.queryAllowText),
+                        exclude: savedQuery.exclude || ['utm_*', 'fbclid', 'gclid', 'ref', 'session', 'token'],
+                        maxVariantsPerPath: savedQuery.maxVariantsPerPath ?? 5 } }
+            for (const key of ['includeText', 'excludeText', 'allowedHostsText', 'queryMode', 'queryAllowText']) delete body[key]
+            return body
+        }
         async function startCrawl() {
+            if (busy.value) return
             busy.value = true
             crawlError.value = ''
             try {
-                const body = { ...crawlForm.value,
-                    include: splitValues(crawlForm.value.includeText), exclude: splitValues(crawlForm.value.excludeText),
-                    allowedHosts: splitValues(crawlForm.value.allowedHostsText), rules: cloneJson(crawlRules.value),
-                    query: { mode: crawlForm.value.queryMode, allow: splitValues(crawlForm.value.queryAllowText),
-                        exclude: ['utm_*', 'fbclid', 'gclid', 'ref', 'session', 'token'], maxVariantsPerPath: 5 } }
-                for (const key of ['includeText', 'excludeText', 'allowedHostsText', 'queryMode', 'queryAllowText']) delete body[key]
+                emit('previewing')
+                const source = loadedManifest.value?.id ? await persistSource() : null
+                if (loadedManifest.value?.id && !source) return
+                const settings = sourcePayload()
+                const body = { ...crawlPayload(), filestoreId:Number(props.storeId),
+                    ...(source ? {sourceId:source.id} : {}),
+                    sourceSettings: { category:settings.category, rules:settings.rules,
+                        config:{requireSourceUrl:settings.config.requireSourceUrl} } }
                 const api = await ext.postJson('/imports/crawl', body)
                 if (api.error) return ext.setError(api.error)
                 await loadImports()
-                openImport(crawlImports.value.find(x => x.name === api.response.name) || api.response)
+                await editSource(api.response.source)
+                emit('saved', api.response.source)
             } catch (e) { crawlError.value = e.message }
             finally { busy.value = false }
+        }
+        function crawlImportUrl(action, params = {}) {
+            const query = new URLSearchParams(params)
+            if (loadedManifest.value?.id) query.set('sourceId', loadedManifest.value.id)
+            return `/imports/${encodeURIComponent(selectedImport.value.name)}/${action}${query.size ? '?' + query : ''}`
         }
         async function applyTransforms() {
             transformError.value = null
             transformMessage.value = ''
             try {
-                const api = await ext.postJson(`/imports/${encodeURIComponent(selectedImport.value.name)}/transform`, {
+                const api = await ext.postJson(crawlImportUrl('transform'), {
                     transforms: cloneJson(transforms.value),
                 })
                 if (api.error) {
@@ -605,19 +745,11 @@ export const ImportPanel = {
                     return
                 }
                 selectedImport.value = { ...selectedImport.value, config: api.response.config }
+                importCompleted.value = false
                 transformMessage.value = `${api.response.changed} page${api.response.changed === 1 ? '' : 's'} updated. Transforms saved to import.json.`
             } catch (e) {
                 transformError.value = { errorCode: 'Error', message: e.message || String(e) }
             }
-        }
-        function importCrawlFolder() {
-            const item = selectedImport.value
-            if (!item) return
-            tab.value = 'folder'
-            ext.setPrefs({ importTab: 'folder' })
-            emit('navigate', { import:'folder', crawl:null })
-            config.value = { path: item.path }
-            metadata.value = item.config?.metadata || { defaults: {}, rules: [] }
         }
         async function viewCrawledPages() {
             if (!selectedImport.value) return
@@ -627,7 +759,7 @@ export const ImportPanel = {
             pagePaths.value = []
             selectedPagePath.value = ''
             selectedPageContent.value = ''
-            const api = await ext.getJson(`/imports/${encodeURIComponent(selectedImport.value.name)}/pages`)
+            const api = await ext.getJson(crawlImportUrl('pages'))
             pageBrowserBusy.value = false
             if (api.error) {
                 pageBrowserError.value = api.error.message || String(api.error)
@@ -644,7 +776,7 @@ export const ImportPanel = {
             selectedPagePath.value = path
             selectedPageContent.value = ''
             pageContentBusy.value = true
-            const api = await ext.getJson(`/imports/${encodeURIComponent(selectedImport.value.name)}/page?path=${encodeURIComponent(path)}`)
+            const api = await ext.getJson(crawlImportUrl('page', {path}))
             pageContentBusy.value = false
             if (api.error) {
                 selectedPageContent.value = api.error.message || String(api.error)
@@ -656,6 +788,7 @@ export const ImportPanel = {
         const canSubmit = computed(() => {
             if (active.value.unavailable) return false
             if (tab.value === 'upload') return files.value.length > 0
+            if (editingSource.value && !String(config.value.path || '').trim()) return false
             return (active.value.fields || []).every(f => !f.required || String(config.value[f.key] || '').trim())
         })
         const submitLabel = computed(() => tab.value === 'upload'
@@ -668,20 +801,27 @@ export const ImportPanel = {
 
         /** Rule rows from the dialog -> the shape build_plan() expects. */
         function rulesPayload() {
+            if (loadedManifest.value && JSON.stringify(metadata.value) === JSON.stringify(loadedMetadata.value)) {
+                return cloneJson(loadedManifest.value.rules || { defaults:{}, rules:[] })
+            }
             const defaults = { ...(metadata.value.defaults || {}) }
             // On a source import the category comes from the path (prefixed above), so leaving it
             // in defaults would be a value that silently never applies.
             if (tab.value !== 'upload') delete defaults.category
             return {
+                ...cloneJson(metadata.value),
                 defaults,
-                rules: (metadata.value.rules || []).map(r => r.field
+                rules: loadedManifest.value && JSON.stringify(metadata.value.rules) === JSON.stringify(loadedMetadata.value?.rules)
+                    ? cloneJson(loadedManifest.value.rules?.rules || [])
+                    : (metadata.value.rules || []).map(r => r.field
                     ? { match: r.match, set: { [r.field]: ['versions', 'tags'].includes(r.field)
                         ? String(r.value || '').split(',').map(s => s.trim()).filter(Boolean) : r.value } }
-                    : { match: r.match, skip: true }),
+                    : r.skip || !r.set ? { match: r.match, skip: true } : r),
             }
         }
 
         async function submit() {
+            if (busy.value || !canSubmit.value) return
             busy.value = true
             try {
                 if (tab.value === 'upload') return await uploadFiles()
@@ -708,63 +848,63 @@ export const ImportPanel = {
             emit('imported', { queued: Array.isArray(payload) ? payload.length : 0, category: landingCategory.value || null })
         }
 
-        async function previewSource() {
+        function sourcePayload() {
             const cfg = config.value
-            emit('previewing')
-            const defaultName = cfg.path?.split('/').filter(Boolean).pop() || active.value.label
-            // Provisional one-off sources are deleted after the confirmed run. Give them an
-            // internal unique name so they can preview the same folder as an existing saved
-            // import without weakening saved-import name uniqueness.
-            const sourceName = saveSource.value
-                ? name.value || defaultName
-                : `${defaultName} (one-off ${Date.now().toString(36)})`
-            const body = {
+            const defaultName = defaultImportName(cfg.path) || `Import ${active.value.label}`
+            const sourceName = name.value || defaultName
+            return {
+                ...(loadedManifest.value || {}),
                 filestoreId: Number(props.storeId),
                 name: sourceName,
-                type: active.value.sourceType,
+                type: loadedManifest.value?.type || active.value.sourceType,
                 config: {
+                    ...(loadedManifest.value?.config || {}),
                     path: cfg.path,
-                    include: cfg.include ? [cfg.include] : null,
-                    exclude: cfg.exclude ? [cfg.exclude] : null,
-                    metadataSpecified: !!(Object.keys(metadata.value.defaults || {}).length
-                        || (metadata.value.rules || []).length),
+                    include: splitValues(cfg.include),
+                    exclude: splitValues(cfg.exclude),
+                    ignore: splitValues(cfg.ignore),
+                    metadataSpecified: loadedManifest.value
+                        ? JSON.stringify(metadata.value) !== JSON.stringify(loadedMetadata.value)
+                        : !!(Object.keys(metadata.value.defaults || {}).length || (metadata.value.rules || []).length),
                     requireSourceUrl: requireSourceUrl.value,
                 },
                 category: {
+                    ...(loadedManifest.value?.category || {}),
                     root: cfg.root || null,
                     maxDepth: cfg.maxDepth !== '' && cfg.maxDepth != null ? Number(cfg.maxDepth) : null,
                     prefix: landingCategory.value || null,
                 },
                 rules: rulesPayload(),
-                // A one-off is still a source row - it's just deleted once it has run, which keeps
-                // one code path instead of two.
-                // Whether this is kept is decided when the import is confirmed, not here - the
-                // source row exists either way, because running the pipeline needs one.
+                ...(loadedManifest.value?.importOptions?.crawl ? { importOptions: {
+                    ...cloneJson(loadedManifest.value.importOptions), crawl: crawlPayload(), transforms: cloneJson(transforms.value),
+                } } : {}),
             }
-            const created = await ext.postJson('/sources', body)
-            if (created.error) return ext.setError(created.error)
-            const run = await ext.postJson(`/sources/${created.response.id}/run`, { dryRun: true })
-            if (run.error) return ext.setError(run.error)
-            emit('preview', { source: created.response, run: run.response, keep: saveSource.value })
         }
 
-        function resetAfterImport() {
-            saveSource.value = false
-            name.value = ''
+        async function previewSource() {
+            emit('previewing')
+            const source = await persistSource()
+            if (!source) return
+            const run = await ext.postJson(`/sources/${source.id}/run`, { dryRun: true })
+            if (run.error) return ext.setError(run.error)
+            importCompleted.value = false
+            emit('preview', { source, run: run.response })
         }
 
         return {
-            tabs, tab, active, config, metadata, requireSourceUrl, saveSource, name, files, dragover, dialogOpen,
-            busy, fileInput, hasArchive, formCells, summary, canSubmit,
+            tabs, tab, active, config, metadata, requireSourceUrl, name, files, dragover, dialogOpen,
+            editingSource, savedMessage, loadedManifest,
+            editSource, saveImport, closeEditor, finishEditing, runImport,
+            busy, runningImport, importCompleted, fileInput, hasArchive, formCells, summary, canSubmit,
             crawlForm, crawlNameEdited, crawlRuleSchema, crawlRules, crawlError, crawlImports, selectedImport,
             transformSchema, transforms, transformError, transformMessage,
             pageBrowserOpen, pageBrowserBusy, pageBrowserError, pagePaths, pageDirectoriesClosed,
             pageEntries, selectedPagePath, selectedPageContent, pageContentBusy,
-            deriveCrawlName, loadImports, openImport, toggleImport, setCrawlRules, setTransforms, startCrawl, applyTransforms, importCrawlFolder,
+            deriveCrawlName, loadImports, setCrawlRules, setTransforms, startCrawl, applyTransforms,
             viewCrawledPages, closePageBrowser, togglePageDirectory, selectCrawledPage,
             importFields: IMPORT_FIELDS,
             landingCategory, setLanding, categoryValues, folderRoots, rootsUnrestricted, loadRoots,
-            submitLabel, busyLabel, select, onFiles, onDrop, submit, resetAfterImport,
+            submitLabel, busyLabel, select, onFiles, onDrop, submit,
         }
     },
 }

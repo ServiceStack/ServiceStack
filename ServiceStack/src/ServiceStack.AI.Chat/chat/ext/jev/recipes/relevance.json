@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "name": "Audience relevance",
+  "description": "Check whether content fits an audience and whether it is promotional.",
+  "tags": [
+    "content",
+    "relevance"
+  ],
+  "decisionModel": "~typesafe/jev-latest",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "audience": {
+        "type": "string",
+        "title": "Audience description",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      },
+      "content": {
+        "type": "string",
+        "title": "Content to assess",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "audience",
+      "content"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "mode": "object"
+  },
+  "questions": {
+    "relevance": {
+      "type": "score",
+      "instructions": "How relevant is `content` to the interests and needs described in `audience`?",
+      "criteria": [
+        "Not relevant",
+        "Somewhat relevant",
+        "Directly relevant"
+      ]
+    },
+    "promotional": {
+      "type": "noul",
+      "instructions": "Is `content` primarily promotional?",
+      "criteria": {
+        "true": "It primarily sells or promotes a product or service.",
+        "false": "It primarily informs, teaches or discusses."
+      }
+    }
+  },
+  "presentation": {
+    "questions": {
+      "relevance": {
+        "label": "Relevance"
+      },
+      "promotional": {
+        "label": "Promotional"
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "1",
+      "label": "Relevant tutorial",
+      "input": {
+        "audience": "Python developers building small web APIs.",
+        "content": "This tutorial demonstrates request validation and error handling in an aiohttp API."
+      },
+      "provenance": "authored"
+    },
+    {
+      "id": "2",
+      "label": "Product promotion",
+      "input": {
+        "audience": "Python developers building small web APIs.",
+        "content": "Buy our new gaming headphones now. Use code AUDIO for 20% off."
+      },
+      "provenance": "authored"
+    }
+  ]
+}

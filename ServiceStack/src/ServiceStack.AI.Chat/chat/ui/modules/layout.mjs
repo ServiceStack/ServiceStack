@@ -35,12 +35,12 @@ const Avatar = {
                 @click.stop="toggleMenu"
                 :src="$ctx.getUserAvatar()"
                 :title="authTitle"
-                class="mr-1 size-6 rounded-full cursor-pointer hover:ring-2 hover:ring-[var(--assistant-border)]"
+                class="size-6 rounded-full cursor-pointer hover:ring-2 hover:ring-[var(--assistant-border)]"
             />
             <div
                 v-if="showMenu"
                 @click.stop
-                class="absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 z-50 border" :class="[$styles.messageAssistant]">
+                class="absolute left-0 bottom-full mb-2 w-48 rounded-md shadow-lg py-1 z-50 border" :class="[$styles.messageAssistant]">
 
                 <div v-for="component in showComponents">
                     <component :is="component" :auth="$ai.auth" @done="showMenu = false" />
@@ -290,6 +290,9 @@ const SettingsPage = {
             <h2 class="text-lg font-semibold mr-12" :class="[$styles.heading]">Theme</h2>
             <ThemeSelector />
         </div>
+
+        <!-- Extension Settings -->
+        <component v-for="(comp, id) in $ctx.visibleComponents($ctx.settings)" :key="id" :is="comp.component" />
 
     </div>
     `,

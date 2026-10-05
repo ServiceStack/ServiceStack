@@ -3,6 +3,8 @@ import { createApp, nextTick } from 'vue'
 import { createWebHistory, createRouter } from "vue-router"
 import ServiceStackVue, { useFormatters } from "@servicestack/vue"
 import App from './App.mjs'
+import ModelPicker from './components/ModelPicker.mjs'
+import { CheckBox } from './components/CheckBox.mjs'
 import ai from './ai.mjs'
 import LayoutModule from './modules/layout.mjs'
 import ChatModule from './modules/chat/index.mjs'
@@ -13,8 +15,7 @@ import { marked, markedFallback } from './markdown.mjs'
 import { AppContext } from './ctx.mjs'
 import { afterPaint, importExtensions, installExtensions } from './startup.mjs'
 
-const Components = {
-}
+const Components = { ModelPicker, CheckBox }
 
 const BuiltInModules = {
     LayoutModule,

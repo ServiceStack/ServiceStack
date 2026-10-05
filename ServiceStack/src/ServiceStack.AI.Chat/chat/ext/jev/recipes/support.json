@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "name": "Support triage",
+  "description": "Route a support ticket, identify defects, and assess urgency in one call.",
+  "tags": [
+    "support",
+    "routing",
+    "prioritization"
+  ],
+  "decisionModel": "~typesafe/jev-latest",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "customer_tier": {
+        "type": "string",
+        "title": "Customer tier",
+        "enum": [
+          "Standard",
+          "Business",
+          "Enterprise"
+        ],
+        "default": "Standard"
+      },
+      "ticket": {
+        "type": "string",
+        "title": "Support ticket",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "ticket",
+      "customer_tier"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "mode": "object"
+  },
+  "questions": {
+    "is_bug": {
+      "type": "noul",
+      "instructions": "Is `ticket` reporting a software defect?",
+      "criteria": {
+        "true": "Broken or unexpected product behavior.",
+        "false": "A question, feature request, or general account issue."
+      }
+    },
+    "team": {
+      "type": "choice",
+      "instructions": "Which team should own `ticket`?",
+      "criteria": {
+        "payments": "Checkout, billing, invoicing or payment failures.",
+        "frontend": "Rendering, layout or browser compatibility.",
+        "account": "Login, permissions or profile issues.",
+        "other": "The ticket does not fit the listed teams."
+      }
+    },
+    "urgency": {
+      "type": "score",
+      "instructions": "How urgent is the issue described in `ticket`?",
+      "criteria": [
+        "Can wait for a future release",
+        "Needs attention this week",
+        "Blocking customer operations or revenue right now"
+      ]
+    }
+  },
+  "presentation": {
+    "questions": {
+      "is_bug": {
+        "label": "Software defect"
+      },
+      "team": {
+        "label": "Owning team"
+      },
+      "urgency": {
+        "label": "Urgency"
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "1",
+      "label": "Checkout failure",
+      "input": {
+        "customer_tier": "Enterprise",
+        "ticket": "My checkout page shows a blank screen after I click Pay. I have tried two browsers."
+      },
+      "provenance": "authored"
+    },
+    {
+      "id": "2",
+      "label": "Feature question",
+      "input": {
+        "customer_tier": "Standard",
+        "ticket": "Can I change the colour of the chart labels?"
+      },
+      "provenance": "authored"
+    }
+  ]
+}

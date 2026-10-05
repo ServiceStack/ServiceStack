@@ -2,6 +2,10 @@ import { ref, computed, watch, inject, onMounted, onUnmounted } from "vue"
 import { useRouter, useRoute } from "vue-router"
 import { AppContext } from "./ctx.mjs"
 
+import WorkspaceFileView from "./modules/WorkspaceFileView.mjs"
+import { workspaceQuery, installWorkspaceNavigation } from "./modules/explorerState.mjs"
+import WorkspaceSidebar from "./modules/WorkspaceSidebar.mjs"
+
 // Vertical Sidebar Icons
 const LeftBar = {
     template: `
@@ -9,15 +13,15 @@ const LeftBar = {
             <!-- top icons -->
             <div class="flex flex-col space-y-2 pt-2.5 px-1">
                 <div v-for="(icon, id) in $ctx.visibleComponents($ctx.left)" :key="id" class="relative flex items-center justify-center">
-                    <component :is="icon.component" 
-                        :class="[icon.isActive({ ...$layout }) ? $styles.iconActive : $styles.icon, $styles.iconHover, icon.iconClass ?? 'size-7 p-1 cursor-pointer block rounded']" 
+                    <component :is="icon.component"
+                        :class="[icon.isActive({ ...$layout }) ? $styles.iconActive : $styles.icon, $styles.iconHover, icon.iconClass ?? 'size-7 p-1 cursor-pointer block rounded']"
                         @mouseenter="tooltip = icon.id"
                         @mouseleave="tooltip = ''"
                         />
-                    <div v-if="tooltip === icon.id && !icon.isActive({ ...$layout })" 
+                    <div v-if="tooltip === icon.id && !icon.isActive({ ...$layout })"
                         class="absolute left-full top-1/2 -translate-y-1/2 ml-2 px-2 py-1 text-xs text-white bg-gray-900 dark:bg-gray-800 rounded shadow-md z-50 whitespace-nowrap pointer-events-none" style="z-index: 60">
                         {{icon.title ?? icon.name}}
-                    </div>    
+                    </div>
                 </div>
             </div>
             <!-- bottom icons -->
@@ -26,6 +30,9 @@ const LeftBar = {
                     <svg class="size-7 p-1 cursor-pointer rounded block"
                         :class="[$ctx.matchesPath($route.path,'/settings') ? $styles.iconActive : $styles.icon, $styles.iconHover]"
                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M19 7.5h-7.628a2.251 2.251 0 0 0-4.244 0H5V9h2.128a2.25 2.25 0 0 0 4.244 0H19zm0 7.5h-2.128a2.251 2.251 0 0 0-4.244 0H5v1.5h7.628a2.251 2.251 0 0 0 4.244 0H19z"/></svg>
+                </div>
+                <div class="flex items-center justify-center pt-1 pb-2">
+                    <Avatar />
                 </div>
             </div>
         </div>
@@ -61,17 +68,17 @@ const TopBar = {
     template: `
         <div class="select-none flex space-x-1">
             <div v-for="(icon, id) in $ctx.visibleComponents($ctx.top)" :key="id" class="relative flex items-center justify-center">
-                <component :is="icon.component" 
+                <component :is="icon.component"
                     class="size-7 p-1 cursor-pointer block border border-transparent rounded"
                     :class="[icon.isActive({ ...$layout }) ? $styles.iconActive : $styles.icon, $styles.iconHover]"
                     @mouseenter="tooltip = icon.id"
                     @mouseleave="tooltip = ''"
                     />
-                <div v-if="tooltip === icon.id && !icon.isActive({ ...$layout })" 
+                <div v-if="tooltip === icon.id && !icon.isActive({ ...$layout })"
                     class="absolute top-full mt-2 px-2 py-1 text-xs text-white bg-gray-900 dark:bg-gray-800 rounded shadow-md z-50 whitespace-nowrap pointer-events-none"
                     :class="last2.includes(id) ? 'right-0' : 'left-1/2 -translate-x-1/2'">
                     {{icon.title ?? icon.name}}
-                </div>    
+                </div>
             </div>
         </div>
     `,
@@ -101,6 +108,8 @@ const TopPanel = {
 
 export default {
     components: {
+        WorkspaceSidebar,
+        WorkspaceFileView,
         LeftBar,
         LeftPanel,
         TopBar,
@@ -113,6 +122,17 @@ export default {
         /**@type {AppContext} */
         const ctx = inject('ctx')
         const ai = ctx.ai
+        const removeWorkspaceNavigation = installWorkspaceNavigation(router)
+        onUnmounted(removeWorkspaceNavigation)
+        const workspaceOpen = computed(() => route.query.workspace === '1')
+        const workspacePreview = computed(() => ctx.right[route.query.workspacePreview]?.preview || WorkspaceFileView)
+        // Views that own scrolling can raise their header without the page viewport clipping it.
+        const compactHeader = computed(() => route.meta.pageScroll === false && !(workspaceOpen.value && route.query.workspaceFile))
+        function toggleWorkspace() {
+            router.push({ query: workspaceQuery(route.query, workspaceOpen.value
+                ? { workspace: '0', workspacePath: null, workspaceFile: null, workspacePreview: null, workspaceCommit: null, workspaceView: null, workspaceProject: null }
+                : { workspace: '1' }) })
+        }
         const isMobile = ref(false)
         const modal = ref()
 
@@ -177,7 +197,7 @@ export default {
             }
         })
 
-        return { ai, modal, isMobile, closeModal, toastMessage, showToast }
+        return { ai, modal, workspacePreview, workspaceOpen, compactHeader, toggleWorkspace, isMobile, closeModal, toastMessage, showToast }
     },
     template: `
         <div class="flex h-screen" :class="$styles.app">
@@ -189,7 +209,7 @@ export default {
                 ></div>
 
                 <div v-if="$ai.hasAccess" id="sidebar" :class="$ctx.cls('sidebar', 'z-100 relative flex ' + $styles.bgSidebar)">
-                    <LeftBar id="left-bar" />
+                    <LeftBar id="left-bar" class="relative z-60 shadow-[1px_0_4px_-2px_rgb(0_0_0_/_10%)] dark:shadow-[1px_0_4px_-2px_rgb(0_0_0_/_22%)]" />
                     <LeftPanel id="left-panel"
                         v-if="$ai.hasAccess && $ctx.layoutVisible('left')"
                         :class="[
@@ -205,28 +225,33 @@ export default {
                 <!-- Main Area -->
                 <div id="main" :class="$ctx.cls('main', 'flex-1 min-w-0 flex flex-col')">
                     <div id="main-inner" :class="$ctx.cls('main-inner', 'flex flex-col h-full w-full overflow-hidden')">
-                        <div v-if="$ai.hasAccess && $route.meta.header !== false && $ctx.layoutVisible('header')" id="header" :class="$ctx.cls('header', 'py-1 pr-1 flex items-center justify-between shrink-0')">
-                            <div class="flex items-center gap-2">
+                        <div v-if="$ai.hasAccess && $route.meta.header !== false && $ctx.layoutVisible('header')" id="header" :class="[$ctx.cls('header', 'min-h-9 py-1 pr-1 flex items-center justify-between shrink-0'), compactHeader ? 'relative z-10 pointer-events-none bg-transparent!' : '']">
+                            <div class="flex items-center gap-2" :class="compactHeader ? 'pointer-events-auto bg-[var(--background)]' : ''">
                                 <component v-for="(c, id) in $ctx.visibleComponents($ctx.leftTop)" :is="c.component" />
                                 <!--ThemeSelector /-->
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2" :class="compactHeader ? 'pointer-events-auto bg-[var(--background)]' : ''">
                                 <TopBar id="top-bar" />
-                                <Avatar />
+                                <button v-if="$ctx.state.projects" type="button" @click="toggleWorkspace" :aria-expanded="workspaceOpen" aria-controls="workspace-sidebar" aria-label="Toggle workspace explorer" title="Workspace explorer" :class="[workspaceOpen ? $styles.iconActive : $styles.icon, $styles.iconHover]" data-workspace-icon class="flex items-center justify-center w-7 h-7 p-1 border border-transparent rounded shrink-0 cursor-pointer">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden="true" class="w-4.5 h-4.5"><path d="M0 0h16v16H0z" fill="none"/><path fill="currentColor" d="M12.5 1A2.5 2.5 0 0 1 15 3.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5v-9A2.5 2.5 0 0 1 3.5 1zM9 14V2H3.5A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14z"/></svg>
+                                </button>
                             </div>
                         </div>
-                        <TopPanel v-if="$ai.hasAccess && $route.meta.header !== false && $ctx.layoutVisible('header')" id="top-panel" :class="$ctx.cls('top-panel', 'shrink-0')" />
-                        <div id="page" :class="$ctx.cls('page', 'flex-1 overflow-y-auto min-h-0 flex flex-col')">
-                            <RouterView class="h-full" />
+                        <TopPanel v-if="$ai.hasAccess && (($route.meta.header !== false && $ctx.layoutVisible('header')) || $ctx.layout.top)" id="top-panel" :class="$ctx.cls('top-panel', 'shrink-0')" />
+                        <div id="page" :class="$ctx.cls('page', 'flex-1 min-h-0 flex flex-col ' + (compactHeader ? 'overflow-visible' : 'overflow-y-auto'))">
+                            <RouterView v-show="!workspaceOpen || !$route.query.workspaceFile" class="h-full" />
+                            <component v-if="workspaceOpen && $route.query.workspaceFile" :is="workspacePreview" />
                         </div>
                     </div>
                 </div>
 
-                <component v-if="modal" :is="modal" :class="$ctx.cls('modal', '!z-[200]')" @done="closeModal" />
+                <WorkspaceSidebar v-if="workspaceOpen && $ai.hasAccess" @close="toggleWorkspace" @keydown.esc="toggleWorkspace" style="width: min(340px, 100vw); flex-shrink: 0" :style="isMobile ? {position:'fixed', right:0, top:0, bottom:0, zIndex:110} : {}" />
+
+                <component v-if="modal" :is="modal" :class="$ctx.cls('modal', '!z-[200]')" :data-chat-model-selector="$route.query.open === 'models' ? '' : undefined" @done="closeModal" />
 
                 <!-- Toast Popup -->
                 <Transition name="toast">
-                    <div v-if="showToast" 
+                    <div v-if="showToast"
                         class="fixed bottom-5 right-5 z-[300] flex items-center gap-3 max-w-sm p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50 rounded-xl shadow-xl transition-all duration-300">
                         <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-emerald-500/10 dark:bg-emerald-400/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                             <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -69,6 +69,7 @@
         "voiceButtonProcessing": "bg-blue-800/80 text-blue-200 border border-blue-500/60 animate-spin",
         "threadItemActiveBorder": "border-blue-500",
         "threadItemActive": "bg-blue-900/30 border-blue-500/50 shadow-inner",
+        "threadItemHover": "hover:bg-blue-900/20 hover:text-blue-50 transition-colors",
         "threadItem": "border-transparent text-blue-200 hover:bg-blue-900/20 hover:text-blue-50 transition-colors",
         "messageUser": "bg-blue-800/40 text-blue-50 border border-blue-400/40 shadow-md shadow-black/30 backdrop-blur-sm",
         "messageAssistant": "bg-black/30 text-blue-50 border border-blue-400/20 shadow-md shadow-black/20 backdrop-blur-sm"

@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "name": "Email intent",
+  "description": "Identify the main purpose of an email and whether the sender expects a timely reply.",
+  "tags": [
+    "email",
+    "classification",
+    "prioritization"
+  ],
+  "decisionModel": "~typesafe/jev-latest",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string",
+        "title": "Email text",
+        "default": "",
+        "format": "textarea",
+        "minLength": 1
+      }
+    },
+    "required": [
+      "email"
+    ],
+    "additionalProperties": false
+  },
+  "state": {
+    "mode": "object"
+  },
+  "questions": {
+    "intent": {
+      "type": "choice",
+      "instructions": "What is the primary purpose of `email`?",
+      "criteria": {
+        "question": "Seeking information.",
+        "complaint": "Reporting dissatisfaction or requesting a remedy.",
+        "meeting": "Arranging a meeting.",
+        "invoice": "Invoicing or payment administration.",
+        "sales": "Selling or promoting a product.",
+        "other": "None of these purposes."
+      }
+    },
+    "reply_requested": {
+      "type": "noul",
+      "instructions": "Does `email` ask the recipient to respond?",
+      "criteria": {
+        "true": "An explicit or implied request for an answer or confirmation.",
+        "false": "No response is requested."
+      }
+    },
+    "time_sensitive": {
+      "type": "noul",
+      "instructions": "Does `email` contain a time-sensitive request?",
+      "criteria": {
+        "true": "A deadline or immediate-action request.",
+        "false": "No deadline or immediate-action request."
+      }
+    }
+  },
+  "presentation": {
+    "questions": {
+      "intent": {
+        "label": "Intent"
+      },
+      "reply_requested": {
+        "label": "Reply requested"
+      },
+      "time_sensitive": {
+        "label": "Time sensitive"
+      }
+    }
+  },
+  "examples": [
+    {
+      "id": "1",
+      "label": "Meeting invitation",
+      "input": {
+        "email": "Can we meet Thursday at 2pm? Please confirm before tomorrow so I can book the room."
+      },
+      "provenance": "authored"
+    },
+    {
+      "id": "2",
+      "label": "Monthly update",
+      "input": {
+        "email": "Here is our monthly product update. New features are available in your account. No action is needed."
+      },
+      "provenance": "authored"
+    }
+  ]
+}

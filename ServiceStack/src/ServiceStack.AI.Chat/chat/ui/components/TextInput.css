@@ -1,0 +1,139 @@
+/* Project Manager / Create with AI borders for native and schema-generated fields.
+   Keep sizing, spacing and backgrounds under each form's control. */
+:root {
+    --llms-text-input-border: #d1d5db;
+}
+:root.dark {
+    --llms-text-input-border: #4b5563;
+}
+
+/* The small specificity increase also covers extension styles loaded after this sheet.
+   Embedded editor inputs and the inner input of framed search controls stay unframed. */
+html
+    body
+    :is(
+        input:not([type]),
+        input[type='text'],
+        input[type='email'],
+        input[type='url'],
+        input[type='password'],
+        input[type='number'],
+        input[type='search'],
+        input[type='tel'],
+        input[type='date'],
+        input[type='datetime-local'],
+        input[type='month'],
+        input[type='week'],
+        input[type='time'],
+        textarea,
+        select,
+        .project-archive-search,
+        [data-project-archive-search],
+        .llms-input-frame
+    ):not(.llms-input-unframed):not(
+        :where(
+            .CodeMirror textarea,
+            #messageText,
+            .project-archive-search input,
+            [data-project-archive-search] input,
+            [data-chat-model-selector] *
+        )
+    ) {
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 8px;
+    outline: none;
+    box-shadow: none;
+}
+
+html
+    body
+    :is(
+        input:not([type]),
+        input[type='text'],
+        input[type='email'],
+        input[type='url'],
+        input[type='password'],
+        input[type='number'],
+        input[type='search'],
+        input[type='tel'],
+        input[type='date'],
+        input[type='datetime-local'],
+        input[type='month'],
+        input[type='week'],
+        input[type='time'],
+        textarea,
+        select,
+        .project-archive-search,
+        [data-project-archive-search],
+        .llms-input-frame
+    ):not(.llms-input-unframed):not(
+        :where(
+            [data-chat-model-selector] *,
+            .CodeMirror textarea,
+            #messageText,
+            .project-archive-search input,
+            [data-project-archive-search] input,
+            [aria-invalid='true'],
+            [class*='border-red-']
+        )
+    ) {
+    border-color: var(--llms-text-input-border);
+}
+
+html
+    body
+    :is(
+        input:not([type]),
+        input[type='text'],
+        input[type='email'],
+        input[type='url'],
+        input[type='password'],
+        input[type='number'],
+        input[type='search'],
+        input[type='tel'],
+        input[type='date'],
+        input[type='datetime-local'],
+        input[type='month'],
+        input[type='week'],
+        input[type='time'],
+        textarea,
+        select,
+        .project-archive-search,
+        [data-project-archive-search],
+        .llms-input-frame
+    ):not(.llms-input-unframed):not(
+        :where(
+            [data-chat-model-selector] *,
+            .CodeMirror textarea,
+            #messageText,
+            .project-archive-search input,
+            [data-project-archive-search] input,
+            [aria-invalid='true'],
+            [class*='border-red-']
+        )
+    ):is(:focus, :focus-within) {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: none;
+}
+
+/* A framed field owns focus; its inner input must never draw another ring. */
+html body :is(.llms-input-frame, .project-archive-search, [data-project-archive-search])
+    :is(input, textarea):not(:where([data-chat-model-selector] *)) {
+    border: 0;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Invalid fields use a stronger error border on focus, without an extra ring. */
+html
+    body
+    :is(input, textarea):not(:where([data-chat-model-selector] *)):is(
+        [aria-invalid='true'],
+        [class*='border-red-']
+    ):focus {
+    border-color: #dc2626;
+    outline: none;
+    box-shadow: none;
+}

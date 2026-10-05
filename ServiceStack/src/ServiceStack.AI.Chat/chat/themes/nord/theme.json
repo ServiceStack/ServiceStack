@@ -104,6 +104,7 @@
         "voiceButtonProcessing": "bg-frost-700/50 text-frost-400 animate-spin",
         "threadItemActiveBorder": "border-nord-100",
         "threadItemActive": "bg-nord-700/80 border-nord-300/50",
+        "threadItemHover": "hover:bg-nord-700/40",
         "threadItem": "border-transparent hover:bg-nord-700/40",
         "messageAssistant": "bg-[var(--assistant-bg)] text-[var(--assistant-text)] border-[var(--assistant-border)] backdrop-blur-md"
     }

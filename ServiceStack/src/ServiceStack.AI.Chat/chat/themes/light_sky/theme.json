@@ -45,6 +45,7 @@
         "textBlock": "backdrop-blur-sm",
         "threadItemActiveBorder": "border-sky-400",
         "threadItemActive": "bg-sky-100/80 border-sky-400 shadow-sm",
+        "threadItemHover": "hover:bg-sky-50 transition-colors",
         "threadItem": "border-transparent hover:bg-sky-50 transition-colors",
         "tagButtonGroup": "rounded-xl bg-sky-700/10",
         "tagButton": "cursor-pointer border border-transparent bg-white/90 text-slate-600 border-sky-200 hover:border-sky-300 hover:bg-white transition-all",

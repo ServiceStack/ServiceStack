@@ -51,7 +51,7 @@ export default {
     const thread = computed(() => String(ctx.threads?.currentThread.value?.id) === ctx.chat.drafts.state.key ? ctx.threads.currentThread.value : null)
     const projectId = computed(() => thread.value ? thread.value.projectId : ctx.chat.drafts.get().projectId)
     const label = computed(() => projects.value.find(p => p.id === projectId.value)?.name || 'No project')
-    const filtered = computed(() => projects.value.filter(p => p.name.toLowerCase().includes(query.value.toLowerCase())))
+    const filtered = computed(() => projects.value.filter(p => !p.archived && p.name.toLowerCase().includes(query.value.toLowerCase())))
     const busy = computed(() => ['queued', 'running', 'waiting_approval'].includes(thread.value?.run?.status))
     let origin
     async function load() {
