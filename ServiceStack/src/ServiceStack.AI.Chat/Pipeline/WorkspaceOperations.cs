@@ -77,6 +77,7 @@ public partial class ChatFeature
     public Action? SidebarNotification { get; set; }
     public void NotifySidebar() => SidebarNotification?.Invoke();
     public IGitProvisioner GitProvisioner { get; set; } = new NullGitProvisioner();
+    public IPublisherApi PublisherApi { get; set; } = new NullPublisherApi();
 }
 
 /// <summary>Projects owns durable creation; Git only prepares the operation-owned directory.</summary>
@@ -96,4 +97,21 @@ public sealed class NullGitProvisioner : IGitProvisioner
     public bool Clone => false;
     public Task ProvisionAsync(string directory, JsonObject source, string user, CancellationToken token) =>
         throw new InvalidOperationException("Git provisioning is unavailable");
+}
+
+/// <summary>User-scoped publisher access. Implementations never inherit another account's grant.</summary>
+public interface IPublisherApi
+{
+    bool Available { get; }
+    JsonObject GetConfiguration(string user);
+    PublisherClient CreateClient(string user)=>throw HttpError.ServiceUnavailable("Publishing is unavailable");
+    Task<JsonNode?> SendAsync(string user, HttpMethod method, string path, JsonNode? body, bool authenticated, CancellationToken token);
+}
+
+public sealed class NullPublisherApi : IPublisherApi
+{
+    public bool Available => false;
+    public JsonObject GetConfiguration(string user) => new();
+    public Task<JsonNode?> SendAsync(string user, HttpMethod method, string path, JsonNode? body, bool authenticated, CancellationToken token) =>
+        throw new InvalidOperationException("Publishing is unavailable");
 }

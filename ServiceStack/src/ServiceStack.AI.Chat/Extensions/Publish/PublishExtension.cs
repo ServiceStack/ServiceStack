@@ -11,10 +11,18 @@ namespace ServiceStack.AI;
 /// Publish threads/media/projects to a remote llms.py site (port of llms-py's "publish" extension).
 /// Connection config is stored per user at App_Data/chat/user/&lt;user&gt;/publish/config.json.
 /// </summary>
-public partial class PublishExtension : ChatExtension
+public partial class PublishExtension : ChatExtension, IPublisherApi
 {
-    const string DefaultPublishBaseUrl = "https://ai.llmspy.org";
-    const string RegisterPath = "/embed/register.html?domain=llmspy.org";
+    PublisherConfiguration configuration=null!;
+    /// <summary>Optional host transport factory. It must prohibit redirects; default sockets transport does.</summary>
+    public Func<HttpMessageHandler>? HttpHandlerFactory {get;set;}
+    public bool Available=>Ctx!=null && !Ctx.Disabled && !Disabled;
+    public JsonObject GetConfiguration(string user)=>configuration.Get(user,false);
+    public Task<JsonNode?> SendAsync(string user,HttpMethod method,string path,JsonNode? body,bool authenticated,CancellationToken token)=>
+        CreatePublisherClient(configuration.Get(user,false)).SendAsync(method,path,body,authenticated,token);
+    public PublisherClient CreateClient(string user)=>Available?CreatePublisherClient(configuration.Get(user,false)):throw HttpError.ServiceUnavailable("Publishing is unavailable");
+    PublisherClient CreatePublisherClient(JsonObject config)=>new(config,HttpHandlerFactory);
+    static JsonObject RequireObject(JsonNode? value)=>value as JsonObject??throw new HttpError(502,"BadGateway","Publisher returned an unexpected response.");
 
     public PublishExtension() : base("publish")
     {
@@ -23,33 +31,11 @@ public partial class PublishExtension : ChatExtension
 
     public override void Install(ExtensionContext ctx)
     {
-        ctx.AddGet("config.json", req =>
-            Task.FromResult<object?>(GetPublishConfig(req.UserName)));
-
-        ctx.AddPost("disconnect", req =>
-        {
-            var configPath = ConfigPath(req.UserName);
-            if (File.Exists(configPath))
-                File.Delete(configPath);
-            return Task.FromResult<object?>(GetPublishConfig(req.UserName));
-        });
-
-        ctx.AddPost("config.json", async req =>
-        {
-            var user = req.UserName;
-            var body = await req.GetJsonBodyAsync().ConfigAwait();
-            var existing = GetPublishConfig(user, obscure: false);
-            if (body.GetString("apiKey").IsNullOrEmpty() && existing.GetString("apiKey") is { } apiKey)
-            {
-                body["apiKey"] = apiKey;
-            }
-            foreach (var entry in body)
-            {
-                existing[entry.Key] = entry.Value?.DeepClone();
-            }
-            SaveConfig(user, existing);
-            return GetPublishConfig(user);
-        });
+        configuration=new PublisherConfiguration(ctx);
+        ctx.Feature.PublisherApi=this;
+        ctx.AddGet("config.json",req=>Task.FromResult<object?>(configuration.Get(req.UserName)));
+        ctx.AddPost("disconnect",req=>Task.FromResult<object?>(configuration.Disconnect(req.UserName)));
+        ctx.AddPost("config.json",async req=>configuration.Save(req.UserName,await req.GetJsonBodyAsync().ConfigAwait()));
 
         ctx.AddGet("detect-dist", req => Task.FromResult<object?>(DetectDist(req.UserName, req.QueryString("threadId"))));
         ctx.AddGet("list-subdirs", req => Task.FromResult<object?>(ListSubdirs(req)));
@@ -69,46 +55,9 @@ public partial class PublishExtension : ChatExtension
 
     // ── Config ──
 
-    string ConfigPath(string? user) =>
-        Path.Combine(Ctx.GetUserPath(user), "publish", "config.json");
-
-    JsonObject GetPublishConfig(string? user, bool obscure = true)
-    {
-        var candidatePaths = new List<string>();
-        if (user != null)
-            candidatePaths.Add(ConfigPath(user));
-        candidatePaths.Add(ConfigPath(null));
-
-        var obj = new JsonObject { ["apiKey"] = null, ["userName"] = null, ["userId"] = null };
-        foreach (var path in candidatePaths)
-        {
-            if (!File.Exists(path))
-                continue;
-            if (ChatJson.TryParseObject(File.ReadAllText(path)) is { } config)
-            {
-                obj = config;
-                if (obscure && obj.GetString("apiKey") is { Length: > 7 } apiKey)
-                {
-                    obj["apiKey"] = apiKey[..3] + "******" + apiKey[^4..];
-                }
-            }
-        }
-
-        obj["registerUrl"] ??= (obj.GetString("baseUrl") ?? DefaultPublishBaseUrl) + RegisterPath;
-        return obj;
-    }
-
-    void SaveConfig(string? user, JsonObject config)
-    {
-        var path = ConfigPath(user);
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(path, config.ToJsonString(ChatJson.Indented));
-    }
-
-    string BaseUrl(JsonObject config) => config.GetString("baseUrl") ?? DefaultPublishBaseUrl;
-
-    string RequireApiKey(JsonObject config) => config.GetString("apiKey")
-        ?? throw new Exception("No API key configured");
+    JsonObject GetPublishConfig(string? user,bool obscure=true)=>configuration.Get(user,obscure);
+    string BaseUrl(JsonObject config)=>PublisherClient.Origin(config);
+    string RequireApiKey(JsonObject config)=>!string.IsNullOrEmpty(config.GetString("apiKey"))?config.GetString("apiKey")!:throw HttpError.Unauthorized("Connect publisher account first.");
 
     // ── Project directory discovery ──
 
@@ -239,18 +188,6 @@ public partial class PublishExtension : ChatExtension
 
     // ── Publishing ──
 
-    HttpClient CreateClient()
-    {
-        var client = Ctx.Feature.HttpClientFactory.CreateClient();
-        client.Timeout = TimeSpan.FromSeconds(Ctx.Limits.ClientTimeout);
-        // llms-py sets this per-request; the remote content-negotiates on it (Vary: Accept) and
-        // serves HTML — or a 302 to its login page — to clients that don't ask for JSON, which we
-        // then fail to parse and silently drop the publishedUrl it returned.
-        client.DefaultRequestHeaders.Accept.Add(
-            new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(MimeTypes.Json));
-        return client;
-    }
-
     [GeneratedRegex(@"/~cache/([^\s\)\""\'\>,]+)")]
     private static partial Regex CachePattern();
 
@@ -267,7 +204,7 @@ public partial class PublishExtension : ChatExtension
         var baseUrl = BaseUrl(config);
         var profile = thread.GetObject("metadata").GetString("profile") ?? "default";
 
-        using var client = CreateClient();
+        var client = CreatePublisherClient(config);
 
         // upload every /~cache/ file the thread references
         var cacheTails = CachePattern().Matches(thread.ToJsonString(ChatJson.Options))
@@ -275,23 +212,13 @@ public partial class PublishExtension : ChatExtension
             .Distinct();
         foreach (var tail in cacheTails)
         {
-            await UploadCacheFileAsync(client, apiKey, baseUrl, tail, user).ConfigAwait();
+            await UploadCacheFileAsync(client, apiKey, baseUrl, tail, user,req.Request.RequestAborted).ConfigAwait();
         }
 
         Ctx.Log.LogInformation("Publishing thread {ThreadId} '{Title}' to {Url}",
             threadId, thread.GetString("title"), baseUrl + "/publish/thread");
 
-        var httpReq = new HttpRequestMessage(HttpMethod.Post, baseUrl + "/publish/thread");
-        httpReq.Headers.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
-        httpReq.Content = new StringContent(thread.ToJsonString(ChatJson.Options),
-            System.Text.Encoding.UTF8, MimeTypes.Json);
-
-        using var res = await client.SendAsync(httpReq).ConfigAwait();
-        var text = await res.Content.ReadAsStringAsync().ConfigAwait();
-        if (ChatJson.TryParseObject(text) is not { } data)
-        {
-            return new ChatResult { Status = (int)res.StatusCode, Text = text, ContentType = MimeTypes.PlainText };
-        }
+        var data=RequireObject(await client.SendAsync(HttpMethod.Post,"/publish/thread",thread,true,upload:true,req.Request.RequestAborted).ConfigAwait());
 
         var now = DateTime.Now;
         data["publishedAt"] = now.ToString("O");
@@ -301,12 +228,12 @@ public partial class PublishExtension : ChatExtension
             ["publishedUrl"] = data.GetString("publishedUrl"),
         }, user).ConfigAwait();
 
-        await UploadAvatarsAsync(client, apiKey, baseUrl, config, user, profile).ConfigAwait();
+        await UploadAvatarsAsync(client, apiKey, baseUrl, config, user, profile,req.Request.RequestAborted).ConfigAwait();
 
-        return ChatResult.Json(data, (int)res.StatusCode);
+        return ChatResult.Json(data);
     }
 
-    async Task UploadCacheFileAsync(HttpClient client, string apiKey, string baseUrl, string tail, string? user)
+    async Task UploadCacheFileAsync(PublisherClient client, string apiKey, string baseUrl, string tail, string? user,CancellationToken token)
     {
         var filePath = Ctx.GetCachePath(tail);
         if (!File.Exists(filePath))
@@ -338,26 +265,16 @@ public partial class PublishExtension : ChatExtension
 
         form.Add(new StringContent(media.ToJsonString(ChatJson.Options)), "info", Path.GetFileName(sidecarPath));
 
-        var httpReq = new HttpRequestMessage(HttpMethod.Post, baseUrl + "/publish/cache");
-        httpReq.Headers.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
-        httpReq.Content = form;
-
         try
         {
-            Ctx.Log.LogDebug("Uploading cache file {Path}", filePath);
-            using var res = await client.SendAsync(httpReq).ConfigAwait();
-            if (!res.IsSuccessStatusCode)
-                Ctx.Log.LogError("Failed to upload cache file {Path}, status: {Status}", filePath, (int)res.StatusCode);
+            await client.SendMultipartAsync("/publish/cache",form,token).ConfigAwait();
         }
-        catch (Exception e)
-        {
-            Ctx.Log.LogError(e, "Exception during cache file upload {Path}", filePath);
-        }
+        catch (Exception e) when(e is not OperationCanceledException) { Ctx.Log.LogWarning("Could not upload cache file {Path}: {Error}",filePath,ChatJson.ToErrorMessage(e)); }
     }
 
     /// <summary>Upload the user's + profile's avatars once, remembering their published urls in the config</summary>
-    async Task UploadAvatarsAsync(HttpClient client, string apiKey, string baseUrl, JsonObject config,
-        string? user, string profile)
+    async Task UploadAvatarsAsync(PublisherClient client, string apiKey, string baseUrl, JsonObject config,
+        string? user, string profile,CancellationToken token)
     {
         var avatars = config.GetObject("avatars");
         if (avatars == null)
@@ -383,20 +300,11 @@ public partial class PublishExtension : ChatExtension
                 fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MimeTypes.GetMimeType(avatarPath));
                 form.Add(fileContent, "file", Path.GetFileName(avatarPath));
 
-                var httpReq = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/publish/avatar/{avatarProfile}");
-                httpReq.Headers.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
-                httpReq.Content = form;
-
-                using var res = await client.SendAsync(httpReq).ConfigAwait();
-                if (res.IsSuccessStatusCode
-                    && ChatJson.TryParseObject(await res.Content.ReadAsStringAsync().ConfigAwait()) is { } avatarData
-                    && avatarData.GetString("publishedUrl") is { } publishedUrl)
-                {
-                    avatars[avatarProfile] = publishedUrl;
-                    SaveConfig(user, config);
-                }
+                var avatarData=RequireObject(await client.SendMultipartAsync("/publish/avatar/"+Uri.EscapeDataString(avatarProfile),form,token).ConfigAwait());
+                if(avatarData.GetString("publishedUrl") is { } publishedUrl && configuration.SaveAvatar(user,config,avatarProfile,publishedUrl))
+                    avatars[avatarProfile]=publishedUrl;
             }
-            catch (Exception e)
+            catch (Exception e) when(e is not OperationCanceledException)
             {
                 Ctx.Log.LogError(e, "Failed to upload avatar {Profile}", avatarProfile);
             }
@@ -444,33 +352,15 @@ public partial class PublishExtension : ChatExtension
         tarContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/gzip");
         form.Add(tarContent, "file", $"{name}.tar.gz");
 
-        var httpReq = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/publish/project/{name}");
-        httpReq.Headers.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
-        httpReq.Content = form;
-
         Ctx.Log.LogDebug("Publishing project {Name} from {Dir}", name, resolvedDir);
-        using var client = CreateClient();
-        using var res = await client.SendAsync(httpReq).ConfigAwait();
-        var text = await res.Content.ReadAsStringAsync().ConfigAwait();
-        if (ChatJson.TryParseObject(text) is not { } data)
-        {
-            return new ChatResult { Status = (int)res.StatusCode, Text = text, ContentType = MimeTypes.PlainText };
-        }
+        var client=CreatePublisherClient(config);
+        var data=RequireObject(await client.SendMultipartAsync("/publish/project/"+Uri.EscapeDataString(name),form,req.Request.RequestAborted).ConfigAwait());
 
-        if (res.IsSuccessStatusCode && data.GetString("publishedUrl") is { } publishedUrl)
+        if (data.GetString("publishedUrl") is { } publishedUrl)
         {
-            project["publishedUrl"] = publishedUrl;
-            var projects = Ctx.Projects.GetUserProjects(user);
-            var arr = new JsonArray();
-            foreach (var p in projects)
-            {
-                arr.Add((p.GetString("name") == name ? project : p).Clone());
-            }
-            var writePath = Path.Combine(Ctx.GetUserPath(user), "projects", "projects.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(writePath)!);
-            await File.WriteAllTextAsync(writePath, arr.ToJsonString(ChatJson.Indented)).ConfigAwait();
+            await Ctx.Projects.UpdatePublicationAsync(project,publishedUrl,user).ConfigAwait();
         }
-        return ChatResult.Json(data, (int)res.StatusCode);
+        return ChatResult.Json(data);
     }
 
     /// <summary>Publish a single gallery media item + its cached file</summary>
@@ -502,18 +392,9 @@ public partial class PublishExtension : ChatExtension
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(MimeTypes.GetMimeType(filePath));
         form.Add(fileContent, "file", Path.GetFileName(filePath));
 
-        var httpReq = new HttpRequestMessage(HttpMethod.Post, baseUrl + "/publish/media");
-        httpReq.Headers.TryAddWithoutValidation("Authorization", $"Bearer {apiKey}");
-        httpReq.Content = form;
-
         Ctx.Log.LogDebug("Publishing media {Id} from {Path}", id, filePath);
-        using var client = CreateClient();
-        using var res = await client.SendAsync(httpReq).ConfigAwait();
-        var text = await res.Content.ReadAsStringAsync().ConfigAwait();
-        if (ChatJson.TryParseObject(text) is not { } data)
-        {
-            return new ChatResult { Status = (int)res.StatusCode, Text = text, ContentType = MimeTypes.PlainText };
-        }
+        var client=CreatePublisherClient(config);
+        var data=RequireObject(await client.SendMultipartAsync("/publish/media",form,req.Request.RequestAborted).ConfigAwait());
 
         var now = DateTime.Now;
         data["publishedAt"] = now.ToString("O");
@@ -523,6 +404,6 @@ public partial class PublishExtension : ChatExtension
             ["publishedUrl"] = data.GetString("publishedUrl"),
         }, user).ConfigAwait();
 
-        return ChatResult.Json(data, (int)res.StatusCode);
+        return ChatResult.Json(data);
     }
 }
