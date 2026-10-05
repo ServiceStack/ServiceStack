@@ -12,6 +12,8 @@ public class GeminiSearchWorker
     readonly GeminiDb db;
     readonly object syncRoot = new();
     CancellationTokenSource? cts;
+    Task runTask=Task.CompletedTask;
+    bool stopped;
     bool restartRequested, cancelRequested;
     long total, done, failed;
     DateTime? startedAt;
@@ -31,19 +33,23 @@ public class GeminiSearchWorker
 
     public void Start()
     {
-        CancellationTokenSource source;
         lock (syncRoot)
         {
+            if(stopped)return;
             restartRequested = true; cancelRequested = false;
             if (Running) return;
             Running = true; total = done = failed = 0; startedAt = DateTime.UtcNow;
-            source = cts = new CancellationTokenSource();
+            var source = cts = new CancellationTokenSource();
+            runTask=Task.Run(() => RunAsync(source));
         }
-        _ = Task.Run(() => RunAsync(source));
     }
 
     public void Cancel() { lock (syncRoot) cancelRequested = true; }
-    public void Stop() { lock (syncRoot) cts?.Cancel(); }
+    public void Stop() { lock (syncRoot) { stopped=true;restartRequested=false;cts?.Cancel(); } }
+    public async Task StopAsync(CancellationToken token=default) {
+        Task task;lock(syncRoot){stopped=true;restartRequested=false;cts?.Cancel();task=runTask;}
+        await task.WaitAsync(token).ConfigAwait();
+    }
 
     async Task RunAsync(CancellationTokenSource source)
     {

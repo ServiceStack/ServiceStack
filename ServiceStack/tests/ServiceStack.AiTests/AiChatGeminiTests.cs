@@ -1054,7 +1054,7 @@ public class AiChatGeminiTests
             Assert.That(first.Added.Count, Is.EqualTo(1));
             var existing = first.Added.Select((x, i) => new ChatDocument
             {
-                Id = i + 1, SourceKey = x.SourceKey, ContentHash = x.ContentHash,
+                Id = i + 1, SourceKey = x.SourceKey, DisplayName = x.DisplayName, ContentHash = x.ContentHash,
                 MetadataHash = x.MetadataHash, ExtractorVer = x.ExtractorVer,
             }).ToList();
             var second = GeminiIngest.BuildPlan(source, existing);

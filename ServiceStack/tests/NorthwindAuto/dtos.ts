@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-30 17:24:42
+Date: 2026-10-05 14:41:31
 Version: 10.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1531,6 +1531,10 @@ export class ChatDocument
     public sourceId?: number;
     public sourceScopeId: number;
     public sourceKey?: string;
+    // @StringLength(2147483647)
+    public pendingDeleteNames?: string;
+
+    public sourceManifestPath?: string;
     public sourceEtag?: string;
     public contentHash?: string;
     public metadataHash?: string;

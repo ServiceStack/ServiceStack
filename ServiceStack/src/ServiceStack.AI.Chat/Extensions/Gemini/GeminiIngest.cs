@@ -116,37 +116,11 @@ public static class GeminiIngest
     {
         var expanded = Environment.ExpandEnvironmentVariables(path.StartsWith("~/")
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), path[2..]) : path);
-        var full = Path.GetFullPath(expanded);
-        // Resolve links component-by-component: ResolveLinkTarget() on /root/link/child does not
-        // notice that an intermediate directory is a link. This prevents an allowed-looking path
-        // from escaping a trusted root through a symlink.
-        var root = Path.GetPathRoot(full) ?? "";
-        var current = root;
-        foreach (var part in full[root.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
-        {
-            current = Path.Combine(current, part);
-            FileSystemInfo info = Directory.Exists(current) ? new DirectoryInfo(current) : new FileInfo(current);
-            try
-            {
-                if (info.LinkTarget != null && info.ResolveLinkTarget(returnFinalTarget: true) is { } target)
-                    current = target.FullName;
-            }
-            catch (IOException) { }
-            catch (UnauthorizedAccessException) { }
-        }
-        return Path.GetFullPath(current);
+        return ProjectsExplorer.PhysicalPath(expanded);
     }
 
-    public static bool WithinRoots(string path, IEnumerable<string> roots)
-    {
-        var full = ResolvePath(path).TrimEnd(Path.DirectorySeparatorChar);
-        return roots.Any(root =>
-        {
-            var resolved = ResolvePath(root).TrimEnd(Path.DirectorySeparatorChar);
-            var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-            return full.Equals(resolved, comparison) || full.StartsWith(resolved + Path.DirectorySeparatorChar, comparison);
-        });
-    }
+    public static bool WithinRoots(string path, IEnumerable<string> roots) =>
+        roots.Any(root => ProjectsExtension.IsWithin(ResolvePath(path), ResolvePath(root)));
 
     public static string? DeriveCategory(string sourceKey, string? root = null, int? maxDepth = null, string? prefix = null)
     {
@@ -188,7 +162,7 @@ public static class GeminiIngest
         var value = (text ?? "").Normalize(NormalizationForm.FormC);
         foreach (var pattern in volatilePatterns ?? [])
         {
-            try { value = Regex.Replace(value, pattern, ""); } catch (ArgumentException) { }
+            try { value = Regex.Replace(value, pattern, "", RegexOptions.None, TimeSpan.FromSeconds(2)); } catch (ArgumentException) { }
         }
         value = value.Replace("\r\n", "\n").Replace('\r', '\n');
         value = string.Join('\n', value.Split('\n').Select(x => x.TrimEnd()));
@@ -475,20 +449,29 @@ public static class GeminiIngest
     public static List<GeminiIngestItem> Discover(JsonObject config, string type)
     {
         var path = ResolvePath(config.GetString("path") ?? "");
-        var includes = GeminiMetadata.AsList(config["include"]); var excludes = GeminiMetadata.AsList(config["exclude"]).Concat(DefaultExcludes).ToList();
+        var includes = GeminiImportManifest.Patterns(config["include"]).Select(x=>x!.GetValue<string>()).ToList(); var excludes = GeminiImportManifest.Patterns(config["exclude"]).Concat(GeminiImportManifest.Patterns(config["ignore"])).Select(x=>x!.GetValue<string>()).Concat(DefaultExcludes).ToList();
         if (type == "folder")
         {
             if (!Directory.Exists(path)) throw new DirectoryNotFoundException($"Not a directory: {path}");
+            var rootConfig = GeminiImportManifest.Read(Path.Combine(path, "import.json"));
+            if (includes.Count == 0) includes = GeminiImportManifest.Patterns(rootConfig["include"]).Select(x=>x!.GetValue<string>()).ToList();
             var enumeration = new EnumerationOptions
             {
-                RecurseSubdirectories = true, IgnoreInaccessible = true,
+                RecurseSubdirectories = true, IgnoreInaccessible = false,
                 AttributesToSkip = FileAttributes.ReparsePoint,
             };
             return Directory.EnumerateFiles(path, "*", enumeration).OrderBy(x => x).Select(full =>
             {
                 if (!WithinRoots(full, [path])) return null;
                 var key = Path.GetRelativePath(path, full).Replace('\\', '/');
-                if (MatchesAny(key, excludes) || includes.Count > 0 && !MatchesAny(key, includes)) return null;
+                if (GeminiImportManifest.Ignored(key, excludes) || includes.Count > 0 && !MatchesAny(key, includes)) return null;
+                var current = path;
+                foreach (var part in new string?[] { null }.Concat((Path.GetDirectoryName(key) ?? "").Split('/', StringSplitOptions.RemoveEmptyEntries))) {
+                    if (part != null) current = Path.Combine(current,part);
+                    var local = GeminiImportManifest.Read(Path.Combine(current,"import.json"));
+                    var localPatterns = GeminiImportManifest.Patterns(local["exclude"]).Concat(GeminiImportManifest.Patterns(local["ignore"])).Select(x=>x!.GetValue<string>());
+                    if (GeminiImportManifest.Ignored(Path.GetRelativePath(current,full).Replace('\\','/'),localPatterns)) return null;
+                }
                 var info = new FileInfo(full); var native = new JsonObject { ["sourceUpdatedAt"] = new DateTimeOffset(info.LastWriteTimeUtc).ToUnixTimeSeconds() };
                 return new GeminiIngestItem(key, Path.GetFileName(key), $"{info.LastWriteTimeUtc.Ticks}:{info.Length}", info.Length,
                     () => File.ReadAllBytes(full), native);
@@ -537,12 +520,12 @@ public static class GeminiIngest
                 if (part != null) current = current.Length == 0 ? part : current + "/" + part;
                 var manifest = current.Length == 0 ? "import.json" : current + "/import.json";
                 var entry = archive.GetEntry(manifest); if (entry == null) continue;
-                try { using var reader = new StreamReader(entry.Open(), Encoding.UTF8); var cfg = ChatJson.TryParseObject(reader.ReadToEnd()) ?? new JsonObject(); inherited = GeminiExtension.MergeImportMetadata(inherited, cfg.GetObject("metadata")); }
+                try { using var reader = new StreamReader(entry.Open(), Encoding.UTF8); var cfg = JsonNode.Parse(reader.ReadToEnd()) as JsonObject ?? throw new ArgumentException("import.json must contain an object"); inherited = GeminiExtension.MergeImportMetadata(inherited, cfg.GetObject("metadata")); }
                 catch (Exception e) { throw new ArgumentException($"Invalid {manifest}: {e.Message}", e); }
             }
         }
         else return baseRules;
-        return GeminiExtension.MergeImportMetadata(inherited, baseRules);
+        return config.GetBool("metadataSpecified") ? GeminiExtension.MergeImportMetadata(inherited, baseRules) : GeminiExtension.MergeImportMetadata(baseRules, inherited);
     }
 
     public static GeminiIngestPlan BuildPlan(ChatSource source, IEnumerable<ChatDocument> existingDocs,
@@ -595,7 +578,8 @@ public static class GeminiIngest
                     Metadata = derived.Metadata };
                 if (!existing.TryGetValue(item.Key, out var prior)) { plan.Added.Add(entry); plan.Bytes += raw.Length; }
                 else if (prior.ContentHash != contentHash || prior.ExtractorVer != entry.ExtractorVer) { entry.Id = prior.Id; plan.Changed.Add(entry); plan.Bytes += raw.Length; }
-                else if (prior.MetadataHash != metadataHash) { entry.Id = prior.Id; plan.MetadataOnly.Add(entry); }
+                else if (prior.MetadataHash != metadataHash || prior.DisplayName != displayName) { entry.Id = prior.Id; plan.MetadataOnly.Add(entry); }
+                else if (prior.TombstonedAt != null || prior.State is "MISSING_FROM_REMOTE" or "STATE_FAILED" || prior.Error != null) { entry.Id = prior.Id; plan.Changed.Add(entry); }
                 else plan.Unchanged.Add(entry);
             }
             catch (Exception e) { plan.Failed.Add(new JsonObject { ["sourceKey"] = item.Key, ["reason"] = e.Message.SafeSubstring(0, 200) }); }

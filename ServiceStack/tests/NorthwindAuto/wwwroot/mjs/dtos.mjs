@@ -1,5 +1,5 @@
 /* Options:
-Date: 2026-09-30 17:24:42
+Date: 2026-10-05 14:41:31
 Version: 10.31
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://localhost:5001
@@ -1420,7 +1420,7 @@ export class ChatAssistant {
     config;
 }
 export class ChatDocument {
-    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,tags?:string,startedAt?:string,uploadedAt?:string,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string,searchRetries?:number,metadata?:string,error?:string,ref?:string}} [init] */
+    /** @param {{id?:number,filestoreId?:number,user?:string,createdAt?:string,updatedAt?:string,filename?:string,url?:string,hash?:string,size?:number,displayName?:string,name?:string,customMetadata?:string,createTime?:string,updateTime?:string,sizeBytes?:number,mimeType?:string,state?:string,category?:string,sourceUrl?:string,sourceId?:number,sourceScopeId?:number,sourceKey?:string,pendingDeleteNames?:string,sourceManifestPath?:string,sourceEtag?:string,contentHash?:string,metadataHash?:string,extractorVer?:string,tombstonedAt?:string,categoryPath?:string,docType?:string,status?:string,locale?:string,product?:string,versions?:string,sourceUpdatedAt?:number,tags?:string,startedAt?:string,uploadedAt?:string,searchHash?:string,searchIndexedHash?:string,searchStartedAt?:string,searchIndexedAt?:string,searchError?:string,searchRetries?:number,metadata?:string,error?:string,ref?:string}} [init] */
     constructor(init) { Object.assign(this, init) }
     /** @type {number} */
     id;
@@ -1466,6 +1466,10 @@ export class ChatDocument {
     sourceScopeId;
     /** @type {?string} */
     sourceKey;
+    /** @type {?string} */
+    pendingDeleteNames;
+    /** @type {?string} */
+    sourceManifestPath;
     /** @type {?string} */
     sourceEtag;
     /** @type {?string} */

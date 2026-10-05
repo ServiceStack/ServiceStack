@@ -31,20 +31,8 @@ public partial class GeminiExtension
         return path;
     }
 
-    internal static JsonObject ReadImportJson(string path)
-    {
-        if (!File.Exists(path)) return new JsonObject();
-        try { return ChatJson.TryParseObject(File.ReadAllText(path)) ?? new JsonObject(); }
-        catch (Exception e) { throw new ArgumentException($"Invalid {path}: {e.Message}", e); }
-    }
-
-    internal static async Task WriteImportJsonAsync(string path, JsonObject value)
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        var temp = path + ".tmp";
-        await File.WriteAllTextAsync(temp, value.ToJsonString(ChatJson.Indented) + "\n").ConfigAwait();
-        File.Move(temp, path, true);
-    }
+    internal static JsonObject ReadImportJson(string path) => GeminiImportManifest.Read(path);
+    internal static Task WriteImportJsonAsync(string path, JsonObject value) => GeminiImportManifest.WriteAsync(path,value);
 
     internal static JsonObject MergeImportMetadata(JsonObject? parent, JsonObject? child)
     {
@@ -104,34 +92,37 @@ public partial class GeminiExtension
     Task<object?> CrawlImportSchemaAsync(ChatRequestContext req) => Task.FromResult<object?>(new JsonObject
     { ["rules"] = CrawlRuleSchema.DeepClone(), ["transforms"] = TransformSchema.DeepClone() });
 
-    Task<object?> GetCrawlImportAsync(ChatRequestContext req)
+    async Task<object?> GetCrawlImportAsync(ChatRequestContext req)
     {
-        var name = req.GetPathParam("name"); var path = CrawlWorkspace(UserOf(req), name);
+        await AssertWriteAsync(req).ConfigureAwait(false);
+        var name = req.GetPathParam("name"); var path = await RequestCrawlRootAsync(req).ConfigureAwait(false);
         if (!Directory.Exists(path)) throw new DirectoryNotFoundException("Import does not exist");
-        return Task.FromResult<object?>(new JsonObject { ["name"] = name, ["path"] = path,
-            ["pages"] = GeneratedPages(path).Count, ["config"] = ReadImportJson(Path.Combine(path, ImportManifest)) });
+        return new JsonObject { ["name"] = name, ["path"] = path,
+            ["pages"] = GeneratedPages(path).Count, ["config"] = ReadImportJson(Path.Combine(path, ImportManifest)) };
     }
 
-    Task<object?> ListCrawlPagesAsync(ChatRequestContext req)
+    async Task<object?> ListCrawlPagesAsync(ChatRequestContext req)
     {
-        var path = CrawlWorkspace(UserOf(req), req.GetPathParam("name"));
-        return Task.FromResult<object?>(new JsonObject { ["pages"] = new JsonArray(GeneratedPages(path).Select(x => (JsonNode)x).ToArray()) });
+        await AssertWriteAsync(req).ConfigureAwait(false);
+        var path = await RequestCrawlRootAsync(req).ConfigureAwait(false);
+        return new JsonObject { ["pages"] = new JsonArray(GeneratedPages(path).Select(x => (JsonNode)x).ToArray()) };
     }
 
-    Task<object?> GetCrawlPageAsync(ChatRequestContext req)
+    async Task<object?> GetCrawlPageAsync(ChatRequestContext req)
     {
-        var root = CrawlWorkspace(UserOf(req), req.GetPathParam("name"));
+        await AssertWriteAsync(req).ConfigureAwait(false);
+        var root = await RequestCrawlRootAsync(req).ConfigureAwait(false);
         var rel = (req.QueryString("path") ?? "").Replace('\\', '/').TrimStart('/');
         if (!GeneratedPages(root).Contains(rel)) throw new ArgumentException("Crawled page was not found");
         var full = Path.GetFullPath(Path.Combine(root, rel.Replace('/', Path.DirectorySeparatorChar)));
         if (!GeminiIngest.WithinRoots(full, [root]) || !File.Exists(full)) throw new ArgumentException("Crawled page was not found");
-        return Task.FromResult<object?>(new JsonObject { ["path"] = rel, ["content"] = File.ReadAllText(full) });
+        return new JsonObject { ["path"] = rel, ["content"] = File.ReadAllText(full) };
     }
 
     async Task<object?> SaveCrawlConfigAsync(ChatRequestContext req)
     {
         await AssertWriteAsync(req).ConfigAwait(); var name = req.GetPathParam("name");
-        var path = CrawlWorkspace(UserOf(req), name); if (!Directory.Exists(path)) throw new DirectoryNotFoundException("Import does not exist");
+        var path = await RequestCrawlRootAsync(req).ConfigureAwait(false); if (!Directory.Exists(path)) throw new DirectoryNotFoundException("Import does not exist");
         var config = await req.GetJsonBodyAsync().ConfigAwait(); await WriteImportJsonAsync(Path.Combine(path, ImportManifest), config).ConfigAwait();
         return new JsonObject { ["name"] = name, ["path"] = path, ["config"] = config };
     }
@@ -154,14 +145,14 @@ public partial class GeminiExtension
             m.Groups[1].Success ? "$" + m.Groups[1].Value : "${" + m.Groups[2].Value + "}");
     }
 
-    static List<(string? Match, Regex Regex, string Replacement, bool Global)> ValidateTransforms(JsonArray transforms)
+    internal static List<(string? Match, Regex Regex, string Replacement, bool Global)> ValidateTransforms(JsonArray transforms)
     {
         var ret = new List<(string?, Regex, string, bool)>(); var index = 0;
         foreach (var node in transforms) {
             index++; if (node is not JsonObject rule) throw new ArgumentException($"Regex transform {index} must be an object");
             var pattern = rule.GetString("pattern"); if (string.IsNullOrEmpty(pattern)) throw new ArgumentException($"Regex transform {index} needs a pattern");
             var flags = rule.GetString("flags") ?? "g"; if (Regex.IsMatch(flags, "[^gims]")) throw new ArgumentException($"Regex transform {index} has unsupported flags");
-            Regex regex; try { regex = new Regex(pattern, TransformOptions(flags)); } catch (ArgumentException e) { throw new ArgumentException($"Regex transform {index} is invalid: {e.Message}", e); }
+            Regex regex; try { regex = new Regex(pattern, TransformOptions(flags), TimeSpan.FromSeconds(2)); } catch (ArgumentException e) { throw new ArgumentException($"Regex transform {index} is invalid: {e.Message}", e); }
             ret.Add((rule.GetString("match"), regex, DotNetReplacement(rule.GetString("replacement") ?? "", regex, index), flags.Contains('g')));
         }
         return ret;
@@ -169,16 +160,23 @@ public partial class GeminiExtension
 
     async Task<object?> TransformCrawlImportAsync(ChatRequestContext req)
     {
-        await AssertWriteAsync(req).ConfigAwait(); var name = req.GetPathParam("name"); var root = CrawlWorkspace(UserOf(req), name);
+        await AssertWriteAsync(req).ConfigAwait(); var name = req.GetPathParam("name"); var root = await RequestCrawlRootAsync(req).ConfigureAwait(false);
         var configPath = Path.Combine(root, ImportManifest); var config = ReadImportJson(configPath); var body = await req.GetJsonBodyAsync().ConfigAwait();
-        var transforms = body.GetArray("transforms") ?? config.GetArray("transforms") ?? new JsonArray(); var validated = ValidateTransforms(transforms); var changed = 0;
-        foreach (var full in Directory.EnumerateFiles(root, "*.md", SearchOption.AllDirectories)) {
-            var rel = Path.GetRelativePath(root, full).Replace('\\', '/'); var text = await File.ReadAllTextAsync(full).ConfigAwait(); var updated = text;
+        var transforms = body.GetArray("transforms") ?? config.GetArray("transforms") ?? new JsonArray(); var changed = 0;
+        changed=await ApplyTransformsAsync(root,transforms).ConfigureAwait(false);
+        config["transforms"] = transforms.DeepClone(); await WriteImportJsonAsync(configPath, config).ConfigAwait();
+        return new JsonObject { ["name"] = name, ["path"] = root, ["changed"] = changed, ["config"] = config };
+    }
+
+    async Task<int> ApplyTransformsAsync(string root,JsonArray transforms)
+    {
+        var validated=ValidateTransforms(transforms);var changed=0;
+        foreach (var full in Directory.EnumerateFiles(root, "*.md", new EnumerationOptions { RecurseSubdirectories=true,IgnoreInaccessible=false,AttributesToSkip=FileAttributes.ReparsePoint })) {
+            if(!GeminiIngest.WithinRoots(full,[root]) || new FileInfo(full).LinkTarget!=null)continue; var rel = Path.GetRelativePath(root, full).Replace('\\', '/'); var text = await File.ReadAllTextAsync(full).ConfigAwait(); var updated = text;
             foreach (var rule in validated) { if (rule.Match != null && !GeminiIngest.GlobMatch(rel, rule.Match)) continue; updated = rule.Global ? rule.Regex.Replace(updated, rule.Replacement) : rule.Regex.Replace(updated, rule.Replacement, 1); }
             if (updated != text) { await File.WriteAllTextAsync(full, updated).ConfigAwait(); changed++; }
         }
-        config["transforms"] = transforms.DeepClone(); await WriteImportJsonAsync(configPath, config).ConfigAwait();
-        return new JsonObject { ["name"] = name, ["path"] = root, ["changed"] = changed, ["config"] = config };
+        return changed;
     }
 
     static string SiteName(Uri uri) => Regex.Replace(uri.Authority.ToLowerInvariant().Replace(':', '-'), "[^a-z0-9._-]+", "-").Trim('.', '-');
@@ -212,7 +210,7 @@ public partial class GeminiExtension
     static bool GlobAny(string value, JsonArray? patterns) => patterns?.Any(x => x != null && GeminiIngest.GlobMatch(value, x.GetValue<string>())) == true;
     static string CrawlAction(Uri uri, JsonObject options) { foreach (var rule in options.GetArray("rules")?.OfType<JsonObject>() ?? []) { if (rule.GetString("match") is { } glob && !GeminiIngest.GlobMatch(uri.AbsolutePath, glob)) continue; if (rule.ContainsKey("queryString") && rule.GetBool("queryString") != (uri.Query.Length > 1)) continue; return rule.GetString("action") ?? "save"; } return "save"; }
 
-    static void ValidateCrawlRules(JsonArray? rules)
+    internal static void ValidateCrawlRules(JsonArray? rules)
     {
         var index = 0;
         foreach (var node in rules ?? [])
@@ -223,13 +221,13 @@ public partial class GeminiExtension
         }
     }
 
-    static async Task<List<(bool Allow, string Path)>> LoadRobotsAsync(HttpClient http, Uri start)
+    static async Task<List<(bool Allow, string Path)>> LoadRobotsAsync(HttpClient http, Uri start, CancellationToken token)
     {
         var rules = new List<(bool, string)>();
         try
         {
             var robotsUri = new UriBuilder(start) { Path = "/robots.txt", Query = "", Fragment = "" }.Uri;
-            using var response = await http.GetAsync(robotsUri).ConfigAwait();
+            using var response = await http.GetAsync(robotsUri,token).ConfigAwait();
             if (!response.IsSuccessStatusCode) return rules;
             var applies = false;
             foreach (var raw in (await response.Content.ReadAsStringAsync().ConfigAwait()).Split('\n'))
@@ -240,6 +238,7 @@ public partial class GeminiExtension
                 else if (applies && key is "allow" or "disallow" && value.Length > 0) rules.Add((key == "allow", value));
             }
         }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
         catch { /* An unavailable robots.txt is permissive, matching RobotFileParser behavior. */ }
         return rules;
     }
@@ -264,19 +263,49 @@ public partial class GeminiExtension
 
     async Task<object?> StartCrawlAsync(ChatRequestContext req)
     {
-        await AssertWriteAsync(req).ConfigAwait(); var supplied = await req.GetJsonBodyAsync().ConfigAwait(); var startText = supplied.GetString("url")?.Trim();
+        await AssertWriteAsync(req).ConfigureAwait(false);
+        var supplied=await req.GetJsonBodyAsync().ConfigureAwait(false);
+        var storeId=supplied.GetLong("filestoreId");var sourceId=supplied.GetLong("sourceId");
+        if(supplied.ContainsKey("sourceSettings") && supplied["sourceSettings"]!=null && supplied["sourceSettings"] is not JsonObject)throw HttpError.BadRequest("sourceSettings must be an object");
+        var settings=supplied.GetObject("sourceSettings");supplied.Remove("filestoreId");supplied.Remove("sourceId");supplied.Remove("sourceSettings");
+        if(storeId!=null && db.GetFilestore(storeId.Value,UserOf(req))==null)throw HttpError.BadRequest("Filestore does not exist");
+        ChatSource? source=null;string? root=null;
+        if(sourceId!=null) {
+            var selected=await SelectedCrawlAsync(req,sourceId.Value,storeId).ConfigureAwait(false);source=selected.Source;root=selected.Root;storeId=source.FilestoreId;
+            var options=EditableSource(source,req).GetObject("importOptions").GetObject("crawl")?.Clone()??new JsonObject();
+            foreach(var pair in supplied)options[pair.Key]=pair.Value?.DeepClone();supplied=options;
+        }
+        var result=await CrawlSiteAsync(supplied,UserOf(req),root,req.Request.RequestAborted).ConfigureAwait(false);
+        if(settings!=null) {
+            var updated=new ChatSource();ApplySourceSettings(updated,GeminiImportManifest.Load(Path.Combine(result.GetString("path")!,ImportManifest)));
+            var patch=settings.Clone();patch.Remove("config");ApplySourceSettings(updated,patch);
+            var config=ChatJson.ParseObject(updated.Config!);
+            foreach(var pair in settings.GetObject("config")??[])if(pair.Key is not ("path" or "manifestPath" or "saved" or "metadataSpecified"))config[pair.Key]=pair.Value?.DeepClone();
+            config["metadataSpecified"]=settings.ContainsKey("rules");updated.Config=config.ToJsonString();
+            await SaveSourceSettingsAsync(updated,req,null).ConfigureAwait(false);
+        }
+        if(storeId!=null) {
+            source??=await RegisterImportManifestAsync(Path.Combine(result.GetString("path")!,ImportManifest),storeId.Value,req).ConfigureAwait(false);
+            result["source"]=EditableSource(db.GetSource(source.Id,UserOf(req))!,req);
+        }
+        return result;
+    }
+    async Task<JsonObject> CrawlSiteAsync(JsonObject supplied,string? user,string? targetRoot,CancellationToken token)
+    {
+        var startText = supplied.GetString("url")?.Trim();
         if (!Uri.TryCreate(startText, UriKind.Absolute, out var start) || start.Scheme is not ("http" or "https")) throw new ArgumentException("A valid http:// or https:// URL is required");
-        var name = supplied.GetString("name") ?? SiteName(start); var root = CrawlWorkspace(UserOf(req), name); Directory.CreateDirectory(root); var configPath = Path.Combine(root, ImportManifest); var config = ReadImportJson(configPath); var previous = GeminiMetadata.AsList(config.GetObject("crawl")?["generated"]).ToHashSet();
+        var name = supplied.GetString("name") ?? SiteName(start); var root = targetRoot ?? CrawlWorkspace(user, name); Directory.CreateDirectory(root); var configPath = Path.Combine(root, ImportManifest); var config = ReadImportJson(configPath); var previous = GeminiMetadata.AsList(config.GetObject("crawl")?["generated"]).ToHashSet();
         var options = new JsonObject { ["sameOrigin"] = true, ["respectRobots"] = true, ["respectNoIndex"] = true, ["followNoFollow"] = false, ["useCanonical"] = true, ["dedupeContent"] = true, ["contentTypes"] = new JsonArray("text/html") };
         foreach (var (key,value) in supplied) options[key] = value?.DeepClone(); options["url"] = startText; options["name"] = name; ValidateCrawlRules(options.GetArray("rules"));
         var maxPages = Math.Clamp(options.GetInt("maxPages") ?? 500, 1, 10000); var maxDepth = Math.Clamp(options.GetInt("maxDepth") ?? 10, 0, 100); var maxRequests = Math.Clamp(options.GetInt("maxRequests") ?? maxPages * 5, maxPages, 50000);
         var startUrl = CanonicalUrl(startText!, start, options) ?? throw new ArgumentException("The start URL is excluded by the crawl rules"); var queue = new Queue<(Uri,int)>(); queue.Enqueue((startUrl,0)); var queued = new HashSet<string>{startUrl.AbsoluteUri}; var seen = new HashSet<string>(); var pages = new List<string>(); var saved = new HashSet<string>(); var hashes = new HashSet<string>(); var variants = new Dictionary<string,int>(); var requests = 0;
         using var http = Ctx.Feature.HttpClientFactory.CreateClient(); http.Timeout = TimeSpan.FromSeconds(30); http.DefaultRequestHeaders.UserAgent.ParseAdd("llms-gemini-crawler/1.0");
-        var robots = options.GetBool("respectRobots", true) ? await LoadRobotsAsync(http, startUrl).ConfigAwait() : [];
-        while (queue.Count > 0 && pages.Count < maxPages && requests < maxRequests) { var (url,depth)=queue.Dequeue(); if (!seen.Add(url.AbsoluteUri) || CrawlAction(url,options)=="exclude" || !RobotsAllow(url, robots)) continue; requests++; using var response = await http.GetAsync(url).ConfigAwait(); if (!response.IsSuccessStatusCode || response.Content.Headers.ContentType?.MediaType is not "text/html") continue; var final = CanonicalUrl(response.RequestMessage!.RequestUri!.AbsoluteUri,start,options); if (final == null) continue; var html = await response.Content.ReadAsStringAsync().ConfigAwait(); var parsed = ParsePage(html); var pageUrl = options.GetBool("useCanonical",true) && parsed.Canonical != null ? CanonicalUrl(parsed.Canonical,final,options) ?? final : final; var text = new HtmlToMarkdownParser(includeLinks:false).Parse(html).Trim(); var digest = GeminiIngest.Sha256(text); var action = CrawlAction(url,options);
+        var robots = options.GetBool("respectRobots", true) ? await LoadRobotsAsync(http, startUrl, token).ConfigAwait() : [];
+        while (queue.Count > 0 && pages.Count < maxPages && requests < maxRequests) { var (url,depth)=queue.Dequeue(); if (!seen.Add(url.AbsoluteUri) || CrawlAction(url,options)=="exclude" || !RobotsAllow(url, robots)) continue; requests++; token.ThrowIfCancellationRequested(); using var response = await http.GetAsync(url,token).ConfigureAwait(false); if ((int)response.StatusCode is 404 or 410) continue; if (!response.IsSuccessStatusCode) throw new HttpRequestException($"Crawl failed for {url}: HTTP {(int)response.StatusCode}; existing pages were retained."); if (response.Content.Headers.ContentType?.MediaType is not "text/html") continue; var final = CanonicalUrl(response.RequestMessage!.RequestUri!.AbsoluteUri,start,options); if (final == null) continue; var html = await response.Content.ReadAsStringAsync().ConfigAwait(); var parsed = ParsePage(html); var pageUrl = options.GetBool("useCanonical",true) && parsed.Canonical != null ? CanonicalUrl(parsed.Canonical,final,options) ?? final : final; var text = new HtmlToMarkdownParser(includeLinks:false).Parse(html).Trim(); var digest = GeminiIngest.Sha256(text); var action = CrawlAction(url,options);
             if (action != "followOnly" && !(options.GetBool("respectNoIndex",true) && parsed.Robots.Contains("noindex")) && text.Length > 0 && saved.Add(pageUrl.AbsoluteUri) && (!options.GetBool("dedupeContent",true) || hashes.Add(digest))) { var rel=PageRelativePath(pageUrl); var full=Path.Combine(root,rel.Replace('/',Path.DirectorySeparatorChar)); Directory.CreateDirectory(Path.GetDirectoryName(full)!); var meta=new JsonObject{{"title",parsed.Title},{"sourceUrl",pageUrl.AbsoluteUri},{"path",pageUrl.AbsolutePath},{"queryString",pageUrl.Query.TrimStart('?')},{"description",parsed.Description},{"tags",new JsonArray(parsed.Tags.Select(x=>(JsonNode)x).ToArray())}}; var front="---\n"+string.Join("\n",meta.Where(x=>x.Value != null && x.Value.ToJsonString() is not "\"\"" and not "[]").Select(x=>$"{x.Key}: {x.Value!.ToJsonString()}"))+"\n---\n"; await File.WriteAllTextAsync(full,front+text+"\n").ConfigAwait(); pages.Add(rel); }
             if (depth >= maxDepth || parsed.Robots.Contains("nofollow") && !options.GetBool("followNoFollow")) continue; foreach (var link in parsed.Links) { if (link.NoFollow && !options.GetBool("followNoFollow")) continue; var clean=CanonicalUrl(link.Url,final,options); if (clean==null || seen.Contains(clean.AbsoluteUri) || !queued.Add(clean.AbsoluteUri) || CrawlAction(clean,options)=="exclude") continue; if (clean.Query.Length>1) { var key=clean.GetLeftPart(UriPartial.Path); var limit=options.GetObject("query")?.GetInt("maxVariantsPerPath")??5; if (variants.GetValueOrDefault(key)>=limit) continue; variants[key]=variants.GetValueOrDefault(key)+1; } queue.Enqueue((clean,depth+1)); }
         }
+        if (pages.Count == 0 && previous.Count > 0) throw new ArgumentException("Crawl returned no pages; existing pages were retained.");
         foreach (var rel in previous.Except(pages)) { var full=Path.GetFullPath(Path.Combine(root,rel.Replace('/',Path.DirectorySeparatorChar))); if (GeminiIngest.WithinRoots(full,[root]) && File.Exists(full)) File.Delete(full); }
         var crawl = config.GetObject("crawl") ?? new JsonObject(); foreach (var (key,value) in options) crawl[key]=value?.DeepClone(); crawl["generated"]=new JsonArray(pages.Select(x=>(JsonNode)x).ToArray()); config["version"]=1; config["crawl"]=crawl; config["metadata"]??=new JsonObject{{"defaults",new JsonObject()},{"rules",new JsonArray()}}; config["transforms"]??=new JsonArray(); await WriteImportJsonAsync(configPath,config).ConfigAwait(); return new JsonObject{{"name",name},{"path",root},{"pages",pages.Count},{"config",config}};
     }

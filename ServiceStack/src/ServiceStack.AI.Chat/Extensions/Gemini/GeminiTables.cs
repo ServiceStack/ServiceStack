@@ -100,11 +100,16 @@ public class ChatDocument
 
     [Index]
     public long? SourceId { get; set; }
-    /// <summary>Non-null source scope used by the portable unique constraint (SourceId ?? 0).</summary>
+    /// <summary>Non-null negative identity reservation, separating exact owner/source/manifest/key values portably.</summary>
     [Default(0)]
     public long SourceScopeId { get; set; }
     [Index]
     public string? SourceKey { get; set; }
+    /// <summary>Durable superseded remote-copy cleanup receipt. Never exposed in document DTOs.</summary>
+    [StringLength(StringLengthAttribute.MaxText)]
+    public string? PendingDeleteNames { get; set; }
+
+    public string? SourceManifestPath { get; set; }
     public string? SourceEtag { get; set; }
     public string? ContentHash { get; set; }
     public string? MetadataHash { get; set; }
@@ -455,7 +460,7 @@ public static class GeminiDtos
         ["category"] = x.Category,
         ["sourceUrl"] = x.SourceUrl,
         ["sourceId"] = x.SourceId,
-        ["sourceKey"] = x.SourceKey,
+        ["sourceKey"] = x.SourceKey, ["sourceManifestPath"] = x.SourceManifestPath,
         ["sourceEtag"] = x.SourceEtag,
         ["contentHash"] = x.ContentHash,
         ["metadataHash"] = x.MetadataHash,

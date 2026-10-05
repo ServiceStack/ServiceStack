@@ -39,6 +39,7 @@ public partial class GeminiDb(ChatDb db)
         ChatDb.AddMissingColumns<ChatSearchClick>(conn);
         ChatDb.AddMissingColumns<ChatSearchPageView>(conn);
         ChatDb.AddMissingColumns<ChatSearchSection>(conn);
+        InitDocumentIdentity(conn);
         InitSearchSchema(conn);
     }
 
@@ -57,6 +58,7 @@ public partial class GeminiDb(ChatDb db)
             typeof(ChatAssistant),
             typeof(ChatSourceRun),
             typeof(ChatDocument),
+            typeof(ChatDocumentIdentity),
             typeof(ChatSource),
             typeof(ChatFilestore));
         searchProvider = null!;
@@ -296,13 +298,12 @@ public partial class GeminiDb(ChatDb db)
         if (!query.GetBool("includeTombstoned"))
             q.And(x => x.TombstonedAt == null);
 
-        if (query.GetString("ids_in") is { Length: > 0 } idsIn)
+        if (query.ContainsKey("ids_in"))
         {
-            var ids = idsIn.Split(',')
-                .Select(x => long.TryParse(x.Trim(), out var id) ? id : (long?)null)
-                .Where(x => x != null).Select(x => x!.Value).ToList();
-            if (ids.Count > 0)
-                q.And(x => ids.Contains(x.Id));
+            var raw=query.GetString("ids_in") ?? throw new ArgumentException("ids_in must be a comma-separated list of positive integers");
+            if(raw.Length==0)return [];
+            var ids=raw.Split(',').Select(x=>long.TryParse(x.Trim(),out var id) && id>0?id:throw new ArgumentException("ids_in must contain positive integers")).ToArray();
+            q.And(x=>ids.Contains(x.Id));
         }
         if (query.GetString("displayNames") is { Length: > 0 } displayNames)
         {
@@ -405,16 +406,21 @@ public partial class GeminiDb(ChatDb db)
     {
         document.SourceKey ??= document.DisplayName;
         GeminiMetadata.NormalizeDocument(document);
-        using var conn = OpenDb();
-        return conn.Insert(document, selectIdentity: true);
+        lock (IdentitySync) {
+            using var conn = OpenDb(); using var transaction = conn.OpenTransaction();
+            AssignIdentity(conn,document);
+            var id = conn.Insert(document, selectIdentity: true); transaction.Commit(); return id;
+        }
     }
 
     public void UpdateDocument(ChatDocument document)
     {
         document.UpdatedAt = DateTime.Now;
         GeminiMetadata.NormalizeDocument(document);
-        using var conn = OpenDb();
-        conn.Update(document);
+        lock (IdentitySync) {
+            using var conn = OpenDb(); using var transaction = conn.OpenTransaction();
+            AssignIdentity(conn,document); conn.Update(document); transaction.Commit();
+        }
     }
 
     public void UpdateDocumentState(long id, string state)
@@ -456,25 +462,43 @@ public partial class GeminiDb(ChatDb db)
         conn.DeleteById<ChatDocument>(document.Id);
     }
 
-    public ChatDocument? FindDocumentBySourceKey(long filestoreId, long? sourceId, string sourceKey, string? user)
+    public ChatDocument? FindDocumentBySourceKey(long filestoreId, long? sourceId, string sourceKey, string? user, string? manifestPath = null)
     {
         using var conn = OpenDb();
-        var scope = sourceId ?? 0;
-        var q = conn.From<ChatDocument>().Where(x => x.FilestoreId == filestoreId
-            && x.SourceScopeId == scope && x.SourceKey == sourceKey);
+        // Narrow by key in SQL (indexed); the exact-case/manifest match is applied in memory because
+        // some database collations compare SourceKey case-insensitively.
+        var q = conn.From<ChatDocument>().Where(x => x.FilestoreId == filestoreId && x.SourceId == sourceId && x.SourceKey == sourceKey);
         if (user != null) ChatDb.ApplyUserFilter(q, user);
-        return conn.Single(q);
+        return conn.Select(q).FirstOrDefault(x => {
+            if (!string.Equals(x.SourceKey,sourceKey,StringComparison.Ordinal)) return false;
+            if (sourceId!=null) return true;
+            return string.IsNullOrEmpty(manifestPath) ? string.IsNullOrEmpty(x.SourceManifestPath)
+                : x.SourceManifestPath!=null && string.Equals(GeminiIngest.ResolvePath(x.SourceManifestPath),GeminiIngest.ResolvePath(manifestPath),OperatingSystem.IsWindows()?StringComparison.OrdinalIgnoreCase:StringComparison.Ordinal);
+        });
     }
 
     /// <summary>Documents queued for upload across all users (the worker runs outside a request)</summary>
-    public List<ChatDocument> GetPendingDocuments(int limit = 10)
+    public List<ChatDocument> GetPendingDocuments(int limit = 10, IReadOnlyCollection<long>? excluded = null)
     {
         using var conn = OpenDb();
         var q = conn.From<ChatDocument>()
             .Where(x => x.UploadedAt == null && x.Error == null && x.TombstonedAt == null)
-            .OrderBy(x => x.Id)
-            .Limit(limit);
+            .OrderBy(x => x.Id);
+        if (excluded is { Count: > 0 }) q.And(x => !excluded.Contains(x.Id));
+        q.Limit(limit);
         return conn.Select(q);
+    }
+
+    public void UpdatePendingDeleteNames(long id,string? names)
+    {
+        using var conn=OpenDb();
+        conn.UpdateOnly(()=>new ChatDocument { PendingDeleteNames=names },x=>x.Id==id);
+    }
+
+    public List<ChatDocument> GetPendingRemoteDeletes()
+    {
+        using var conn = OpenDb();
+        return conn.Select<ChatDocument>(x => x.PendingDeleteNames != null);
     }
 
     /// <summary>Documents recorded locally for a file store (port of get_filestore_stats)</summary>
@@ -515,9 +539,8 @@ public partial class GeminiDb(ChatDb db)
         using var conn = OpenDb();
         var q = conn.From<ChatSource>().Where(x => x.FilestoreId == filestoreId);
         if (user != null) ChatDb.ApplyUserFilter(q, user);
-        if (savedOnly) q.And(x => x.LastRunId != null);
         q.OrderByDescending(x => x.UpdatedAt);
-        return conn.Select(q);
+        return conn.Select(q).Where(x => !savedOnly || x.LastRunId != null || ChatJson.TryParseObject(x.Config).GetBool("saved")).ToList();
     }
 
     public bool SavedSourceNameExists(long filestoreId, string? user, string name, long? exceptId = null)
@@ -541,14 +564,21 @@ public partial class GeminiDb(ChatDb db)
 
     public void DeleteSource(long id, string? user, bool detachDocuments = true)
     {
-        using var conn = OpenDb();
-        var source = GetSource(id, user);
-        if (source == null) return;
-        if (detachDocuments)
-            conn.UpdateOnly(() => new ChatDocument { SourceId = null, SourceScopeId = 0, UpdatedAt = DateTime.Now },
-                x => x.SourceId == id);
-        conn.Delete<ChatSourceRun>(x => x.SourceId == id);
-        conn.Delete<ChatSource>(x => x.Id == id);
+        lock (IdentitySync) {
+            using var conn = OpenDb();
+            var source = GetSource(id, user); if (source == null) return;
+            using var transaction = conn.OpenTransaction();
+            if (detachDocuments) {
+                var config = ChatJson.TryParseObject(source.Config);
+                var manifest = config.GetString("manifestPath") ?? (source.Type == "folder" && config.GetString("path") is { } path ? Path.Combine(path,"import.json") : null);
+                var q = conn.From<ChatDocument>().Where(x=>x.SourceId==id); if (user!=null) ChatDb.ApplyUserFilter(q,user);
+                foreach(var document in conn.Select(q)) {
+                    document.SourceId=null; document.SourceManifestPath=manifest != null ? GeminiIngest.ResolvePath(manifest) : document.SourceManifestPath;
+                    document.UpdatedAt=DateTime.Now; AssignIdentity(conn,document); conn.Update(document);
+                }
+            }
+            conn.Delete<ChatSourceRun>(x=>x.SourceId==id); conn.Delete<ChatSource>(x=>x.Id==id); transaction.Commit();
+        }
     }
 
     public long InsertSourceRun(ChatSourceRun run)

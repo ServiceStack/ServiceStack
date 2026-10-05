@@ -25,6 +25,7 @@ public class GeminiStores(GeminiDb db, GeminiClient client, ILogger log)
             db.UpdateFilestore(filestore);
             return true;
         }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { throw; }
         catch (Exception e)
         {
             log.LogError(e, "Failed to fetch filestore stats from Gemini for {Name}", filestore.Name);

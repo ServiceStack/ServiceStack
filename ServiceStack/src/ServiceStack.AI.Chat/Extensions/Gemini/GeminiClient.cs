@@ -25,10 +25,14 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
     /// <summary>How long to wait between polls of a running upload operation</summary>
     public TimeSpan PollInterval { get; set; } = TimeSpan.FromSeconds(5);
 
-    HttpClient CreateClient()
+    public TimeSpan ReadTimeout { get; set; } = TimeSpan.FromSeconds(30);
+    public TimeSpan DeleteTimeout { get; set; } = TimeSpan.FromSeconds(60);
+    public TimeSpan OperationTimeout { get; set; } = TimeSpan.FromMinutes(10);
+
+    HttpClient CreateClient(TimeSpan? timeout = null)
     {
         var client = httpClientFactory.CreateClient();
-        client.Timeout = Timeout;
+        client.Timeout = timeout ?? Timeout;
         return client;
     }
 
@@ -118,7 +122,7 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
         using var client = CreateClient();
 
         // 1. start the resumable session, which carries the document metadata
-        var startReq = new HttpRequestMessage(HttpMethod.Post,
+        using var startReq = new HttpRequestMessage(HttpMethod.Post,
             Url($"{storeName}:uploadToFileSearchStore", upload: true));
         startReq.Headers.TryAddWithoutValidation("X-Goog-Upload-Protocol", "resumable");
         startReq.Headers.TryAddWithoutValidation("X-Goog-Upload-Command", "start");
@@ -136,7 +140,7 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
             throw new Exception("Gemini did not return an upload url (missing x-goog-upload-url header)");
 
         // 2. send the bytes + finalize, which returns the Operation
-        var uploadReq = new HttpRequestMessage(HttpMethod.Post, uploadUrl);
+        using var uploadReq = new HttpRequestMessage(HttpMethod.Post, uploadUrl);
         uploadReq.Headers.TryAddWithoutValidation("X-Goog-Upload-Offset", "0");
         uploadReq.Headers.TryAddWithoutValidation("X-Goog-Upload-Command", "upload, finalize");
         uploadReq.Content = new ByteArrayContent(content);
@@ -151,6 +155,9 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
     /// <summary>Poll an Operation until it reports done, then return it (errors are left for the caller)</summary>
     public async Task<JsonObject> WaitForOperationAsync(JsonObject operation, CancellationToken token = default)
     {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
+        deadline.CancelAfter(OperationTimeout);
+        token = deadline.Token;
         while (!operation.GetBool("done"))
         {
             var name = operation.GetString("name")
@@ -165,8 +172,8 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
 
     async Task<JsonObject> SendAsync(HttpMethod method, string url, JsonObject? body, CancellationToken token)
     {
-        using var client = CreateClient();
-        var httpReq = new HttpRequestMessage(method, url);
+        using var client = CreateClient(method == HttpMethod.Delete ? DeleteTimeout : method == HttpMethod.Get ? ReadTimeout : Timeout);
+        using var httpReq = new HttpRequestMessage(method, url);
         if (body != null)
             httpReq.Content = new StringContent(body.ToJsonString(ChatJson.Options), Encoding.UTF8, MimeTypes.Json);
         using var httpRes = await client.SendAsync(httpReq, token).ConfigAwait();

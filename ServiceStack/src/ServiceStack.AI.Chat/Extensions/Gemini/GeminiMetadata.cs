@@ -63,7 +63,7 @@ public static class GeminiMetadata
 
     public static void NormalizeDocument(ChatDocument doc)
     {
-        doc.SourceScopeId = doc.SourceId ?? 0;
+        // GeminiDb assigns the portable identity reservation when the row is persisted.
         doc.CategoryPath = JsonArrayOf(CategoryAncestors(doc.Category));
         doc.Versions = JsonArrayOf(AsList(doc.Versions).SelectMany(SplitListInput));
         doc.Tags = JsonArrayOf(AsList(doc.Tags).SelectMany(SplitListInput));

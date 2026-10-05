@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using ServiceStack.Text;
+using System.Text.Json.Nodes;
 
 namespace ServiceStack.AI;
 
@@ -23,6 +24,8 @@ public class GeminiUploadWorker
     readonly int concurrency;
     readonly int maxRetries;
     CancellationTokenSource? cts;
+    Task runTask = Task.CompletedTask;
+    bool stopped;
     bool restartRequested;
     bool cancelRequested;
     long total, done, failed;
@@ -75,129 +78,118 @@ public class GeminiUploadWorker
 
     public void Start()
     {
-        CancellationTokenSource source;
         lock (syncRoot)
         {
-            // Do this even while running: it closes the window where the worker has observed an
-            // empty queue but has not yet changed Running back to false.
+            if (stopped) return;
             restartRequested = true;
             cancelRequested = false;
-            if (Running)
-                return;
+            if (Running) return;
             Running = true;
-            total = db.GetPendingDocuments(int.MaxValue).Count;
-            done = failed = 0;
+            total = done = failed = 0;
             startedAt = DateTime.UtcNow;
-            source = cts = new CancellationTokenSource();
+            var source = cts = new CancellationTokenSource();
+            // Publish ownership and the joinable task atomically; no database/network work in this lock.
+            runTask = Task.Run(() => RunAsync(source));
         }
-        _ = Task.Run(() => RunAsync(source));
     }
 
     public void Stop()
     {
-        lock (syncRoot)
-        {
-            cts?.Cancel();
-        }
+        lock (syncRoot) { stopped = true; restartRequested = false; cts?.Cancel(); }
+    }
+
+    public async Task StopAsync(CancellationToken token = default)
+    {
+        Task task;
+        lock (syncRoot) { stopped = true; restartRequested = false; cts?.Cancel(); task = runTask; }
+        await task.WaitAsync(token).ConfigAwait();
     }
 
     async Task RunAsync(CancellationTokenSource source)
     {
         var token = source.Token;
+        var completed = new HashSet<long>();
+        var filestoreIds = new HashSet<long>();
         try
         {
-            ctx.Log.LogInformation("Gemini UploadWorker started with {Pending} queued documents (concurrency={Concurrency})",
-                total, concurrency);
-            // documents already handled in this run: updates may not be visible to the next read yet
-            var completed = new HashSet<long>();
-            var filestoreIds = new HashSet<long>();
-
             while (!token.IsCancellationRequested && !IsCancelRequested())
             {
-                List<ChatDocument> pending;
                 lock (syncRoot)
-                    restartRequested = false;
-
-                try
                 {
-                    pending = db.GetPendingDocuments(concurrency)
-                        .Where(x => !completed.Contains(x.Id))
-                        .ToList();
+                    if (restartRequested) { restartRequested = false; completed.Clear(); }
                 }
+                List<ChatDocument> pending;
+                try { pending = db.GetPendingDocuments(concurrency, completed); }
                 catch (Exception e)
                 {
-                    // A transient database failure used to kill the only worker, leaving queued
-                    // rows stranded until another upload happened to call Start().
                     ctx.Log.LogError(e, "Gemini UploadWorker failed to read its queue; retrying");
                     await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigAwait();
                     continue;
                 }
-
-                if (pending.Count == 0)
+                if (pending.Count > 0)
                 {
-                    lock (syncRoot)
+                    foreach (var doc in pending) { completed.Add(doc.Id); filestoreIds.Add(doc.FilestoreId); }
+                    lock (syncRoot) total = Math.Max(total, done + failed + pending.Count);
+                    await Task.WhenAll(pending.Select(async doc =>
                     {
-                        if (restartRequested)
-                            continue;
-                        Running = false;
-                        if (ReferenceEquals(cts, source))
-                            cts = null;
-                        break;
-                    }
+                        var succeeded = await ProcessDocumentAsync(doc, token).ConfigAwait();
+                        lock (syncRoot) { if (succeeded) done++; else failed++; }
+                    })).ConfigAwait();
+                    continue;
                 }
-
-                foreach (var doc in pending)
+                // Keep sole ownership through cleanup and the last stats refresh. Start() can
+                // request another drain while either network operation is in flight.
+                foreach (var doc in db.GetPendingRemoteDeletes())
                 {
-                    completed.Add(doc.Id);
+                    await CleanupRemoteCopiesAsync(doc, token).ConfigAwait();
                     filestoreIds.Add(doc.FilestoreId);
                 }
-                lock (syncRoot) total = Math.Max(total, done + failed + pending.Count);
-
-                await Task.WhenAll(pending.Select(async doc =>
-                {
-                    var succeeded = await ProcessDocumentAsync(doc, token).ConfigAwait();
-                    lock (syncRoot)
-                    {
-                        if (succeeded) done++;
-                        else failed++;
-                    }
-                })).ConfigAwait();
-            }
-
-            // the uploads changed each store's document counts + size
-            if (!token.IsCancellationRequested)
-            {
                 foreach (var filestoreId in filestoreIds)
-                {
                     await stores.RefreshAsync(filestoreId, null, token).ConfigAwait();
+                filestoreIds.Clear();
+                lock (syncRoot)
+                {
+                    if (restartRequested && !stopped && !cancelRequested) continue;
+                    if (ReferenceEquals(cts, source)) { Running = false; cts = null; }
+                    return;
                 }
             }
         }
-        catch (OperationCanceledException)
-        {
-            ctx.Log.LogInformation("Gemini UploadWorker cancelled");
-        }
-        catch (Exception e)
-        {
-            ctx.Log.LogError(e, "Gemini UploadWorker failed");
-        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested) { }
+        catch (Exception e) { ctx.Log.LogError(e, "Gemini UploadWorker failed"); }
         finally
         {
+            var restart = false;
             lock (syncRoot)
             {
                 if (ReferenceEquals(cts, source))
                 {
-                    Running = false;
-                    restartRequested = false;
-                    cts = null;
+                    restart = restartRequested && !stopped && !cancelRequested;
+                    Running = false; cts = null;
                 }
             }
             source.Dispose();
-            var status = Status();
-            ctx.Log.LogInformation(
-                "Gemini UploadWorker stopped (total={Total}, done={Done}, failed={Failed}, cancelled={Cancelled})",
-                status.GetLong("total"), status.GetLong("done"), status.GetLong("failed"), status.GetBool("cancelled"));
+            if (restart) Start();
         }
+    }
+
+    async Task CleanupRemoteCopiesAsync(ChatDocument doc, CancellationToken token)
+    {
+        var remaining = GeminiMetadata.AsList(doc.PendingDeleteNames);
+        foreach (var name in remaining.ToArray())
+        {
+            if (name == doc.Name) continue; // never delete the current live document
+            try { await client.DeleteDocumentAsync(name, token).ConfigAwait(); }
+            catch (GeminiApiException e) when (e.StatusCode is 404 or 410) { }
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                ctx.Log.LogWarning(e, "Could not remove superseded Gemini document {Name}", name);
+                continue;
+            }
+            remaining.Remove(name);
+        }
+        doc.PendingDeleteNames = remaining.Count == 0 ? null : GeminiMetadata.JsonArrayOf(remaining);
+        db.UpdatePendingDeleteNames(doc.Id,doc.PendingDeleteNames);
     }
 
     bool IsCancelRequested()
@@ -209,10 +201,9 @@ public class GeminiUploadWorker
     {
         try
         {
-            // a document uploaded before auth was enabled lives in another partition, so fall back to any
-            var filestore = db.GetFilestore(doc.FilestoreId, doc.User)
-                ?? db.GetFilestore(doc.FilestoreId, null)
-                ?? throw new Exception("Filestore not found");
+            var filestore = db.GetFilestore(doc.FilestoreId, null);
+            if (filestore == null || (filestore.User ?? "") != (doc.User ?? ""))
+                throw new Exception("Filestore does not belong to this document's owner");
             var storeName = filestore.Name
                 ?? throw new Exception("Filestore has no name (not created in Gemini?)");
 
@@ -225,15 +216,18 @@ public class GeminiUploadWorker
                 {
                     var remote = GeminiRemoteDocument.From(
                         await client.GetDocumentAsync(doc.Name, token).ConfigAwait());
-                    if (remote.State == "STATE_ACTIVE" && remote.MetadataHash == doc.Hash)
+                    if (remote.State == "STATE_ACTIVE" && remote.MetadataHash == doc.Hash
+                        && remote.DisplayName == doc.DisplayName
+                        && !GeminiMetadata.Differs(doc, ChatDtos.ParseJson(remote.CustomMetadata) as JsonArray))
                     {
                         remote.ApplyTo(doc);
                         db.UpdateDocument(doc);
+                        await CleanupRemoteCopiesAsync(doc, token).ConfigAwait();
                         ctx.Log.LogInformation("Recovered completed Gemini upload for {Document}", doc.DisplayName);
                         return true;
                     }
                 }
-                catch (GeminiApiException e) when (e.StatusCode == 404) { }
+                catch (GeminiApiException e) when (e.StatusCode is 404 or 410) { }
                 catch (Exception e) when (e is not OperationCanceledException)
                 {
                     ctx.Log.LogWarning(e, "Could not verify prior Gemini upload for {Document}", doc.DisplayName);
@@ -290,6 +284,9 @@ public class GeminiUploadWorker
             doc.UploadedAt = DateTime.Now;
             doc.StartedAt = null;
             doc.Name = documentName;
+            doc.Error = null;
+            if (priorName != null && priorName != documentName)
+                doc.PendingDeleteNames = GeminiMetadata.JsonArrayOf(GeminiMetadata.AsList(doc.PendingDeleteNames).Append(priorName));
             db.UpdateDocument(doc);
 
             // read the document back for its assigned state/size/metadata
@@ -308,21 +305,7 @@ public class GeminiUploadWorker
                 ctx.Log.LogWarning(e, "Uploaded document {Name}, but could not refresh its remote fields", documentName);
             }
 
-            // Gemini uploads add a second document. Only remove the previous copy after the new
-            // copy is live and the local row points at it, so a failed replacement is never data loss.
-            if (priorName != null && priorName != documentName)
-            {
-                try
-                {
-                    await client.DeleteDocumentAsync(priorName, token).ConfigAwait();
-                    ctx.Log.LogDebug("Removed superseded Gemini document {Name}", priorName);
-                }
-                catch (GeminiApiException e) when (e.StatusCode == 404) { }
-                catch (Exception e)
-                {
-                    ctx.Log.LogWarning(e, "Could not remove superseded Gemini document {Name}", priorName);
-                }
-            }
+            await CleanupRemoteCopiesAsync(doc, token).ConfigAwait();
             return true;
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)

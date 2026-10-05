@@ -27,7 +27,7 @@ public partial class GeminiExtension
         try
         {
             return File.Exists(ImportConfigPath)
-                ? ChatJson.TryParseObject(File.ReadAllText(ImportConfigPath)) ?? new JsonObject()
+                ? JsonNode.Parse(File.ReadAllText(ImportConfigPath)) as JsonObject ?? throw new ArgumentException("Import config must contain a JSON object")
                 : new JsonObject();
         }
         catch (Exception e) { throw new Exception($"Could not parse {ImportConfigPath}: {e.Message}", e); }
@@ -38,8 +38,9 @@ public partial class GeminiExtension
         var config = GlobalImportConfig();
         return GeminiMetadata.AsList(config.GetObject("gemini")?["importRoots"] ?? config["importRoots"]);
     }
-    List<string> TrustedImportRoots() => ConfiguredImportRoots().Select(ResolveImportPath)
-        .Concat(Ctx.ResolveAllowedDirectories()).Where(Directory.Exists).Distinct(StringComparer.Ordinal).OrderBy(x => x).ToList();
+    /// <summary>Configured import roots plus the caller's own allowed directories, never another user's.</summary>
+    List<string> TrustedImportRoots(string? user) => ConfiguredImportRoots().Select(ResolveImportPath)
+        .Concat(Ctx.ResolveAllowedDirectories(user)).Where(Directory.Exists).Distinct(StringComparer.Ordinal).OrderBy(x => x).ToList();
 
     string ResolveImportPath(string path)
     {
@@ -54,7 +55,7 @@ public partial class GeminiExtension
         if (string.IsNullOrEmpty(path) || Ctx.IsAdmin(req.Request)) return;
         var imports = CrawlImportsRoot(UserOf(req));
         if (GeminiIngest.WithinRoots(ResolveImportPath(path), [imports])) return;
-        var roots = TrustedImportRoots();
+        var roots = TrustedImportRoots(UserOf(req));
         if (roots.Count == 0)
             throw new UnauthorizedAccessException("No trusted import folders are configured");
         if (!GeminiIngest.WithinRoots(ResolveImportPath(path), roots))
@@ -76,7 +77,7 @@ public partial class GeminiExtension
                 return (JsonNode)new JsonObject { ["value"] = value, ["resolved"] = resolved,
                     ["exists"] = Directory.Exists(resolved), ["broad"] = resolved == Path.GetPathRoot(resolved) || resolved == home };
             }).ToArray()),
-            ["effective"] = new JsonArray(TrustedImportRoots().Select(x => (JsonNode)x).ToArray()),
+            ["effective"] = new JsonArray(TrustedImportRoots(UserOf(req)).Select(x => (JsonNode)x).ToArray()),
         });
     }
 
@@ -97,12 +98,12 @@ public partial class GeminiExtension
 
     Task<object?> SourceTypesAsync(ChatRequestContext req)
     {
-        var roots = TrustedImportRoots();
+        var roots = TrustedImportRoots(UserOf(req));
         var imports = CrawlImportsRoot(UserOf(req));
         var rootInfo = new JsonObject
         {
             ["trusted"] = new JsonArray(ConfiguredImportRoots().Select(ResolveImportPath).Select(x => (JsonNode)x).ToArray()),
-            ["allowed"] = new JsonArray(Ctx.ResolveAllowedDirectories().Select(x => (JsonNode)x).ToArray()),
+            ["allowed"] = new JsonArray(Ctx.ResolveAllowedDirectories(UserOf(req)).Select(x => (JsonNode)x).ToArray()),
             ["imports"] = new JsonArray(imports),
             ["all"] = new JsonArray(roots.Append(imports).Distinct().OrderBy(x => x).Select(x => (JsonNode)x).ToArray()),
         };
@@ -116,7 +117,7 @@ public partial class GeminiExtension
     {
         if (!long.TryParse(req.QueryString("filestoreId"), out var filestoreId))
             throw new ArgumentException("filestoreId is required");
-        return Task.FromResult<object?>(db.QuerySources(filestoreId, UserOf(req)).ToDtos(x => x.ToDto()));
+        return Task.FromResult<object?>(db.QuerySources(filestoreId, UserOf(req)).ToDtos(x => { try { return EditableSource(x, req); } catch (Exception e) { var dto=x.ToDto();dto["error"]=ChatJson.ToErrorMessage(e);return dto; } }));
     }
 
     static string? Json(JsonNode? node) => node?.ToJsonString(ChatJson.Options);
@@ -142,24 +143,37 @@ public partial class GeminiExtension
             Schedule = body.GetString("schedule"), OnDelete = body.GetString("onDelete") ?? "tombstone",
             Cursor = Json(body["cursor"]),
         };
-        AssertSourceAllowed(source, req); source.Id = db.InsertSource(source); return source.ToDto();
+        AssertSourceAllowed(source, req);
+        if (body.GetBool("saveConfig")) await SaveSourceSettingsAsync(source,req,body.GetObject("importOptions")).ConfigureAwait(false);
+        source.Id = db.InsertSource(source);
+        if (body.GetBool("saveConfig")) db.AttachSourceDocuments(source.Id,source.FilestoreId,ChatJson.ParseObject(source.Config!).GetString("manifestPath")!,UserOf(req));
+        return source.ToDto();
     }
 
     async Task<object?> UpdateSourceAsync(ChatRequestContext req)
     {
-        await AssertWriteAsync(req).ConfigAwait(); var source = db.GetSource(IdOf(req), UserOf(req)) ?? throw new Exception("Source does not exist");
-        var body = await req.GetJsonBodyAsync().ConfigAwait(); var name = (body.GetString("name") ?? source.Name ?? "").Trim();
-        if (source.LastRunId != null && db.SavedSourceNameExists(source.FilestoreId, UserOf(req), name, source.Id))
-            throw new Exception($"A saved import named '{name}' already exists");
-        source.Name = name;
-        foreach (var key in new[] { "config", "category", "rules", "include", "exclude", "extract", "chunking", "volatile", "cursor" })
-            if (body[key] != null) typeof(ChatSource).GetProperty(char.ToUpperInvariant(key[0]) + key[1..])!.SetValue(source, Json(body[key]));
-        if (body.GetString("type") is { } type) source.Type = type;
-        if (body.GetString("extractorVer") is { } version) source.ExtractorVer = version;
-        if (body.GetString("schedule") is { } schedule) source.Schedule = schedule;
-        if (body.GetString("onDelete") is { } onDelete) source.OnDelete = onDelete;
-        if (body.TryGetPropertyValue("enabled", out _)) source.Enabled = body.GetBool("enabled");
-        AssertSourceAllowed(source, req); db.UpdateSource(source); return source.ToDto();
+        await AssertWriteAsync(req).ConfigureAwait(false);
+        var source=db.GetSource(IdOf(req),UserOf(req)) ?? throw HttpError.NotFound("Source does not exist");
+        var body=await req.GetJsonBodyAsync().ConfigureAwait(false);var save=body.GetBool("saveConfig");
+        var current=save?EditableSource(source,req):source.ToDto();
+        if(save && current.GetObject("importOptions").GetObject("crawl").GetString("url") is { Length:>0 }) {
+            var previous=current.GetObject("config")!.Clone();
+            source=await RegisterImportManifestAsync(previous.GetString("manifestPath")!,source.FilestoreId,req).ConfigureAwait(false);
+            current=EditableSource(source,req);
+            if(previous.GetString("manifestPath")!=current.GetObject("config").GetString("manifestPath") && body.GetObject("config") is { } patch) {
+                var root=Path.GetDirectoryName(previous.GetString("manifestPath"))!;var input=GeminiIngest.ResolvePath(patch.GetString("path")??previous.GetString("path")!);
+                if(!GeminiIngest.WithinRoots(input,[root]))throw HttpError.BadRequest("The crawl input folder must be inside its manifest workspace");
+                patch["manifestPath"]=current.GetObject("config").GetString("manifestPath");patch["path"]=Path.Combine(Path.GetDirectoryName(patch.GetString("manifestPath"))!,Path.GetRelativePath(root,input));
+            }
+        }
+        ApplySourceSettings(source,current);ApplySourceSettings(source,body);source.Name=(source.Name??"").Trim();
+        if((source.LastRunId!=null || ChatJson.TryParseObject(source.Config).GetBool("saved")) && db.SavedSourceNameExists(source.FilestoreId,UserOf(req),source.Name,source.Id))throw HttpError.BadRequest("A saved import with that name already exists");
+        AssertSourceAllowed(source,req);
+        if(save) {
+            if(body.ContainsKey("rules")) {var config=ChatJson.TryParseObject(source.Config)??new JsonObject();config["metadataSpecified"]=true;source.Config=config.ToJsonString();}
+            await SaveSourceSettingsAsync(source,req,body.GetObject("importOptions")).ConfigureAwait(false);
+        }
+        db.UpdateSource(source);return save?EditableSource(source,req):source.ToDto();
     }
 
     async Task<object?> DeleteSourceAsync(ChatRequestContext req)
@@ -173,40 +187,57 @@ public partial class GeminiExtension
     Task<object?> SourceRunsAsync(ChatRequestContext req) =>
         Task.FromResult<object?>(db.QuerySourceRuns(IdOf(req), UserOf(req)).ToDtos(x => x.ToDto()));
 
-    async Task<object?> RunSourceAsync(ChatRequestContext req)
+    async Task<object?> RunSourceAsync(ChatRequestContext req) {
+        await AssertWriteAsync(req).ConfigureAwait(false);
+        var source=db.GetSource(IdOf(req),UserOf(req)) ?? throw HttpError.NotFound("Source does not exist");
+        var body=await req.GetJsonBodyAsync().ConfigureAwait(false);
+        var result=await RunSourcePipelineAsync(source,req,body).ConfigureAwait(false);
+        if(!result.GetBool("dryRun") && body.GetBool("saveConfig")) {
+            source=db.GetSource(source.Id,UserOf(req))!;ApplySourceSettings(source,EditableSource(source,req));await SaveSourceSettingsAsync(source,req,null).ConfigureAwait(false);db.UpdateSource(source);
+        }
+        return result;
+    }
+    async Task<JsonObject> RunSourcePipelineAsync(ChatSource source,ChatRequestContext req,JsonObject body,bool refreshCrawl=false,bool startUploads=true)
     {
-        await AssertWriteAsync(req).ConfigAwait(); var source = db.GetSource(IdOf(req), UserOf(req)) ?? throw new Exception("Source does not exist");
-        AssertSourceAllowed(source, req); var body = await req.GetJsonBodyAsync().ConfigAwait();
-        var dryRun = body.TryGetPropertyValue("dryRun", out _) ? body.GetBool("dryRun") : source.LastRunId == null;
-        if (!dryRun && db.SavedSourceNameExists(source.FilestoreId, UserOf(req), source.Name ?? "", source.Id))
-            throw new Exception($"A saved import named '{source.Name}' already exists");
-        var run = new ChatSourceRun { SourceId = source.Id, User = UserOf(req), StartedAt = DateTime.Now,
-            Status = dryRun ? "preview" : "running", DryRun = dryRun };
-        run.Id = db.InsertSourceRun(run);
-        try
-        {
-            var existing = db.SelectDocuments(new JsonObject { ["filter"] = new JsonObject { ["sourceId"] = source.Id } }, UserOf(req), true);
-            var plan = await Task.Run(() => GeminiIngest.BuildPlan(source, existing, body.GetObject("set"),
-                warning => Log.LogWarning("{Warning}", warning))).ConfigAwait();
-            var summary = plan.Summary(); var refusal = body.GetBool("confirmDeletes") ? null : GeminiIngest.DeleteRefusal(plan, existing.Count);
-            if (refusal != null) { summary["deleteRefused"] = refusal; plan.Removed.Clear(); }
-            PopulateRun(run, plan, summary); run.CompletedAt = DateTime.Now; run.Status = dryRun ? "preview" : "completed";
-            if (!dryRun)
-            {
-                var applied = await ApplyPlanAsync(plan, source, req).ConfigAwait();
-                source.LastRunId = run.Id; source.LastRunAt = DateTime.Now; source.Error = null; db.UpdateSource(source); worker?.Start(); searchWorker?.Start();
-                foreach (var (key, value) in applied) summary[key] = value?.DeepClone();
-                var sourceConfig = ChatDtos.ParseJson(source.Config) as JsonObject;
-                if (body.GetBool("saveConfig") && source.Type == "folder" && sourceConfig?.GetBool("metadataSpecified") == true
-                    && sourceConfig.GetString("path") is { } importPath)
-                    await SaveImportMetadataAsync(importPath, ChatDtos.ParseJson(source.Rules) as JsonObject).ConfigAwait();
+        var gate=SourceRunLocks.GetOrAdd(ImportLockKey(UserOf(req))+"\0"+source.Id,_=>new SemaphoreSlim(1,1));await gate.WaitAsync(req.Request.RequestAborted).ConfigureAwait(false);
+        try {
+            source=db.GetSource(source.Id,UserOf(req)) ?? throw HttpError.NotFound("Source does not exist");
+            var row=EditableSource(source,req);
+            var manifest=row.GetObject("config").GetString("manifestPath");
+            if(manifest!=null && row.GetObject("importOptions").GetObject("crawl").GetString("url") is { Length:>0 }) {
+                source=await RegisterImportManifestAsync(manifest,source.FilestoreId,req).ConfigureAwait(false);row=EditableSource(source,req);manifest=row.GetObject("config").GetString("manifestPath");
             }
-            db.UpdateSourceRun(run); summary["runId"] = run.Id; summary["dryRun"] = dryRun; return summary;
-        }
-        catch (Exception e)
-        {
-            run.Status = "failed"; run.CompletedAt = DateTime.Now; run.Error = ChatJson.ToErrorMessage(e); db.UpdateSourceRun(run); throw;
-        }
+            ApplySourceSettings(source,row);AssertSourceAllowed(source,req);
+            if(refreshCrawl && manifest!=null && row.GetObject("importOptions").GetObject("crawl") is { } crawl && crawl.GetString("url") is { Length:>0 }) {
+                var root=Path.GetDirectoryName(manifest)!;AssertPathAllowed(root,req);
+                await CrawlSiteAsync(crawl,UserOf(req),root,req.Request.RequestAborted).ConfigureAwait(false);
+                await ApplyTransformsAsync(root,row.GetObject("importOptions").GetArray("transforms")??new JsonArray()).ConfigureAwait(false);
+            }
+            var dryRun=body.ContainsKey("dryRun")?body.GetBool("dryRun"):source.LastRunId==null;
+            if(!dryRun && db.SavedSourceNameExists(source.FilestoreId,UserOf(req),source.Name??"",source.Id))throw HttpError.BadRequest("A saved import with that name already exists");
+            var run=new ChatSourceRun { SourceId=source.Id,User=UserOf(req),StartedAt=DateTime.Now,Status=dryRun?"preview":"running",DryRun=dryRun };run.Id=db.InsertSourceRun(run);
+            try {
+                var existing=db.SelectDocuments(new JsonObject { ["filter"]=new JsonObject { ["sourceId"]=source.Id } },UserOf(req),true);
+                var plan=await Task.Run(()=>GeminiIngest.BuildPlan(source,existing,body.GetObject("set"),warning=>Log.LogWarning("{Warning}",warning)),req.Request.RequestAborted).ConfigureAwait(false);
+                var candidates=new JsonArray();
+                if(body.ContainsKey("addAllSourceDocuments") && !body.GetBool("addAllSourceDocuments")) {
+                    var selected=body.GetArray("sourceDocuments")?.Select(x=>x!.GetValue<string>()).ToHashSet()??[];
+                    foreach(var entry in plan.Added.ToArray()) {var key=source.Id+":"+entry.SourceKey;if(selected.Contains(key))continue;var candidate=entry.ToDto();candidate["key"]=key;candidate["sourceId"]=source.Id;candidate["sourceName"]=source.Name;candidates.Add(candidate);plan.Added.Remove(entry);}
+                }
+                var summary=plan.Summary();summary["newSourceDocuments"]=candidates;summary["newSourceCount"]=candidates.Count;
+                summary["pendingUploads"]=plan.Unchanged.Count(x=>existing.Any(d=>d.SourceKey==x.SourceKey && d.UploadedAt==null && d.Error==null));
+                summary["sourceChanges"]=new JsonArray(plan.Added.Concat(plan.Changed).Concat(plan.MetadataOnly).Select(x=>(JsonNode)JsonValue.Create(x.SourceKey)!).Concat(plan.Removed.Select(x=>(JsonNode)JsonValue.Create(x.SourceKey??x.DisplayName??"Document")!)).ToArray());
+                var refusal=body.GetBool("confirmDeletes")?null:GeminiIngest.DeleteRefusal(plan,existing.Count);if(refusal!=null){summary["deleteRefused"]=refusal;plan.Removed.Clear();}
+                if(!dryRun) {
+                    var applied=await ApplyPlanAsync(plan,source,req).ConfigureAwait(false);foreach(var pair in applied)summary[pair.Key]=pair.Value?.DeepClone();
+                    source.LastRunId=run.Id;source.LastRunAt=DateTime.Now;source.Error=string.Join("; ",summary.GetArray("deleteErrors")?.OfType<JsonObject>().Select(x=>x.GetString("error"))??[]);if(source.Error.Length==0)source.Error=null;db.UpdateSource(source);run.Error=source.Error;
+                    if(startUploads){worker?.Start();searchWorker?.Start();}
+                    summary["uploadTotal"]=(summary.GetInt("queued")??0)+(summary.GetInt("pendingUploads")??0);
+                }
+                PopulateRun(run,plan,summary);run.CompletedAt=DateTime.Now;run.Status=dryRun?"preview":"completed";db.UpdateSourceRun(run);
+                summary["runId"]=run.Id;summary["sourceId"]=source.Id;summary["dryRun"]=dryRun;return summary;
+            } catch(Exception e) {run.Status="failed";run.CompletedAt=DateTime.Now;run.Error=ChatJson.ToErrorMessage(e);db.UpdateSourceRun(run);throw;}
+        } finally {gate.Release();}
     }
 
     static void PopulateRun(ChatSourceRun run, GeminiIngestPlan plan, JsonObject summary)
@@ -219,7 +250,7 @@ public partial class GeminiExtension
 
     async Task<JsonObject> ApplyPlanAsync(GeminiIngestPlan plan, ChatSource source, ChatRequestContext req)
     {
-        var queued = 0; var removed = 0;
+        var queued = 0; var removed = 0; var deleteErrors = new JsonArray();
         foreach (var entry in plan.Added.Concat(plan.Changed).Concat(plan.MetadataOnly))
         {
             var bytes = Encoding.UTF8.GetBytes(entry.Text); var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
@@ -230,7 +261,7 @@ public partial class GeminiExtension
             {
                 FilestoreId = source.FilestoreId, SourceId = source.Id, User = UserOf(req), CreatedAt = DateTime.Now,
             };
-            doc.UpdatedAt = DateTime.Now; doc.SourceId = source.Id; doc.SourceKey = entry.SourceKey; doc.SourceEtag = entry.SourceEtag;
+            doc.UpdatedAt = DateTime.Now; doc.SourceId = source.Id; doc.SourceManifestPath = ChatJson.TryParseObject(source.Config).GetString("manifestPath"); doc.SourceKey = entry.SourceKey; doc.SourceEtag = entry.SourceEtag;
             doc.DisplayName = entry.DisplayName; doc.Filename = filename; doc.Url = CacheUrlBase + relative; doc.Hash = hash; doc.Size = bytes.Length;
             doc.MimeType = MimeTypes.GetMimeType(filename); doc.ContentHash = entry.ContentHash; doc.MetadataHash = entry.MetadataHash;
             doc.ExtractorVer = entry.ExtractorVer; doc.TombstonedAt = null; doc.Error = null; doc.UploadedAt = null;
@@ -242,16 +273,31 @@ public partial class GeminiExtension
         foreach (var doc in plan.Removed)
         {
             if (source.OnDelete == "ignore") continue;
-            if (doc.Name != null)
+            try
             {
-                try { await client.DeleteDocumentAsync(doc.Name).ConfigAwait(); }
-                catch (GeminiApiException e) when (e.StatusCode == 404) { }
+                // Removing the row also removes superseded copies awaiting cleanup, which would
+                // otherwise be orphaned in Gemini once their PendingDeleteNames receipt is gone.
+                if (source.OnDelete == "remove") await RemoveDocumentAsync(doc, UserOf(req), req.Request.RequestAborted).ConfigAwait();
+                else {
+                    if (doc.Name != null)
+                    {
+                        try { await client.DeleteDocumentAsync(doc.Name, req.Request.RequestAborted).ConfigAwait(); }
+                        catch (GeminiApiException e) when (e.StatusCode is 404 or 410) { }
+                    }
+                    doc.TombstonedAt = DateTime.Now; doc.Name = null; doc.State = "REMOVED_UPSTREAM"; doc.Error = null;
+                    db.UpdateDocument(doc); db.RemoveSearchDocument(doc.Id);
+                }
+                removed++;
             }
-            if (source.OnDelete == "remove") db.DeleteDocument(doc.Id, UserOf(req));
-            else { doc.TombstonedAt = DateTime.Now; doc.Name = null; doc.State = "REMOVED_UPSTREAM"; db.UpdateDocument(doc); db.RemoveSearchDocument(doc.Id); }
-            removed++;
+            catch (Exception e) when (e is not OperationCanceledException)
+            {
+                var error = ChatJson.ToErrorMessage(e);
+                // Keep the active row and remote name; the next import can retry this removal.
+                doc.Error = error; db.UpdateDocument(doc);
+                deleteErrors.Add(new JsonObject { ["id"] = doc.Id, ["displayName"] = doc.DisplayName, ["error"] = error });
+            }
         }
-        return new JsonObject { ["queued"] = queued, ["removedApplied"] = removed };
+        return new JsonObject { ["queued"] = queued, ["removedApplied"] = removed, ["deleteErrors"] = deleteErrors };
     }
 
     static void ApplyMetadata(ChatDocument doc, JsonObject metadata)

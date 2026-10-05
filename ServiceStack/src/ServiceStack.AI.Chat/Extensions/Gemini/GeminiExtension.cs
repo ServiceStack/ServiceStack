@@ -66,8 +66,8 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         stores = new GeminiStores(db, client, ctx.Log);
         worker = new GeminiUploadWorker(ctx, db, client, stores);
         searchWorker = new GeminiSearchWorker(ctx, db);
-        ctx.RegisterShutdownHandler(worker.Stop);
-        ctx.RegisterShutdownHandler(searchWorker.Stop);
+        ctx.RegisterShutdownHandler(worker.StopAsync);
+        ctx.RegisterShutdownHandler(searchWorker.StopAsync);
 
         ctx.AddGet("filestores", QueryFilestoresAsync, allowAnon: true);
         ctx.AddPost("filestores", CreateFilestoreAsync);
@@ -76,7 +76,7 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         ctx.AddGet("filestores/{id}/categories", FilestoreCategoriesAsync, allowAnon: true);
         ctx.AddGet("filestores/{id}/documents", FilestoreDocumentsAsync, allowAnon: true);
         ctx.AddPost("filestores/{id}/upload", UploadToFilestoreAsync);
-        ctx.AddPost("filestores/{id}/sync", SyncFilestoreAsync);
+        ctx.AddPost("filestores/{id}/sync", req => SourceOperationAsync(req, SyncFilestoreAsync));
         ctx.AddPost("filestores/{id}/prune", PruneFilestoreAsync);
         ctx.AddGet("documents", QueryDocumentsAsync, allowAnon: true);
         ctx.AddDelete("documents/{id}", DeleteDocumentAsync);
@@ -88,27 +88,32 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         ctx.AddGet("documents/pending", PendingDocumentsAsync, allowAnon: true);
         ctx.AddGet("filestores/{id}/facets", FilestoreFacetsAsync, allowAnon: true);
         ctx.AddPost("filestores/{id}/reindex", ReindexDocumentsAsync);
+        ctx.AddPost("filestores/{id}/resume-uploads", ResumeUploadsAsync);
         ctx.AddGet("worker", WorkerStatusAsync, allowAnon: true);
         ctx.AddPost("worker/cancel", CancelWorkerAsync);
         ctx.AddGet("source-types", SourceTypesAsync, allowAnon: true);
-        ctx.AddGet("sources", QuerySourcesAsync, allowAnon: true);
-        ctx.AddPost("sources", CreateSourceAsync);
-        ctx.AddPatch("sources/{id}", UpdateSourceAsync);
-        ctx.AddDelete("sources/{id}", DeleteSourceAsync);
+        ctx.AddGet("sources", QuerySourcesAsync);
+        ctx.AddPost("sources/load", req => SourceOperationAsync(req, LoadSavedImportAsync));
+        ctx.AddGet("sources/{id}", req => Task.FromResult<object?>(EditableSource(db.GetSource(IdOf(req),UserOf(req)) ?? throw HttpError.NotFound("Source does not exist"),req)));
+        ctx.AddPost("sources", req => SourceOperationAsync(req, CreateSourceAsync));
+        ctx.AddPatch("sources/{id}", req => SourceOperationAsync(req, UpdateSourceAsync));
+        ctx.AddDelete("sources/{id}", req => SourceOperationAsync(req, DeleteSourceAsync));
         ctx.AddGet("sources/{id}/runs", SourceRunsAsync, allowAnon: true);
-        ctx.AddPost("sources/{id}/run", RunSourceAsync);
+        ctx.AddPost("sources/{id}/run", req => SourceOperationAsync(req, RunSourceAsync));
         ctx.AddGet("config/import-roots", GetImportRootsAsync, allowAnon: true);
         ctx.AddPost("config/import-roots", SaveImportRootsAsync);
         ctx.AddGet("capabilities", GetCapabilitiesAsync, allowAnon: true);
         ctx.AddPost("capabilities/probe", ProbeCapabilitiesAsync);
         ctx.AddGet("imports", ListCrawlImportsAsync);
         ctx.AddGet("imports/schema", CrawlImportSchemaAsync);
-        ctx.AddGet("imports/{name}", GetCrawlImportAsync);
-        ctx.AddGet("imports/{name}/pages", ListCrawlPagesAsync);
-        ctx.AddGet("imports/{name}/page", GetCrawlPageAsync);
-        ctx.AddPost("imports/crawl", StartCrawlAsync);
-        ctx.AddPut("imports/{name}", SaveCrawlConfigAsync);
-        ctx.AddPost("imports/{name}/transform", TransformCrawlImportAsync);
+        ctx.AddGet("imports/browse", BrowseImportManifestsAsync);
+        ctx.AddPost("imports/load", LoadImportManifestAsync);
+        ctx.AddGet("imports/{name}", req => SourceOperationAsync(req, GetCrawlImportAsync));
+        ctx.AddGet("imports/{name}/pages", req => SourceOperationAsync(req, ListCrawlPagesAsync));
+        ctx.AddGet("imports/{name}/page", req => SourceOperationAsync(req, GetCrawlPageAsync));
+        ctx.AddPost("imports/crawl", req => SourceOperationAsync(req, StartCrawlAsync));
+        ctx.AddPut("imports/{name}", req => SourceOperationAsync(req, SaveCrawlConfigAsync));
+        ctx.AddPost("imports/{name}/transform", req => SourceOperationAsync(req, TransformCrawlImportAsync));
         InstallAssistantRoutes(ctx);
         InstallSearchRoutes(ctx);
     }
@@ -304,8 +309,14 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
     {
         var dto = document.ToDto();
         dto["url"] = Feature.ResolveClientUrl(document.Url);
+        dto["localFileExists"] = LocalFileExists(document);
         return dto;
     }
+
+    /// <summary>True when the document's cached copy exists, so it can be (re)uploaded from it.</summary>
+    bool LocalFileExists(ChatDocument document) =>
+        document.Url?.StartsWith(CacheUrlBase, StringComparison.Ordinal) == true
+        && File.Exists(Ctx.GetCachePath(document.Url[CacheUrlBase.Length..]));
 
     /// <summary>
     /// Accept multipart uploads into the store: each file is hashed, written to the content-addressed
@@ -329,30 +340,17 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
     {
         await AssertWriteAsync(req).ConfigAwait();
         var user = UserOf(req);
-        var id = IdOf(req);
-        var doc = db.GetDocument(id, user)
-            ?? throw new Exception("Document does not exist");
-
-        if (doc.Name is { } name)
+        var gate = ManualDeletionLocks.GetOrAdd(ImportLockKey(user), _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(req.Request.RequestAborted).ConfigAwait();
+        try
         {
-            try
-            {
-                await client.DeleteDocumentAsync(name).ConfigAwait();
-            }
-            catch (GeminiApiException e) when (e.StatusCode == 404)
-            {
-                Log.LogInformation("Document {Name} already deleted in Gemini", name);
-            }
+            var doc = db.GetDocument(IdOf(req), user) ?? throw HttpError.NotFound("Document does not exist");
+            AssertSafeDocumentDelete([doc], user);
+            await RemoveDocumentAsync(doc, user, req.Request.RequestAborted).ConfigAwait();
+            await stores.RefreshAsync(doc.FilestoreId, user, req.Request.RequestAborted).ConfigAwait();
+            return new JsonObject();
         }
-
-        db.DeleteDocument(id, user);
-
-        // the store's counts + size no longer include this document
-        if (doc.FilestoreId > 0)
-        {
-            await stores.RefreshAsync(doc.FilestoreId, user).ConfigAwait();
-        }
-        return new JsonObject();
+        finally { gate.Release(); }
     }
 
     /// <summary>Retry a failed upload, waiting for the worker to finish it (port of upload_document)</summary>
@@ -391,10 +389,12 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         var user = UserOf(req);
         var id = IdOf(req);
         var body = await req.GetJsonBodyAsync().ConfigAwait();
-        var addAllSourceDocuments = body.GetBool("addAllSourceDocuments");
         var selectedSourceDocuments = body.GetArray("sourceDocuments")?
             .Select(x => x?.GetValue<string>()).Where(x => x != null).Cast<string>().ToHashSet()
             ?? [];
+        // Python parity: without an explicit choice, add every new source document unless some were selected
+        var addAllSourceDocuments = body.ContainsKey("addAllSourceDocuments")
+            ? body.GetBool("addAllSourceDocuments") : selectedSourceDocuments.Count == 0;
         var filestore = db.GetFilestore(id, user)
             ?? throw new Exception("Filestore does not exist");
 
@@ -402,58 +402,32 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         // original files as well as reconciling the resulting local catalogue with Gemini.
         var sourceChanges = new List<string>();
         var newSourceDocuments = new JsonArray();
+        var sourceErrors = new List<string>();
+        var sourcesSynced = 0;
         foreach (var source in db.QuerySources(id, user))
         {
-            ChatSourceRun? run = null;
-            var candidateStart = newSourceDocuments.Count;
             try
             {
-                var sourceDocs = db.SelectDocuments(new JsonObject {
-                    ["filter"] = new JsonObject { ["sourceId"] = source.Id }
-                }, user, true);
-                var plan = await Task.Run(() => GeminiIngest.BuildPlan(source, sourceDocs,
-                    onWarning: warning => Log.LogWarning("{Warning}", warning))).ConfigAwait();
-                foreach (var entry in plan.Added.ToList())
-                {
-                    var key = $"{source.Id}:{entry.SourceKey}";
-                    if (addAllSourceDocuments || selectedSourceDocuments.Contains(key)) continue;
-                    var candidate = entry.ToDto();
-                    candidate["key"] = key;
-                    candidate["sourceId"] = source.Id;
-                    candidate["sourceName"] = source.Name;
-                    newSourceDocuments.Add(candidate);
-                    plan.Added.Remove(entry);
-                }
-                var refusal = GeminiIngest.DeleteRefusal(plan, sourceDocs.Count);
-                if (refusal != null)
-                {
-                    Log.LogWarning("{Refusal}", refusal);
-                    plan.Removed.Clear();
-                }
-                sourceChanges.AddRange(plan.Added.Select(x => x.SourceKey));
-                sourceChanges.AddRange(plan.Changed.Select(x => x.SourceKey));
-                sourceChanges.AddRange(plan.MetadataOnly.Select(x => x.SourceKey));
-                sourceChanges.AddRange(plan.Removed.Select(x => x.SourceKey ?? x.DisplayName ?? "Document"));
-                run = new ChatSourceRun { SourceId = source.Id, User = user, StartedAt = DateTime.Now,
-                    Status = "running", DryRun = false };
-                run.Id = db.InsertSourceRun(run);
-                var summary = plan.Summary();
-                var sourceCandidates = new JsonArray(newSourceDocuments.Skip(candidateStart)
-                    .Select(x => x?.DeepClone()).ToArray());
-                summary["newSourceDocuments"] = sourceCandidates;
-                summary["newSourceCount"] = sourceCandidates.Count;
-                PopulateRun(run, plan, summary);
-                await ApplyPlanAsync(plan, source, req).ConfigAwait();
-                run.CompletedAt = DateTime.Now; run.Status = "completed"; db.UpdateSourceRun(run);
-                source.LastRunId = run.Id; source.LastRunAt = DateTime.Now; source.Error = null; db.UpdateSource(source);
+                if (!source.Enabled) continue;
+                // Only the selection is forwarded: Store Sync never confirms deletions or overrides metadata
+                var options = new JsonObject {
+                    ["dryRun"] = false,
+                    ["addAllSourceDocuments"] = addAllSourceDocuments,
+                    ["sourceDocuments"] = new JsonArray(selectedSourceDocuments.Select(x => (JsonNode)x).ToArray()),
+                };
+                var summary = await RunSourcePipelineAsync(source, req, options, refreshCrawl: true, startUploads: false).ConfigAwait();
+                sourcesSynced++;
+                foreach (var item in summary.GetArray("sourceChanges") ?? []) if (item != null) sourceChanges.Add(item.GetValue<string>());
+                foreach (var item in summary.GetArray("newSourceDocuments") ?? []) newSourceDocuments.Add(item?.DeepClone());
+                if (summary.GetString("deleteRefused") is { } refused) sourceErrors.Add($"{source.Name}: {refused}");
+                if (summary.GetInt("failed") is > 0 and var failed) sourceErrors.Add($"{source.Name}: {failed} files could not be read");
+                foreach (var error in summary.GetArray("deleteErrors")?.OfType<JsonObject>() ?? [])
+                    sourceErrors.Add($"{source.Name}: {error.GetString("displayName")}: {error.GetString("error")}");
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
-                if (run != null)
-                {
-                    run.CompletedAt = DateTime.Now; run.Status = "failed"; run.Error = ChatJson.ToErrorMessage(e);
-                    db.UpdateSourceRun(run);
-                }
+                sourceErrors.Add($"{source.Name}: {ChatJson.ToErrorMessage(e)}");
+                source.Error = ChatJson.ToErrorMessage(e); db.UpdateSource(source);
                 Log.LogWarning(e, "Could not scan saved import {SourceId} during store sync", source.Id);
             }
         }
@@ -461,12 +435,13 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
 
         var localDocs = db.QueryAllDocuments(id, user).ToList();
         var localById = localDocs.ToDictionary(x => x.Id);
+        var hashGroups=localDocs.Where(x=>x.Hash!=null).GroupBy(x=>x.Hash!,StringComparer.Ordinal).ToDictionary(x=>x.Key,x=>x.ToList(),StringComparer.Ordinal);
         var localByHash = new Dictionary<string, ChatDocument>();
         var localByName = new Dictionary<string, ChatDocument>();
         foreach (var doc in localDocs)
         {
             if (doc.Hash != null)
-                localByHash[doc.Hash] = doc;
+                if(hashGroups[doc.Hash].Count==1)localByHash[doc.Hash] = doc;
             if (doc.Name != null)
                 localByName[doc.Name] = doc;
         }
@@ -486,10 +461,11 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         foreach (var remoteJson in remoteDocs)
         {
             var remote = GeminiRemoteDocument.From(remoteJson);
-            var local = remote.MetadataId is { } metadataId
-                ? localById.GetValueOrDefault(metadataId)
-                : remote.MetadataHash != null ? localByHash.GetValueOrDefault(remote.MetadataHash)
-                : remote.Name != null ? localByName.GetValueOrDefault(remote.Name) : null;
+            var local = remote.Name != null ? localByName.GetValueOrDefault(remote.Name) : null;
+            if(local==null && remote.MetadataId is { } metadataId && localById.TryGetValue(metadataId,out var byId)
+                && byId.Hash==remote.MetadataHash) local=byId;
+            if(local==null && remote.MetadataId==null && remote.MetadataHash!=null)
+                local=localByHash.GetValueOrDefault(remote.MetadataHash);
 
             if (local == null)
             {
@@ -508,7 +484,7 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
             matchedByHash++;
 
             var diff = remote.Diff(local);
-            if (diff.Count > 0)
+            if (diff.Count > 0 && !(local.UploadedAt == null && (remote.DisplayName != local.DisplayName || remote.MetadataHash != local.Hash || GeminiMetadata.Differs(local, ChatDtos.ParseJson(remote.CustomMetadata) as JsonArray))))
             {
                 Log.LogDebug("Updating local doc {Doc} unmatched fields: {Fields}",
                     FileNameOf(local), string.Join(", ", diff));
@@ -545,7 +521,7 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         }
 
         var duplicates = hashCounts.Where(x => x.Value > 1)
-            .Select(x => localByHash[x.Key])
+            .SelectMany(x => hashGroups.GetValueOrDefault(x.Key) ?? [])
             .ToList();
 
         foreach (var doc in remoteMissing)
@@ -556,6 +532,20 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
             db.UpdateDocumentState(doc.Id, "METADATA_MISMATCH");
         foreach (var doc in duplicates)
             db.UpdateDocumentState(doc.Id, "DUPLICATE_FILE");
+
+        // Missing remote copies and broken identity metadata can be repaired from the local cache
+        // (llms-py parity): re-queue them, so the worker uploads a fresh copy. A broken copy keeps
+        // its remote name and is removed only after its replacement succeeds.
+        foreach (var doc in remoteMissing.Concat(missingMetadata).Concat(metadataMismatch).DistinctBy(x => x.Id).ToList())
+        {
+            if (!LocalFileExists(doc)) continue;
+            var current = db.GetDocument(doc.Id, user);
+            if (current == null) continue;
+            current.UploadedAt = null; current.StartedAt = null; current.Error = null;
+            if (remoteMissing.Any(x => x.Id == doc.Id)) current.Name = null;
+            db.UpdateDocument(current);
+            if (pendingUploads.All(x => x.Id != doc.Id)) pendingUploads.Add(current);
+        }
 
         await stores.RefreshAsync(filestore).ConfigAwait();
         db.EnsureSearchDesiredHashes();
@@ -580,6 +570,8 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
             ["Unmatched Fields"] = Issue(unmatched.Count, unmatched.Take(5).Select(FileNameOf)),
             ["Duplicate Documents"] = Issue(duplicates.Count, duplicates.Take(5).Select(FileNameOf)),
             ["Source Changes"] = Issue(sourceChanges.Count, sourceChanges.Take(5)),
+            ["Saved Imports"] = Issue(sourcesSynced, []),
+            ["Source Errors"] = Issue(sourceErrors.Count, sourceErrors),
             ["Pending Uploads"] = Issue(pendingUploads.Count, pendingUploads.Take(5).Select(FileNameOf)),
             ["New Source Documents"] = new JsonObject {
                 ["count"] = newSourceDocuments.Count,

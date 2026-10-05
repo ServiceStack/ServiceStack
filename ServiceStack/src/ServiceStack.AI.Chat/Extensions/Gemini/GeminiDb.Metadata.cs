@@ -16,8 +16,15 @@ public partial class GeminiDb
     public List<ChatDocument> SelectDocuments(JsonObject selector, string? user, bool includeTombstoned = false)
     {
         var query = selector.GetObject("filter")?.Clone() ?? selector.Clone();
-        if (selector.GetArray("ids") is { Count: > 0 } ids)
-            query["ids_in"] = string.Join(',', ids.Select(x => x?.ToString()).Where(x => x != null));
+        var idSelector = selector.ContainsKey("ids") ? selector : query;
+        if (idSelector.ContainsKey("ids"))
+        {
+            var ids = idSelector.GetArray("ids") ?? throw new ArgumentException("ids must be an array");
+            if (ids.Count == 0) return [];
+            var parsed = ids.Select(x => x is JsonValue value && value.TryGetValue<long>(out var id) && id > 0
+                ? id : throw new ArgumentException("ids must contain positive integers")).ToArray();
+            query["ids_in"] = string.Join(',', parsed);
+        }
         query.Remove("ids");
         query.Remove("filter");
         query["includeTombstoned"] = includeTombstoned;
