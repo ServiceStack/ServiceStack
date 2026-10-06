@@ -33,10 +33,10 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.13.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.29.2" />
-    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.51.2" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.30.0" />
+    <PackageReference Include="Microsoft.CognitiveServices.Speech" Version="1.52.0" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.21.0" />
-    <PackageReference Include="Azure.Storage.Common" Version="12.28.0" />
+    <PackageReference Include="Azure.Storage.Common" Version="12.29.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
