@@ -14,6 +14,9 @@ public sealed class StaticProjectPublisher(ExtensionContext ctx, StaticPublishCo
     public const string DefaultBaseUrl = "";
     static readonly ConcurrentDictionary<string, SemaphoreSlim> Gates = new(
         OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+    /// <summary>Hidden files and folders, whose names start with '.', are never published: they're repositories,
+    /// secrets like .env, and tool settings, which a static server that doesn't hide them would serve.</summary>
+    public static bool IsExcluded(string name) => name.StartsWith('.');
     static readonly Regex ReservedName = new(@"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     public static StaticPublishConfig Configure(JsonObject config, string startupDirectory, StaticPublishConfig? codeConfig = null, string? webContentDirectory = null)
@@ -106,6 +109,8 @@ public sealed class StaticProjectPublisher(ExtensionContext ctx, StaticPublishCo
             foreach (var entry in Directory.EnumerateFileSystemEntries(directory))
             {
                 token.ThrowIfCancellationRequested();
+                // Skipped before it's checked, so nothing in it can fail the publication
+                if (IsExcluded(Path.GetFileName(entry))) continue;
                 NoLinks(entry, source);
                 if (Directory.Exists(entry)) pending.Push(entry);
                 else

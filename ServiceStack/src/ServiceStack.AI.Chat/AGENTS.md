@@ -233,7 +233,9 @@ short-lived confirmation tokens.
   `user/default/share_static/config.json` (enabled, web content directory/p, /p/, empty baseUrl defaults).
   An omitted Directory resolves under the host's web root; an explicit relative Directory uses the working
   directory. Empty BaseUrl uses the UI's current origin through ai.mjs's resolveStaticPublishUrl hook;
-  ChatFeatureRoutes enables that fallback at serve time, including a root-mounted UI.
+  ChatFeatureRoutes enables that fallback at serve time, including a root-mounted UI. Hidden files and
+  folders, whose names start with `.` (`StaticProjectPublisher.IsExcluded`), are never copied, matching
+  llms-py's `is_excluded`.
   Exports rewrite only copied HTML; metadata is separate and server-owned, using an in-process semaphore.
 - `Extensions/ShareLlmspy` owns the bounded `PublisherClient` and per-user grants, with legacy publish
   grants migrated on save and removed on disconnect. Capture immutable origin/account before network I/O.

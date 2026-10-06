@@ -266,6 +266,39 @@ public class AiChatStaticPublishTests
         Assert.That(Directory.GetDirectories(Path.GetDirectoryName(destination)!, ".publish-*"), Is.Empty);
     }
 
+    [Test]
+    public async Task Hidden_files_and_folders_are_not_published()
+    {
+        using var host = new AiChatMigrationTestHost();
+        var extension = Install(host);
+        var (project, source) = await Project(host, extension);
+        Directory.CreateDirectory(Path.Combine(source, ".git", "refs"));
+        await File.WriteAllTextAsync(Path.Combine(source, ".git", "HEAD"), "ref: refs/heads/main");
+        // A link in a hidden folder would otherwise be rejected
+        if (!OperatingSystem.IsWindows())
+            File.CreateSymbolicLink(Path.Combine(source, ".git", "refs", "outside"), host.DirectoryPath);
+        await File.WriteAllTextAsync(Path.Combine(source, ".env"), "API_KEY=secret");
+        await File.WriteAllTextAsync(Path.Combine(source, "assets", ".git"), "gitdir: ../../.git/worktrees/site");
+        Directory.CreateDirectory(Path.Combine(source, "assets", ".cache"));
+        await File.WriteAllTextAsync(Path.Combine(source, "assets", ".cache", "build.json"), "{}");
+        await File.WriteAllTextAsync(Path.Combine(source, "assets", "app.v1.js"), "app()");
+
+        var destination = (await Publish(host, project)).GetString("publishedPath")!;
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(Directory.Exists(Path.Combine(destination, ".git")), Is.False);
+            Assert.That(File.Exists(Path.Combine(destination, ".env")), Is.False);
+            Assert.That(File.Exists(Path.Combine(destination, "assets", ".git")), Is.False);
+            Assert.That(Directory.Exists(Path.Combine(destination, "assets", ".cache")), Is.False);
+            // Only names that start with '.' are hidden
+            Assert.That(File.Exists(Path.Combine(destination, "assets", "app.v1.js")), Is.True);
+            Assert.That(File.Exists(Path.Combine(destination, "assets", "logo.png")), Is.True);
+            // The source is unchanged
+            Assert.That(File.Exists(Path.Combine(source, ".env")), Is.True);
+        });
+    }
+
     sealed class CommitFailure(IProjectsApi projects) : IProjectsApi
     {
         public List<JsonObject> GetUserProjects(string? user = null) => projects.GetUserProjects(user);
