@@ -119,12 +119,12 @@ public sealed class OpenAiSubscriptionProvider : OpenAiCompatibleProvider
             if (!string.IsNullOrEmpty(BaseProvider?.ApiKey)) return await BaseProvider.ChatAsync(chat.Clone(), context).ConfigureAwait(false);
             throw HttpError.Unauthorized("ChatGPT subscription is not connected. Sign in in Settings or configure the OpenAI API key.");
         }
-        if (chat.GetArray("modalities")?.Any(m => m?.GetValue<string>() != "text") == true)
+        try
         {
-            if (!string.IsNullOrEmpty(BaseProvider?.ApiKey)) return await BaseProvider.ChatAsync(chat.Clone(), context).ConfigureAwait(false);
-            throw HttpError.BadRequest("This ChatGPT subscription provider supports text responses. Configure an API-key provider for other modalities.");
+            if (chat.GetArray("modalities")?.Any(m => m?.GetValue<string>() != "text") == true)
+                throw HttpError.BadRequest("ChatGPT subscription supports text responses only. The OpenAI API key is disabled while connected. Disconnect the subscription in Settings to use the OpenAI API key for image or audio generation.");
+            return await SubscriptionChatAsync(chat, context, user).ConfigureAwait(false);
         }
-        try { return await SubscriptionChatAsync(chat, context, user).ConfigureAwait(false); }
         catch (OperationCanceledException) when (context.CancellationToken.IsCancellationRequested) { throw; }
         catch (Exception error) { throw new ChatProviderRequestException(error); }
     }

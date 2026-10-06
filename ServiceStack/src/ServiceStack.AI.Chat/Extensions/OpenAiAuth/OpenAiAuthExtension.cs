@@ -124,11 +124,13 @@ public sealed class OpenAiAuthExtension() : ChatExtension("openai_auth")
         var user = User(request); var grant = Credentials.Load(user); var account = grant.GetObject("account");
         var provider = Feature.Providers.GetValueOrDefault("openai"); var baseProvider = provider is OpenAiSubscriptionProvider subscription ? subscription.BaseProvider : provider;
         var connected = !string.IsNullOrEmpty(grant.GetString("access_token")); var expires = grant.GetLong("expires_at") ?? 0;
+        var hasApiKey = !string.IsNullOrEmpty(baseProvider?.ApiKey);
         // No implicit operator-file probing. Only an explicit host resolver plus authorization enables import.
         var canImport = Options.CanImportLocalCredentials?.Invoke(request) == true && Options.LocalCredentialsPath != null;
         return new() { ["connected"] = connected, ["email"] = account.GetString("email") ?? "", ["name"] = account.GetString("name") ?? "", ["plan"] = account.GetString("plan") ?? "",
             ["account_id"] = grant.GetString("account_id") ?? account.GetString("account_id") ?? "", ["expires_at"] = expires, ["expired"] = connected && Options.Clock.GetUtcNow().ToUnixTimeSeconds() >= expires,
-            ["has_api_key"] = !string.IsNullOrEmpty(baseProvider?.ApiKey), ["has_codex_auth"] = canImport,
+            ["has_api_key"] = hasApiKey, ["api_key_active"] = hasApiKey && grant == null,
+            ["api_key_disabled"] = hasApiKey && grant != null, ["has_codex_auth"] = canImport,
             ["pending"] = Flows.HasPending(user), ["manual_callback"] = !Options.AutomaticCallback, ["automatic_callback"] = Options.AutomaticCallback, ["callback_error"] = Flows.CallbackError(user) };
     }
     async Task<object?> ImportAsync(ChatRequestContext request)

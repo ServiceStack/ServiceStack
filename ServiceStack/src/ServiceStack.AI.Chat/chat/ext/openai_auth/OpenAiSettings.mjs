@@ -17,7 +17,7 @@ export default {
                         OpenAI Subscription
                     </h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Use your ChatGPT Plus or Pro subscription directly in chat
+                        Use your ChatGPT subscription in chat
                     </p>
                 </div>
             </div>
@@ -58,9 +58,7 @@ export default {
                             {{ status.plan }}
                         </span>
                     </div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ status.plan_enabled === false ? 'Signed in. Authorize ChatGPT plan usage to enable subscription chat.' : 'Text chat uses your authorized ChatGPT plan. Other modalities may use your configured API-key provider.' }}
-                    </div>
+                    <p v-if="status.api_key_disabled" class="text-xs text-gray-500 dark:text-gray-400">OpenAI API key disabled</p>
                 </div>
 
                 <button 
@@ -78,25 +76,11 @@ export default {
         <!-- Content: Disconnected State -->
         <div v-else class="space-y-4 pt-2">
             <p v-if="status.connected && status.plan_enabled === false" class="text-sm text-amber-600 dark:text-amber-400">
-                Signed in. Sign in again and authorize ChatGPT plan usage to enable subscription chat.
+                Sign in again and authorize ChatGPT plan usage.
             </p>
             <p v-if="status.requires_reconnect" class="text-sm text-amber-600 dark:text-amber-400">
-                Your saved connection requires a new sign-in using the public ChatGPT authentication flow.
+                Sign in again to reconnect.
             </p>
-            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                Connect your personal ChatGPT Plus or Pro account to use OpenAI models directly through your existing subscription instead of consumption-based API billing.
-            </p>
-            <p v-if="status.manual_callback" class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                Sign-in opens another browser tab. After authorizing, its localhost callback page may show “Connection refused” because this app does not run a callback listener. Copy that page’s complete address, return here, and paste it into the callback field to finish signing in.
-            </p>
-
-            <div v-if="status.has_api_key" class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                <svg class="w-4 h-4 text-blue-500 shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                </svg>
-                <span>OPENAI_API_KEY is currently configured and will remain active until you connect your subscription.</span>
-            </div>
-
             <div class="flex flex-wrap items-center gap-3 pt-1">
                 <button
                     v-if="!connecting"
@@ -108,7 +92,7 @@ export default {
                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1683a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4947zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1683a.0757.0757 0 0 1-.071 0l-4.8303-2.7866A4.4992 4.4992 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.6667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1636a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/>
                     </svg>
-                    <span>Sign in with ChatGPT</span>
+                    <span>Continue with ChatGPT</span>
                 </button>
 
                 <button
@@ -123,7 +107,7 @@ export default {
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
-                    <span>{{ copiedLink ? 'Copied link!' : 'Copy sign-in link' }}</span>
+                    <span>{{ copiedLink ? 'Copied!' : 'Copy link' }}</span>
                 </button>
 
                 <button
@@ -145,7 +129,7 @@ export default {
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        {{ status.automatic_callback ? 'Waiting for sign-in to complete...' : 'Complete sign-in in the browser, then return here.' }}
+                        Waiting for sign-in...
                     </span>
                     <button
                         v-if="authUrl"
@@ -157,10 +141,10 @@ export default {
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                         </svg>
-                        {{ copiedLink ? 'Copied link!' : 'Copy sign-in link' }}
+                        {{ copiedLink ? 'Copied!' : 'Copy link' }}
                     </button>
                     <a v-if="authUrl" :href="authUrl" target="_blank" class="text-xs text-blue-600 dark:text-blue-400 underline underline-offset-2">
-                        Reopen login window
+                        Open sign-in
                     </a>
                     <button 
                         type="button" 
@@ -185,9 +169,8 @@ export default {
 
             <!-- Manual URL/Code fallback section -->
             <div v-if="showManual" class="mt-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 space-y-3">
-                <p class="text-sm font-semibold" :class="$styles.heading">Finish sign-in here</p>
                 <p class="text-xs text-gray-600 dark:text-gray-400">
-                    If the localhost callback page shows “Connection refused”, copy its complete URL from the browser’s address bar, return here, and paste it below. Include code, state, and client_id, then click Submit. A bare authorization code cannot verify this sign-in.
+                    Paste the full callback URL from your browser.
                 </p>
                 <div class="flex gap-2">
                     <input 
@@ -232,6 +215,8 @@ export default {
             expires_at: 0,
             expired: false,
             has_api_key: false,
+            api_key_active: false,
+            api_key_disabled: false,
             has_codex_auth: false,
         })
 
@@ -427,6 +412,7 @@ export default {
             manualInput,
             manualError,
             status,
+            authUrl,
             connect,
             cancelConnect,
             disconnect,

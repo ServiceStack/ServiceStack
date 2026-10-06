@@ -61,9 +61,32 @@ public partial class AiChatMigrationOpenAiAuthTests
         using var f=new Fixture();f.Connect();f.Ext.Flows.Close();Assert.That(f.Ext.Flows.HasPending("alice"),Is.False);Assert.Throws<OperationCanceledException>(()=>f.Connect());
         if(OperatingSystem.IsWindows())return;var path=Path.GetDirectoryName(f.Ext.Credentials.PathFor("alice"))!;var outside=Path.Combine(f.Host.DirectoryPath,"outside");Directory.CreateDirectory(outside);Directory.CreateDirectory(Path.GetDirectoryName(path)!);Directory.CreateSymbolicLink(path,outside);Assert.Throws<InvalidOperationException>(()=>f.Save());Assert.That(Directory.GetFiles(outside),Is.Empty);
     }
-    [Test]
-    public async Task Subscription_non_text_output_uses_only_configured_API_key_fallback()
+    [TestCase("image"), TestCase("audio")]
+    public async Task Subscription_disables_API_key_for_non_text_output_until_disconnect(string modality)
     {
-        using var f=new Fixture();f.Save();var calls=0;f.Host.Feature.Providers["openai"]=new FallbackProvider(()=>calls++){Id="openai",ApiKey="fixture-api"};var chat=f.Chat();chat["modalities"]=new JsonArray("text","audio");await f.Provider.ChatAsync(chat,f.Context());Assert.That(calls,Is.EqualTo(1));Assert.That(f.ResponseCalls,Is.Zero);
+        using var f = new Fixture();
+        f.Save();
+        var calls = 0;
+        f.Host.Feature.Providers["openai"] = new FallbackProvider(() => calls++) { Id = "openai", ApiKey = "fixture-api" };
+        var provider = f.Provider;
+        var chat = f.Chat();
+        chat["modalities"] = new JsonArray("text", modality);
+        var error = Assert.ThrowsAsync<ChatProviderRequestException>(async () => await provider.ChatAsync(chat, f.Context()));
+        Assert.That(error!.Message, Does.Contain("OpenAI API key is disabled"));
+        Assert.That(calls, Is.Zero);
+        Assert.That(f.ResponseCalls, Is.Zero);
+        var status = (JsonObject)(await f.Host.SendAsync("GET", "/ext/openai_auth/status", "alice"))!;
+        Assert.That(status.GetBool("has_api_key"), Is.True);
+        Assert.That(status.GetBool("api_key_disabled"), Is.True);
+        Assert.That(status.GetBool("api_key_active"), Is.False);
+        await provider.ChatAsync(chat, f.Context("bob"));
+        Assert.That(calls, Is.EqualTo(1));
+        f.Ext.Flows.Disconnect("alice");
+        await provider.ChatAsync(chat, f.Context());
+        Assert.That(calls, Is.EqualTo(2));
+        status = (JsonObject)(await f.Host.SendAsync("GET", "/ext/openai_auth/status", "alice"))!;
+        Assert.That(status.GetBool("api_key_disabled"), Is.False);
+        Assert.That(status.GetBool("api_key_active"), Is.True);
+        Assert.That(provider.BaseProvider!.ApiKey, Is.EqualTo("fixture-api"));
     }
 }
