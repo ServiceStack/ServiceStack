@@ -8,6 +8,7 @@ import copy
 import datetime as dt
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -23,7 +24,7 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 TOOL_VERSION = '6.2.0'
 FORMAT = '1.6'
-GENERATOR_VERSION = '1.1.0'
+GENERATOR_VERSION = '1.1.1'
 STATES = {'exploitable', 'in_triage', 'resolved', 'resolved_with_pedigree', 'false_positive', 'not_affected'}
 JUSTIFICATIONS = {'code_not_present', 'code_not_reachable', 'requires_configuration', 'requires_dependency', 'requires_environment', 'protected_by_compiler', 'protected_at_runtime', 'protected_at_perimeter', 'protected_by_mitigating_control'}
 
@@ -44,11 +45,22 @@ def timestamp():
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec='seconds').replace('+00:00', 'Z')
 
 
-def run(args, cwd=None):
-    result = subprocess.run([str(x) for x in args], cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+def run(args, cwd=None, env=None):
+    result = subprocess.run([str(x) for x in args], cwd=cwd, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if result.returncode:
         raise ValueError(f'Command failed ({result.returncode}): {args[0]}\n{result.stdout}')
     return result.stdout
+
+
+def generate_framework_bom(tool, project, tfm, temporary, cache):
+    bom_path = temporary / (tfm + '.json')
+    # CycloneDX discovers caches via NuGet settings, independently of the assets
+    # packageFolders. Explicitly select the exact restore cache for staged releases.
+    environment = {**os.environ, 'NUGET_PACKAGES': str(cache.resolve())}
+    run(tool + [str(project), '--framework', tfm, '--disable-package-restore', '--output-format', 'Json',
+                '--spec-version', FORMAT, '--output', str(temporary), '--filename', bom_path.name],
+        cwd=HERE, env=environment)
+    return read_json(bom_path)
 
 
 def prop(name, value):
@@ -481,10 +493,7 @@ def generate_one(item, archive, info, args, tool, created):
         assets = read_json(temporary / 'obj/project.assets.json')
         documents = {}
         for tfm in info['frameworks']:
-            bom_path = temporary / (tfm + '.json')
-            run(tool + [str(project), '--framework', tfm, '--disable-package-restore', '--output-format', 'Json',
-                        '--spec-version', FORMAT, '--output', str(temporary), '--filename', bom_path.name], cwd=HERE)
-            documents[tfm] = read_json(bom_path)
+            documents[tfm] = generate_framework_bom(tool, project, tfm, temporary, cache)
         bom = aggregate(info, documents, package_hash, created)
         archives = {(info['id'].lower(), info['version']): archive}
         for key, library in assets['libraries'].items():

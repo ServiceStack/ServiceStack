@@ -153,6 +153,19 @@ class GenerationTests(unittest.TestCase):
         release.mkdir(parents=True)
         return release
 
+    def test_cyclonedx_uses_exact_restore_cache_without_changing_parent_environment(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            cache = directory / 'isolated-packages'
+            (directory / 'net10.0.json').write_text('{}')
+            with patch.dict(security.os.environ, {'NUGET_PACKAGES': '/wrong-global-cache', 'CACHE_REGRESSION': 'preserved'}), patch.object(security, 'run') as run:
+                security.generate_framework_bom(['dotnet-CycloneDX'], directory / 'Consumer.csproj', 'net10.0', directory, cache)
+                environment = run.call_args.kwargs['env']
+                self.assertEqual(environment['NUGET_PACKAGES'], str(cache.resolve()))
+                self.assertEqual(environment['CACHE_REGRESSION'], 'preserved')
+                self.assertEqual(security.os.environ['NUGET_PACKAGES'], '/wrong-global-cache')
+                self.assertIn('--disable-package-restore', run.call_args.args[0])
+
     def test_existing_packages_skip_download_and_tools(self):
         with tempfile.TemporaryDirectory() as temporary:
             item = self.item(Path(temporary))
