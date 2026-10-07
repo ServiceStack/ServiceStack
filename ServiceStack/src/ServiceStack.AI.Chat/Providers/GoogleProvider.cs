@@ -217,26 +217,56 @@ public class GoogleProvider : OpenAiCompatibleProvider
             generationConfig["maxOutputTokens"] = maxTokens;
         if (chat["stop"] is { } stop)
             generationConfig["stopSequences"] = stop is JsonArray ? stop.DeepClone() : new JsonArray(stop.DeepClone());
-        if (chat.GetDouble("temperature") is { } temperature)
-            generationConfig["temperature"] = temperature;
-        if (chat.GetDouble("top_p") is { } topP)
-            generationConfig["topP"] = topP;
-        if (chat.GetInt("top_logprobs") is { } topK)
-            generationConfig["topK"] = topK;
+        var modelLower = (chat.GetString("model") ?? "").ToLowerInvariant();
+        var isGemini3 = modelLower.StartsWith("gemini-3", StringComparison.Ordinal)
+            || modelLower is "gemini-flash-latest" or "gemini-flash-lite-latest";
+        if (!isGemini3)
+        {
+            if (chat.GetDouble("temperature") is { } temperature)
+                generationConfig["temperature"] = temperature;
+            if (chat.GetDouble("top_p") is { } topP)
+                generationConfig["topP"] = topP;
+            if (chat.GetInt("top_logprobs") is { } topK)
+                generationConfig["topK"] = topK;
+            if (chat.GetInt("candidate_count") is { } candidateCount)
+                generationConfig["candidateCount"] = candidateCount;
+        }
 
         // thinking is opt-in per model unless explicitly requested
-        var modelLower = (chat.GetString("model") ?? "").ToLowerInvariant();
         var isThinkingModel = modelLower.Contains("thinking")
             || modelInfo.GetBool("thinking")
+            || modelInfo.GetBool("reasoning")
             || modelInfo.TryGetPropertyValue("thinking_budget", out _);
         var enableThinking = chat.TryGetPropertyValue("enable_thinking", out _)
             ? chat.GetBool("enable_thinking")
             : (bool?)null;
 
+        JsonObject? thinkingConfig = null;
         if (chat.GetObject("thinkingConfig") is { } explicitThinking)
-            generationConfig["thinkingConfig"] = explicitThinking.Clone();
+            thinkingConfig = explicitThinking.Clone();
         else if ((enableThinking == true || (enableThinking != false && isThinkingModel)) && ThinkingConfig != null)
-            generationConfig["thinkingConfig"] = ThinkingConfig.Clone();
+            thinkingConfig = ThinkingConfig.Clone();
+        else if (isGemini3 && (chat.ContainsKey("thinking_level") || chat.ContainsKey("thinkingLevel")))
+            thinkingConfig = new JsonObject { ["includeThoughts"] = true };
+
+        if (thinkingConfig != null)
+        {
+            if (isGemini3)
+            {
+                thinkingConfig.Remove("thinkingBudget");
+                thinkingConfig.Remove("thinking_budget");
+                var nestedLevel = thinkingConfig.GetString("thinking_level");
+                var nestedLevelCamel = thinkingConfig.GetString("thinkingLevel");
+                thinkingConfig.Remove("thinking_level");
+                thinkingConfig.Remove("thinkingLevel");
+                var level = new[] { chat.GetString("thinking_level"), chat.GetString("thinkingLevel"),
+                    nestedLevel, nestedLevelCamel }.FirstOrDefault(x => !string.IsNullOrEmpty(x)) ?? "medium";
+                if (level.Equals("minimal", StringComparison.OrdinalIgnoreCase) && modelLower.Contains("3.8"))
+                    level = "low";
+                thinkingConfig["thinkingLevel"] = level.ToUpperInvariant();
+            }
+            generationConfig["thinkingConfig"] = thinkingConfig;
+        }
 
         if (chat.GetObject("response_format") is { } responseFormat)
         {
@@ -331,14 +361,14 @@ public class GoogleProvider : OpenAiCompatibleProvider
                     if (toolCall.GetString("id") is { } id)
                         toolIdMap[id] = name;
 
-                    var part = new JsonObject
+                    var functionCall = new JsonObject
                     {
-                        ["functionCall"] = new JsonObject
-                        {
-                            ["name"] = name,
-                            ["args"] = ChatJson.TryParseObject(fn.GetString("arguments")) ?? new JsonObject(),
-                        },
+                        ["name"] = name,
+                        ["args"] = ChatJson.TryParseObject(fn.GetString("arguments")) ?? new JsonObject(),
                     };
+                    if (toolCall.GetString("id") is { } callId)
+                        functionCall["id"] = callId;
+                    var part = new JsonObject { ["functionCall"] = functionCall };
                     // Gemini requires the thought signature to be echoed back
                     var signature = toolCall.GetString("thoughtSignature")
                         ?? toolCall.GetString("thought_signature")
@@ -350,21 +380,26 @@ public class GoogleProvider : OpenAiCompatibleProvider
                 }
             }
 
-            // tool results → functionResponse parts (Gemini needs the function name, not the id)
-            if (msgRole == "tool" && message.GetString("tool_call_id") is { } toolCallId
-                && toolIdMap.TryGetValue(toolCallId, out var fnName))
+            // generateContent requires the function name and echoes the matching REST id.
+            if (msgRole == "tool")
             {
-                var content = message.GetString("content") ?? "";
-                var responseData = ChatJson.TryParseObject(content)
-                    ?? new JsonObject { ["content"] = content };
-                parts.Add(new JsonObject
+                var toolCallId = message.GetString("tool_call_id");
+                var fnName = toolCallId != null && toolIdMap.TryGetValue(toolCallId, out var mappedName)
+                    ? mappedName : message.GetString("name");
+                if (!string.IsNullOrEmpty(fnName))
                 {
-                    ["functionResponse"] = new JsonObject
+                    var content = message.GetString("content") ?? "";
+                    var responseData = ChatJson.TryParseObject(content)
+                        ?? new JsonObject { ["content"] = content };
+                    var functionResponse = new JsonObject
                     {
                         ["name"] = fnName,
                         ["response"] = responseData,
-                    },
-                });
+                    };
+                    if (toolCallId != null)
+                        functionResponse["id"] = toolCallId;
+                    parts.Add(new JsonObject { ["functionResponse"] = functionResponse });
+                }
             }
 
             if (message["content"] is JsonArray contentParts)
@@ -399,7 +434,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
                         parts.Add(new JsonObject { ["text"] = text });
                 }
             }
-            else if (message.GetString("content") is { Length: > 0 } stringContent)
+            else if (msgRole != "tool" && message.GetString("content") is { Length: > 0 } stringContent)
             {
                 parts.Add(new JsonObject { ["text"] = stringContent });
             }
@@ -466,7 +501,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
                 {
                     var toolCall = new JsonObject
                     {
-                        ["id"] = $"call_{Guid.NewGuid().ToString("n")[..8]}",
+                        ["id"] = fc.GetString("id") ?? $"call_{Guid.NewGuid().ToString("n")[..8]}",
                         ["type"] = "function",
                         ["function"] = new JsonObject
                         {
@@ -652,7 +687,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
                         {
                             toolCalls.Add(new JsonObject
                             {
-                                ["id"] = $"call_{Guid.NewGuid().ToString("n")[..8]}",
+                                ["id"] = fc.GetString("id") ?? $"call_{Guid.NewGuid().ToString("n")[..8]}",
                                 ["type"] = "function",
                                 ["function"] = new JsonObject
                                 {
