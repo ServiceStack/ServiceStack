@@ -1,6 +1,16 @@
 name: NuGet Publish
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      pack_run_id:
+        description: Optional successful NuGet Pack run ID; otherwise latest for this commit
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   nuget-push:
@@ -13,33 +23,32 @@ jobs:
           dotnet-version: 10.0.x
           
 
-      - name: Download artifact
-        uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e #v2
-        with:
-          workflow: nuget-pack.yml
-          workflow_conclusion: success
-          name: ServiceStack Packages
-          commit: ${{ github.sha }}
-          path: ./build/staging
-
-      - name: Download matching security evidence
-        uses: dawidd6/action-download-artifact@268677152d06ba59fcec7a7f0b5d961b6ccd7e1e #v2
-        with:
-          workflow: nuget-pack.yml
-          workflow_conclusion: success
-          name: ServiceStack Security
-          commit: ${{ github.sha }}
-          path: ./build/security-output
-
       - name: Set up Python for security verification
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: Verify core package evidence before publishing
+      - name: Resolve matching successful package and security runs
+        id: evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACK_RUN_ID: ${{ inputs.pack_run_id }}
         run: |
           python3 -m pip install -r build/security/requirements.txt
-          python3 build/security/security_artifacts.py verify --repo build/security-output --package-directory build/staging --require-clean
+          args=()
+          if [[ -n "$PACK_RUN_ID" ]]; then args+=(--run-id "$PACK_RUN_ID"); fi
+          python3 build/security/ci_workflows.py publish "${args[@]}"
+
+      - name: Download the exact verified package build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 #v4
+        with:
+          name: ServiceStack Packages
+          path: build/staging
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.evidence.outputs.pack_run_id }}
+
+      - name: Verify matching package evidence before publishing
+        run: python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --require-clean
 
       - name: Check output
         working-directory: ./build
@@ -59,5 +68,3 @@ jobs:
             echo 'Less files than expected, skipping push'
             exit 1
           fi
-          
-          

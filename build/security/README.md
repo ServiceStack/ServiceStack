@@ -48,19 +48,46 @@ Vendored CycloneDX 1.6 schemas permit offline validation once Python dependencie
 
 ## CI output and promotion
 
-The pre-release pack workflow only builds and uploads `ServiceStack Packages`. When `A Pre Release Pack` succeeds, `Pre Release Security Evidence` (`pre-release-security.yml`) runs separately. It checks out the pack run's exact commit and downloads packages by that run's ID, generates and verifies evidence, then uploads `ServiceStack Security` on the **security workflow run**. Download that artifact from its Actions run page; `source-run.json` identifies the originating pack run and commit. Generated evidence is retained even when advisory verification fails. Security workflow failure does not change the completed pack run's result or delay package availability.
+Both `NuGet Pack` and `A Pre Release Pack` build and upload `ServiceStack Packages` without waiting for security generation. A successful pack run automatically triggers **Package Security Evidence** (`package-security.yml`). The security workflow downloads packages by the originating run ID. It uses current generator tooling with the exact pack commit's package mapping and reviewed decisions, keeping tooling fixes usable when regenerating older builds.
 
-The new workflow must be present on the default branch before GitHub can trigger it through `workflow_run`. It only processes successful, manually dispatched pack runs from this repository. The stable NuGet pack/publish workflows retain their existing inline security checks.
+The security workflow uploads **ServiceStack Security** (the evidence tree) and **ServiceStack Security ZIP** (a ZIP plus SHA-256 checksum) on its own Actions run page. `source-run.json` records the repository, originating pack run/commit and security tooling revision. Generated output includes its `packages.json`, so verification and publishing use the same inventory scope. Both artifacts are retained for 90 days. Security failures do not delay or change the completed pack result; evidence is retained for reviewing advisory findings.
 
-The pack workflow uses --output-root build/security-output to create the same repository-relative folder layout as a separate artifact. The push workflow downloads that evidence and verifies original package hashes, schema, dependency references and framework coverage before publishing. --require-clean blocks advisory entries until triaged; this first implementation does not automatically suppress them using VEX.
+To regenerate from retained build outputs, select **Package Security Evidence → Run workflow** and enter the successful pack run ID, or use:
 
-The initial committed evidence is for published 10.4.0. For each future release, download the ServiceStack Security artifact from the same successful pack run. Verify it with:
+    gh workflow run package-security.yml -f pack_run_id=123456789
 
-    python3 build/security/security_artifacts.py verify --repo build/security-output --package-directory build/staging --require-clean
+Use the run ID in the pack run URL, not its job ID. Re-running an existing security Actions run also uses the original source run. A fresh manual dispatch uses the selected workflow revision's tooling. Source runs must be successful manually dispatched builds in this repository. Expired package artifacts need restoration or a new build; the workflow never silently substitutes public packages.
 
-Promote each artifact's security/releases/<version> directory to its matching package source folder, without overwriting an existing release. Commit the exact generated files; do not regenerate from main after publishing. The artifact tree preserves package paths to make this copy unambiguous. This promotion can be handled by a release-bot PR later; it is not an automatic source commit in this implementation.
+NuGet Publish selects the latest successful NuGet Pack for its commit (or the optional `pack_run_id` input). It locates successful security evidence by **source pack run ID and archive provenance**, downloads packages from that exact pack run and verifies all package hashes, schemas and framework coverage. If matching retained security evidence is unavailable, publishing fails with instructions to run security generation first. `--require-clean` blocks advisory entries pending triage; VEX does not automatically bypass this gate.
 
-CI evidence retention is 90 days. That is a transfer window, not a permanent CRA archive. Keep committed release records and an independently backed-up long-term release archive. Export the same SBOM/VEX as customer/release assets as appropriate; package publishing does not automatically publish public evidence download URLs.
+Verify downloaded evidence with:
+
+    python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --require-clean
+
+Promote each artifact's `security/releases/<version>` folder to its matching package source folder without overwriting previous evidence. Commit those exact files rather than regenerating from another source revision. The workflow does not automatically commit source changes.
+
+## Public release downloads
+
+Publishing a GitHub release triggers **Release Security Download** (`release-security.yml`). It downloads each configured package's **exact version from NuGet**, generates/validates a fresh consumer baseline and attaches these public release assets:
+
+- `servicestack-security-<version>.zip`
+- `servicestack-security-<version>.zip.sha256`
+
+Tags such as `v10.4` map to `10.4.0`; `v10.4.1` maps to `10.4.1`. The ZIP includes all configured package SBOMs, manifests, resolutions, audit snapshots, dated reviewed VEX when present, an index, provenance and `SHA256SUMS`. Unrendered VEX decision inputs and confidential company documents are excluded. Native/template-host coverage limitations remain explicit in the manifests.
+
+Anyone can download the ZIP from the release's **Assets** section. For example, the stable public download path for tag `v10.4` is:
+
+    https://github.com/ServiceStack/ServiceStack/releases/download/v10.4/servicestack-security-10.4.0.zip
+
+The URL becomes available only after the release security workflow completes successfully. Release archives are generated from published NuGet artifacts and current reviewed decisions, not claimed to be the original pack run's dependency resolution. Dependency ranges can resolve differently at regeneration time; provenance states this explicitly. Advisory observations are shared even when they contain findings; publishing an inventory is not a security certification or a release gate.
+
+Create the GitHub release after all configured versions are available on NuGet. Missing package versions fail generation instead of substituting another version or publishing a partial ZIP. To regenerate an existing release's assets after an indexing delay or reviewed VEX update, select **Release Security Download → Run workflow**, or:
+
+    gh workflow run release-security.yml -f release_tag=v10.4
+
+A regeneration replaces these named release assets; retain previous snapshots separately if needed. The Actions evidence artifact is kept for 90 days; public release assets and an independently backed-up archive provide longer-lived access. Hashes detect accidental changes, not publisher authenticity.
+
+Automatic completion/manual triggers require workflow definitions on the default branch. Publishing releases via a workflow's `GITHUB_TOKEN` generally does not trigger another workflow; in that case dispatch `release-security.yml` explicitly using an appropriate token. Neither security workflow is dispatched by editing these files locally.
 
 ## Advisory monitoring
 

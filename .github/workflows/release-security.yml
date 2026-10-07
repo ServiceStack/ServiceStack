@@ -1,0 +1,89 @@
+name: Release Security Download
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing published GitHub release tag, e.g. v10.4 or v10.4.1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release-security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ inputs.release_tag || github.event.release.tag_name }}
+    steps:
+      - name: Check out current security tooling and reviewed decisions
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v5
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve the exact NuGet release version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python3 build/security/bundle_security.py --normalize-tag "$RELEASE_TAG")
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq 'if .isDraft then error("Release must be published") else . end'
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Generate evidence from exact published NuGet releases
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          python3 -m pip install -r build/security/requirements.txt
+          python3 build/security/security_artifacts.py generate --release "$PACKAGE_VERSION" --output-root build/security-output
+          cp build/security/packages.json build/security-output/packages.json
+          python3 - <<'PYTHON'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+          source = {
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "releaseTag": os.environ["RELEASE_TAG"],
+              "packageVersion": os.environ["PACKAGE_VERSION"],
+              "packageSource": "Exact published NuGet archives; resolved consumer baseline at generation time",
+              "securityRunId": os.environ["GITHUB_RUN_ID"],
+              "securityToolCommit": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+          }
+          Path("build/security-output/source-run.json").write_text(json.dumps(source, indent=2) + "\n")
+          PYTHON
+
+      - name: Validate and compress release evidence
+        env:
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: python3 build/security/bundle_security.py --root build/security-output --release "$PACKAGE_VERSION" --output "build/security-archives/servicestack-security-$PACKAGE_VERSION.zip"
+
+      - name: Attach public ZIP and checksum to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PACKAGE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release upload "$RELEASE_TAG" "build/security-archives/servicestack-security-$PACKAGE_VERSION.zip" "build/security-archives/servicestack-security-$PACKAGE_VERSION.zip.sha256" --repo "$GITHUB_REPOSITORY" --clobber
+
+      - name: Preserve generated evidence for review
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        with:
+          name: ServiceStack Release Security
+          retention-days: 90
+          path: build/security-output/
+          if-no-files-found: warn

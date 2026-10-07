@@ -24,7 +24,7 @@ import zipfile
 HERE = Path(__file__).resolve().parent
 TOOL_VERSION = '6.2.0'
 FORMAT = '1.6'
-GENERATOR_VERSION = '1.1.1'
+GENERATOR_VERSION = '1.2.0'
 STATES = {'exploitable', 'in_triage', 'resolved', 'resolved_with_pedigree', 'false_positive', 'not_affected'}
 JUSTIFICATIONS = {'code_not_present', 'code_not_reachable', 'requires_configuration', 'requires_dependency', 'requires_environment', 'protected_by_compiler', 'protected_at_runtime', 'protected_at_perimeter', 'protected_by_mitigating_control'}
 
@@ -345,8 +345,8 @@ def render_vex(bom, decisions, created):
     return vex
 
 
-def configurations(repo):
-    config = read_json(HERE / 'packages.json')
+def configurations(repo, package_config=None):
+    config = read_json(package_config or HERE / 'packages.json')
     if config.get('schemaVersion') != 1:
         raise ValueError('Unsupported package configuration')
     items = []
@@ -638,6 +638,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['generate', 'verify', 'vex', 'scan'])
     parser.add_argument('--repo', type=Path, default=HERE.parent.parent)
+    parser.add_argument('--package-config', type=Path, help='Package mapping from the source build or evidence archive')
     parser.add_argument('--package-directory', type=Path, help='Staged .nupkg directory (exact release artifacts)')
     parser.add_argument('--package', action='append', help='Configured package ID; repeat to select a subset')
     parser.add_argument('--cyclonedx', type=Path, help='Optional pinned CLI executable (version checked)')
@@ -647,7 +648,7 @@ def main():
     parser.add_argument('--require-clean', action='store_true', help='Block any dependency advisories pending human triage')
     args = parser.parse_args()
     try:
-        items = configurations(args.repo.resolve())
+        items = configurations(args.repo.resolve(), args.package_config)
         if args.package:
             selected = {x.lower() for x in args.package}
             if selected - {x['id'].lower() for x in items}:
