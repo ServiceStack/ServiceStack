@@ -48,6 +48,10 @@ Vendored CycloneDX 1.6 schemas permit offline validation once Python dependencie
 
 ## CI output and promotion
 
+The pre-release pack workflow only builds and uploads `ServiceStack Packages`. When `A Pre Release Pack` succeeds, `Pre Release Security Evidence` (`pre-release-security.yml`) runs separately. It checks out the pack run's exact commit and downloads packages by that run's ID, generates and verifies evidence, then uploads `ServiceStack Security` on the **security workflow run**. Download that artifact from its Actions run page; `source-run.json` identifies the originating pack run and commit. Generated evidence is retained even when advisory verification fails. Security workflow failure does not change the completed pack run's result or delay package availability.
+
+The new workflow must be present on the default branch before GitHub can trigger it through `workflow_run`. It only processes successful, manually dispatched pack runs from this repository. The stable NuGet pack/publish workflows retain their existing inline security checks.
+
 The pack workflow uses --output-root build/security-output to create the same repository-relative folder layout as a separate artifact. The push workflow downloads that evidence and verifies original package hashes, schema, dependency references and framework coverage before publishing. --require-clean blocks advisory entries until triaged; this first implementation does not automatically suppress them using VEX.
 
 The initial committed evidence is for published 10.4.0. For each future release, download the ServiceStack Security artifact from the same successful pack run. Verify it with:
