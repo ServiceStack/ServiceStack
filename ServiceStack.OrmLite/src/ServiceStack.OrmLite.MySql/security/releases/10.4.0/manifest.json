@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.OrmLite.MySql",
+  "version": "10.4.0",
+  "created": "2026-10-07T08:04:13Z",
+  "packageSha256": "a26511b36156e04dc564320ebb9548c5c43ef7ac56eb86eba641fc0b8845ff44",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "19f8470df9cacefda248d6ef00c8642466dab5aa9143afc5151d82b63fcf2e88",
+    "resolution.json": "afdadf68ab81899fb8d2c6162a917d6bc23c830784206840d13f1c0a2bc9ec91",
+    "audit.json": "c6d0433a601ce806b0ed7dcb23929339976ce001868de5081d767ea8e73aa545"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/mysql.data@26.7.0",
+      "path": "runtimes/win-x64/native/comerr64.dll",
+      "sha256": "b103a050a0bd9781dc85f3b7f620c7dcc88d04e924b1ca549f24f6e0f1e48e6e"
+    },
+    {
+      "package": "pkg:nuget/mysql.data@26.7.0",
+      "path": "runtimes/win-x64/native/gssapi64.dll",
+      "sha256": "eb9cdced29e7f35f3228ecbc89a9f919fefc8ec53a4095599b721e89a5ee5cee"
+    },
+    {
+      "package": "pkg:nuget/mysql.data@26.7.0",
+      "path": "runtimes/win-x64/native/k5sprt64.dll",
+      "sha256": "ae7f6cab9e60b1696ef96d2ed8bcb35d53f0ba89c63e29d5dd8a3ca67e872046"
+    },
+    {
+      "package": "pkg:nuget/mysql.data@26.7.0",
+      "path": "runtimes/win-x64/native/krb5_64.dll",
+      "sha256": "b2fe9dfb6df4061e4286656ae481a526fe35daada2125c0d3e93a30204970925"
+    },
+    {
+      "package": "pkg:nuget/mysql.data@26.7.0",
+      "path": "runtimes/win-x64/native/krbcc64.dll",
+      "sha256": "74f6b5aae310f0c89ce1f1019824048d7f53e68c3cff375235bd6fe4be3c4005"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

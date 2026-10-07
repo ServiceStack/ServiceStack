@@ -1,0 +1,309 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Oracle.ManagedDataAccess.Core",
+          "version": "23.26.301",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Oracle.ManagedDataAccess",
+          "version": "23.26.301",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net6.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Oracle.ManagedDataAccess.Core",
+          "version": "23.26.301",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Oracle.ManagedDataAccess.Core",
+          "version": "23.26.301",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Oracle.ManagedDataAccess.Core/23.26.301": {
+        "System.Collections.Immutable": "10.0.3",
+        "System.Diagnostics.PerformanceCounter": "8.0.0",
+        "System.DirectoryServices.Protocols": "8.0.2",
+        "System.Formats.Asn1": "8.0.1",
+        "System.Memory": "4.6.3",
+        "System.Security.Cryptography.Pkcs": "8.0.1"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.Oracle/10.4.0": {
+        "Oracle.ManagedDataAccess.Core": "23.26.301",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Collections.Immutable/10.0.3": {},
+      "System.Configuration.ConfigurationManager/8.0.0": {
+        "System.Diagnostics.EventLog": "8.0.0",
+        "System.Security.Cryptography.ProtectedData": "8.0.0"
+      },
+      "System.Diagnostics.EventLog/8.0.0": {},
+      "System.Diagnostics.PerformanceCounter/8.0.0": {
+        "System.Configuration.ConfigurationManager": "8.0.0"
+      },
+      "System.DirectoryServices.Protocols/8.0.2": {},
+      "System.Formats.Asn1/8.0.1": {},
+      "System.Memory/4.6.3": {},
+      "System.Security.Cryptography.Pkcs/8.0.1": {},
+      "System.Security.Cryptography.ProtectedData/8.0.0": {}
+    },
+    "net472": {
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
+        "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "Oracle.ManagedDataAccess/23.26.301": {
+        "System.Collections.Immutable": "10.0.3",
+        "System.Diagnostics.DiagnosticSource": "6.0.2",
+        "System.Formats.Asn1": "8.0.1",
+        "System.Memory": "4.6.3",
+        "System.Text.Json": "8.0.5",
+        "System.Threading.Tasks.Extensions": "4.6.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Memory": "4.6.3",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.OrmLite.Oracle/10.4.0": {
+        "Oracle.ManagedDataAccess": "23.26.301",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0",
+        "System.Memory": "4.6.3"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Collections.Immutable/10.0.3": {
+        "System.Memory": "4.6.3",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Formats.Asn1/8.0.1": {
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.5",
+        "System.ValueTuple": "4.5.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Text.Encodings.Web/8.0.0": {
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Text.Json/8.0.5": {
+        "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0",
+        "System.Text.Encodings.Web": "8.0.0",
+        "System.Threading.Tasks.Extensions": "4.5.4",
+        "System.ValueTuple": "4.5.0"
+      },
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.ValueTuple/4.5.0": {}
+    },
+    "net6.0": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Microsoft.Win32.SystemEvents/6.0.0": {},
+      "Oracle.ManagedDataAccess.Core/23.26.301": {
+        "System.Collections.Immutable": "10.0.3",
+        "System.Diagnostics.PerformanceCounter": "6.0.2",
+        "System.DirectoryServices.Protocols": "8.0.2",
+        "System.Formats.Asn1": "6.0.1",
+        "System.Memory": "4.6.3",
+        "System.Security.Cryptography.Pkcs": "6.0.4"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.Oracle/10.4.0": {
+        "Oracle.ManagedDataAccess.Core": "23.26.301",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Collections.Immutable/10.0.3": {
+        "System.Memory": "4.6.3",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Configuration.ConfigurationManager/6.0.2": {
+        "System.Security.Cryptography.ProtectedData": "6.0.0",
+        "System.Security.Permissions": "6.0.1"
+      },
+      "System.Diagnostics.PerformanceCounter/6.0.2": {
+        "System.Configuration.ConfigurationManager": "6.0.2"
+      },
+      "System.DirectoryServices.Protocols/8.0.2": {},
+      "System.Drawing.Common/6.0.0": {
+        "Microsoft.Win32.SystemEvents": "6.0.0"
+      },
+      "System.Formats.Asn1/6.0.1": {},
+      "System.Memory/4.6.3": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Security.Cryptography.Pkcs/6.0.4": {
+        "System.Formats.Asn1": "6.0.0"
+      },
+      "System.Security.Cryptography.ProtectedData/6.0.0": {},
+      "System.Security.Permissions/6.0.1": {
+        "System.Windows.Extensions": "6.0.0"
+      },
+      "System.Windows.Extensions/6.0.0": {
+        "System.Drawing.Common": "6.0.0"
+      }
+    },
+    "net8.0": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Oracle.ManagedDataAccess.Core/23.26.301": {
+        "System.Collections.Immutable": "10.0.3",
+        "System.Diagnostics.PerformanceCounter": "8.0.0",
+        "System.DirectoryServices.Protocols": "8.0.2",
+        "System.Formats.Asn1": "8.0.1",
+        "System.Memory": "4.6.3",
+        "System.Security.Cryptography.Pkcs": "8.0.1"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.Oracle/10.4.0": {
+        "Oracle.ManagedDataAccess.Core": "23.26.301",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Collections.Immutable/10.0.3": {},
+      "System.Configuration.ConfigurationManager/8.0.0": {
+        "System.Diagnostics.EventLog": "8.0.0",
+        "System.Security.Cryptography.ProtectedData": "8.0.0"
+      },
+      "System.Diagnostics.EventLog/8.0.0": {},
+      "System.Diagnostics.PerformanceCounter/8.0.0": {
+        "System.Configuration.ConfigurationManager": "8.0.0"
+      },
+      "System.DirectoryServices.Protocols/8.0.2": {},
+      "System.Formats.Asn1/8.0.1": {},
+      "System.Memory/4.6.3": {},
+      "System.Security.Cryptography.Pkcs/8.0.1": {},
+      "System.Security.Cryptography.ProtectedData/8.0.0": {}
+    }
+  }
+}

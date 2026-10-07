@@ -1,0 +1,65 @@
+{
+  "frameworks": [
+    "net472"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "elmah.corelibrary",
+          "version": "1.2.2",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net472": {
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Logging.Elmah/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "elmah.corelibrary": "1.2.2"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "elmah.corelibrary/1.2.2": {}
+    }
+  }
+}

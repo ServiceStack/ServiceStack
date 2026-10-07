@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.OrmLite.T4",
+  "version": "10.4.0",
+  "created": "2026-10-07T08:07:04Z",
+  "packageSha256": "f3cc6d018995a031942712f29a18d7dcd402012079e19708da36099ab82d26e8",
+  "frameworks": [
+    "net10.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "10823e4ccb0d52c8475d842a41ee37f62df220f79880ccfb00f5232d0b0b8d0c",
+    "resolution.json": "a7282c624f3d7cf0324fb3be7428412e491e3d4aa44f9655d39c05c6f726089c",
+    "audit.json": "353a5271f099a50cf4d9a6b76868f68add5bb7edd212236679ca0c932a930b01"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [],
+  "contentPayloads": [
+    {
+      "path": "contentFiles/any/any/OrmLite.Core.ttinclude",
+      "sha256": "501e489fee4aab7dad1091ff7bc844946451f755fd09c7e4d54e82f6eefc0671"
+    },
+    {
+      "path": "contentFiles/any/any/OrmLite.Poco.tt",
+      "sha256": "e28d56c20f25a0194d371a31604a4d6668b35c57bce38960515037cc7652bb91"
+    },
+    {
+      "path": "contentFiles/any/any/OrmLite.SP.tt",
+      "sha256": "546890580840dd08b32385a1d19a75c94fda16c361e7a8a5912052c243f8ad4d"
+    }
+  ],
+  "frameworkSource": "Declared nuspec compatibility groups for content-only archive",
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review.",
+    "Content-only package: framework coverage uses nuspec compatibility groups, not shipped assemblies. External template host/Visual Studio assembly references are not resolved or scanned."
+  ]
+}

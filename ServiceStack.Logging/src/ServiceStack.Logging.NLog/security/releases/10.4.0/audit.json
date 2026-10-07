@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://data.nuget.org/v3/index.json"
+  ],
+  "projects": [
+    {
+      "path": "ServiceStack.Logging.NLog",
+      "frameworks": [
+        {
+          "framework": "net472",
+          "topLevelPackages": []
+        },
+        {
+          "framework": "net10.0",
+          "topLevelPackages": []
+        },
+        {
+          "framework": "net6.0",
+          "topLevelPackages": []
+        },
+        {
+          "framework": "net8.0",
+          "topLevelPackages": []
+        }
+      ]
+    }
+  ]
+}

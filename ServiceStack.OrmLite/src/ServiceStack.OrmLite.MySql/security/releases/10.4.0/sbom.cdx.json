@@ -1,0 +1,4912 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:a9229361-e194-4bc7-8d76-dd190f93c436",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-07T08:04:13Z",
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0",
+      "name": "ServiceStack.OrmLite.MySql",
+      "version": "10.4.0",
+      "purl": "pkg:nuget/servicestack.ormlite.mysql@10.4.0",
+      "supplier": {
+        "name": "ServiceStack, Inc."
+      },
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "a26511b36156e04dc564320ebb9548c5c43ef7ac56eb86eba641fc0b8845ff44"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-frameworks",
+          "value": "net10.0;net472;net6.0;net8.0"
+        },
+        {
+          "name": "servicestack:inventory-kind",
+          "value": "Exact NuGet archive and resolved consumer baseline"
+        },
+        {
+          "name": "servicestack:declared-dependency-groups",
+          "value": "[{\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"MySql.Data\", \"version\": \"26.7.0\"}], \"targetFramework\": \"net10.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"MySql.Data\", \"version\": \"26.7.0\"}], \"targetFramework\": \".NETFramework4.7.2\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"MySql.Data\", \"version\": \"26.7.0\"}], \"targetFramework\": \"net6.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"MySql.Data\", \"version\": \"26.7.0\"}], \"targetFramework\": \"net8.0\"}]"
+        },
+        {
+          "name": "servicestack:resolution-limits",
+          "value": "Consumers can resolve other versions allowed by NuGet ranges; runtime/OS framework components are not inventoried."
+        },
+        {
+          "name": "servicestack:package-source-commit",
+          "value": "da90504435109bee9c5199e1902bcabc9d472a1b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Declared package license",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ]
+    },
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "CycloneDX .NET",
+          "version": "6.2.0"
+        },
+        {
+          "type": "application",
+          "name": "ServiceStack security artifacts",
+          "version": "1.1.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Legion of the Bouncy Castle Inc."
+        }
+      ],
+      "name": "BouncyCastle.Cryptography",
+      "version": "2.6.2",
+      "description": "BouncyCastle.NET is a popular cryptography library for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E1A32F937EEBBA134F1C6646C0B554EDAA1BC41969DEC5816D11C3C285906E106377113EA6C1CB0B161749FF08AE8AD39DF05956B62ABE2274D4B3060F0DAEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright © Legion of the Bouncy Castle Inc. 2000-2025",
+      "purl": "pkg:nuget/bouncycastle.cryptography@2.6.2",
+      "externalReferences": [
+        {
+          "url": "https://www.bouncycastle.org/stable/nuget/csharp/website",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/bcgit/bc-csharp",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net472",
+      "authors": [
+        {
+          "name": "Legion of the Bouncy Castle Inc."
+        }
+      ],
+      "name": "BouncyCastle.Cryptography",
+      "version": "2.6.2",
+      "description": "BouncyCastle.NET is a popular cryptography library for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E1A32F937EEBBA134F1C6646C0B554EDAA1BC41969DEC5816D11C3C285906E106377113EA6C1CB0B161749FF08AE8AD39DF05956B62ABE2274D4B3060F0DAEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright © Legion of the Bouncy Castle Inc. 2000-2025",
+      "purl": "pkg:nuget/bouncycastle.cryptography@2.6.2",
+      "externalReferences": [
+        {
+          "url": "https://www.bouncycastle.org/stable/nuget/csharp/website",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/bcgit/bc-csharp",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Legion of the Bouncy Castle Inc."
+        }
+      ],
+      "name": "BouncyCastle.Cryptography",
+      "version": "2.6.2",
+      "description": "BouncyCastle.NET is a popular cryptography library for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E1A32F937EEBBA134F1C6646C0B554EDAA1BC41969DEC5816D11C3C285906E106377113EA6C1CB0B161749FF08AE8AD39DF05956B62ABE2274D4B3060F0DAEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright © Legion of the Bouncy Castle Inc. 2000-2025",
+      "purl": "pkg:nuget/bouncycastle.cryptography@2.6.2",
+      "externalReferences": [
+        {
+          "url": "https://www.bouncycastle.org/stable/nuget/csharp/website",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/bcgit/bc-csharp",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Legion of the Bouncy Castle Inc."
+        }
+      ],
+      "name": "BouncyCastle.Cryptography",
+      "version": "2.6.2",
+      "description": "BouncyCastle.NET is a popular cryptography library for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E1A32F937EEBBA134F1C6646C0B554EDAA1BC41969DEC5816D11C3C285906E106377113EA6C1CB0B161749FF08AE8AD39DF05956B62ABE2274D4B3060F0DAEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright © Legion of the Bouncy Castle Inc. 2000-2025",
+      "purl": "pkg:nuget/bouncycastle.cryptography@2.6.2",
+      "externalReferences": [
+        {
+          "url": "https://www.bouncycastle.org/stable/nuget/csharp/website",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/bcgit/bc-csharp",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Google Inc."
+        }
+      ],
+      "name": "Google.Protobuf",
+      "version": "3.35.0",
+      "description": "C# runtime library for Protocol Buffers - Google's data interchange format.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "395F2FE526A9E7CCC029FF4E27964300BB8120EE225E00B135BCDAD54F8A2B0F80391F0E2E19C53D81F3778C821F6AAC2A568038B91F3627260D91B261ED2DA8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "copyright": "Copyright 2015, Google Inc.",
+      "purl": "pkg:nuget/google.protobuf@3.35.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protocolbuffers/protobuf.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net472",
+      "authors": [
+        {
+          "name": "Google Inc."
+        }
+      ],
+      "name": "Google.Protobuf",
+      "version": "3.35.0",
+      "description": "C# runtime library for Protocol Buffers - Google's data interchange format.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "395F2FE526A9E7CCC029FF4E27964300BB8120EE225E00B135BCDAD54F8A2B0F80391F0E2E19C53D81F3778C821F6AAC2A568038B91F3627260D91B261ED2DA8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "copyright": "Copyright 2015, Google Inc.",
+      "purl": "pkg:nuget/google.protobuf@3.35.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protocolbuffers/protobuf.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Google Inc."
+        }
+      ],
+      "name": "Google.Protobuf",
+      "version": "3.35.0",
+      "description": "C# runtime library for Protocol Buffers - Google's data interchange format.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "395F2FE526A9E7CCC029FF4E27964300BB8120EE225E00B135BCDAD54F8A2B0F80391F0E2E19C53D81F3778C821F6AAC2A568038B91F3627260D91B261ED2DA8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "copyright": "Copyright 2015, Google Inc.",
+      "purl": "pkg:nuget/google.protobuf@3.35.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protocolbuffers/protobuf.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Google Inc."
+        }
+      ],
+      "name": "Google.Protobuf",
+      "version": "3.35.0",
+      "description": "C# runtime library for Protocol Buffers - Google's data interchange format.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "395F2FE526A9E7CCC029FF4E27964300BB8120EE225E00B135BCDAD54F8A2B0F80391F0E2E19C53D81F3778C821F6AAC2A568038B91F3627260D91B261ED2DA8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "BSD-3-Clause"
+          }
+        }
+      ],
+      "copyright": "Copyright 2015, Google Inc.",
+      "purl": "pkg:nuget/google.protobuf@3.35.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protocolbuffers/protobuf",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protocolbuffers/protobuf.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4.Streams",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "74B1C00FFACDA9FF92464EC3A8855A6203AAD0C74C45482856D06850671F4A81A5EB63163AC3A64A23B66776C6E867CEEE3A8DB5D31E7D8173DD0900A1F5C655"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4.streams@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net472",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4.Streams",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "74B1C00FFACDA9FF92464EC3A8855A6203AAD0C74C45482856D06850671F4A81A5EB63163AC3A64A23B66776C6E867CEEE3A8DB5D31E7D8173DD0900A1F5C655"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4.streams@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4.Streams",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "74B1C00FFACDA9FF92464EC3A8855A6203AAD0C74C45482856D06850671F4A81A5EB63163AC3A64A23B66776C6E867CEEE3A8DB5D31E7D8173DD0900A1F5C655"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4.streams@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4.Streams",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "74B1C00FFACDA9FF92464EC3A8855A6203AAD0C74C45482856D06850671F4A81A5EB63163AC3A64A23B66776C6E867CEEE3A8DB5D31E7D8173DD0900A1F5C655"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4.streams@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DF879A0CCB6165BB6AB5CC9B3B5757A6AB4851BA66CD48137A095CCCAF3050C97C60F8F9D76D7070EDD88840C0A8F92DFB029BCFAA6B8A05C6F98DED5D9C8ED5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net472",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DF879A0CCB6165BB6AB5CC9B3B5757A6AB4851BA66CD48137A095CCCAF3050C97C60F8F9D76D7070EDD88840C0A8F92DFB029BCFAA6B8A05C6F98DED5D9C8ED5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DF879A0CCB6165BB6AB5CC9B3B5757A6AB4851BA66CD48137A095CCCAF3050C97C60F8F9D76D7070EDD88840C0A8F92DFB029BCFAA6B8A05C6F98DED5D9C8ED5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Compression.LZ4",
+      "version": "1.3.8",
+      "description": "Port of LZ4 compression algorithm for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DF879A0CCB6165BB6AB5CC9B3B5757A6AB4851BA66CD48137A095CCCAF3050C97C60F8F9D76D7070EDD88840C0A8F92DFB029BCFAA6B8A05C6F98DED5D9C8ED5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4/blob/master/LICENSE?raw=true"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.compression.lz4@1.3.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Compression.LZ4",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Hash.xxHash",
+      "version": "1.0.8",
+      "description": "xxHash hash implementation for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "99B89616B070D4F622EF2CEE7EDF2317278B7F26DE58BE4397AC256765D8EA6705EED8637C063FEFABFD05D82BF421C57B71F67E511454C7AAE0B49172E06EAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Hash.xxHash/master/LICENSE"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.hash.xxhash@1.0.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net472",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Hash.xxHash",
+      "version": "1.0.8",
+      "description": "xxHash hash implementation for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "99B89616B070D4F622EF2CEE7EDF2317278B7F26DE58BE4397AC256765D8EA6705EED8637C063FEFABFD05D82BF421C57B71F67E511454C7AAE0B49172E06EAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Hash.xxHash/master/LICENSE"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.hash.xxhash@1.0.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Hash.xxHash",
+      "version": "1.0.8",
+      "description": "xxHash hash implementation for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "99B89616B070D4F622EF2CEE7EDF2317278B7F26DE58BE4397AC256765D8EA6705EED8637C063FEFABFD05D82BF421C57B71F67E511454C7AAE0B49172E06EAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Hash.xxHash/master/LICENSE"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.hash.xxhash@1.0.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Milosz Krajewski"
+        }
+      ],
+      "name": "K4os.Hash.xxHash",
+      "version": "1.0.8",
+      "description": "xxHash hash implementation for .NET",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "99B89616B070D4F622EF2CEE7EDF2317278B7F26DE58BE4397AC256765D8EA6705EED8637C063FEFABFD05D82BF421C57B71F67E511454C7AAE0B49172E06EAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://raw.githubusercontent.com/MiloszKrajewski/K4os.Hash.xxHash/master/LICENSE"
+          }
+        }
+      ],
+      "copyright": "Milosz Krajewski",
+      "purl": "pkg:nuget/k4os.hash.xxhash@1.0.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/MiloszKrajewski/K4os.Hash.xxHash",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/mysql.data@26.7.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Oracle Corporation"
+        }
+      ],
+      "name": "MySql.Data",
+      "version": "26.7.0",
+      "description": "MySql.Data.MySqlClient .Net Core Class Library",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2BCABD3790A0A0090C3F1240B9B20DB43E0D11B10E34349391F5CFAC711B79A89B3BE0C6A427E27389794F5C72969F887BA8C276627F4D84C6B824D3EB28628E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only"
+          }
+        }
+      ],
+      "copyright": "Copyright © 2004, 2026, Oracle and/or its affiliates.",
+      "purl": "pkg:nuget/mysql.data@26.7.0",
+      "externalReferences": [
+        {
+          "url": "https://dev.mysql.com/downloads/",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/mysql.data@26.7.0#tfm=net472",
+      "authors": [
+        {
+          "name": "Oracle Corporation"
+        }
+      ],
+      "name": "MySql.Data",
+      "version": "26.7.0",
+      "description": "MySql.Data.MySqlClient .Net Core Class Library",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2BCABD3790A0A0090C3F1240B9B20DB43E0D11B10E34349391F5CFAC711B79A89B3BE0C6A427E27389794F5C72969F887BA8C276627F4D84C6B824D3EB28628E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only"
+          }
+        }
+      ],
+      "copyright": "Copyright © 2004, 2026, Oracle and/or its affiliates.",
+      "purl": "pkg:nuget/mysql.data@26.7.0",
+      "externalReferences": [
+        {
+          "url": "https://dev.mysql.com/downloads/",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/mysql.data@26.7.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Oracle Corporation"
+        }
+      ],
+      "name": "MySql.Data",
+      "version": "26.7.0",
+      "description": "MySql.Data.MySqlClient .Net Core Class Library",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2BCABD3790A0A0090C3F1240B9B20DB43E0D11B10E34349391F5CFAC711B79A89B3BE0C6A427E27389794F5C72969F887BA8C276627F4D84C6B824D3EB28628E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only"
+          }
+        }
+      ],
+      "copyright": "Copyright © 2004, 2026, Oracle and/or its affiliates.",
+      "purl": "pkg:nuget/mysql.data@26.7.0",
+      "externalReferences": [
+        {
+          "url": "https://dev.mysql.com/downloads/",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/mysql.data@26.7.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Oracle Corporation"
+        }
+      ],
+      "name": "MySql.Data",
+      "version": "26.7.0",
+      "description": "MySql.Data.MySqlClient .Net Core Class Library",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2BCABD3790A0A0090C3F1240B9B20DB43E0D11B10E34349391F5CFAC711B79A89B3BE0C6A427E27389794F5C72969F887BA8C276627F4D84C6B824D3EB28628E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "GPL-2.0-only"
+          }
+        }
+      ],
+      "copyright": "Copyright © 2004, 2026, Oracle and/or its affiliates.",
+      "purl": "pkg:nuget/mysql.data@26.7.0",
+      "externalReferences": [
+        {
+          "url": "https://dev.mysql.com/downloads/",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.MySql",
+      "version": "10.4.0",
+      "description": "Light, simple and fast convention-based code-first POCO ORM for MySQL.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs in MySQL.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C5225DFA612ADE536A2F3347C009CF50D895494A07C7465692DFE17CE259A3D185375AE1952E6D74437304DF45875ACB4161C4FF3FD75BF75D91254076B6964F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.mysql@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.MySql",
+      "version": "10.4.0",
+      "description": "Light, simple and fast convention-based code-first POCO ORM for MySQL.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs in MySQL.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C5225DFA612ADE536A2F3347C009CF50D895494A07C7465692DFE17CE259A3D185375AE1952E6D74437304DF45875ACB4161C4FF3FD75BF75D91254076B6964F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.mysql@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.MySql",
+      "version": "10.4.0",
+      "description": "Light, simple and fast convention-based code-first POCO ORM for MySQL.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs in MySQL.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C5225DFA612ADE536A2F3347C009CF50D895494A07C7465692DFE17CE259A3D185375AE1952E6D74437304DF45875ACB4161C4FF3FD75BF75D91254076B6964F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.mysql@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.MySql",
+      "version": "10.4.0",
+      "description": "Light, simple and fast convention-based code-first POCO ORM for MySQL.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs in MySQL.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C5225DFA612ADE536A2F3347C009CF50D895494A07C7465692DFE17CE259A3D185375AE1952E6D74437304DF45875ACB4161C4FF3FD75BF75D91254076B6964F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.mysql@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Configuration.ConfigurationManager",
+      "version": "10.0.8",
+      "description": "Provides types that support using XML configuration files (app.config). This package exists only to support migrating existing .NET Framework code that already uses System.Configuration. When writing new code, use another configuration system instead, such as Microsoft.Extensions.Configuration.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D59FE1DF6C39A048EF7B5994539C3569863DA7EC1CB8DB53C68D111BE71097E237E174648F1E2260AF64BB3F96633B9DF50A4F78F93A8B28EF9DACB59968FAFD"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.configuration.configurationmanager@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Configuration.ConfigurationManager",
+      "version": "10.0.8",
+      "description": "Provides types that support using XML configuration files (app.config). This package exists only to support migrating existing .NET Framework code that already uses System.Configuration. When writing new code, use another configuration system instead, such as Microsoft.Extensions.Configuration.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D59FE1DF6C39A048EF7B5994539C3569863DA7EC1CB8DB53C68D111BE71097E237E174648F1E2260AF64BB3F96633B9DF50A4F78F93A8B28EF9DACB59968FAFD"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.configuration.configurationmanager@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Configuration.ConfigurationManager",
+      "version": "10.0.8",
+      "description": "Provides types that support using XML configuration files (app.config). This package exists only to support migrating existing .NET Framework code that already uses System.Configuration. When writing new code, use another configuration system instead, such as Microsoft.Extensions.Configuration.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D59FE1DF6C39A048EF7B5994539C3569863DA7EC1CB8DB53C68D111BE71097E237E174648F1E2260AF64BB3F96633B9DF50A4F78F93A8B28EF9DACB59968FAFD"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.configuration.configurationmanager@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Configuration.ConfigurationManager",
+      "version": "10.0.8",
+      "description": "Provides types that support using XML configuration files (app.config). This package exists only to support migrating existing .NET Framework code that already uses System.Configuration. When writing new code, use another configuration system instead, such as Microsoft.Extensions.Configuration.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D59FE1DF6C39A048EF7B5994539C3569863DA7EC1CB8DB53C68D111BE71097E237E174648F1E2260AF64BB3F96633B9DF50A4F78F93A8B28EF9DACB59968FAFD"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.configuration.configurationmanager@10.0.8",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.IO.Pipelines",
+      "version": "5.0.2",
+      "description": "Single producer single consumer byte buffer management.\n\nCommonly Used Types:\nSystem.IO.Pipelines.Pipe\nSystem.IO.Pipelines.PipeWriter\nSystem.IO.Pipelines.PipeReader\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D537A1FED1BE7C77CAAEE003E84A365BA0D9CD71F2A6E0D6B94348AF66542113B8389E8DC86F31C56E1DFB3B504371BAFB2BD09C930FCB2E9614E85F60272731"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.io.pipelines@5.0.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "website"
+        },
+        {
+          "url": "git://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.IO.Pipelines",
+      "version": "5.0.2",
+      "description": "Single producer single consumer byte buffer management.\n\nCommonly Used Types:\nSystem.IO.Pipelines.Pipe\nSystem.IO.Pipelines.PipeWriter\nSystem.IO.Pipelines.PipeReader\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D537A1FED1BE7C77CAAEE003E84A365BA0D9CD71F2A6E0D6B94348AF66542113B8389E8DC86F31C56E1DFB3B504371BAFB2BD09C930FCB2E9614E85F60272731"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.io.pipelines@5.0.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "website"
+        },
+        {
+          "url": "git://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.IO.Pipelines",
+      "version": "5.0.2",
+      "description": "Single producer single consumer byte buffer management.\n\nCommonly Used Types:\nSystem.IO.Pipelines.Pipe\nSystem.IO.Pipelines.PipeWriter\nSystem.IO.Pipelines.PipeReader\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D537A1FED1BE7C77CAAEE003E84A365BA0D9CD71F2A6E0D6B94348AF66542113B8389E8DC86F31C56E1DFB3B504371BAFB2BD09C930FCB2E9614E85F60272731"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.io.pipelines@5.0.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "website"
+        },
+        {
+          "url": "git://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.IO.Pipelines",
+      "version": "5.0.2",
+      "description": "Single producer single consumer byte buffer management.\n\nCommonly Used Types:\nSystem.IO.Pipelines.Pipe\nSystem.IO.Pipelines.PipeWriter\nSystem.IO.Pipelines.PipeReader\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D537A1FED1BE7C77CAAEE003E84A365BA0D9CD71F2A6E0D6B94348AF66542113B8389E8DC86F31C56E1DFB3B504371BAFB2BD09C930FCB2E9614E85F60272731"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.io.pipelines@5.0.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "website"
+        },
+        {
+          "url": "git://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Oleg Stepanischev"
+        }
+      ],
+      "name": "ZstdSharp.Port",
+      "version": "0.8.8",
+      "description": "Port of zstd compression library to c#",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8BA3B518FF04E8C8747EBC7D82BCA16FAB36B0E5A23808B6878681E130CEA1FFB7F4E1396964CA8B2537EEF13A6170EF1CCE0C90D6C8536BA7B6AD96FA0E26FB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright Oleg Stepanischev 2026",
+      "purl": "pkg:nuget/zstdsharp.port@0.8.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net472",
+      "authors": [
+        {
+          "name": "Oleg Stepanischev"
+        }
+      ],
+      "name": "ZstdSharp.Port",
+      "version": "0.8.8",
+      "description": "Port of zstd compression library to c#",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8BA3B518FF04E8C8747EBC7D82BCA16FAB36B0E5A23808B6878681E130CEA1FFB7F4E1396964CA8B2537EEF13A6170EF1CCE0C90D6C8536BA7B6AD96FA0E26FB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright Oleg Stepanischev 2026",
+      "purl": "pkg:nuget/zstdsharp.port@0.8.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Oleg Stepanischev"
+        }
+      ],
+      "name": "ZstdSharp.Port",
+      "version": "0.8.8",
+      "description": "Port of zstd compression library to c#",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8BA3B518FF04E8C8747EBC7D82BCA16FAB36B0E5A23808B6878681E130CEA1FFB7F4E1396964CA8B2537EEF13A6170EF1CCE0C90D6C8536BA7B6AD96FA0E26FB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright Oleg Stepanischev 2026",
+      "purl": "pkg:nuget/zstdsharp.port@0.8.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Oleg Stepanischev"
+        }
+      ],
+      "name": "ZstdSharp.Port",
+      "version": "0.8.8",
+      "description": "Port of zstd compression library to c#",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8BA3B518FF04E8C8747EBC7D82BCA16FAB36B0E5A23808B6878681E130CEA1FFB7F4E1396964CA8B2537EEF13A6170EF1CCE0C90D6C8536BA7B6AD96FA0E26FB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright Oleg Stepanischev 2026",
+      "purl": "pkg:nuget/zstdsharp.port@0.8.8",
+      "externalReferences": [
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/oleg-st/ZstdSharp.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:3963c9962ef5e090d0c37a0da8e764d2147e8f6c45cfe36061cc631f51d15d48",
+      "name": "runtimes/win-x64/native/krbcc64.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "74f6b5aae310f0c89ce1f1019824048d7f53e68c3cff375235bd6fe4be3c4005"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/mysql.data@26.7.0"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:48eb60bd25bc74fbc6a8ef63717c3100497198ed6fe09f86ede24ec1afa54093",
+      "name": "runtimes/win-x64/native/k5sprt64.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ae7f6cab9e60b1696ef96d2ed8bcb35d53f0ba89c63e29d5dd8a3ca67e872046"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/mysql.data@26.7.0"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:762f86e68ac4f5c41344dac2aa85953b4597f53b2b654294d53b66f3efd1c131",
+      "name": "runtimes/win-x64/native/krb5_64.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b2fe9dfb6df4061e4286656ae481a526fe35daada2125c0d3e93a30204970925"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/mysql.data@26.7.0"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:d157917adf5c09dfa0a0804bf8e3641156416dc1cd83c131e14dad41ade88ffb",
+      "name": "runtimes/win-x64/native/gssapi64.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "eb9cdced29e7f35f3228ecbc89a9f919fefc8ec53a4095599b721e89a5ee5cee"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/mysql.data@26.7.0"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:f411d63cb1bc10fb0b07608551636203394cae7af326b724c982d8ad341afcb2",
+      "name": "runtimes/win-x64/native/comerr64.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b103a050a0bd9781dc85f3b7f620c7dcc88d04e924b1ca549f24f6e0f1e48e6e"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/mysql.data@26.7.0"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/google.protobuf@3.35.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net10.0",
+        "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net10.0",
+        "pkg:nuget/system.io.pipelines@5.0.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net472",
+        "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net472",
+        "pkg:nuget/system.io.pipelines@5.0.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net6.0",
+        "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net6.0",
+        "pkg:nuget/system.io.pipelines@5.0.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net8.0",
+        "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net8.0",
+        "pkg:nuget/system.io.pipelines@5.0.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.compression.lz4@1.3.8#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/k4os.hash.xxhash@1.0.8#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/mysql.data@26.7.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net10.0",
+        "pkg:nuget/google.protobuf@3.35.0#tfm=net10.0",
+        "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net10.0",
+        "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net10.0",
+        "pkg:nuget/zstdsharp.port@0.8.8#tfm=net10.0",
+        "urn:servicestack:native:3963c9962ef5e090d0c37a0da8e764d2147e8f6c45cfe36061cc631f51d15d48",
+        "urn:servicestack:native:48eb60bd25bc74fbc6a8ef63717c3100497198ed6fe09f86ede24ec1afa54093",
+        "urn:servicestack:native:762f86e68ac4f5c41344dac2aa85953b4597f53b2b654294d53b66f3efd1c131",
+        "urn:servicestack:native:d157917adf5c09dfa0a0804bf8e3641156416dc1cd83c131e14dad41ade88ffb",
+        "urn:servicestack:native:f411d63cb1bc10fb0b07608551636203394cae7af326b724c982d8ad341afcb2"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/mysql.data@26.7.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net472",
+        "pkg:nuget/google.protobuf@3.35.0#tfm=net472",
+        "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net472",
+        "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net472",
+        "pkg:nuget/zstdsharp.port@0.8.8#tfm=net472",
+        "urn:servicestack:native:3963c9962ef5e090d0c37a0da8e764d2147e8f6c45cfe36061cc631f51d15d48",
+        "urn:servicestack:native:48eb60bd25bc74fbc6a8ef63717c3100497198ed6fe09f86ede24ec1afa54093",
+        "urn:servicestack:native:762f86e68ac4f5c41344dac2aa85953b4597f53b2b654294d53b66f3efd1c131",
+        "urn:servicestack:native:d157917adf5c09dfa0a0804bf8e3641156416dc1cd83c131e14dad41ade88ffb",
+        "urn:servicestack:native:f411d63cb1bc10fb0b07608551636203394cae7af326b724c982d8ad341afcb2"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/mysql.data@26.7.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net6.0",
+        "pkg:nuget/google.protobuf@3.35.0#tfm=net6.0",
+        "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net6.0",
+        "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net6.0",
+        "pkg:nuget/zstdsharp.port@0.8.8#tfm=net6.0",
+        "urn:servicestack:native:3963c9962ef5e090d0c37a0da8e764d2147e8f6c45cfe36061cc631f51d15d48",
+        "urn:servicestack:native:48eb60bd25bc74fbc6a8ef63717c3100497198ed6fe09f86ede24ec1afa54093",
+        "urn:servicestack:native:762f86e68ac4f5c41344dac2aa85953b4597f53b2b654294d53b66f3efd1c131",
+        "urn:servicestack:native:d157917adf5c09dfa0a0804bf8e3641156416dc1cd83c131e14dad41ade88ffb",
+        "urn:servicestack:native:f411d63cb1bc10fb0b07608551636203394cae7af326b724c982d8ad341afcb2"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/mysql.data@26.7.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/bouncycastle.cryptography@2.6.2#tfm=net8.0",
+        "pkg:nuget/google.protobuf@3.35.0#tfm=net8.0",
+        "pkg:nuget/k4os.compression.lz4.streams@1.3.8#tfm=net8.0",
+        "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net8.0",
+        "pkg:nuget/zstdsharp.port@0.8.8#tfm=net8.0",
+        "urn:servicestack:native:3963c9962ef5e090d0c37a0da8e764d2147e8f6c45cfe36061cc631f51d15d48",
+        "urn:servicestack:native:48eb60bd25bc74fbc6a8ef63717c3100497198ed6fe09f86ede24ec1afa54093",
+        "urn:servicestack:native:762f86e68ac4f5c41344dac2aa85953b4597f53b2b654294d53b66f3efd1c131",
+        "urn:servicestack:native:d157917adf5c09dfa0a0804bf8e3641156416dc1cd83c131e14dad41ade88ffb",
+        "urn:servicestack:native:f411d63cb1bc10fb0b07608551636203394cae7af326b724c982d8ad341afcb2"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net472",
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/mysql.data@26.7.0#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/mysql.data@26.7.0#tfm=net472",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/mysql.data@26.7.0#tfm=net6.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.mysql@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/mysql.data@26.7.0#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net472",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+        "pkg:nuget/system.memory@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net6.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net10.0",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net10.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net472",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net472",
+        "pkg:nuget/system.memory@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net6.0",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net6.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net8.0",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net8.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.configuration.configurationmanager@10.0.8#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net10.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net472",
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net6.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.io.pipelines@5.0.2#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net8.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net10.0",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net10.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net472",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net472",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net6.0",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net6.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net8.0",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net8.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/zstdsharp.port@0.8.8#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "urn:servicestack:native:3963c9962ef5e090d0c37a0da8e764d2147e8f6c45cfe36061cc631f51d15d48",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:48eb60bd25bc74fbc6a8ef63717c3100497198ed6fe09f86ede24ec1afa54093",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:762f86e68ac4f5c41344dac2aa85953b4597f53b2b654294d53b66f3efd1c131",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:d157917adf5c09dfa0a0804bf8e3641156416dc1cd83c131e14dad41ade88ffb",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:f411d63cb1bc10fb0b07608551636203394cae7af326b724c982d8ad341afcb2",
+      "dependsOn": []
+    }
+  ]
+}

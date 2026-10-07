@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.OpenApi.Swashbuckle",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:49:40Z",
+  "packageSha256": "8a5dc22892c270676b15b8ccba77f4c2b10d0a6d78bd31d68a90949e7d4fcc0d",
+  "frameworks": [
+    "net10.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "a68240638e2614aecf89918cadd1865115ccd00ba1a7de32ac5977aeb1bfedba",
+    "resolution.json": "c7dcb6a65513cb141507dfcae7502d693afc4474a3f83972b30010f590a16a2c",
+    "audit.json": "a0bd7b84475ebf6cf90d5deaccb07da2c52d432ce7743c5338e202c6b1ccba93"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/microsoft.extensions.apidescription.server@10.0.0",
+      "path": "tools/net10.0/GetDocument.Insider.exe",
+      "sha256": "412b2b14e17cb0c7260157ecb7f9eeda4c76e19bbfa678333595deace7c69545"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

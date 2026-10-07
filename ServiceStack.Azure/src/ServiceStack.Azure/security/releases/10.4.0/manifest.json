@@ -1,0 +1,350 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.Azure",
+  "version": "10.4.0",
+  "created": "2026-10-07T08:03:17Z",
+  "packageSha256": "0afc28972c876180d36093005478ff4171f70db71933d762f9b0e52d20f2caea",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "3825e70c2ed89244297af2052b8c1bb211cfe1f3cba3b801f2ff80e18f78d68e",
+    "resolution.json": "8df9f062645971e1807538b924c6181231dc69a08a832331d7e82955b66ef102",
+    "audit.json": "b0707d5dc153b2813b0a262b67da343394b79930cf9a399b2787dd313e2643c3"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "build/native/ARM64/Release/Microsoft.CognitiveServices.Speech.core.lib",
+      "sha256": "e3d9f4a131a4d7d41c81fbff50d51556e68dec2760ad3c18f448bc935f6084d7"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "build/native/uap/ARM64/Release/Microsoft.CognitiveServices.Speech.core.lib",
+      "sha256": "e3d9f4a131a4d7d41c81fbff50d51556e68dec2760ad3c18f448bc935f6084d7"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "build/native/uap/x64/Release/Microsoft.CognitiveServices.Speech.core.lib",
+      "sha256": "7e57ef4e8703791f8e82d317c264852124c8e85c80ecb6f547afecfc3fe14629"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "build/native/x64/Release/Microsoft.CognitiveServices.Speech.core.lib",
+      "sha256": "7e57ef4e8703791f8e82d317c264852124c8e85c80ecb6f547afecfc3fe14629"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm/native/libMicrosoft.CognitiveServices.Speech.core.so",
+      "sha256": "33a6e8ac3147b14af178204bff766a5ebadbd39a7940d0f9d9cb237195c1380d"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm/native/libMicrosoft.CognitiveServices.Speech.extension.audio.sys.so",
+      "sha256": "5a6614d66cc913f3b888ab330431fb87b2f26bdfe580b9153c3c5f3045cd4b26"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.so",
+      "sha256": "c1eea2d490f882d7774532918ca0be1b338916bfb19ac134d6a92714fe0074da"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm/native/libMicrosoft.CognitiveServices.Speech.extension.kws.so",
+      "sha256": "ec1dc8fac6a253a46bdeb6bb5a0d7b7a89a899f0ffedc7fe7ef72e2e290c859f"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm64/native/libMicrosoft.CognitiveServices.Speech.core.so",
+      "sha256": "66bafc63c9d576898a51dd63b88549cfc432c3ef26a0e36dc92f8c15890a0394"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.audio.sys.so",
+      "sha256": "b8e6b5176b222feed7fbb565f00a7cc7508ebe0334ac229b37bdf68fe7c52cb0"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.so",
+      "sha256": "3d248f12659700fcc9ceb74300ff67dde197b1f1e946c66df01d01f37951f74f"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.so",
+      "sha256": "6614e1bc28fe2b85b91996d0f62de6df84369253363d6144e54b59b4b766280d"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-x64/native/libMicrosoft.CognitiveServices.Speech.core.so",
+      "sha256": "7f21d802527a2a732e0d29150a0eeeed5027012a9432608528e1bb98f618e584"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-x64/native/libMicrosoft.CognitiveServices.Speech.extension.audio.sys.so",
+      "sha256": "b8a246efdb7668155e38275dd98dad2d840ab6e7949b2cf7d6ab9cd7eff8bf7a"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-x64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.so",
+      "sha256": "882da9588630e29fa06fd252477259162430ad4d24d2cd5543e34cf2b8a7cd04"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/android-x64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.so",
+      "sha256": "20e51ad0e884b9bfa4110fe30405a2cfc46d06215e8f66b4fbce32d4cc033d28"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/ios-arm64/native/libMicrosoft.CognitiveServices.Speech.core.a",
+      "sha256": "a2de5425d14498f672f9ffb221c2709b4d516e3b8241569e11090e9bfcc798f2"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/iossimulator-arm64/native/libMicrosoft.CognitiveServices.Speech.core.a",
+      "sha256": "be528f625d99b0e49bce8742efbd6d66c515f2f60cbac11a8115b84741436477"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/iossimulator-x64/native/libMicrosoft.CognitiveServices.Speech.core.a",
+      "sha256": "c097db2c329a6f2e301ac555d440e2c9c9d7e8c45daeecd943e60b49f6ba81fb"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm/native/libMicrosoft.CognitiveServices.Speech.core.so",
+      "sha256": "e24c0a5813b7e7ec966cf25b989614e4e8c405c08e3790115a0376c93bd02d78"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm/native/libMicrosoft.CognitiveServices.Speech.extension.audio.sys.so",
+      "sha256": "62d234a5661fa6ad81ed6e753bc93a6c8d5eb1134488be21d05768c0431bf719"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm/native/libMicrosoft.CognitiveServices.Speech.extension.codec.so",
+      "sha256": "afaae6a7a2f0d6421c44c9b531cf232215233ceeb27c84e42112e3ec03889ab8"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.so",
+      "sha256": "0e0a2dbe0beb6b41738ffc8c92f5f4ef82e1da687be26e4c999a369d45765590"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm/native/libMicrosoft.CognitiveServices.Speech.extension.kws.so",
+      "sha256": "2d2fa964efda58e72880c08c8785ca4de3beb90d934d0e9ff37723d93812e5f5"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm/native/libpal_azure_c_shared.so",
+      "sha256": "457139b7b43b738ef878dbeccd79a5291f9bbc66778629bfa9c272bc1e2f1977"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm/native/libpal_azure_c_shared_openssl3.so",
+      "sha256": "4295c03e835667b1856dc08ac1e4a5f2fabfe10aa693254fdbc81370d7d822dc"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm64/native/libMicrosoft.CognitiveServices.Speech.core.so",
+      "sha256": "29d2735eed42943ed1e8c89b833e4e349d19a3232e2ea6c9a01865acfaad458a"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.audio.sys.so",
+      "sha256": "e6c0820a0897cc68e6de350921b621b570faf9252776668e93584e446a1102d9"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.codec.so",
+      "sha256": "63018324a15714c71d6aad82fbcb2c208fea69d319b25a0c959a5976117558c4"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.so",
+      "sha256": "617b19e6a4f9e0f9c518a7a87673cfbf44edbb9b07bb81cd80b8c169179acfbf"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.so",
+      "sha256": "c69a8342b3fa3e5fca213a50995ec88351485e1ff5a4e32de2f7a4be2e8d049d"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm64/native/libpal_azure_c_shared.so",
+      "sha256": "4b702a3e9eea80e44acd77681fccf6171985c3e0058597884799e7c7f6153a26"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-arm64/native/libpal_azure_c_shared_openssl3.so",
+      "sha256": "e35e52c6228b8a02f2a7e40a68bf0db4a992aef021b439ad239231ae206bcd60"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-x64/native/libMicrosoft.CognitiveServices.Speech.core.so",
+      "sha256": "58644d89c6a9bd6fe0c87bb0bb1e93a1a92bb4ee7bce41a339171fec69cdef74"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-x64/native/libMicrosoft.CognitiveServices.Speech.extension.audio.sys.so",
+      "sha256": "ca14cd2e130cfcf9105fdb8fe6ab1ab3a02e08f788ed8a78883b84091ffbca8b"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-x64/native/libMicrosoft.CognitiveServices.Speech.extension.codec.so",
+      "sha256": "7c54eede37af674a581533cd2d071e3e11fbfd49f8f648f93068f571a29f20b1"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-x64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.so",
+      "sha256": "1a744baa43b2bcc481777e2598610187243b2fa857134e2667d19ea79d2a6e95"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-x64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.so",
+      "sha256": "efc9297f0482cf63da4d56f2f87daf6f4d1fa660bb0b7a1197a1300daa52f9c8"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-x64/native/libpal_azure_c_shared.so",
+      "sha256": "bc92786c30b879ac9c5ee6f0978f7d9f8a4175a2d734e62401ff563f6f8b9c3f"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/linux-x64/native/libpal_azure_c_shared_openssl3.so",
+      "sha256": "bb58f274b9121bf1c83369956698e30f67200eb5b0b7726b6be4aaf4afbd70b1"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/maccatalyst-arm64/native/libMicrosoft.CognitiveServices.Speech.core.a",
+      "sha256": "bf8db676f35b73d7d49af3fabcc1e509e679c3b489d67a8da9762ec9b8ba7662"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/maccatalyst-x64/native/libMicrosoft.CognitiveServices.Speech.core.a",
+      "sha256": "2057d92682e0c85350a4a7eb29431b13f11d3f8009a348a0198247fbcf1a1ee2"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/osx-arm64/native/libMicrosoft.CognitiveServices.Speech.core.dylib",
+      "sha256": "8fbfae6d6d6e5b6433680ccfdc1f24ca1fdb059b194adf405b580c6191c90c7a"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/osx-arm64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.dylib",
+      "sha256": "eb1ad04288e85cca8c51757798c40d4e368511734a45eeffcb7e5548e748ecc9"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/osx-x64/native/libMicrosoft.CognitiveServices.Speech.core.dylib",
+      "sha256": "bbef2522610602a27876d981f3f07cef3c166f64ba42825f6fa2a3d5401f3b58"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/osx-x64/native/libMicrosoft.CognitiveServices.Speech.extension.kws.ort.dylib",
+      "sha256": "7e3004f795c868bc62fa0c6efa29499c5c855da10cf71297088b1de2bc5f8b09"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/native/Microsoft.CognitiveServices.Speech.core.dll",
+      "sha256": "efe78342f5a29106d858f1932ffe563aec57f06ea4cdbdcfd126964328b0e0a5"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/native/Microsoft.CognitiveServices.Speech.extension.audio.sys.dll",
+      "sha256": "04efe6c7bb4bfbc8b891b5bb98fc6103b1246626e04f199460a6bd40d27f887e"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/native/Microsoft.CognitiveServices.Speech.extension.kws.dll",
+      "sha256": "c456740673c930675349da9fbf2b956685cbf96e774a584b54e4e8939c442fd1"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/native/Microsoft.CognitiveServices.Speech.extension.kws.ort.dll",
+      "sha256": "d7185548b2ddd7056092e4f16f66d4bdd19d33b242661d7f2ab107f643c152a3"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/nativeassets/uap/Microsoft.CognitiveServices.Speech.core.dll",
+      "sha256": "58dc9918f6367fa7ebfb51c0847d9cbdfaacb89023424dd5a20d67ed783132fd"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/nativeassets/uap/Microsoft.CognitiveServices.Speech.extension.audio.sys.dll",
+      "sha256": "68dd36afd67c46372fc066087c35e69fdfb3606709a8d1dd8dba6b8c31b04166"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/nativeassets/uap/Microsoft.CognitiveServices.Speech.extension.kws.dll",
+      "sha256": "56ccb35e748a5e08660ec1333de6b15558af1add8b69b70df608f9eb989a48f9"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-arm64/nativeassets/uap/Microsoft.CognitiveServices.Speech.extension.kws.ort.dll",
+      "sha256": "3332a38003042fe1c696fca3da52f034422cc488e5f25b17b67e7a48a3fae9b9"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/native/Microsoft.CognitiveServices.Speech.core.dll",
+      "sha256": "b045d8ba122f8f015ed359b7b3df3c25c48271fc51282686d4f131e5fc51e91f"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/native/Microsoft.CognitiveServices.Speech.extension.audio.sys.dll",
+      "sha256": "84e065b396e32382d371d06ae3836944e0bf08a4d186472747fbd7893428fd93"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/native/Microsoft.CognitiveServices.Speech.extension.codec.dll",
+      "sha256": "36dbe150afd985d3c134640c60ba8e7f60ea4554e121cceb5144718a95fd9716"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/native/Microsoft.CognitiveServices.Speech.extension.kws.dll",
+      "sha256": "a82870f11700f4a0cddf964ee811ef19feec1e6f755a1100a1403a693660150c"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/native/Microsoft.CognitiveServices.Speech.extension.kws.ort.dll",
+      "sha256": "92e4d61f896331bbaf062efffa0df4c4ad29c63054d928d3c0ee3ae582c222d9"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/nativeassets/uap/Microsoft.CognitiveServices.Speech.core.dll",
+      "sha256": "00b70691455fa420135ea644b6b07d924022b5c90b2aab76f18151ff55329eff"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/nativeassets/uap/Microsoft.CognitiveServices.Speech.extension.audio.sys.dll",
+      "sha256": "0fa6faac2e8fa41182d8f24abceed47367e4d50aeea3a6344b1e9a5c7a873f83"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/nativeassets/uap/Microsoft.CognitiveServices.Speech.extension.kws.dll",
+      "sha256": "02149e3b983394fdafc226a8638056df0023905348243f0f2fa504ba9fc4ca96"
+    },
+    {
+      "package": "pkg:nuget/microsoft.cognitiveservices.speech@1.52.0",
+      "path": "runtimes/win-x64/nativeassets/uap/Microsoft.CognitiveServices.Speech.extension.kws.ort.dll",
+      "sha256": "5069fe7c0ecaef51298bd1130fe1c881a52ea0c95cc56a0f97272be482125b61"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:e9b69acf-2d4d-4b10-a2aa-cc28ccf4fb68",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-07T08:07:04Z",
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0",
+      "name": "ServiceStack.OrmLite.T4",
+      "version": "10.4.0",
+      "purl": "pkg:nuget/servicestack.ormlite.t4@10.4.0",
+      "supplier": {
+        "name": "ServiceStack, Inc."
+      },
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f3cc6d018995a031942712f29a18d7dcd402012079e19708da36099ab82d26e8"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-frameworks",
+          "value": "net10.0"
+        },
+        {
+          "name": "servicestack:inventory-kind",
+          "value": "Exact NuGet archive and resolved consumer baseline"
+        },
+        {
+          "name": "servicestack:declared-dependency-groups",
+          "value": "[{\"dependencies\": [], \"targetFramework\": \"net10.0\"}]"
+        },
+        {
+          "name": "servicestack:resolution-limits",
+          "value": "Consumers can resolve other versions allowed by NuGet ranges; runtime/OS framework components are not inventoried."
+        },
+        {
+          "name": "servicestack:package-source-commit",
+          "value": "da90504435109bee9c5199e1902bcabc9d472a1b"
+        },
+        {
+          "name": "servicestack:framework-source",
+          "value": "Declared nuspec compatibility groups for content-only archive"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Declared package license",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ]
+    },
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "CycloneDX .NET",
+          "version": "6.2.0"
+        },
+        {
+          "type": "application",
+          "name": "ServiceStack security artifacts",
+          "version": "1.1.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.T4",
+      "version": "10.4.0",
+      "description": "Generate POCO models for all existing tables and stored procedures in a database for use with OrmLite.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BF905252633B8726FD03FEFCE23C280034E24343A997EDC18B70B4F9FAAB4871BE6A591A5DC5E41F450BB6D6F411C14E5148571276CD05BA58A87B4D454F139B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.t4@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=7b639ed4-ea74-5ede-8aee-9b505bfc8770",
+      "name": "contentFiles/any/any/OrmLite.Core.ttinclude",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "501e489fee4aab7dad1091ff7bc844946451f755fd09c7e4d54e82f6eefc0671"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:archive-path",
+          "value": "contentFiles/any/any/OrmLite.Core.ttinclude"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=01fa2511-fb12-5fd2-8575-251f2f91a179",
+      "name": "contentFiles/any/any/OrmLite.Poco.tt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e28d56c20f25a0194d371a31604a4d6668b35c57bce38960515037cc7652bb91"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:archive-path",
+          "value": "contentFiles/any/any/OrmLite.Poco.tt"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=088ba8a3-ebb9-585d-b33d-eee6ef5cf147",
+      "name": "contentFiles/any/any/OrmLite.SP.tt",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "546890580840dd08b32385a1d19a75c94fda16c361e7a8a5912052c243f8ad4d"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:archive-path",
+          "value": "contentFiles/any/any/OrmLite.SP.tt"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.ormlite.t4@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=7b639ed4-ea74-5ede-8aee-9b505bfc8770",
+        "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=01fa2511-fb12-5fd2-8575-251f2f91a179",
+        "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=088ba8a3-ebb9-585d-b33d-eee6ef5cf147"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=7b639ed4-ea74-5ede-8aee-9b505bfc8770",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=01fa2511-fb12-5fd2-8575-251f2f91a179",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.t4@10.4.0#content=088ba8a3-ebb9-585d-b33d-eee6ef5cf147",
+      "dependsOn": []
+    }
+  ]
+}

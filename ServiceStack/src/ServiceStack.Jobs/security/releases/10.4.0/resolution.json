@@ -1,0 +1,299 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite.Sqlite.Data",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Server",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite.Sqlite.Data",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Server",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "Microsoft.Data.Sqlite.Core/10.0.12": {
+        "SQLitePCLRaw.core": "2.1.12"
+      },
+      "Microsoft.Data.Sqlite/10.0.12": {
+        "Microsoft.Data.Sqlite.Core": "10.0.12",
+        "SQLitePCLRaw.bundle_e_sqlite3": "2.1.12",
+        "SQLitePCLRaw.core": "2.1.12"
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/10.0.12": {
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.Configuration.Binder/10.0.12": {
+        "Microsoft.Extensions.Configuration": "10.0.12",
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Configuration/10.0.12": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.12": {},
+      "Microsoft.Extensions.DependencyInjection/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Diagnostics.Abstractions/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12"
+      },
+      "Microsoft.Extensions.Diagnostics/10.0.12": {
+        "Microsoft.Extensions.Configuration": "10.0.12",
+        "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.12"
+      },
+      "Microsoft.Extensions.Http/10.0.12": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Diagnostics": "10.0.12",
+        "Microsoft.Extensions.Logging": "10.0.12",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Logging/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection": "10.0.12",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12"
+      },
+      "Microsoft.Extensions.Options.ConfigurationExtensions/10.0.12": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Configuration.Binder": "10.0.12",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12",
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.Options/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.Primitives/10.0.12": {},
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.12": {
+        "SQLitePCLRaw.lib.e_sqlite3": "2.1.12",
+        "SQLitePCLRaw.provider.e_sqlite3": "2.1.12"
+      },
+      "SQLitePCLRaw.core/2.1.12": {
+        "System.Memory": "4.5.3"
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/2.1.12": {},
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.12": {
+        "SQLitePCLRaw.core": "2.1.12"
+      },
+      "ServiceStack.Client/10.4.0": {
+        "Microsoft.Extensions.Http": "10.0.12",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Jobs/10.4.0": {
+        "ServiceStack": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0",
+        "ServiceStack.OrmLite.Sqlite.Data": "10.4.0",
+        "ServiceStack.Server": "10.4.0"
+      },
+      "ServiceStack.OrmLite.Sqlite.Data/10.4.0": {
+        "Microsoft.Data.Sqlite": "10.0.12",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Redis/10.4.0": {
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Server/10.4.0": {
+        "ServiceStack": "10.4.0",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0",
+        "ServiceStack.Redis": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "ServiceStack/10.4.0": {
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "System.Memory/4.5.3": {}
+    },
+    "net8.0": {
+      "Microsoft.Data.Sqlite.Core/10.0.12": {
+        "SQLitePCLRaw.core": "2.1.12"
+      },
+      "Microsoft.Data.Sqlite/10.0.12": {
+        "Microsoft.Data.Sqlite.Core": "10.0.12",
+        "SQLitePCLRaw.bundle_e_sqlite3": "2.1.12",
+        "SQLitePCLRaw.core": "2.1.12"
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/8.0.0": {
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Configuration.Binder/8.0.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0"
+      },
+      "Microsoft.Extensions.Configuration/8.0.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Microsoft.Extensions.DependencyInjection/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+      },
+      "Microsoft.Extensions.Diagnostics.Abstractions/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2"
+      },
+      "Microsoft.Extensions.Diagnostics/8.0.1": {
+        "Microsoft.Extensions.Configuration": "8.0.0",
+        "Microsoft.Extensions.Diagnostics.Abstractions": "8.0.1",
+        "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0"
+      },
+      "Microsoft.Extensions.Http/8.0.1": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Diagnostics": "8.0.1",
+        "Microsoft.Extensions.Logging": "8.0.1",
+        "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+      },
+      "Microsoft.Extensions.Logging/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection": "8.0.1",
+        "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2"
+      },
+      "Microsoft.Extensions.Options.ConfigurationExtensions/8.0.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Configuration.Binder": "8.0.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Options": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Options/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Primitives/8.0.0": {},
+      "SQLitePCLRaw.bundle_e_sqlite3/2.1.12": {
+        "SQLitePCLRaw.lib.e_sqlite3": "2.1.12",
+        "SQLitePCLRaw.provider.e_sqlite3": "2.1.12"
+      },
+      "SQLitePCLRaw.core/2.1.12": {
+        "System.Memory": "4.5.3"
+      },
+      "SQLitePCLRaw.lib.e_sqlite3/2.1.12": {},
+      "SQLitePCLRaw.provider.e_sqlite3/2.1.12": {
+        "SQLitePCLRaw.core": "2.1.12"
+      },
+      "ServiceStack.Client/10.4.0": {
+        "Microsoft.Extensions.Http": "8.0.1",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Jobs/10.4.0": {
+        "ServiceStack": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0",
+        "ServiceStack.OrmLite.Sqlite.Data": "10.4.0",
+        "ServiceStack.Server": "10.4.0"
+      },
+      "ServiceStack.OrmLite.Sqlite.Data/10.4.0": {
+        "Microsoft.Data.Sqlite": "10.0.12",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Redis/10.4.0": {
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Server/10.4.0": {
+        "ServiceStack": "10.4.0",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0",
+        "ServiceStack.Redis": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "ServiceStack/10.4.0": {
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "System.Memory/4.5.3": {}
+    }
+  }
+}

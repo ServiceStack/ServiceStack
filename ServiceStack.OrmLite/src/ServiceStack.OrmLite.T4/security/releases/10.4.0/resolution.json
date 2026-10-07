@@ -1,0 +1,16 @@
+{
+  "frameworks": [
+    "net10.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": []
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "ServiceStack.OrmLite.T4/10.4.0": {}
+    }
+  }
+}

@@ -1,0 +1,299 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.SemanticKernel",
+          "version": "1.80.1",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.SemanticKernel",
+          "version": "1.80.1",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "Azure.AI.OpenAI/2.9.0-beta.1": {
+        "Azure.Core": "1.51.1",
+        "OpenAI": "2.9.1"
+      },
+      "Azure.Core/1.51.1": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.2",
+        "System.ClientModel": "1.9.0",
+        "System.Memory.Data": "10.0.1"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/10.0.2": {},
+      "Microsoft.Bcl.HashCode/1.1.1": {},
+      "Microsoft.Extensions.AI.Abstractions/10.5.2": {},
+      "Microsoft.Extensions.AI.OpenAI/10.5.0": {
+        "Microsoft.Extensions.AI.Abstractions": "10.5.0",
+        "OpenAI": "2.10.0"
+      },
+      "Microsoft.Extensions.AI/10.5.0": {
+        "Microsoft.Extensions.AI.Abstractions": "10.5.0",
+        "Microsoft.Extensions.Caching.Abstractions": "10.0.6",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.6",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.6",
+        "System.Numerics.Tensors": "10.0.6"
+      },
+      "Microsoft.Extensions.Caching.Abstractions/10.0.6": {
+        "Microsoft.Extensions.Primitives": "10.0.6"
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/10.0.3": {
+        "Microsoft.Extensions.Primitives": "10.0.3"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.6": {},
+      "Microsoft.Extensions.DependencyInjection/10.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+      },
+      "Microsoft.Extensions.Diagnostics.Abstractions/10.0.3": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Options": "10.0.3"
+      },
+      "Microsoft.Extensions.FileProviders.Abstractions/10.0.3": {
+        "Microsoft.Extensions.Primitives": "10.0.3"
+      },
+      "Microsoft.Extensions.Hosting.Abstractions/10.0.3": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.3",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.3",
+        "Microsoft.Extensions.FileProviders.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.3"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.6": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.6"
+      },
+      "Microsoft.Extensions.Options/10.0.3": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Primitives": "10.0.3"
+      },
+      "Microsoft.Extensions.Primitives/10.0.6": {},
+      "Microsoft.Extensions.VectorData.Abstractions/10.5.2": {
+        "Microsoft.Extensions.AI.Abstractions": "10.5.2"
+      },
+      "Microsoft.SemanticKernel.Abstractions/1.80.1": {
+        "Microsoft.Bcl.HashCode": "1.1.1",
+        "Microsoft.Extensions.AI": "10.5.0",
+        "Microsoft.Extensions.VectorData.Abstractions": "10.5.2"
+      },
+      "Microsoft.SemanticKernel.Connectors.AzureOpenAI/1.80.1": {
+        "Azure.AI.OpenAI": "2.9.0-beta.1",
+        "Microsoft.SemanticKernel.Connectors.OpenAI": "1.80.1",
+        "Microsoft.SemanticKernel.Core": "1.80.1"
+      },
+      "Microsoft.SemanticKernel.Connectors.OpenAI/1.80.1": {
+        "Microsoft.Extensions.AI.OpenAI": "10.5.0",
+        "Microsoft.SemanticKernel.Core": "1.80.1",
+        "OpenAI": "2.10.0"
+      },
+      "Microsoft.SemanticKernel.Core/1.80.1": {
+        "Microsoft.Extensions.DependencyInjection": "10.0.2",
+        "Microsoft.SemanticKernel.Abstractions": "1.80.1",
+        "System.Numerics.Tensors": "10.0.10"
+      },
+      "Microsoft.SemanticKernel/1.80.1": {
+        "Microsoft.SemanticKernel.Connectors.AzureOpenAI": "1.80.1",
+        "Microsoft.SemanticKernel.Core": "1.80.1"
+      },
+      "OpenAI/2.10.0": {
+        "System.ClientModel": "1.10.0"
+      },
+      "ServiceStack.AI/10.4.0": {
+        "Microsoft.SemanticKernel": "1.80.1",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "System.ClientModel/1.10.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Hosting.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.3",
+        "System.Memory.Data": "10.0.3"
+      },
+      "System.Memory.Data/10.0.3": {},
+      "System.Numerics.Tensors/10.0.10": {}
+    },
+    "net8.0": {
+      "Azure.AI.OpenAI/2.9.0-beta.1": {
+        "Azure.Core": "1.51.1",
+        "OpenAI": "2.9.1"
+      },
+      "Azure.Core/1.51.1": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.2",
+        "System.ClientModel": "1.9.0",
+        "System.Memory.Data": "10.0.1"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/10.0.2": {},
+      "Microsoft.Bcl.HashCode/1.1.1": {},
+      "Microsoft.Extensions.AI.Abstractions/10.5.2": {
+        "System.Text.Json": "10.0.6"
+      },
+      "Microsoft.Extensions.AI.OpenAI/10.5.0": {
+        "Microsoft.Extensions.AI.Abstractions": "10.5.0",
+        "OpenAI": "2.10.0",
+        "System.Text.Json": "10.0.6"
+      },
+      "Microsoft.Extensions.AI/10.5.0": {
+        "Microsoft.Extensions.AI.Abstractions": "10.5.0",
+        "Microsoft.Extensions.Caching.Abstractions": "10.0.6",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.6",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.6",
+        "System.Diagnostics.DiagnosticSource": "10.0.6",
+        "System.Numerics.Tensors": "10.0.6",
+        "System.Text.Json": "10.0.6",
+        "System.Threading.Channels": "10.0.6"
+      },
+      "Microsoft.Extensions.Caching.Abstractions/10.0.6": {
+        "Microsoft.Extensions.Primitives": "10.0.6"
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/10.0.3": {
+        "Microsoft.Extensions.Primitives": "10.0.3"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.6": {},
+      "Microsoft.Extensions.DependencyInjection/10.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.2"
+      },
+      "Microsoft.Extensions.Diagnostics.Abstractions/10.0.3": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Options": "10.0.3",
+        "System.Diagnostics.DiagnosticSource": "10.0.3"
+      },
+      "Microsoft.Extensions.FileProviders.Abstractions/10.0.3": {
+        "Microsoft.Extensions.Primitives": "10.0.3"
+      },
+      "Microsoft.Extensions.Hosting.Abstractions/10.0.3": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.3",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.3",
+        "Microsoft.Extensions.FileProviders.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.3"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.6": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.6",
+        "System.Diagnostics.DiagnosticSource": "10.0.6"
+      },
+      "Microsoft.Extensions.Options/10.0.3": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Primitives": "10.0.3"
+      },
+      "Microsoft.Extensions.Primitives/10.0.6": {},
+      "Microsoft.Extensions.VectorData.Abstractions/10.5.2": {
+        "Microsoft.Extensions.AI.Abstractions": "10.5.2"
+      },
+      "Microsoft.SemanticKernel.Abstractions/1.80.1": {
+        "Microsoft.Bcl.HashCode": "1.1.1",
+        "Microsoft.Extensions.AI": "10.5.0",
+        "Microsoft.Extensions.VectorData.Abstractions": "10.5.2",
+        "System.Linq.AsyncEnumerable": "10.0.4",
+        "System.Text.Json": "10.0.6"
+      },
+      "Microsoft.SemanticKernel.Connectors.AzureOpenAI/1.80.1": {
+        "Azure.AI.OpenAI": "2.9.0-beta.1",
+        "Microsoft.SemanticKernel.Connectors.OpenAI": "1.80.1",
+        "Microsoft.SemanticKernel.Core": "1.80.1"
+      },
+      "Microsoft.SemanticKernel.Connectors.OpenAI/1.80.1": {
+        "Microsoft.Extensions.AI.OpenAI": "10.5.0",
+        "Microsoft.SemanticKernel.Core": "1.80.1",
+        "OpenAI": "2.10.0"
+      },
+      "Microsoft.SemanticKernel.Core/1.80.1": {
+        "Microsoft.Extensions.DependencyInjection": "10.0.2",
+        "Microsoft.SemanticKernel.Abstractions": "1.80.1",
+        "System.Numerics.Tensors": "10.0.10"
+      },
+      "Microsoft.SemanticKernel/1.80.1": {
+        "Microsoft.SemanticKernel.Connectors.AzureOpenAI": "1.80.1",
+        "Microsoft.SemanticKernel.Core": "1.80.1"
+      },
+      "OpenAI/2.10.0": {
+        "System.ClientModel": "1.10.0",
+        "System.Net.ServerSentEvents": "10.0.2"
+      },
+      "ServiceStack.AI/10.4.0": {
+        "Microsoft.SemanticKernel": "1.80.1",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "System.ClientModel/1.10.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Hosting.Abstractions": "10.0.3",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.3",
+        "System.Diagnostics.DiagnosticSource": "10.0.3",
+        "System.Memory.Data": "10.0.3",
+        "System.Text.Json": "10.0.3"
+      },
+      "System.Diagnostics.DiagnosticSource/10.0.6": {},
+      "System.IO.Pipelines/10.0.6": {},
+      "System.Linq.AsyncEnumerable/10.0.4": {},
+      "System.Memory.Data/10.0.3": {
+        "System.Text.Json": "10.0.3"
+      },
+      "System.Net.ServerSentEvents/10.0.2": {},
+      "System.Numerics.Tensors/10.0.10": {},
+      "System.Text.Encodings.Web/10.0.6": {},
+      "System.Text.Json/10.0.6": {
+        "System.IO.Pipelines": "10.0.6",
+        "System.Text.Encodings.Web": "10.0.6"
+      },
+      "System.Threading.Channels/10.0.6": {}
+    }
+  }
+}

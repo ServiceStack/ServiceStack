@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.Kestrel",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:49:15Z",
+  "packageSha256": "a9ca6614fe98a6615b508cc68944fbe516fc7e7635ad9997e4fdab4772bebae8",
+  "frameworks": [
+    "net10.0",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "e56c6eaf29b4d8214c2a5a4047da8609385d5db71a535b35499cb37f67ad07d8",
+    "resolution.json": "2502abf2173009ecf3cb9f1ccc19055547d5af04258f0c2c41f7192458e1e6f4",
+    "audit.json": "f9e9636c4a8cada68f8e42320a927c434bcc4a737b9d695660a9edfa5063fd48"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

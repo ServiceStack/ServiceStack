@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.Razor",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:49:56Z",
+  "packageSha256": "9d9bb5851f1656f5525c3837621028402dd8d008146eee180d584b2a9bb6c235",
+  "frameworks": [
+    "net472"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "5c50217f3efae3bc322811b7444a5a69dbea6374e218badf07be69b928376b93",
+    "resolution.json": "2947eb0e62723c4059d2b918aa6311cdc5828b923a16645a972df2f8bf9944e8",
+    "audit.json": "99f2a7184b5225de0468e9d75b395e930d4ba9c1db0c90998e523627e07f26b0"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

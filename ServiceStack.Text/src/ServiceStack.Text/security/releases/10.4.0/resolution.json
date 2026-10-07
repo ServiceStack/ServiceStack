@@ -1,0 +1,130 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0",
+    "netstandard2.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": []
+    },
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "Microsoft.CSharp",
+          "version": "4.7.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Diagnostics.DiagnosticSource",
+          "version": "8.0.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Memory",
+          "version": "4.6.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net6.0",
+      "dependencies": []
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": []
+    },
+    {
+      "targetFramework": ".NETStandard2.0",
+      "dependencies": [
+        {
+          "id": "Microsoft.Bcl.AsyncInterfaces",
+          "version": "10.0.12",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.CSharp",
+          "version": "4.7.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Diagnostics.DiagnosticSource",
+          "version": "8.0.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Memory",
+          "version": "4.6.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "ServiceStack.Text/10.4.0": {}
+    },
+    "net472": {
+      "Microsoft.CSharp/4.7.0": {},
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {}
+    },
+    "net6.0": {
+      "ServiceStack.Text/10.4.0": {}
+    },
+    "net8.0": {
+      "ServiceStack.Text/10.4.0": {}
+    },
+    "netstandard2.0": {
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Microsoft.NETCore.Platforms/1.1.0": {},
+      "NETStandard.Library/2.0.3": {
+        "Microsoft.NETCore.Platforms": "1.1.0"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      }
+    }
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "FirebirdSql.Data.FirebirdClient",
+          "version": "10.3.4",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "FirebirdSql.Data.FirebirdClient",
+          "version": "10.3.4",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net6.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "FirebirdSql.Data.FirebirdClient",
+          "version": "10.3.4",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "FirebirdSql.Data.FirebirdClient",
+          "version": "10.3.4",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "FirebirdSql.Data.FirebirdClient/10.3.4": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.Firebird/10.4.0": {
+        "FirebirdSql.Data.FirebirdClient": "10.3.4",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {}
+    },
+    "net472": {
+      "FirebirdSql.Data.FirebirdClient/10.3.4": {
+        "System.Reflection.Emit": "4.7.0",
+        "System.Threading.Tasks.Extensions": "4.6.0"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
+        "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Memory": "4.6.3",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.OrmLite.Firebird/10.4.0": {
+        "FirebirdSql.Data.FirebirdClient": "10.3.4",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0",
+        "System.Memory": "4.6.3"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Reflection.Emit/4.7.0": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      }
+    },
+    "net6.0": {
+      "FirebirdSql.Data.FirebirdClient/10.3.4": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.Firebird/10.4.0": {
+        "FirebirdSql.Data.FirebirdClient": "10.3.4",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {}
+    },
+    "net8.0": {
+      "FirebirdSql.Data.FirebirdClient/10.3.4": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.Firebird/10.4.0": {
+        "FirebirdSql.Data.FirebirdClient": "10.3.4",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {}
+    }
+  }
+}

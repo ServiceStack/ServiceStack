@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.OrmLite.SqlServer.Data",
+  "version": "10.4.0",
+  "created": "2026-10-07T08:04:54Z",
+  "packageSha256": "2314ff89209fdd15e86aa97aadeacd5ce9ad5876b5669870ca7c1a5e3382cb5e",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "2988ffe990430ba13b0e7b5d3d1c701db31f7a785e51a62932646d75dcba4790",
+    "resolution.json": "30068fcb55c4b16f7d3cdaaaa26948a760a71542ae8aeb49a189e7b053edd3b0",
+    "audit.json": "9d8e7c548ae235946a109a25f2769b4ad20f08ef2c9656b2b57e99b112cbbfdc"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/microsoft.data.sqlclient.sni@5.2.0",
+      "path": "build/net462/Microsoft.Data.SqlClient.SNI.arm64.dll",
+      "sha256": "67d280a6cf3ecac3c34f4ddedb1fabbce6f7799c3a0a560a739383991cca2dc6"
+    },
+    {
+      "package": "pkg:nuget/microsoft.data.sqlclient.sni@5.2.0",
+      "path": "build/net462/Microsoft.Data.SqlClient.SNI.x64.dll",
+      "sha256": "31e14dea08c9e6d215431d81fa8c51e477d4c13411a4b903caf9e00149392e46"
+    },
+    {
+      "package": "pkg:nuget/microsoft.data.sqlclient.sni@5.2.0",
+      "path": "build/net462/Microsoft.Data.SqlClient.SNI.x86.dll",
+      "sha256": "83d42a3d2933c6db24f38f62f1a422354832103b40656aaa59e85bfab3a71a40"
+    },
+    {
+      "package": "pkg:nuget/microsoft.data.sqlclient.sni@5.2.0",
+      "path": "buildTransitive/net462/Microsoft.Data.SqlClient.SNI.arm64.dll",
+      "sha256": "67d280a6cf3ecac3c34f4ddedb1fabbce6f7799c3a0a560a739383991cca2dc6"
+    },
+    {
+      "package": "pkg:nuget/microsoft.data.sqlclient.sni@5.2.0",
+      "path": "buildTransitive/net462/Microsoft.Data.SqlClient.SNI.x64.dll",
+      "sha256": "31e14dea08c9e6d215431d81fa8c51e477d4c13411a4b903caf9e00149392e46"
+    },
+    {
+      "package": "pkg:nuget/microsoft.data.sqlclient.sni@5.2.0",
+      "path": "buildTransitive/net462/Microsoft.Data.SqlClient.SNI.x86.dll",
+      "sha256": "83d42a3d2933c6db24f38f62f1a422354832103b40656aaa59e85bfab3a71a40"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

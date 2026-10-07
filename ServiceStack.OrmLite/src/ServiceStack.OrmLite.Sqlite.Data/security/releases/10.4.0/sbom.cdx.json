@@ -1,0 +1,4880 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:bac9fc99-e5f8-4906-8db7-3d9b4fc4e37b",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-07T08:05:04Z",
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0",
+      "name": "ServiceStack.OrmLite.Sqlite.Data",
+      "version": "10.4.0",
+      "purl": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0",
+      "supplier": {
+        "name": "ServiceStack, Inc."
+      },
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6f6ec03cc320a0057fabb37a1aafd4b63d7319d1c337c7f432dc71f24c95093b"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-frameworks",
+          "value": "net10.0;net472;net6.0;net8.0"
+        },
+        {
+          "name": "servicestack:inventory-kind",
+          "value": "Exact NuGet archive and resolved consumer baseline"
+        },
+        {
+          "name": "servicestack:declared-dependency-groups",
+          "value": "[{\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.Data.Sqlite\", \"version\": \"10.0.12\"}], \"targetFramework\": \"net10.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.Data.Sqlite\", \"version\": \"10.0.12\"}], \"targetFramework\": \".NETFramework4.7.2\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.Data.Sqlite\", \"version\": \"10.0.12\"}], \"targetFramework\": \"net6.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.OrmLite\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.Data.Sqlite\", \"version\": \"10.0.12\"}], \"targetFramework\": \"net8.0\"}]"
+        },
+        {
+          "name": "servicestack:resolution-limits",
+          "value": "Consumers can resolve other versions allowed by NuGet ranges; runtime/OS framework components are not inventoried."
+        },
+        {
+          "name": "servicestack:package-source-commit",
+          "value": "da90504435109bee9c5199e1902bcabc9d472a1b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Declared package license",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ]
+    },
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "CycloneDX .NET",
+          "version": "6.2.0"
+        },
+        {
+          "type": "application",
+          "name": "ServiceStack security artifacts",
+          "version": "1.1.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.12",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9B6B541BEA7B2E56D6FA8E2253B19C872153A83045F9BE2FD01CAF0FAFA1D51B5F5DFEA1B9EC1DFBF6AEEF71A3CB4BB80C436291205DF4443DD18424108D9B88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.CSharp",
+      "version": "4.7.0",
+      "description": "Provides support for compilation and code generation, including dynamic, using the C# language.\n\nCommonly Used Types:\nMicrosoft.CSharp.RuntimeBinder.Binder\nMicrosoft.CSharp.RuntimeBinder.RuntimeBinderException\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfo\nMicrosoft.CSharp.RuntimeBinder.CSharpArgumentInfoFlags\nMicrosoft.CSharp.RuntimeBinder.CSharpBinderFlags\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2C96988515F95714D4B83F5650F183DC6A564E0B3CF5255FA0E3EF48476DEBAB4BDE542F9F2F6C47F6620B7A71D6A515E4415E6D2E388B60817A29621D5690DF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.csharp@4.7.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite.Core",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite. This package does not include a copy of the native SQLite library.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "53A6B55C6C36E2DF4CDFD20D8C0EF28E770B90697F52B24128814A0DAA9D8C1DC9214607E878D40CDA245EB7D55F65D54B45940CF1A3994FDA3A15B713ADA6F5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite.core@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite.Core",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite. This package does not include a copy of the native SQLite library.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "53A6B55C6C36E2DF4CDFD20D8C0EF28E770B90697F52B24128814A0DAA9D8C1DC9214607E878D40CDA245EB7D55F65D54B45940CF1A3994FDA3A15B713ADA6F5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite.core@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite.Core",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite. This package does not include a copy of the native SQLite library.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "53A6B55C6C36E2DF4CDFD20D8C0EF28E770B90697F52B24128814A0DAA9D8C1DC9214607E878D40CDA245EB7D55F65D54B45940CF1A3994FDA3A15B713ADA6F5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite.core@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite.Core",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite. This package does not include a copy of the native SQLite library.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "53A6B55C6C36E2DF4CDFD20D8C0EF28E770B90697F52B24128814A0DAA9D8C1DC9214607E878D40CDA245EB7D55F65D54B45940CF1A3994FDA3A15B713ADA6F5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite.core@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C99EC9409A95592202A126662894B1D260A6EAF819DA59C8CE63E89A21030DFA42283ABDDEC198F3F77FFBB0413D781E48E75D75FA82EC64E12BA4DC57C452C6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C99EC9409A95592202A126662894B1D260A6EAF819DA59C8CE63E89A21030DFA42283ABDDEC198F3F77FFBB0413D781E48E75D75FA82EC64E12BA4DC57C452C6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C99EC9409A95592202A126662894B1D260A6EAF819DA59C8CE63E89A21030DFA42283ABDDEC198F3F77FFBB0413D781E48E75D75FA82EC64E12BA4DC57C452C6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Data.Sqlite",
+      "version": "10.0.12",
+      "description": "Microsoft.Data.Sqlite is a lightweight ADO.NET provider for SQLite.\n\nCommonly Used Types:\nMicrosoft.Data.Sqlite.SqliteCommand\nMicrosoft.Data.Sqlite.SqliteConnection\nMicrosoft.Data.Sqlite.SqliteConnectionStringBuilder\nMicrosoft.Data.Sqlite.SqliteDataReader\nMicrosoft.Data.Sqlite.SqliteException\nMicrosoft.Data.Sqlite.SqliteFactory\nMicrosoft.Data.Sqlite.SqliteParameter\nMicrosoft.Data.Sqlite.SqliteTransaction",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C99EC9409A95592202A126662894B1D260A6EAF819DA59C8CE63E89A21030DFA42283ABDDEC198F3F77FFBB0413D781E48E75D75FA82EC64E12BA4DC57C452C6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.data.sqlite@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/dotnet/standard/data/sqlite/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "8.0.2",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BA1960EF110AC7387A2A06EEFC02C59CE57B0FE58B3E0CCCB79B1C8F2150105C5D1F4B65E0ED95FF50D70F28142917C6A735B83F4E5406BB1D8F9DD1F9635D7D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.Sqlite.Data",
+      "version": "10.4.0",
+      "description": "Version of OrmLite Sqlite that uses Microsoft.Data.Sqlite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C521A0B49B229FBCA8DA222CA8A0E27BD277C967458A23956CE0C8467C22452A28D33ABC713411257B7BBFEBD8AF78DAC5C0529935F655EAB52821D170E2A190"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.Sqlite.Data",
+      "version": "10.4.0",
+      "description": "Version of OrmLite Sqlite that uses Microsoft.Data.Sqlite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C521A0B49B229FBCA8DA222CA8A0E27BD277C967458A23956CE0C8467C22452A28D33ABC713411257B7BBFEBD8AF78DAC5C0529935F655EAB52821D170E2A190"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.Sqlite.Data",
+      "version": "10.4.0",
+      "description": "Version of OrmLite Sqlite that uses Microsoft.Data.Sqlite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C521A0B49B229FBCA8DA222CA8A0E27BD277C967458A23956CE0C8467C22452A28D33ABC713411257B7BBFEBD8AF78DAC5C0529935F655EAB52821D170E2A190"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite.Sqlite.Data",
+      "version": "10.4.0",
+      "description": "Version of OrmLite Sqlite that uses Microsoft.Data.Sqlite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C521A0B49B229FBCA8DA222CA8A0E27BD277C967458A23956CE0C8467C22452A28D33ABC713411257B7BBFEBD8AF78DAC5C0529935F655EAB52821D170E2A190"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.OrmLite",
+      "version": "10.4.0",
+      "description": "Common library for the Light, simple and fast convention-based code-first POCO, OrmLite.\n      Support for Creating and Dropping Table Schemas from POCOs, Complex Property types transparently stored in schemaless text blobs.\n      OrmLite is a suite extension methods on ADO.NET's underlying IDbConnection providing DRY, typed access for common data usage patterns that map to clean, simple POCOs. Great support for testing where OrmLite methods can be mocked.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F8993EDE1557033D4C4E803C96F706E61136C264BD5C181E5D77972272AACC3DDF866266314214FAFE31484AC35504CBD51C46EC99DFB4B3F2700FA7EB651A4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ormlite@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net472",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.bundle_e_sqlite3",
+      "version": "2.1.12",
+      "description": "This 'batteries-included' bundle brings in SQLitePCLRaw.core and the necessary stuff for certain common use cases.  Call SQLitePCL.Batteries.Init().  Policy of this bundle: e_sqlite3 included",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "29B78A5ED88CAE9C5DEDD160B27A2B03519C8BFC554430819A47D935D8A213595AE8E75410CB724D32774C17829FD9C8BD9817A39B8277D7550A38B7032E8BB8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.bundle_e_sqlite3",
+      "version": "2.1.12",
+      "description": "This 'batteries-included' bundle brings in SQLitePCLRaw.core and the necessary stuff for certain common use cases.  Call SQLitePCL.Batteries.Init().  Policy of this bundle: e_sqlite3 included",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "29B78A5ED88CAE9C5DEDD160B27A2B03519C8BFC554430819A47D935D8A213595AE8E75410CB724D32774C17829FD9C8BD9817A39B8277D7550A38B7032E8BB8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.bundle_e_sqlite3",
+      "version": "2.1.12",
+      "description": "This 'batteries-included' bundle brings in SQLitePCLRaw.core and the necessary stuff for certain common use cases.  Call SQLitePCL.Batteries.Init().  Policy of this bundle: e_sqlite3 included",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "29B78A5ED88CAE9C5DEDD160B27A2B03519C8BFC554430819A47D935D8A213595AE8E75410CB724D32774C17829FD9C8BD9817A39B8277D7550A38B7032E8BB8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.bundle_e_sqlite3",
+      "version": "2.1.12",
+      "description": "This 'batteries-included' bundle brings in SQLitePCLRaw.core and the necessary stuff for certain common use cases.  Call SQLitePCL.Batteries.Init().  Policy of this bundle: e_sqlite3 included",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "29B78A5ED88CAE9C5DEDD160B27A2B03519C8BFC554430819A47D935D8A213595AE8E75410CB724D32774C17829FD9C8BD9817A39B8277D7550A38B7032E8BB8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.core",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  This package does not provide an API which is friendly to app developers.  Rather, it provides an API which handles platform and configuration issues, upon which a friendlier API can be built.  In order to use this package, you will need to also add one of the SQLitePCLRaw.provider.* packages and call raw.SetProvider().  Convenience packages are named SQLitePCLRaw.bundle_*.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5A09A0C8AC062D347A65F21FD7ED5D14DC6C3B2A7D1A6B14F588E37948E0CFE3599F0DA1CA3541D14F2D693D59D6FBF6D6CE7E82F847437BEDA596A3B0C28962"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.core@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.core",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  This package does not provide an API which is friendly to app developers.  Rather, it provides an API which handles platform and configuration issues, upon which a friendlier API can be built.  In order to use this package, you will need to also add one of the SQLitePCLRaw.provider.* packages and call raw.SetProvider().  Convenience packages are named SQLitePCLRaw.bundle_*.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5A09A0C8AC062D347A65F21FD7ED5D14DC6C3B2A7D1A6B14F588E37948E0CFE3599F0DA1CA3541D14F2D693D59D6FBF6D6CE7E82F847437BEDA596A3B0C28962"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.core@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.core",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  This package does not provide an API which is friendly to app developers.  Rather, it provides an API which handles platform and configuration issues, upon which a friendlier API can be built.  In order to use this package, you will need to also add one of the SQLitePCLRaw.provider.* packages and call raw.SetProvider().  Convenience packages are named SQLitePCLRaw.bundle_*.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5A09A0C8AC062D347A65F21FD7ED5D14DC6C3B2A7D1A6B14F588E37948E0CFE3599F0DA1CA3541D14F2D693D59D6FBF6D6CE7E82F847437BEDA596A3B0C28962"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.core@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.core",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  This package does not provide an API which is friendly to app developers.  Rather, it provides an API which handles platform and configuration issues, upon which a friendlier API can be built.  In order to use this package, you will need to also add one of the SQLitePCLRaw.provider.* packages and call raw.SetProvider().  Convenience packages are named SQLitePCLRaw.bundle_*.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5A09A0C8AC062D347A65F21FD7ED5D14DC6C3B2A7D1A6B14F588E37948E0CFE3599F0DA1CA3541D14F2D693D59D6FBF6D6CE7E82F847437BEDA596A3B0C28962"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.core@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.lib.e_sqlite3",
+      "version": "2.1.12",
+      "description": "SQLitePCLRaw is a Portable Class Library (PCL) for low-level (raw) access to SQLite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0E58BE10B28DB915F483BD94AB62363996B9CE08B87F049757825EDF0C85EE31FDA33E8029103DC17233330B95796ED17C065D49580870479964E379F4B76D88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.lib.e_sqlite3",
+      "version": "2.1.12",
+      "description": "SQLitePCLRaw is a Portable Class Library (PCL) for low-level (raw) access to SQLite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0E58BE10B28DB915F483BD94AB62363996B9CE08B87F049757825EDF0C85EE31FDA33E8029103DC17233330B95796ED17C065D49580870479964E379F4B76D88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.lib.e_sqlite3",
+      "version": "2.1.12",
+      "description": "SQLitePCLRaw is a Portable Class Library (PCL) for low-level (raw) access to SQLite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0E58BE10B28DB915F483BD94AB62363996B9CE08B87F049757825EDF0C85EE31FDA33E8029103DC17233330B95796ED17C065D49580870479964E379F4B76D88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.lib.e_sqlite3",
+      "version": "2.1.12",
+      "description": "SQLitePCLRaw is a Portable Class Library (PCL) for low-level (raw) access to SQLite",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0E58BE10B28DB915F483BD94AB62363996B9CE08B87F049757825EDF0C85EE31FDA33E8029103DC17233330B95796ED17C065D49580870479964E379F4B76D88"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.provider.dynamic_cdecl",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  Packages named 'SQLitePCLRaw.provider.*' (like this one) are 'plugins' that allow SQLitePCLRaw.core to access the native SQLite library.  This provider dynamically loads the native library by name.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "984A8A20BFF015C3BDA59EEDD3EE7909B60CBFABA8E7E5941AC37291DD68C2EEA88F54B8239F5EAE6D4B0D60B15AC20AE59E661F1C7F60FC2092937FEA84E007"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net472",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.provider.dynamic_cdecl",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  Packages named 'SQLitePCLRaw.provider.*' (like this one) are 'plugins' that allow SQLitePCLRaw.core to access the native SQLite library.  This provider dynamically loads the native library by name.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "984A8A20BFF015C3BDA59EEDD3EE7909B60CBFABA8E7E5941AC37291DD68C2EEA88F54B8239F5EAE6D4B0D60B15AC20AE59E661F1C7F60FC2092937FEA84E007"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.provider.dynamic_cdecl",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  Packages named 'SQLitePCLRaw.provider.*' (like this one) are 'plugins' that allow SQLitePCLRaw.core to access the native SQLite library.  This provider dynamically loads the native library by name.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "984A8A20BFF015C3BDA59EEDD3EE7909B60CBFABA8E7E5941AC37291DD68C2EEA88F54B8239F5EAE6D4B0D60B15AC20AE59E661F1C7F60FC2092937FEA84E007"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Eric Sink"
+        }
+      ],
+      "name": "SQLitePCLRaw.provider.dynamic_cdecl",
+      "version": "2.1.12",
+      "description": "SQLitePCL.raw is a Portable Class Library (PCL) for low-level (raw) access to SQLite.  Packages named 'SQLitePCLRaw.provider.*' (like this one) are 'plugins' that allow SQLitePCLRaw.core to access the native SQLite library.  This provider dynamically loads the native library by name.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "984A8A20BFF015C3BDA59EEDD3EE7909B60CBFABA8E7E5941AC37291DD68C2EEA88F54B8239F5EAE6D4B0D60B15AC20AE59E661F1C7F60FC2092937FEA84E007"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2014-2024 SourceGear, LLC",
+      "purl": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ericsink/SQLitePCL.raw",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.buffers@4.6.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Buffers",
+      "version": "4.6.1",
+      "description": "System.Buffers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "AAF7BF745C040B07A14969599A992BAE521E0130AFA3F1F0DA4A3232B515703072E605C042B9F05FCA47128AA08FC0E092B5AE596D43AD06C5AA831BA3E16FAE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.buffers@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Diagnostics.DiagnosticSource",
+      "version": "8.0.1",
+      "description": "Provides Classes that allow you to decouple code logging rich (unserializable) diagnostics/telemetry (e.g. framework) from code that consumes it (e.g. tools)\n\nCommonly Used Types:\nSystem.Diagnostics.DiagnosticListener\nSystem.Diagnostics.DiagnosticSource",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0437300281F6DF9A9FB414058BE81B953193C59AC35D8F3321EA1230BD3E323657BEA4BFF1747E68E71D271B5EE758C8E599C25ED246EB09E6537E1C1E3CB8E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/runtime",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory",
+      "version": "4.6.3",
+      "description": "System.Memory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "35770D6255A85DEE5CCFDB1BF07BA8EB1D9D099558921C0AB60134D27FCCA08F15E1923FEFFB7E108E5B3A14059597C58E3A8CF3E53AA6B8D4FDA011B7B1FFB4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Vectors",
+      "version": "4.6.1",
+      "description": "System.Numerics.Vectors",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FEB92FA547943E5098FF6A985502A252C8F920A69765CCB6F924001807DE980772105E408088183853524CC5835E8D3D256157F4707EC15D720B28B63308B74C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.vectors@4.6.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Runtime.CompilerServices.Unsafe",
+      "version": "6.1.2",
+      "description": "Provides the System.Runtime.CompilerServices.Unsafe class, which provides generic, low-level functionality for manipulating pointers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B76697589641900911AD33A7C37D4E0442CA1154830F962F0B73B975768716C47AEBF9D14CA9B5CB722AE8DC05239BB92252AB5987DD6A7EBA57E18A2A463C85"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net472"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Threading.Tasks.Extensions",
+      "version": "4.6.3",
+      "description": "System.Threading.Tasks.Extensions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CD64475C80676DFCD013549A98DA16F57E4D8C4716FC9340B6F57118A7776DC83BD704159A8237A43ABE5946B603EB5E99748D0A6EFBD3B866005C3071894AD0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.threading.tasks.extensions@4.6.3",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/maintenance-packages",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:10f8cfdea9e00a1fe2e5b104e4910f9be81fb1133fa5961b35142bc2d9827487",
+      "name": "runtimes/maccatalyst-arm64/native/libe_sqlite3.dylib",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8d63d80bc6caa754679d6fc89fd741a32c156f136c34759cc8fff8cd51468a93"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:24c810814a824683cc7e9244252b9c8d53951e7fa2c8aee2de9eec2831022b67",
+      "name": "runtimes/linux-s390x/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dfd5ab35f6d61155a3c629d0bceff4d6e0f0f190983f3fb8f681fb34ec08c67e"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:2b0a784aa9350339a2400c147c9b62d60c6468a4a9e2906859d294752498c87d",
+      "name": "runtimes/win-x64/native/e_sqlite3.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b7385d722c83fb52142a00477a726723745916d22a555711ee89834c1111fb2e"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:2ca724931b5aefd152072ddb4944aacefd1d978d488a4f045545865d7ad153ee",
+      "name": "runtimes/browser-wasm/nativeassets/net7.0/e_sqlite3.a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b149d4ee5758ea81dda2edff6c84981d227794933c8c000a58818d92c9998c7e"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:3318d388f5b59ce1a9812027e058df9e72915d70b53421489ee727d481212ae6",
+      "name": "runtimes/linux-musl-arm/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7fec7057d16e8b5ae54fed0c42a0e6b85e40df0d57092ef20cd647a4e1c1e0ed"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:5d5327bb4f2c41211631366ea9d69f96e7d84858dd354a0710e7db63971321d4",
+      "name": "runtimes/linux-riscv64/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6b390eecbc6f55c44d9ab8a774f1fe4283dfb33a72e6f29f4e0b173065e7e105"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:61673cf631748a678a3e229287db49af39cfb9145d9dc6eb8fa74721161d890c",
+      "name": "runtimes/osx-x64/native/libe_sqlite3.dylib",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "02344e1d0bcb5ed447ad9b79ed19e37a590fb1ece3eba1e63efbc35e36e47bdf"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:860ba24ed7d6bf71aa3717bed8ba7ce0e957e308e96e5999030f54154bb1e01f",
+      "name": "runtimes/linux-arm64/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "707fff6b18c1f083158e7a543c8d2545d5485f547ffd96db29679a95f52878d5"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:91fd2ec8ee45d23871b5472e91f2d6f8a5c252269b1c2acf355b912d6f280d55",
+      "name": "runtimes/linux-armel/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3f4d9b9ca49bb3f100882e78ba85807398cee19b481bfd4c301a8f5f58d48540"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:9a6b1c00cd2966cb544bc45bcb47b8777192d0db597ac264bee5f3b5296a2b2d",
+      "name": "runtimes/browser-wasm/nativeassets/net8.0/e_sqlite3.a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "528790d8ebb1fde0e43383beb015e8084dbcd0d963e09e1b690244205f52dadf"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:aa691d7abee8f6e424f2009d4139562a1d2341969f10da9580b2b56a5f3d6d22",
+      "name": "runtimes/linux-ppc64le/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "1ef00b5e3ac63e491f59ecf587680fc52ad844cea62e0a879a1315ef6bd10fc6"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:aadf086869221be0f6adc38ed66838d7540f87475ee54803314b185afaa06b07",
+      "name": "runtimes/linux-arm/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "43556c2f5075857bf57be1136d556733bdc27195884fbdde127cd976d1c25ad5"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:aaf84c390e58284bd7f744418077b185bd69f8e4bcfc5a1f5b1d77882f0dd6c7",
+      "name": "runtimes/win-arm64/native/e_sqlite3.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4177542756bd94f75b55fb74367e0cf34e66a88ffaf95755489af14c6ca2f792"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:b050e849b43d80de7f80aed7cb4f02c70371a941ae536c0587f526fa1df484e4",
+      "name": "runtimes/linux-musl-s390x/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "64260c0460ad6efa7dce9263bff7a4b64ad66172ccc580cb09181c845e1a3407"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:b3c6a872ee546a05b02b6739690094b1e3fbf9978ada7e11fb8efdf20b87d010",
+      "name": "runtimes/win-x86/native/e_sqlite3.dll",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d13eb819d1353d98c684c88672868bbfcc6a52eb5987bdf2557ec02fabce4ea7"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:bc440466a67811978286dae35e2ef52fe6df454913ffc880d9a1b6b826fcb57c",
+      "name": "runtimes/linux-x86/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "fe8229e5baeaf21e721cf65626a6b07ec22d9b17d07bd624e7a77927174277f1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:c28cda034fe5442ef7de8228f0fcc9f0b1b8f2ca5bf9aec4e1d98f4be3394966",
+      "name": "runtimes/browser-wasm/nativeassets/net6.0/e_sqlite3.a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3c84cc373b8df5bc6065d2fc995e75ad1eb240905f5237fc078ec2ba54fec15c"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:cda3245f2a8bab0780aa8823d4cd855d87793845f6415e8d8afa0963654686d9",
+      "name": "runtimes/osx-arm64/native/libe_sqlite3.dylib",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "09fe20a6c050912a7944b2f2f2981debe31679f7919f523c87251ae8cf0f2daa"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:dd78effdca6313c75c11d187ba5253f0cc666cb8f83ac2747ae408bed431ce17",
+      "name": "runtimes/linux-musl-arm64/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "530e2f74f259fe04faa4b595336e671fab5eedbb6f4e94dad59494efb7b00c2a"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:e3b146375293ba5bb7f46540d359ac2c61d7150a3f1035dd0498c7aabdc67275",
+      "name": "runtimes/linux-musl-riscv64/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d8e54eb7dc52ea0a7df9b78ac6feb85af429e7264613099df478825dea5805d4"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:ef7703f0b29fcda53dac49dcb579c518f3845de9cd7834919f49066a4d7fd31f",
+      "name": "runtimes/browser-wasm/nativeassets/net9.0/e_sqlite3.a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c64ae8d44dc3e1aa03aca4e79ccc501cbc3a3c490e8e2ea9e369367f68cf0f21"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:f11d24a46f78e5ef9675853b59f046bd194947fa308b23a017f1187091471f91",
+      "name": "runtimes/linux-musl-x64/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "647b7b5886526691aed58e0fcbb56dc1e6dea8b1f9f5390782f0c95269250db1"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:f80d728eef94c181a7b4a820e6b9ed9bb560121627a67a78c4fc5e71057eef4e",
+      "name": "runtimes/linux-mips64/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "985884523e512414f3e50aa359f08dad3ce635e99405e7823de9b26a7db38d09"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:fbb7ad675786a1784e8f2787a2ad2ad215a29c5bf090c7bdc76fd7d5d5f322c1",
+      "name": "runtimes/maccatalyst-x64/native/libe_sqlite3.dylib",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "43d27adbc5ba40850bac42a12aea08314a22a43d3ce77cdc7a6cc47ecffb5746"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "urn:servicestack:native:fd5809bb8f9517a04861637e34a796d06a0b81533c2ac45215fef6886c759b92",
+      "name": "runtimes/linux-x64/native/libe_sqlite3.so",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "b0f5c48026fedcf9f05cf31c6fadf9e1e001ca59cd85aa68b8b6814e52c18a07"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:containing-package",
+          "value": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12"
+        },
+        {
+          "name": "servicestack:coverage",
+          "value": "Native file contained in package; all architecture/RID payloads, not necessarily loaded"
+        },
+        {
+          "name": "servicestack:embedded-version-review",
+          "value": "Required; file hash does not identify embedded engine version"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.csharp@4.7.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net10.0",
+        "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net10.0",
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net472",
+        "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net472",
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net6.0",
+        "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net6.0",
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite.core@10.0.12#tfm=net8.0",
+        "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net8.0",
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net472",
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net10.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net472",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net6.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.12#tfm=net8.0",
+        "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net472",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net6.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite.sqlite.data@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.data.sqlite@10.0.12#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net472",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net472",
+        "pkg:nuget/system.memory@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net6.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net6.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ormlite@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@8.0.2#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net10.0",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net10.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net472",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net472",
+        "pkg:nuget/system.memory@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net6.0",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net6.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.csharp@4.7.0#tfm=net8.0",
+        "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net8.0",
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net10.0",
+        "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net472",
+        "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net6.0",
+        "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.bundle_e_sqlite3@2.1.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net8.0",
+        "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net10.0",
+      "dependsOn": [
+        "urn:servicestack:native:10f8cfdea9e00a1fe2e5b104e4910f9be81fb1133fa5961b35142bc2d9827487",
+        "urn:servicestack:native:24c810814a824683cc7e9244252b9c8d53951e7fa2c8aee2de9eec2831022b67",
+        "urn:servicestack:native:2b0a784aa9350339a2400c147c9b62d60c6468a4a9e2906859d294752498c87d",
+        "urn:servicestack:native:2ca724931b5aefd152072ddb4944aacefd1d978d488a4f045545865d7ad153ee",
+        "urn:servicestack:native:3318d388f5b59ce1a9812027e058df9e72915d70b53421489ee727d481212ae6",
+        "urn:servicestack:native:5d5327bb4f2c41211631366ea9d69f96e7d84858dd354a0710e7db63971321d4",
+        "urn:servicestack:native:61673cf631748a678a3e229287db49af39cfb9145d9dc6eb8fa74721161d890c",
+        "urn:servicestack:native:860ba24ed7d6bf71aa3717bed8ba7ce0e957e308e96e5999030f54154bb1e01f",
+        "urn:servicestack:native:91fd2ec8ee45d23871b5472e91f2d6f8a5c252269b1c2acf355b912d6f280d55",
+        "urn:servicestack:native:9a6b1c00cd2966cb544bc45bcb47b8777192d0db597ac264bee5f3b5296a2b2d",
+        "urn:servicestack:native:aa691d7abee8f6e424f2009d4139562a1d2341969f10da9580b2b56a5f3d6d22",
+        "urn:servicestack:native:aadf086869221be0f6adc38ed66838d7540f87475ee54803314b185afaa06b07",
+        "urn:servicestack:native:aaf84c390e58284bd7f744418077b185bd69f8e4bcfc5a1f5b1d77882f0dd6c7",
+        "urn:servicestack:native:b050e849b43d80de7f80aed7cb4f02c70371a941ae536c0587f526fa1df484e4",
+        "urn:servicestack:native:b3c6a872ee546a05b02b6739690094b1e3fbf9978ada7e11fb8efdf20b87d010",
+        "urn:servicestack:native:bc440466a67811978286dae35e2ef52fe6df454913ffc880d9a1b6b826fcb57c",
+        "urn:servicestack:native:c28cda034fe5442ef7de8228f0fcc9f0b1b8f2ca5bf9aec4e1d98f4be3394966",
+        "urn:servicestack:native:cda3245f2a8bab0780aa8823d4cd855d87793845f6415e8d8afa0963654686d9",
+        "urn:servicestack:native:dd78effdca6313c75c11d187ba5253f0cc666cb8f83ac2747ae408bed431ce17",
+        "urn:servicestack:native:e3b146375293ba5bb7f46540d359ac2c61d7150a3f1035dd0498c7aabdc67275",
+        "urn:servicestack:native:ef7703f0b29fcda53dac49dcb579c518f3845de9cd7834919f49066a4d7fd31f",
+        "urn:servicestack:native:f11d24a46f78e5ef9675853b59f046bd194947fa308b23a017f1187091471f91",
+        "urn:servicestack:native:f80d728eef94c181a7b4a820e6b9ed9bb560121627a67a78c4fc5e71057eef4e",
+        "urn:servicestack:native:fbb7ad675786a1784e8f2787a2ad2ad215a29c5bf090c7bdc76fd7d5d5f322c1",
+        "urn:servicestack:native:fd5809bb8f9517a04861637e34a796d06a0b81533c2ac45215fef6886c759b92"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net472",
+      "dependsOn": [
+        "urn:servicestack:native:10f8cfdea9e00a1fe2e5b104e4910f9be81fb1133fa5961b35142bc2d9827487",
+        "urn:servicestack:native:24c810814a824683cc7e9244252b9c8d53951e7fa2c8aee2de9eec2831022b67",
+        "urn:servicestack:native:2b0a784aa9350339a2400c147c9b62d60c6468a4a9e2906859d294752498c87d",
+        "urn:servicestack:native:2ca724931b5aefd152072ddb4944aacefd1d978d488a4f045545865d7ad153ee",
+        "urn:servicestack:native:3318d388f5b59ce1a9812027e058df9e72915d70b53421489ee727d481212ae6",
+        "urn:servicestack:native:5d5327bb4f2c41211631366ea9d69f96e7d84858dd354a0710e7db63971321d4",
+        "urn:servicestack:native:61673cf631748a678a3e229287db49af39cfb9145d9dc6eb8fa74721161d890c",
+        "urn:servicestack:native:860ba24ed7d6bf71aa3717bed8ba7ce0e957e308e96e5999030f54154bb1e01f",
+        "urn:servicestack:native:91fd2ec8ee45d23871b5472e91f2d6f8a5c252269b1c2acf355b912d6f280d55",
+        "urn:servicestack:native:9a6b1c00cd2966cb544bc45bcb47b8777192d0db597ac264bee5f3b5296a2b2d",
+        "urn:servicestack:native:aa691d7abee8f6e424f2009d4139562a1d2341969f10da9580b2b56a5f3d6d22",
+        "urn:servicestack:native:aadf086869221be0f6adc38ed66838d7540f87475ee54803314b185afaa06b07",
+        "urn:servicestack:native:aaf84c390e58284bd7f744418077b185bd69f8e4bcfc5a1f5b1d77882f0dd6c7",
+        "urn:servicestack:native:b050e849b43d80de7f80aed7cb4f02c70371a941ae536c0587f526fa1df484e4",
+        "urn:servicestack:native:b3c6a872ee546a05b02b6739690094b1e3fbf9978ada7e11fb8efdf20b87d010",
+        "urn:servicestack:native:bc440466a67811978286dae35e2ef52fe6df454913ffc880d9a1b6b826fcb57c",
+        "urn:servicestack:native:c28cda034fe5442ef7de8228f0fcc9f0b1b8f2ca5bf9aec4e1d98f4be3394966",
+        "urn:servicestack:native:cda3245f2a8bab0780aa8823d4cd855d87793845f6415e8d8afa0963654686d9",
+        "urn:servicestack:native:dd78effdca6313c75c11d187ba5253f0cc666cb8f83ac2747ae408bed431ce17",
+        "urn:servicestack:native:e3b146375293ba5bb7f46540d359ac2c61d7150a3f1035dd0498c7aabdc67275",
+        "urn:servicestack:native:ef7703f0b29fcda53dac49dcb579c518f3845de9cd7834919f49066a4d7fd31f",
+        "urn:servicestack:native:f11d24a46f78e5ef9675853b59f046bd194947fa308b23a017f1187091471f91",
+        "urn:servicestack:native:f80d728eef94c181a7b4a820e6b9ed9bb560121627a67a78c4fc5e71057eef4e",
+        "urn:servicestack:native:fbb7ad675786a1784e8f2787a2ad2ad215a29c5bf090c7bdc76fd7d5d5f322c1",
+        "urn:servicestack:native:fd5809bb8f9517a04861637e34a796d06a0b81533c2ac45215fef6886c759b92"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net6.0",
+      "dependsOn": [
+        "urn:servicestack:native:10f8cfdea9e00a1fe2e5b104e4910f9be81fb1133fa5961b35142bc2d9827487",
+        "urn:servicestack:native:24c810814a824683cc7e9244252b9c8d53951e7fa2c8aee2de9eec2831022b67",
+        "urn:servicestack:native:2b0a784aa9350339a2400c147c9b62d60c6468a4a9e2906859d294752498c87d",
+        "urn:servicestack:native:2ca724931b5aefd152072ddb4944aacefd1d978d488a4f045545865d7ad153ee",
+        "urn:servicestack:native:3318d388f5b59ce1a9812027e058df9e72915d70b53421489ee727d481212ae6",
+        "urn:servicestack:native:5d5327bb4f2c41211631366ea9d69f96e7d84858dd354a0710e7db63971321d4",
+        "urn:servicestack:native:61673cf631748a678a3e229287db49af39cfb9145d9dc6eb8fa74721161d890c",
+        "urn:servicestack:native:860ba24ed7d6bf71aa3717bed8ba7ce0e957e308e96e5999030f54154bb1e01f",
+        "urn:servicestack:native:91fd2ec8ee45d23871b5472e91f2d6f8a5c252269b1c2acf355b912d6f280d55",
+        "urn:servicestack:native:9a6b1c00cd2966cb544bc45bcb47b8777192d0db597ac264bee5f3b5296a2b2d",
+        "urn:servicestack:native:aa691d7abee8f6e424f2009d4139562a1d2341969f10da9580b2b56a5f3d6d22",
+        "urn:servicestack:native:aadf086869221be0f6adc38ed66838d7540f87475ee54803314b185afaa06b07",
+        "urn:servicestack:native:aaf84c390e58284bd7f744418077b185bd69f8e4bcfc5a1f5b1d77882f0dd6c7",
+        "urn:servicestack:native:b050e849b43d80de7f80aed7cb4f02c70371a941ae536c0587f526fa1df484e4",
+        "urn:servicestack:native:b3c6a872ee546a05b02b6739690094b1e3fbf9978ada7e11fb8efdf20b87d010",
+        "urn:servicestack:native:bc440466a67811978286dae35e2ef52fe6df454913ffc880d9a1b6b826fcb57c",
+        "urn:servicestack:native:c28cda034fe5442ef7de8228f0fcc9f0b1b8f2ca5bf9aec4e1d98f4be3394966",
+        "urn:servicestack:native:cda3245f2a8bab0780aa8823d4cd855d87793845f6415e8d8afa0963654686d9",
+        "urn:servicestack:native:dd78effdca6313c75c11d187ba5253f0cc666cb8f83ac2747ae408bed431ce17",
+        "urn:servicestack:native:e3b146375293ba5bb7f46540d359ac2c61d7150a3f1035dd0498c7aabdc67275",
+        "urn:servicestack:native:ef7703f0b29fcda53dac49dcb579c518f3845de9cd7834919f49066a4d7fd31f",
+        "urn:servicestack:native:f11d24a46f78e5ef9675853b59f046bd194947fa308b23a017f1187091471f91",
+        "urn:servicestack:native:f80d728eef94c181a7b4a820e6b9ed9bb560121627a67a78c4fc5e71057eef4e",
+        "urn:servicestack:native:fbb7ad675786a1784e8f2787a2ad2ad215a29c5bf090c7bdc76fd7d5d5f322c1",
+        "urn:servicestack:native:fd5809bb8f9517a04861637e34a796d06a0b81533c2ac45215fef6886c759b92"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12#tfm=net8.0",
+      "dependsOn": [
+        "urn:servicestack:native:10f8cfdea9e00a1fe2e5b104e4910f9be81fb1133fa5961b35142bc2d9827487",
+        "urn:servicestack:native:24c810814a824683cc7e9244252b9c8d53951e7fa2c8aee2de9eec2831022b67",
+        "urn:servicestack:native:2b0a784aa9350339a2400c147c9b62d60c6468a4a9e2906859d294752498c87d",
+        "urn:servicestack:native:2ca724931b5aefd152072ddb4944aacefd1d978d488a4f045545865d7ad153ee",
+        "urn:servicestack:native:3318d388f5b59ce1a9812027e058df9e72915d70b53421489ee727d481212ae6",
+        "urn:servicestack:native:5d5327bb4f2c41211631366ea9d69f96e7d84858dd354a0710e7db63971321d4",
+        "urn:servicestack:native:61673cf631748a678a3e229287db49af39cfb9145d9dc6eb8fa74721161d890c",
+        "urn:servicestack:native:860ba24ed7d6bf71aa3717bed8ba7ce0e957e308e96e5999030f54154bb1e01f",
+        "urn:servicestack:native:91fd2ec8ee45d23871b5472e91f2d6f8a5c252269b1c2acf355b912d6f280d55",
+        "urn:servicestack:native:9a6b1c00cd2966cb544bc45bcb47b8777192d0db597ac264bee5f3b5296a2b2d",
+        "urn:servicestack:native:aa691d7abee8f6e424f2009d4139562a1d2341969f10da9580b2b56a5f3d6d22",
+        "urn:servicestack:native:aadf086869221be0f6adc38ed66838d7540f87475ee54803314b185afaa06b07",
+        "urn:servicestack:native:aaf84c390e58284bd7f744418077b185bd69f8e4bcfc5a1f5b1d77882f0dd6c7",
+        "urn:servicestack:native:b050e849b43d80de7f80aed7cb4f02c70371a941ae536c0587f526fa1df484e4",
+        "urn:servicestack:native:b3c6a872ee546a05b02b6739690094b1e3fbf9978ada7e11fb8efdf20b87d010",
+        "urn:servicestack:native:bc440466a67811978286dae35e2ef52fe6df454913ffc880d9a1b6b826fcb57c",
+        "urn:servicestack:native:c28cda034fe5442ef7de8228f0fcc9f0b1b8f2ca5bf9aec4e1d98f4be3394966",
+        "urn:servicestack:native:cda3245f2a8bab0780aa8823d4cd855d87793845f6415e8d8afa0963654686d9",
+        "urn:servicestack:native:dd78effdca6313c75c11d187ba5253f0cc666cb8f83ac2747ae408bed431ce17",
+        "urn:servicestack:native:e3b146375293ba5bb7f46540d359ac2c61d7150a3f1035dd0498c7aabdc67275",
+        "urn:servicestack:native:ef7703f0b29fcda53dac49dcb579c518f3845de9cd7834919f49066a4d7fd31f",
+        "urn:servicestack:native:f11d24a46f78e5ef9675853b59f046bd194947fa308b23a017f1187091471f91",
+        "urn:servicestack:native:f80d728eef94c181a7b4a820e6b9ed9bb560121627a67a78c4fc5e71057eef4e",
+        "urn:servicestack:native:fbb7ad675786a1784e8f2787a2ad2ad215a29c5bf090c7bdc76fd7d5d5f322c1",
+        "urn:servicestack:native:fd5809bb8f9517a04861637e34a796d06a0b81533c2ac45215fef6886c759b92"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/sqlitepclraw.provider.dynamic_cdecl@2.1.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/sqlitepclraw.core@2.1.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.buffers@4.6.1#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net472",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.diagnostics.diagnosticsource@8.0.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net10.0",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net10.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net472",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net472",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net6.0",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net6.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory@4.6.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.buffers@4.6.1#tfm=net8.0",
+        "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net8.0",
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.vectors@4.6.1#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net472",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net472"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.threading.tasks.extensions@4.6.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.runtime.compilerservices.unsafe@6.1.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "urn:servicestack:native:10f8cfdea9e00a1fe2e5b104e4910f9be81fb1133fa5961b35142bc2d9827487",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:24c810814a824683cc7e9244252b9c8d53951e7fa2c8aee2de9eec2831022b67",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:2b0a784aa9350339a2400c147c9b62d60c6468a4a9e2906859d294752498c87d",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:2ca724931b5aefd152072ddb4944aacefd1d978d488a4f045545865d7ad153ee",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:3318d388f5b59ce1a9812027e058df9e72915d70b53421489ee727d481212ae6",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:5d5327bb4f2c41211631366ea9d69f96e7d84858dd354a0710e7db63971321d4",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:61673cf631748a678a3e229287db49af39cfb9145d9dc6eb8fa74721161d890c",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:860ba24ed7d6bf71aa3717bed8ba7ce0e957e308e96e5999030f54154bb1e01f",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:91fd2ec8ee45d23871b5472e91f2d6f8a5c252269b1c2acf355b912d6f280d55",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:9a6b1c00cd2966cb544bc45bcb47b8777192d0db597ac264bee5f3b5296a2b2d",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:aa691d7abee8f6e424f2009d4139562a1d2341969f10da9580b2b56a5f3d6d22",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:aadf086869221be0f6adc38ed66838d7540f87475ee54803314b185afaa06b07",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:aaf84c390e58284bd7f744418077b185bd69f8e4bcfc5a1f5b1d77882f0dd6c7",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:b050e849b43d80de7f80aed7cb4f02c70371a941ae536c0587f526fa1df484e4",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:b3c6a872ee546a05b02b6739690094b1e3fbf9978ada7e11fb8efdf20b87d010",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:bc440466a67811978286dae35e2ef52fe6df454913ffc880d9a1b6b826fcb57c",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:c28cda034fe5442ef7de8228f0fcc9f0b1b8f2ca5bf9aec4e1d98f4be3394966",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:cda3245f2a8bab0780aa8823d4cd855d87793845f6415e8d8afa0963654686d9",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:dd78effdca6313c75c11d187ba5253f0cc666cb8f83ac2747ae408bed431ce17",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:e3b146375293ba5bb7f46540d359ac2c61d7150a3f1035dd0498c7aabdc67275",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:ef7703f0b29fcda53dac49dcb579c518f3845de9cd7834919f49066a4d7fd31f",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:f11d24a46f78e5ef9675853b59f046bd194947fa308b23a017f1187091471f91",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:f80d728eef94c181a7b4a820e6b9ed9bb560121627a67a78c4fc5e71057eef4e",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:fbb7ad675786a1784e8f2787a2ad2ad215a29c5bf090c7bdc76fd7d5d5f322c1",
+      "dependsOn": []
+    },
+    {
+      "ref": "urn:servicestack:native:fd5809bb8f9517a04861637e34a796d06a0b81533c2ac45215fef6886c759b92",
+      "dependsOn": []
+    }
+  ]
+}

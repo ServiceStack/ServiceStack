@@ -1,0 +1,3586 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:a3bc4b25-3d63-445b-a550-9147141f8370",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-07T07:48:58Z",
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "name": "ServiceStack.GrpcClient",
+      "version": "10.4.0",
+      "purl": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "supplier": {
+        "name": "ServiceStack, Inc."
+      },
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "af4dec5e3244d9c0586d687c373ca993572b64273cad1ec8a2c7664d5af77fde"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-frameworks",
+          "value": "net10.0;net6.0;net8.0"
+        },
+        {
+          "name": "servicestack:inventory-kind",
+          "value": "Exact NuGet archive and resolved consumer baseline"
+        },
+        {
+          "name": "servicestack:declared-dependency-groups",
+          "value": "[{\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Client\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Grpc.Net.Client\", \"version\": \"2.84.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"protobuf-net\", \"version\": \"3.4.30\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"protobuf-net.Grpc\", \"version\": \"1.3.14\"}], \"targetFramework\": \"net10.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Client\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Grpc.Net.Client\", \"version\": \"2.84.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"protobuf-net\", \"version\": \"3.4.30\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"protobuf-net.Grpc\", \"version\": \"1.3.14\"}], \"targetFramework\": \"net6.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Client\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Grpc.Net.Client\", \"version\": \"2.84.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"protobuf-net\", \"version\": \"3.4.30\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"protobuf-net.Grpc\", \"version\": \"1.3.14\"}], \"targetFramework\": \"net8.0\"}]"
+        },
+        {
+          "name": "servicestack:resolution-limits",
+          "value": "Consumers can resolve other versions allowed by NuGet ranges; runtime/OS framework components are not inventoried."
+        },
+        {
+          "name": "servicestack:package-source-commit",
+          "value": "da90504435109bee9c5199e1902bcabc9d472a1b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Declared package license",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ]
+    },
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "CycloneDX .NET",
+          "version": "6.2.0"
+        },
+        {
+          "type": "application",
+          "name": "ServiceStack security artifacts",
+          "version": "1.1.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Core.Api",
+      "version": "2.84.0",
+      "description": "gRPC C# Surface API",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B22D106CD700266F014412F910AFA8C2591476BD058423FA4FC819D43EE4F1F8D90527368CA8A4B3A1C4B638E90E78178786C66D09F4F394FB2FED156DB1A37F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.core.api@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Core.Api",
+      "version": "2.84.0",
+      "description": "gRPC C# Surface API",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B22D106CD700266F014412F910AFA8C2591476BD058423FA4FC819D43EE4F1F8D90527368CA8A4B3A1C4B638E90E78178786C66D09F4F394FB2FED156DB1A37F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.core.api@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Core.Api",
+      "version": "2.84.0",
+      "description": "gRPC C# Surface API",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B22D106CD700266F014412F910AFA8C2591476BD058423FA4FC819D43EE4F1F8D90527368CA8A4B3A1C4B638E90E78178786C66D09F4F394FB2FED156DB1A37F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.core.api@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Client",
+      "version": "2.84.0",
+      "description": ".NET client for gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F53CCA69ED7B6BCA9D0CA8FBFDF25E9DAA124A97BD087BAE3720DEDADF5DDCAC6A018904D8B436906CD58410C6707BF168B78DC6BE9D3967D6D891AF53E76D97"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.client@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Client",
+      "version": "2.84.0",
+      "description": ".NET client for gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F53CCA69ED7B6BCA9D0CA8FBFDF25E9DAA124A97BD087BAE3720DEDADF5DDCAC6A018904D8B436906CD58410C6707BF168B78DC6BE9D3967D6D891AF53E76D97"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.client@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Client",
+      "version": "2.84.0",
+      "description": ".NET client for gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F53CCA69ED7B6BCA9D0CA8FBFDF25E9DAA124A97BD087BAE3720DEDADF5DDCAC6A018904D8B436906CD58410C6707BF168B78DC6BE9D3967D6D891AF53E76D97"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.client@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Common",
+      "version": "2.84.0",
+      "description": "Infrastructure for common functionality in gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F28B1CC197433CBEB253F7DFADC79DD0F3D54262DF12C86804CB5DEB1ABF431C2CCD1C9E22190256E0D4473691CFDFE3D9E0C8EC12DD0A5AC4726F2A64BE8C30"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.common@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Common",
+      "version": "2.84.0",
+      "description": "Infrastructure for common functionality in gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F28B1CC197433CBEB253F7DFADC79DD0F3D54262DF12C86804CB5DEB1ABF431C2CCD1C9E22190256E0D4473691CFDFE3D9E0C8EC12DD0A5AC4726F2A64BE8C30"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.common@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Common",
+      "version": "2.84.0",
+      "description": "Infrastructure for common functionality in gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F28B1CC197433CBEB253F7DFADC79DD0F3D54262DF12C86804CB5DEB1ABF431C2CCD1C9E22190256E0D4473691CFDFE3D9E0C8EC12DD0A5AC4726F2A64BE8C30"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.common@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.12",
+      "description": "Provides abstractions of key-value pair based configuration. Interfaces defined in this package are implemented by classes in Microsoft.Extensions.Configuration and other configuration packages.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4D9E0F24752E52933C724DAFE8B6B6AF6DC76EFB39040B9664A2A7EFF4B5D120691C00185E246B7E806E385DCC0941F876CED3CACEEE49C142C0ADF46BC72B66"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.12",
+      "description": "Provides abstractions of key-value pair based configuration. Interfaces defined in this package are implemented by classes in Microsoft.Extensions.Configuration and other configuration packages.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4D9E0F24752E52933C724DAFE8B6B6AF6DC76EFB39040B9664A2A7EFF4B5D120691C00185E246B7E806E385DCC0941F876CED3CACEEE49C142C0ADF46BC72B66"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.12",
+      "description": "Provides abstractions of key-value pair based configuration. Interfaces defined in this package are implemented by classes in Microsoft.Extensions.Configuration and other configuration packages.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4D9E0F24752E52933C724DAFE8B6B6AF6DC76EFB39040B9664A2A7EFF4B5D120691C00185E246B7E806E385DCC0941F876CED3CACEEE49C142C0ADF46BC72B66"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Binder",
+      "version": "10.0.12",
+      "description": "Provides the functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration. This package enables you to represent the configuration data as strongly-typed classes defined in the application code. To bind a configuration, use the Microsoft.Extensions.Configuration.ConfigurationBinder.Get extension method on the IConfiguration object. To use this package, you also need to install a package for the configuration provider, for example, Microsoft.Extensions.Configuration.Json for the JSON provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "857ED6421FB7F85608856ABD11DCF985781BA67F9A4114465C9A5443887D13AB594DD3E443A76D0CEC82B2C097665BFFA2AF4F89E40A14A760521B0D10FF23A5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Binder",
+      "version": "10.0.12",
+      "description": "Provides the functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration. This package enables you to represent the configuration data as strongly-typed classes defined in the application code. To bind a configuration, use the Microsoft.Extensions.Configuration.ConfigurationBinder.Get extension method on the IConfiguration object. To use this package, you also need to install a package for the configuration provider, for example, Microsoft.Extensions.Configuration.Json for the JSON provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "857ED6421FB7F85608856ABD11DCF985781BA67F9A4114465C9A5443887D13AB594DD3E443A76D0CEC82B2C097665BFFA2AF4F89E40A14A760521B0D10FF23A5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Binder",
+      "version": "10.0.12",
+      "description": "Provides the functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration. This package enables you to represent the configuration data as strongly-typed classes defined in the application code. To bind a configuration, use the Microsoft.Extensions.Configuration.ConfigurationBinder.Get extension method on the IConfiguration object. To use this package, you also need to install a package for the configuration provider, for example, Microsoft.Extensions.Configuration.Json for the JSON provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "857ED6421FB7F85608856ABD11DCF985781BA67F9A4114465C9A5443887D13AB594DD3E443A76D0CEC82B2C097665BFFA2AF4F89E40A14A760521B0D10FF23A5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration",
+      "version": "10.0.12",
+      "description": "Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D887C44670BA552BD0E17C8C7D731930EDF7E010870FB89F90D3752A4C80EDF7485D18CC4263DE9D1DB912E44D8F8759F21D30C2D12D945A6BFA9A4A9223945B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration",
+      "version": "10.0.12",
+      "description": "Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D887C44670BA552BD0E17C8C7D731930EDF7E010870FB89F90D3752A4C80EDF7485D18CC4263DE9D1DB912E44D8F8759F21D30C2D12D945A6BFA9A4A9223945B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration",
+      "version": "10.0.12",
+      "description": "Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D887C44670BA552BD0E17C8C7D731930EDF7E010870FB89F90D3752A4C80EDF7485D18CC4263DE9D1DB912E44D8F8759F21D30C2D12D945A6BFA9A4A9223945B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.12",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9137F7C7AC3B0CEB8D8FA912D242FCA04192497267AA23E6DC6F9D7547D507BE3711A3B9369F025F7AFDA50A74A2F058EFF27E298D092DBC2E842D369C540ED6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.12",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9137F7C7AC3B0CEB8D8FA912D242FCA04192497267AA23E6DC6F9D7547D507BE3711A3B9369F025F7AFDA50A74A2F058EFF27E298D092DBC2E842D369C540ED6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.12",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9137F7C7AC3B0CEB8D8FA912D242FCA04192497267AA23E6DC6F9D7547D507BE3711A3B9369F025F7AFDA50A74A2F058EFF27E298D092DBC2E842D369C540ED6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.12",
+      "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E1B4D2ED3A41E1A311C5E805A5882CA7D1C32344EF142E9BB769FD4ACC89F712F2E9912CA56DA38BB6D0EDD2A0B86DB0E4B6EC26D1625B3FB088F660A6643F29"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.12",
+      "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E1B4D2ED3A41E1A311C5E805A5882CA7D1C32344EF142E9BB769FD4ACC89F712F2E9912CA56DA38BB6D0EDD2A0B86DB0E4B6EC26D1625B3FB088F660A6643F29"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.12",
+      "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E1B4D2ED3A41E1A311C5E805A5882CA7D1C32344EF142E9BB769FD4ACC89F712F2E9912CA56DA38BB6D0EDD2A0B86DB0E4B6EC26D1625B3FB088F660A6643F29"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.12",
+      "description": "Diagnostic abstractions for Microsoft.Extensions.Diagnostics.\n\nCommonly Used Types:\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsBuilder\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsListener\nMicrosoft.Extensions.Diagnostics.Metrics.InstrumentRule\nMicrosoft.Extensions.Diagnostics.Metrics.MeterScope\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsBuilderExtensions\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsOptions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F22E4E0FF8345E3F10D538B380BCECEA1FCCEEC17E0944F627380DB949C505FE6A1C5D3F8E4F381C29E4E26A46FADD10C8529D441E1A27EFE62C4A4B849E6C56"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.12",
+      "description": "Diagnostic abstractions for Microsoft.Extensions.Diagnostics.\n\nCommonly Used Types:\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsBuilder\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsListener\nMicrosoft.Extensions.Diagnostics.Metrics.InstrumentRule\nMicrosoft.Extensions.Diagnostics.Metrics.MeterScope\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsBuilderExtensions\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsOptions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F22E4E0FF8345E3F10D538B380BCECEA1FCCEEC17E0944F627380DB949C505FE6A1C5D3F8E4F381C29E4E26A46FADD10C8529D441E1A27EFE62C4A4B849E6C56"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.12",
+      "description": "Diagnostic abstractions for Microsoft.Extensions.Diagnostics.\n\nCommonly Used Types:\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsBuilder\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsListener\nMicrosoft.Extensions.Diagnostics.Metrics.InstrumentRule\nMicrosoft.Extensions.Diagnostics.Metrics.MeterScope\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsBuilderExtensions\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsOptions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F22E4E0FF8345E3F10D538B380BCECEA1FCCEEC17E0944F627380DB949C505FE6A1C5D3F8E4F381C29E4E26A46FADD10C8529D441E1A27EFE62C4A4B849E6C56"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics",
+      "version": "10.0.12",
+      "description": "This package includes the default implementation of IMeterFactory and additional extension methods to easily register it with the Dependency Injection framework.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "275E482A827AB185207EDDF85EC59D226B7C110AC3F6D7723B3C190C1269203900A91D75F6636101B6F0026D9BF149795BA8F757DE0EA6D61630EA8B3BEF3ED8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics",
+      "version": "10.0.12",
+      "description": "This package includes the default implementation of IMeterFactory and additional extension methods to easily register it with the Dependency Injection framework.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "275E482A827AB185207EDDF85EC59D226B7C110AC3F6D7723B3C190C1269203900A91D75F6636101B6F0026D9BF149795BA8F757DE0EA6D61630EA8B3BEF3ED8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics",
+      "version": "10.0.12",
+      "description": "This package includes the default implementation of IMeterFactory and additional extension methods to easily register it with the Dependency Injection framework.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "275E482A827AB185207EDDF85EC59D226B7C110AC3F6D7723B3C190C1269203900A91D75F6636101B6F0026D9BF149795BA8F757DE0EA6D61630EA8B3BEF3ED8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Http",
+      "version": "10.0.12",
+      "description": "The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. The HttpClient factory provides extensibility to plug in DelegatingHandlers that address cross-cutting concerns such as service location, load balancing, and reliability. The default HttpClient factory provides built-in diagnostics and logging and manages the lifetimes of connections in a performant way.\n\nCommonly Used Types:\nSystem.Net.Http.IHttpClientFactory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "05381281B6490A0A89E639744685188F8FBF339CE21ECFAEC49E02FDF01757AEFD805EEA3D1C8C6C73D8508A59BECB9EC7C5C77573FD9C1A5FA5AA9C780F2C32"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.http@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Http",
+      "version": "10.0.12",
+      "description": "The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. The HttpClient factory provides extensibility to plug in DelegatingHandlers that address cross-cutting concerns such as service location, load balancing, and reliability. The default HttpClient factory provides built-in diagnostics and logging and manages the lifetimes of connections in a performant way.\n\nCommonly Used Types:\nSystem.Net.Http.IHttpClientFactory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "05381281B6490A0A89E639744685188F8FBF339CE21ECFAEC49E02FDF01757AEFD805EEA3D1C8C6C73D8508A59BECB9EC7C5C77573FD9C1A5FA5AA9C780F2C32"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.http@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Http",
+      "version": "10.0.12",
+      "description": "The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. The HttpClient factory provides extensibility to plug in DelegatingHandlers that address cross-cutting concerns such as service location, load balancing, and reliability. The default HttpClient factory provides built-in diagnostics and logging and manages the lifetimes of connections in a performant way.\n\nCommonly Used Types:\nSystem.Net.Http.IHttpClientFactory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "05381281B6490A0A89E639744685188F8FBF339CE21ECFAEC49E02FDF01757AEFD805EEA3D1C8C6C73D8508A59BECB9EC7C5C77573FD9C1A5FA5AA9C780F2C32"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.http@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.12",
+      "description": "Logging abstractions for Microsoft.Extensions.Logging.\n\nCommonly Used Types:\nMicrosoft.Extensions.Logging.ILogger\nMicrosoft.Extensions.Logging.ILoggerFactory\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\nMicrosoft.Extensions.Logging.LogLevel\nMicrosoft.Extensions.Logging.Logger<T>\nMicrosoft.Extensions.Logging.LoggerMessage\nMicrosoft.Extensions.Logging.Abstractions.NullLogger",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E94F20E8C460475261142AF85E794F2488E02A1F45861DF4C30527B85BE769E26AA60C7A735278040E519CF35A326EEF135CCDFD0391FA74D24CDB308089D7DB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.12",
+      "description": "Logging abstractions for Microsoft.Extensions.Logging.\n\nCommonly Used Types:\nMicrosoft.Extensions.Logging.ILogger\nMicrosoft.Extensions.Logging.ILoggerFactory\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\nMicrosoft.Extensions.Logging.LogLevel\nMicrosoft.Extensions.Logging.Logger<T>\nMicrosoft.Extensions.Logging.LoggerMessage\nMicrosoft.Extensions.Logging.Abstractions.NullLogger",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E94F20E8C460475261142AF85E794F2488E02A1F45861DF4C30527B85BE769E26AA60C7A735278040E519CF35A326EEF135CCDFD0391FA74D24CDB308089D7DB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.12",
+      "description": "Logging abstractions for Microsoft.Extensions.Logging.\n\nCommonly Used Types:\nMicrosoft.Extensions.Logging.ILogger\nMicrosoft.Extensions.Logging.ILoggerFactory\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\nMicrosoft.Extensions.Logging.LogLevel\nMicrosoft.Extensions.Logging.Logger<T>\nMicrosoft.Extensions.Logging.LoggerMessage\nMicrosoft.Extensions.Logging.Abstractions.NullLogger",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E94F20E8C460475261142AF85E794F2488E02A1F45861DF4C30527B85BE769E26AA60C7A735278040E519CF35A326EEF135CCDFD0391FA74D24CDB308089D7DB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging",
+      "version": "10.0.12",
+      "description": "Logging infrastructure default implementation for Microsoft.Extensions.Logging.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "EC379EDDD20E6B4E0C999A3E5CDFC58E3695BB6434CB020460724F86ABDEE619EEFD79D77FD69E77EF0E0551B1F7735E55984BC43A3ECDEB9E986ECD94F1C78D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging",
+      "version": "10.0.12",
+      "description": "Logging infrastructure default implementation for Microsoft.Extensions.Logging.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "EC379EDDD20E6B4E0C999A3E5CDFC58E3695BB6434CB020460724F86ABDEE619EEFD79D77FD69E77EF0E0551B1F7735E55984BC43A3ECDEB9E986ECD94F1C78D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging",
+      "version": "10.0.12",
+      "description": "Logging infrastructure default implementation for Microsoft.Extensions.Logging.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "EC379EDDD20E6B4E0C999A3E5CDFC58E3695BB6434CB020460724F86ABDEE619EEFD79D77FD69E77EF0E0551B1F7735E55984BC43A3ECDEB9E986ECD94F1C78D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "version": "10.0.12",
+      "description": "Provides additional configuration specific functionality related to Options.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "81E3F7027E06BF8D425DFB40EB8126CF3919AD4A6A60079FA53707055D14BCCDBCB7275002130334D9A1E31629A7629D1E1A70B286606F3BA0F7A42BA2557331"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "version": "10.0.12",
+      "description": "Provides additional configuration specific functionality related to Options.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "81E3F7027E06BF8D425DFB40EB8126CF3919AD4A6A60079FA53707055D14BCCDBCB7275002130334D9A1E31629A7629D1E1A70B286606F3BA0F7A42BA2557331"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "version": "10.0.12",
+      "description": "Provides additional configuration specific functionality related to Options.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "81E3F7027E06BF8D425DFB40EB8126CF3919AD4A6A60079FA53707055D14BCCDBCB7275002130334D9A1E31629A7629D1E1A70B286606F3BA0F7A42BA2557331"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.12",
+      "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0153D76DAF2AD465DE46256BE1256EE185F488153E4E7E7D39BBC3DAE5A49163B02A854F67E1D03297A7ED30A203DC69C0718C36AB77F35CF589603A9E892781"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.12",
+      "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0153D76DAF2AD465DE46256BE1256EE185F488153E4E7E7D39BBC3DAE5A49163B02A854F67E1D03297A7ED30A203DC69C0718C36AB77F35CF589603A9E892781"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.12",
+      "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0153D76DAF2AD465DE46256BE1256EE185F488153E4E7E7D39BBC3DAE5A49163B02A854F67E1D03297A7ED30A203DC69C0718C36AB77F35CF589603A9E892781"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.12",
+      "description": "Primitives shared by framework extensions. Commonly used types include:\n\nCommonly Used Types:\nMicrosoft.Extensions.Primitives.IChangeToken\nMicrosoft.Extensions.Primitives.StringValues\nMicrosoft.Extensions.Primitives.StringSegment",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1B884C67DC09BFBE6E7E79C19070076EA8B2C1F3067DEC9FCFF6A2059A0B7A0E6F56012A64F3C04FF9CB15BFCF93EFE6182008462DE2D167C61D37150CDF650A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.primitives@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.12",
+      "description": "Primitives shared by framework extensions. Commonly used types include:\n\nCommonly Used Types:\nMicrosoft.Extensions.Primitives.IChangeToken\nMicrosoft.Extensions.Primitives.StringValues\nMicrosoft.Extensions.Primitives.StringSegment",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1B884C67DC09BFBE6E7E79C19070076EA8B2C1F3067DEC9FCFF6A2059A0B7A0E6F56012A64F3C04FF9CB15BFCF93EFE6182008462DE2D167C61D37150CDF650A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.primitives@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.12",
+      "description": "Primitives shared by framework extensions. Commonly used types include:\n\nCommonly Used Types:\nMicrosoft.Extensions.Primitives.IChangeToken\nMicrosoft.Extensions.Primitives.StringValues\nMicrosoft.Extensions.Primitives.StringSegment",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1B884C67DC09BFBE6E7E79C19070076EA8B2C1F3067DEC9FCFF6A2059A0B7A0E6F56012A64F3C04FF9CB15BFCF93EFE6182008462DE2D167C61D37150CDF650A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.primitives@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Core",
+      "version": "3.4.30",
+      "description": "The protobuf-net serialization engine and build-time tooling; most projects should reference protobuf-net, which adds the runtime type model",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "66CC732FDF61CAACAAF6C87AA80C2FE304285DF624D4E41A053400CF2710DEE5F368FBB4556B7D846583795E5D524FF0CE2D1D5414B575A38EF690563ED0C52A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net.core@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Core",
+      "version": "3.4.30",
+      "description": "The protobuf-net serialization engine and build-time tooling; most projects should reference protobuf-net, which adds the runtime type model",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "66CC732FDF61CAACAAF6C87AA80C2FE304285DF624D4E41A053400CF2710DEE5F368FBB4556B7D846583795E5D524FF0CE2D1D5414B575A38EF690563ED0C52A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net.core@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Core",
+      "version": "3.4.30",
+      "description": "The protobuf-net serialization engine and build-time tooling; most projects should reference protobuf-net, which adds the runtime type model",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "66CC732FDF61CAACAAF6C87AA80C2FE304285DF624D4E41A053400CF2710DEE5F368FBB4556B7D846583795E5D524FF0CE2D1D5414B575A38EF690563ED0C52A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net.core@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Grpc",
+      "version": "1.3.14",
+      "description": "Code-first gRPC for .NET: declare services as .NET interfaces, with no .proto file and no generated client; shared core for clients and servers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BFE8B52387D623DA3F986E8F6836C9FFB9D15FA9F0453865865EC18AE921C0435CFF6568E2C01680D1CB589873FF322907EAE8407FF909C8B4A497216A17D424"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Marc Gravell, 2019-",
+      "purl": "pkg:nuget/protobuf-net.grpc@1.3.14",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Grpc",
+      "version": "1.3.14",
+      "description": "Code-first gRPC for .NET: declare services as .NET interfaces, with no .proto file and no generated client; shared core for clients and servers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BFE8B52387D623DA3F986E8F6836C9FFB9D15FA9F0453865865EC18AE921C0435CFF6568E2C01680D1CB589873FF322907EAE8407FF909C8B4A497216A17D424"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Marc Gravell, 2019-",
+      "purl": "pkg:nuget/protobuf-net.grpc@1.3.14",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Grpc",
+      "version": "1.3.14",
+      "description": "Code-first gRPC for .NET: declare services as .NET interfaces, with no .proto file and no generated client; shared core for clients and servers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BFE8B52387D623DA3F986E8F6836C9FFB9D15FA9F0453865865EC18AE921C0435CFF6568E2C01680D1CB589873FF322907EAE8407FF909C8B4A497216A17D424"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Marc Gravell, 2019-",
+      "purl": "pkg:nuget/protobuf-net.grpc@1.3.14",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net",
+      "version": "3.4.30",
+      "description": "Provides simple access to fast and efficient \"Protocol Buffers\" serialization from .NET applications",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "7142DCF1178EA3DDA8744B5167D89F705F9D23CEDCA24A8F66B59F48DBD33CD04F8AC961537A8FB29FE737FFED53D65E44717E5E4417BA225345FD69F6721CEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net6.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net",
+      "version": "3.4.30",
+      "description": "Provides simple access to fast and efficient \"Protocol Buffers\" serialization from .NET applications",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "7142DCF1178EA3DDA8744B5167D89F705F9D23CEDCA24A8F66B59F48DBD33CD04F8AC961537A8FB29FE737FFED53D65E44717E5E4417BA225345FD69F6721CEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net",
+      "version": "3.4.30",
+      "description": "Provides simple access to fast and efficient \"Protocol Buffers\" serialization from .NET applications",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "7142DCF1178EA3DDA8744B5167D89F705F9D23CEDCA24A8F66B59F48DBD33CD04F8AC961537A8FB29FE737FFED53D65E44717E5E4417BA225345FD69F6721CEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Client",
+      "version": "10.4.0",
+      "description": "JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "30D6888A78FF13E278E7588E89D7A239A32448106B98861DFB5C43B9198318C2E622B87CFCB421BB03FDE33C105B2597A3A1DFDB2C69786CA2D1FE4EA8B2AE02"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.client@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Client",
+      "version": "10.4.0",
+      "description": "JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "30D6888A78FF13E278E7588E89D7A239A32448106B98861DFB5C43B9198318C2E622B87CFCB421BB03FDE33C105B2597A3A1DFDB2C69786CA2D1FE4EA8B2AE02"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.client@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Client",
+      "version": "10.4.0",
+      "description": "JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "30D6888A78FF13E278E7588E89D7A239A32448106B98861DFB5C43B9198318C2E622B87CFCB421BB03FDE33C105B2597A3A1DFDB2C69786CA2D1FE4EA8B2AE02"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.client@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.GrpcClient",
+      "version": "10.4.0",
+      "description": "ServiceStack's gRPC GrpcServiceClient",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "315EFA82568F6D925F6179001052D361792CC517E99FABC3C8AF64A1F51C1DFC1FB4A8D45EACD23A5EA43EC56777C09BFB2961B085865C8BF1ADEADD30771938"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.GrpcClient",
+      "version": "10.4.0",
+      "description": "ServiceStack's gRPC GrpcServiceClient",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "315EFA82568F6D925F6179001052D361792CC517E99FABC3C8AF64A1F51C1DFC1FB4A8D45EACD23A5EA43EC56777C09BFB2961B085865C8BF1ADEADD30771938"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.GrpcClient",
+      "version": "10.4.0",
+      "description": "ServiceStack's gRPC GrpcServiceClient",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "315EFA82568F6D925F6179001052D361792CC517E99FABC3C8AF64A1F51C1DFC1FB4A8D45EACD23A5EA43EC56777C09BFB2961B085865C8BF1ADEADD30771938"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net6.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.common@2.84.0#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.common@2.84.0#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.common@2.84.0#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net6.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net6.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/protobuf-net.core@3.4.30#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/protobuf-net.core@3.4.30#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/protobuf-net.core@3.4.30#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net6.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.client@2.84.0#tfm=net10.0",
+        "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net10.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net6.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.client@2.84.0#tfm=net6.0",
+        "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net6.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net6.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.client@2.84.0#tfm=net8.0",
+        "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net8.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net6.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "dependsOn": []
+    }
+  ]
+}

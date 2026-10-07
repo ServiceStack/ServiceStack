@@ -1,0 +1,57 @@
+name: Core package security evidence
+
+on:
+  pull_request:
+    paths:
+      - 'build/security/**'
+      - '**/security/**'
+      - '.github/workflows/security-core.yml'
+  push:
+    paths:
+      - 'build/security/**'
+      - '**/security/**'
+      - '.github/workflows/security-core.yml'
+  schedule:
+    - cron: '23 1 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate generator and checked-in evidence
+        run: |
+          python3 -m pip install -r build/security/requirements.txt
+          python3 -m unittest discover -s build/security/tests -v
+          python3 build/security/validate_checked_in.py
+
+  scan:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Rescan frozen core release graphs
+        run: |
+          python3 -m pip install -r build/security/requirements.txt
+          python3 build/security/security_artifacts.py scan --scan-output build/security-scans
+      - name: Preserve advisory observations
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        with:
+          name: Core package advisory observations
+          retention-days: 30
+          path: build/security-scans/
+          if-no-files-found: warn

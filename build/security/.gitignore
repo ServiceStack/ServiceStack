@@ -1,0 +1,5 @@
+# Keep the development-only validator requirements despite the root *.txt rule.
+!requirements.txt
+
+# Local development tooling environment.
+.venv/

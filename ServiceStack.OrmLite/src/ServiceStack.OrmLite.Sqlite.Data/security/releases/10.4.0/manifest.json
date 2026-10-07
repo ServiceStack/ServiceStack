@@ -1,0 +1,160 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.OrmLite.Sqlite.Data",
+  "version": "10.4.0",
+  "created": "2026-10-07T08:05:04Z",
+  "packageSha256": "6f6ec03cc320a0057fabb37a1aafd4b63d7319d1c337c7f432dc71f24c95093b",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "ad0806d97142c2e6be07392129e9ac16cf660a439d4d3810404024b3978963be",
+    "resolution.json": "ac0dfba9a7fe0e783da8eb2bb90af66f0f6518ac51cd5f1333927662ea2b41d9",
+    "audit.json": "fd5056ca44a0947b3ca88f5fba5a16dfd6ed80f61c4b8d4fc0e3e8b2450c847b"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/browser-wasm/nativeassets/net6.0/e_sqlite3.a",
+      "sha256": "3c84cc373b8df5bc6065d2fc995e75ad1eb240905f5237fc078ec2ba54fec15c"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/browser-wasm/nativeassets/net7.0/e_sqlite3.a",
+      "sha256": "b149d4ee5758ea81dda2edff6c84981d227794933c8c000a58818d92c9998c7e"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/browser-wasm/nativeassets/net8.0/e_sqlite3.a",
+      "sha256": "528790d8ebb1fde0e43383beb015e8084dbcd0d963e09e1b690244205f52dadf"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/browser-wasm/nativeassets/net9.0/e_sqlite3.a",
+      "sha256": "c64ae8d44dc3e1aa03aca4e79ccc501cbc3a3c490e8e2ea9e369367f68cf0f21"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-arm/native/libe_sqlite3.so",
+      "sha256": "43556c2f5075857bf57be1136d556733bdc27195884fbdde127cd976d1c25ad5"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-arm64/native/libe_sqlite3.so",
+      "sha256": "707fff6b18c1f083158e7a543c8d2545d5485f547ffd96db29679a95f52878d5"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-armel/native/libe_sqlite3.so",
+      "sha256": "3f4d9b9ca49bb3f100882e78ba85807398cee19b481bfd4c301a8f5f58d48540"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-mips64/native/libe_sqlite3.so",
+      "sha256": "985884523e512414f3e50aa359f08dad3ce635e99405e7823de9b26a7db38d09"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-musl-arm/native/libe_sqlite3.so",
+      "sha256": "7fec7057d16e8b5ae54fed0c42a0e6b85e40df0d57092ef20cd647a4e1c1e0ed"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-musl-arm64/native/libe_sqlite3.so",
+      "sha256": "530e2f74f259fe04faa4b595336e671fab5eedbb6f4e94dad59494efb7b00c2a"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-musl-riscv64/native/libe_sqlite3.so",
+      "sha256": "d8e54eb7dc52ea0a7df9b78ac6feb85af429e7264613099df478825dea5805d4"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-musl-s390x/native/libe_sqlite3.so",
+      "sha256": "64260c0460ad6efa7dce9263bff7a4b64ad66172ccc580cb09181c845e1a3407"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-musl-x64/native/libe_sqlite3.so",
+      "sha256": "647b7b5886526691aed58e0fcbb56dc1e6dea8b1f9f5390782f0c95269250db1"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-ppc64le/native/libe_sqlite3.so",
+      "sha256": "1ef00b5e3ac63e491f59ecf587680fc52ad844cea62e0a879a1315ef6bd10fc6"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-riscv64/native/libe_sqlite3.so",
+      "sha256": "6b390eecbc6f55c44d9ab8a774f1fe4283dfb33a72e6f29f4e0b173065e7e105"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-s390x/native/libe_sqlite3.so",
+      "sha256": "dfd5ab35f6d61155a3c629d0bceff4d6e0f0f190983f3fb8f681fb34ec08c67e"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-x64/native/libe_sqlite3.so",
+      "sha256": "b0f5c48026fedcf9f05cf31c6fadf9e1e001ca59cd85aa68b8b6814e52c18a07"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/linux-x86/native/libe_sqlite3.so",
+      "sha256": "fe8229e5baeaf21e721cf65626a6b07ec22d9b17d07bd624e7a77927174277f1"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/maccatalyst-arm64/native/libe_sqlite3.dylib",
+      "sha256": "8d63d80bc6caa754679d6fc89fd741a32c156f136c34759cc8fff8cd51468a93"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/maccatalyst-x64/native/libe_sqlite3.dylib",
+      "sha256": "43d27adbc5ba40850bac42a12aea08314a22a43d3ce77cdc7a6cc47ecffb5746"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/osx-arm64/native/libe_sqlite3.dylib",
+      "sha256": "09fe20a6c050912a7944b2f2f2981debe31679f7919f523c87251ae8cf0f2daa"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/osx-x64/native/libe_sqlite3.dylib",
+      "sha256": "02344e1d0bcb5ed447ad9b79ed19e37a590fb1ece3eba1e63efbc35e36e47bdf"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/win-arm64/native/e_sqlite3.dll",
+      "sha256": "4177542756bd94f75b55fb74367e0cf34e66a88ffaf95755489af14c6ca2f792"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/win-x64/native/e_sqlite3.dll",
+      "sha256": "b7385d722c83fb52142a00477a726723745916d22a555711ee89834c1111fb2e"
+    },
+    {
+      "package": "pkg:nuget/sqlitepclraw.lib.e_sqlite3@2.1.12",
+      "path": "runtimes/win-x86/native/e_sqlite3.dll",
+      "sha256": "d13eb819d1353d98c684c88672868bbfcc6a52eb5987bdf2557ec02fabce4ea7"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

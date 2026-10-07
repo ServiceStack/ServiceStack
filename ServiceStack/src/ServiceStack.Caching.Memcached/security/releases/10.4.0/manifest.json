@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.Caching.Memcached",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:48:31Z",
+  "packageSha256": "4c4dbebe425b6fa56a0d6458f0fc9a4e201f98ba8b4f35ec5b936e77cd263249",
+  "frameworks": [
+    "net472"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "844f49043f143bc83841e718578db0c2a9376919559cbbcd233f723a3ff9ec90",
+    "resolution.json": "02da2d3deb07db7599e8e44a8115f7d7805077622c9e35758878e10384c2225a",
+    "audit.json": "e6f9c6559e89bc187c75f9fcedd886ba52566e8029cdca8c1a538ca7a32c3c64"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

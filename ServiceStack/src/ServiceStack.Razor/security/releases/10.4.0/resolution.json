@@ -1,0 +1,110 @@
+{
+  "frameworks": [
+    "net472"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Client",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.AspNet.Razor",
+          "version": "3.3.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net472": {
+      "Microsoft.AspNet.Razor/3.3.0": {},
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
+        "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "ServiceStack.Client/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Memory": "4.6.3",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0",
+        "System.Memory": "4.6.3"
+      },
+      "ServiceStack.Razor/10.4.0": {
+        "Microsoft.AspNet.Razor": "3.3.0",
+        "ServiceStack": "10.4.0",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "ServiceStack/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      }
+    }
+  }
+}

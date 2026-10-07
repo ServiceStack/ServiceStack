@@ -1,0 +1,5787 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:8d50d83f-31d0-404b-8891-883f4951ca9d",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-07T07:48:07Z",
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0",
+      "name": "ServiceStack.AspNetCore.OpenApi",
+      "version": "10.4.0",
+      "purl": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0",
+      "supplier": {
+        "name": "ServiceStack, Inc."
+      },
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5fd371ab7dd78cc8aeb56e9effad744ca46fd41fde951ab83c5ff53c02fbd278"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-frameworks",
+          "value": "net10.0;net8.0"
+        },
+        {
+          "name": "servicestack:inventory-kind",
+          "value": "Exact NuGet archive and resolved consumer baseline"
+        },
+        {
+          "name": "servicestack:declared-dependency-groups",
+          "value": "[{\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Client\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Extensions\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.AspNetCore.OpenApi\", \"version\": \"8.0.31\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.OpenApi\", \"version\": \"1.6.31\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Swashbuckle.AspNetCore\", \"version\": \"8.1.4\"}], \"targetFramework\": \"net10.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Client\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Extensions\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.AspNetCore.OpenApi\", \"version\": \"8.0.31\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.OpenApi\", \"version\": \"1.6.31\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Swashbuckle.AspNetCore\", \"version\": \"8.1.4\"}], \"targetFramework\": \"net8.0\"}]"
+        },
+        {
+          "name": "servicestack:resolution-limits",
+          "value": "Consumers can resolve other versions allowed by NuGet ranges; runtime/OS framework components are not inventoried."
+        },
+        {
+          "name": "servicestack:package-source-commit",
+          "value": "da90504435109bee9c5199e1902bcabc9d472a1b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Declared package license",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ]
+    },
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "CycloneDX .NET",
+          "version": "6.2.0"
+        },
+        {
+          "type": "application",
+          "name": "ServiceStack security artifacts",
+          "version": "1.1.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.AspNetCore.Server",
+      "version": "2.84.0",
+      "description": "gRPC support for ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0D4A84D26524FF3605F2AF67CB26065763AFF63EA6D9A0AE13448C25661E9209BAF7806B4250347FBC47D28CFF2E25EB1EAA78618CD56FB5FA83E7D79817884F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.aspnetcore.server@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.AspNetCore.Server",
+      "version": "2.84.0",
+      "description": "gRPC support for ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0D4A84D26524FF3605F2AF67CB26065763AFF63EA6D9A0AE13448C25661E9209BAF7806B4250347FBC47D28CFF2E25EB1EAA78618CD56FB5FA83E7D79817884F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.aspnetcore.server@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Core.Api",
+      "version": "2.84.0",
+      "description": "gRPC C# Surface API",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B22D106CD700266F014412F910AFA8C2591476BD058423FA4FC819D43EE4F1F8D90527368CA8A4B3A1C4B638E90E78178786C66D09F4F394FB2FED156DB1A37F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.core.api@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Core.Api",
+      "version": "2.84.0",
+      "description": "gRPC C# Surface API",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B22D106CD700266F014412F910AFA8C2591476BD058423FA4FC819D43EE4F1F8D90527368CA8A4B3A1C4B638E90E78178786C66D09F4F394FB2FED156DB1A37F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.core.api@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Client",
+      "version": "2.84.0",
+      "description": ".NET client for gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F53CCA69ED7B6BCA9D0CA8FBFDF25E9DAA124A97BD087BAE3720DEDADF5DDCAC6A018904D8B436906CD58410C6707BF168B78DC6BE9D3967D6D891AF53E76D97"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.client@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Client",
+      "version": "2.84.0",
+      "description": ".NET client for gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F53CCA69ED7B6BCA9D0CA8FBFDF25E9DAA124A97BD087BAE3720DEDADF5DDCAC6A018904D8B436906CD58410C6707BF168B78DC6BE9D3967D6D891AF53E76D97"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.client@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Common",
+      "version": "2.84.0",
+      "description": "Infrastructure for common functionality in gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F28B1CC197433CBEB253F7DFADC79DD0F3D54262DF12C86804CB5DEB1ABF431C2CCD1C9E22190256E0D4473691CFDFE3D9E0C8EC12DD0A5AC4726F2A64BE8C30"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.common@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "The gRPC Authors"
+        }
+      ],
+      "name": "Grpc.Net.Common",
+      "version": "2.84.0",
+      "description": "Infrastructure for common functionality in gRPC",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F28B1CC197433CBEB253F7DFADC79DD0F3D54262DF12C86804CB5DEB1ABF431C2CCD1C9E22190256E0D4473691CFDFE3D9E0C8EC12DD0A5AC4726F2A64BE8C30"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Copyright 2019 The gRPC Authors",
+      "purl": "pkg:nuget/grpc.net.common@2.84.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/grpc/grpc-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/grpc/grpc-dotnet.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "version": "10.0.12",
+      "description": "ASP.NET Core middleware that enables an application to receive an OpenID Connect bearer token.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0BBFD102B519E44C2CE8B61B1A251F9D38B99D095AEB96D4E1A4C63A34190D13FB468FD6855CF1E6A5702E785A845136DB99882DB6D355AB412B5F5C42B84096"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Authentication.JwtBearer",
+      "version": "10.0.12",
+      "description": "ASP.NET Core middleware that enables an application to receive an OpenID Connect bearer token.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0BBFD102B519E44C2CE8B61B1A251F9D38B99D095AEB96D4E1A4C63A34190D13FB468FD6855CF1E6A5702E785A845136DB99882DB6D355AB412B5F5C42B84096"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Cryptography.Internal",
+      "version": "10.0.12",
+      "description": "Infrastructure for ASP.NET Core cryptographic packages. Applications and libraries should not reference this package directly.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1457FEDC3E2EDD8949A6700F92A5FE194D14944DA4EC91148ACD9ADA84A87F9553C4520B14CE4267AACE1D3003CC51070243E2EB113AE41A9BF03DB6520639B8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Cryptography.Internal",
+      "version": "10.0.12",
+      "description": "Infrastructure for ASP.NET Core cryptographic packages. Applications and libraries should not reference this package directly.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1457FEDC3E2EDD8949A6700F92A5FE194D14944DA4EC91148ACD9ADA84A87F9553C4520B14CE4267AACE1D3003CC51070243E2EB113AE41A9BF03DB6520639B8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Cryptography.KeyDerivation",
+      "version": "10.0.12",
+      "description": "ASP.NET Core utilities for key derivation.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FAA23E02EC1D85255A13BF01E70FEB628260975461EA97B2F43C4D11E7F2158EDBE56009ABFF10FC96F7F88751202598B167B62FB11E3544FE8225C66101AD43"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Cryptography.KeyDerivation",
+      "version": "10.0.12",
+      "description": "ASP.NET Core utilities for key derivation.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FAA23E02EC1D85255A13BF01E70FEB628260975461EA97B2F43C4D11E7F2158EDBE56009ABFF10FC96F7F88751202598B167B62FB11E3544FE8225C66101AD43"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore",
+      "version": "10.0.12",
+      "description": "ASP.NET Core Identity provider that uses Entity Framework Core.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BE375213C1A505156F0228E98372B7BA61F67063D27DDB540EF27905CA8977C27BBDD306509C82848E6507A685EDAB6AD718BBA5F052F74596973EA793E5F9E6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.Identity.EntityFrameworkCore",
+      "version": "10.0.12",
+      "description": "ASP.NET Core Identity provider that uses Entity Framework Core.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BE375213C1A505156F0228E98372B7BA61F67063D27DDB540EF27905CA8977C27BBDD306509C82848E6507A685EDAB6AD718BBA5F052F74596973EA793E5F9E6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.OpenApi",
+      "version": "8.0.31",
+      "description": "Provides APIs for annotating route handler endpoints in ASP.NET Core with OpenAPI annotations.\n\nThis package was built from the source code at https://github.com/dotnet/aspnetcore/tree/5e392da7379de101db58a36123c38effeba3edef",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FA7002E741F6838836F65F79238B584875721591C73B12038E43D20874B49089A11BA9F75A1B61EE3950D364158C0FEC629E75ADEB297EC3473405EB93EB1C77"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/aspnetcore",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.AspNetCore.OpenApi",
+      "version": "8.0.31",
+      "description": "Provides APIs for annotating route handler endpoints in ASP.NET Core with OpenAPI annotations.\n\nThis package was built from the source code at https://github.com/dotnet/aspnetcore/tree/5e392da7379de101db58a36123c38effeba3edef",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FA7002E741F6838836F65F79238B584875721591C73B12038E43D20874B49089A11BA9F75A1B61EE3950D364158C0FEC629E75ADEB297EC3473405EB93EB1C77"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/aspnetcore",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.cryptography@10.0.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.Cryptography",
+      "version": "10.0.2",
+      "description": "Provides support for some cryptographic primitives for .NET Framework and .NET Standard.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "ADB3FF92B45D5D7546D74432587D2B59AE7ED2A3F94686FC5590CA9E8F75D241E70DC987F577456C1B5D79D3B9A55565A40D72D8C5D6C77EB4CCB2CD2DCB49F9"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.cryptography@10.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.cryptography@10.0.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.Cryptography",
+      "version": "10.0.2",
+      "description": "Provides support for some cryptographic primitives for .NET Framework and .NET Standard.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "ADB3FF92B45D5D7546D74432587D2B59AE7ED2A3F94686FC5590CA9E8F75D241E70DC987F577456C1B5D79D3B9A55565A40D72D8C5D6C77EB4CCB2CD2DCB49F9"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.cryptography@10.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore.Abstractions",
+      "version": "10.0.12",
+      "description": "Provides abstractions and attributes that are used to configure Entity Framework Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C07C284DCE00FC1C167964643DFD1ACDA0F285135FDCAF2A61670097EBF7CEC39D3FCC5EFE292FC525D799EED5BB54F17DCF271F9EFDC1494C39DD513771B2AB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore.Abstractions",
+      "version": "10.0.12",
+      "description": "Provides abstractions and attributes that are used to configure Entity Framework Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C07C284DCE00FC1C167964643DFD1ACDA0F285135FDCAF2A61670097EBF7CEC39D3FCC5EFE292FC525D799EED5BB54F17DCF271F9EFDC1494C39DD513771B2AB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore.Analyzers",
+      "version": "10.0.12",
+      "description": "CSharp Analyzers for Entity Framework Core.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9816A33F32FAD1E3F6D4575BB179B6E7830BA6236D949408DF9D803E9E2D95A9BD46ACBD7EBB52AFEF47527A0007272B0608A296EA0E7880DD3EA324DD59CF3A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore.Analyzers",
+      "version": "10.0.12",
+      "description": "CSharp Analyzers for Entity Framework Core.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9816A33F32FAD1E3F6D4575BB179B6E7830BA6236D949408DF9D803E9E2D95A9BD46ACBD7EBB52AFEF47527A0007272B0608A296EA0E7880DD3EA324DD59CF3A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore.Relational",
+      "version": "10.0.12",
+      "description": "Shared Entity Framework Core components for relational database providers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D82207875922090D5058F8C78EBE16F08362FDF40C7994F664139DFDB1394D6C09859F80A728145AB02AD51DCD44CB838B03E59F41D078BEAF122FD2BE82AD76"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore.Relational",
+      "version": "10.0.12",
+      "description": "Shared Entity Framework Core components for relational database providers.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D82207875922090D5058F8C78EBE16F08362FDF40C7994F664139DFDB1394D6C09859F80A728145AB02AD51DCD44CB838B03E59F41D078BEAF122FD2BE82AD76"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore",
+      "version": "10.0.12",
+      "description": "Entity Framework Core is a modern object-database mapper for .NET. It supports LINQ queries, change tracking, updates, and schema migrations. EF Core works with SQL Server, Azure SQL Database, SQLite, Azure Cosmos DB, MySQL, PostgreSQL, and other databases through a provider plugin API.\n\nCommonly Used Types:\nMicrosoft.EntityFrameworkCore.DbContext\nMicrosoft.EntityFrameworkCore.DbSet",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "44C3A15833E7358ADAEA12A48FB9A8624A5E4C8515F0C047D9AAC3B86933C59E1CBA7EFE6C3D8741FCB8C1B59A1AE7DD9DD04FF550945AECA21AAD4FBF9C1BC7"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.entityframeworkcore@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.EntityFrameworkCore",
+      "version": "10.0.12",
+      "description": "Entity Framework Core is a modern object-database mapper for .NET. It supports LINQ queries, change tracking, updates, and schema migrations. EF Core works with SQL Server, Azure SQL Database, SQLite, Azure Cosmos DB, MySQL, PostgreSQL, and other databases through a provider plugin API.\n\nCommonly Used Types:\nMicrosoft.EntityFrameworkCore.DbContext\nMicrosoft.EntityFrameworkCore.DbSet",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "44C3A15833E7358ADAEA12A48FB9A8624A5E4C8515F0C047D9AAC3B86933C59E1CBA7EFE6C3D8741FCB8C1B59A1AE7DD9DD04FF550945AECA21AAD4FBF9C1BC7"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.entityframeworkcore@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://docs.microsoft.com/ef/core/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.ApiDescription.Server",
+      "version": "6.0.5",
+      "description": "MSBuild tasks and targets for build-time Swagger and OpenApi document generation\n\nThis package was built from the source code at https://github.com/dotnet/aspnetcore/tree/e5f183b656a0e8bc087108130a5a9b54ae94494e",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "A3BE8B26AB3758D547DEB560CA418FF238D5C3DA07BAE5BDEA31FFC5876837DB356E0A5B55493286C8386F3E1AD6AA5BC7960D7B9128119CB0B6EFF314B60B1C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/aspnetcore",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.ApiDescription.Server",
+      "version": "6.0.5",
+      "description": "MSBuild tasks and targets for build-time Swagger and OpenApi document generation\n\nThis package was built from the source code at https://github.com/dotnet/aspnetcore/tree/e5f183b656a0e8bc087108130a5a9b54ae94494e",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "A3BE8B26AB3758D547DEB560CA418FF238D5C3DA07BAE5BDEA31FFC5876837DB356E0A5B55493286C8386F3E1AD6AA5BC7960D7B9128119CB0B6EFF314B60B1C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/aspnetcore",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Caching.Abstractions",
+      "version": "10.0.12",
+      "description": "Caching abstractions for in-memory cache and distributed cache.\n\nCommonly Used Types:\nMicrosoft.Extensions.Caching.Distributed.IDistributedCache\nMicrosoft.Extensions.Caching.Memory.IMemoryCache",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B696C44AC28981760720098CE8A5A1C3CBAD018D22B192818CF9406EC699D5C715D4C846044FA05F564A8B0C8500090B5B742BE7463C3A9AE602846C3F73EF6D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Caching.Abstractions",
+      "version": "10.0.12",
+      "description": "Caching abstractions for in-memory cache and distributed cache.\n\nCommonly Used Types:\nMicrosoft.Extensions.Caching.Distributed.IDistributedCache\nMicrosoft.Extensions.Caching.Memory.IMemoryCache",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "B696C44AC28981760720098CE8A5A1C3CBAD018D22B192818CF9406EC699D5C715D4C846044FA05F564A8B0C8500090B5B742BE7463C3A9AE602846C3F73EF6D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Caching.Memory",
+      "version": "10.0.12",
+      "description": "In-memory cache implementation of Microsoft.Extensions.Caching.Memory.IMemoryCache.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "03F9173C5C0CB543E1ABC38CE7ABA95A185604E2ACC84361EBF6F7AF23C54C2AF8615277E81BA9B232CEA4AEE6544709D0FAF3DD0CB16A169E1CBBBCD60FB633"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.caching.memory@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Caching.Memory",
+      "version": "10.0.12",
+      "description": "In-memory cache implementation of Microsoft.Extensions.Caching.Memory.IMemoryCache.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "03F9173C5C0CB543E1ABC38CE7ABA95A185604E2ACC84361EBF6F7AF23C54C2AF8615277E81BA9B232CEA4AEE6544709D0FAF3DD0CB16A169E1CBBBCD60FB633"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.caching.memory@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.12",
+      "description": "Provides abstractions of key-value pair based configuration. Interfaces defined in this package are implemented by classes in Microsoft.Extensions.Configuration and other configuration packages.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4D9E0F24752E52933C724DAFE8B6B6AF6DC76EFB39040B9664A2A7EFF4B5D120691C00185E246B7E806E385DCC0941F876CED3CACEEE49C142C0ADF46BC72B66"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.12",
+      "description": "Provides abstractions of key-value pair based configuration. Interfaces defined in this package are implemented by classes in Microsoft.Extensions.Configuration and other configuration packages.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4D9E0F24752E52933C724DAFE8B6B6AF6DC76EFB39040B9664A2A7EFF4B5D120691C00185E246B7E806E385DCC0941F876CED3CACEEE49C142C0ADF46BC72B66"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Binder",
+      "version": "10.0.12",
+      "description": "Provides the functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration. This package enables you to represent the configuration data as strongly-typed classes defined in the application code. To bind a configuration, use the Microsoft.Extensions.Configuration.ConfigurationBinder.Get extension method on the IConfiguration object. To use this package, you also need to install a package for the configuration provider, for example, Microsoft.Extensions.Configuration.Json for the JSON provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "857ED6421FB7F85608856ABD11DCF985781BA67F9A4114465C9A5443887D13AB594DD3E443A76D0CEC82B2C097665BFFA2AF4F89E40A14A760521B0D10FF23A5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Binder",
+      "version": "10.0.12",
+      "description": "Provides the functionality to bind an object to data in configuration providers for Microsoft.Extensions.Configuration. This package enables you to represent the configuration data as strongly-typed classes defined in the application code. To bind a configuration, use the Microsoft.Extensions.Configuration.ConfigurationBinder.Get extension method on the IConfiguration object. To use this package, you also need to install a package for the configuration provider, for example, Microsoft.Extensions.Configuration.Json for the JSON provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "857ED6421FB7F85608856ABD11DCF985781BA67F9A4114465C9A5443887D13AB594DD3E443A76D0CEC82B2C097665BFFA2AF4F89E40A14A760521B0D10FF23A5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration",
+      "version": "10.0.12",
+      "description": "Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D887C44670BA552BD0E17C8C7D731930EDF7E010870FB89F90D3752A4C80EDF7485D18CC4263DE9D1DB912E44D8F8759F21D30C2D12D945A6BFA9A4A9223945B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration",
+      "version": "10.0.12",
+      "description": "Implementation of key-value pair based configuration for Microsoft.Extensions.Configuration. Includes the memory configuration provider.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D887C44670BA552BD0E17C8C7D731930EDF7E010870FB89F90D3752A4C80EDF7485D18CC4263DE9D1DB912E44D8F8759F21D30C2D12D945A6BFA9A4A9223945B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.12",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9137F7C7AC3B0CEB8D8FA912D242FCA04192497267AA23E6DC6F9D7547D507BE3711A3B9369F025F7AFDA50A74A2F058EFF27E298D092DBC2E842D369C540ED6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.12",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "9137F7C7AC3B0CEB8D8FA912D242FCA04192497267AA23E6DC6F9D7547D507BE3711A3B9369F025F7AFDA50A74A2F058EFF27E298D092DBC2E842D369C540ED6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.12",
+      "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E1B4D2ED3A41E1A311C5E805A5882CA7D1C32344EF142E9BB769FD4ACC89F712F2E9912CA56DA38BB6D0EDD2A0B86DB0E4B6EC26D1625B3FB088F660A6643F29"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.12",
+      "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E1B4D2ED3A41E1A311C5E805A5882CA7D1C32344EF142E9BB769FD4ACC89F712F2E9912CA56DA38BB6D0EDD2A0B86DB0E4B6EC26D1625B3FB088F660A6643F29"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.12",
+      "description": "Diagnostic abstractions for Microsoft.Extensions.Diagnostics.\n\nCommonly Used Types:\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsBuilder\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsListener\nMicrosoft.Extensions.Diagnostics.Metrics.InstrumentRule\nMicrosoft.Extensions.Diagnostics.Metrics.MeterScope\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsBuilderExtensions\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsOptions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F22E4E0FF8345E3F10D538B380BCECEA1FCCEEC17E0944F627380DB949C505FE6A1C5D3F8E4F381C29E4E26A46FADD10C8529D441E1A27EFE62C4A4B849E6C56"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.12",
+      "description": "Diagnostic abstractions for Microsoft.Extensions.Diagnostics.\n\nCommonly Used Types:\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsBuilder\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsListener\nMicrosoft.Extensions.Diagnostics.Metrics.InstrumentRule\nMicrosoft.Extensions.Diagnostics.Metrics.MeterScope\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsBuilderExtensions\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsOptions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F22E4E0FF8345E3F10D538B380BCECEA1FCCEEC17E0944F627380DB949C505FE6A1C5D3F8E4F381C29E4E26A46FADD10C8529D441E1A27EFE62C4A4B849E6C56"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics",
+      "version": "10.0.12",
+      "description": "This package includes the default implementation of IMeterFactory and additional extension methods to easily register it with the Dependency Injection framework.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "275E482A827AB185207EDDF85EC59D226B7C110AC3F6D7723B3C190C1269203900A91D75F6636101B6F0026D9BF149795BA8F757DE0EA6D61630EA8B3BEF3ED8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics",
+      "version": "10.0.12",
+      "description": "This package includes the default implementation of IMeterFactory and additional extension methods to easily register it with the Dependency Injection framework.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "275E482A827AB185207EDDF85EC59D226B7C110AC3F6D7723B3C190C1269203900A91D75F6636101B6F0026D9BF149795BA8F757DE0EA6D61630EA8B3BEF3ED8"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Http",
+      "version": "10.0.12",
+      "description": "The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. The HttpClient factory provides extensibility to plug in DelegatingHandlers that address cross-cutting concerns such as service location, load balancing, and reliability. The default HttpClient factory provides built-in diagnostics and logging and manages the lifetimes of connections in a performant way.\n\nCommonly Used Types:\nSystem.Net.Http.IHttpClientFactory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "05381281B6490A0A89E639744685188F8FBF339CE21ECFAEC49E02FDF01757AEFD805EEA3D1C8C6C73D8508A59BECB9EC7C5C77573FD9C1A5FA5AA9C780F2C32"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.http@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Http",
+      "version": "10.0.12",
+      "description": "The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. The HttpClient factory provides extensibility to plug in DelegatingHandlers that address cross-cutting concerns such as service location, load balancing, and reliability. The default HttpClient factory provides built-in diagnostics and logging and manages the lifetimes of connections in a performant way.\n\nCommonly Used Types:\nSystem.Net.Http.IHttpClientFactory",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "05381281B6490A0A89E639744685188F8FBF339CE21ECFAEC49E02FDF01757AEFD805EEA3D1C8C6C73D8508A59BECB9EC7C5C77573FD9C1A5FA5AA9C780F2C32"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.http@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.identity.core@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Identity.Core",
+      "version": "10.0.12",
+      "description": "ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C9C0ED9360EE717955695FA7DD9624FD425DE651D4B63CAC787C5FEAF0DBAEAF5D42DF0A23956FC65C10C5F2185CC093A594BCC165F64FD9A1D4470F5D9615CA"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.identity.core@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.identity.core@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Identity.Core",
+      "version": "10.0.12",
+      "description": "ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C9C0ED9360EE717955695FA7DD9624FD425DE651D4B63CAC787C5FEAF0DBAEAF5D42DF0A23956FC65C10C5F2185CC093A594BCC165F64FD9A1D4470F5D9615CA"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.identity.core@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.identity.stores@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Identity.Stores",
+      "version": "10.0.12",
+      "description": "ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8A35DB24F80DEBC0483B3801D569E2D0D3D244A755262152C3B86E3D69D5DF27FF409CE966FEF4CEA670DD98A7B955DEB5CEC4C7312514AF2C084DAEEA4459FF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.identity.stores@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.identity.stores@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Identity.Stores",
+      "version": "10.0.12",
+      "description": "ASP.NET Core Identity is the membership system for building ASP.NET Core web applications, including membership, login, and user data. ASP.NET Core Identity allows you to add login features to your application and makes it easy to customize data about the logged in user.\n\nThis package was built from the source code at https://github.com/dotnet/dotnet/tree/95017c711e6afc1085133d440e42b4bd78155701",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8A35DB24F80DEBC0483B3801D569E2D0D3D244A755262152C3B86E3D69D5DF27FF409CE966FEF4CEA670DD98A7B955DEB5CEC4C7312514AF2C084DAEEA4459FF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.identity.stores@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://asp.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.12",
+      "description": "Logging abstractions for Microsoft.Extensions.Logging.\n\nCommonly Used Types:\nMicrosoft.Extensions.Logging.ILogger\nMicrosoft.Extensions.Logging.ILoggerFactory\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\nMicrosoft.Extensions.Logging.LogLevel\nMicrosoft.Extensions.Logging.Logger<T>\nMicrosoft.Extensions.Logging.LoggerMessage\nMicrosoft.Extensions.Logging.Abstractions.NullLogger",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E94F20E8C460475261142AF85E794F2488E02A1F45861DF4C30527B85BE769E26AA60C7A735278040E519CF35A326EEF135CCDFD0391FA74D24CDB308089D7DB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.12",
+      "description": "Logging abstractions for Microsoft.Extensions.Logging.\n\nCommonly Used Types:\nMicrosoft.Extensions.Logging.ILogger\nMicrosoft.Extensions.Logging.ILoggerFactory\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\nMicrosoft.Extensions.Logging.LogLevel\nMicrosoft.Extensions.Logging.Logger<T>\nMicrosoft.Extensions.Logging.LoggerMessage\nMicrosoft.Extensions.Logging.Abstractions.NullLogger",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E94F20E8C460475261142AF85E794F2488E02A1F45861DF4C30527B85BE769E26AA60C7A735278040E519CF35A326EEF135CCDFD0391FA74D24CDB308089D7DB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging",
+      "version": "10.0.12",
+      "description": "Logging infrastructure default implementation for Microsoft.Extensions.Logging.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "EC379EDDD20E6B4E0C999A3E5CDFC58E3695BB6434CB020460724F86ABDEE619EEFD79D77FD69E77EF0E0551B1F7735E55984BC43A3ECDEB9E986ECD94F1C78D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging",
+      "version": "10.0.12",
+      "description": "Logging infrastructure default implementation for Microsoft.Extensions.Logging.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "EC379EDDD20E6B4E0C999A3E5CDFC58E3695BB6434CB020460724F86ABDEE619EEFD79D77FD69E77EF0E0551B1F7735E55984BC43A3ECDEB9E986ECD94F1C78D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "version": "10.0.12",
+      "description": "Provides additional configuration specific functionality related to Options.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "81E3F7027E06BF8D425DFB40EB8126CF3919AD4A6A60079FA53707055D14BCCDBCB7275002130334D9A1E31629A7629D1E1A70B286606F3BA0F7A42BA2557331"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options.ConfigurationExtensions",
+      "version": "10.0.12",
+      "description": "Provides additional configuration specific functionality related to Options.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "81E3F7027E06BF8D425DFB40EB8126CF3919AD4A6A60079FA53707055D14BCCDBCB7275002130334D9A1E31629A7629D1E1A70B286606F3BA0F7A42BA2557331"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.12",
+      "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0153D76DAF2AD465DE46256BE1256EE185F488153E4E7E7D39BBC3DAE5A49163B02A854F67E1D03297A7ED30A203DC69C0718C36AB77F35CF589603A9E892781"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.12",
+      "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0153D76DAF2AD465DE46256BE1256EE185F488153E4E7E7D39BBC3DAE5A49163B02A854F67E1D03297A7ED30A203DC69C0718C36AB77F35CF589603A9E892781"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.12",
+      "description": "Primitives shared by framework extensions. Commonly used types include:\n\nCommonly Used Types:\nMicrosoft.Extensions.Primitives.IChangeToken\nMicrosoft.Extensions.Primitives.StringValues\nMicrosoft.Extensions.Primitives.StringSegment",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1B884C67DC09BFBE6E7E79C19070076EA8B2C1F3067DEC9FCFF6A2059A0B7A0E6F56012A64F3C04FF9CB15BFCF93EFE6182008462DE2D167C61D37150CDF650A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.primitives@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.12",
+      "description": "Primitives shared by framework extensions. Commonly used types include:\n\nCommonly Used Types:\nMicrosoft.Extensions.Primitives.IChangeToken\nMicrosoft.Extensions.Primitives.StringValues\nMicrosoft.Extensions.Primitives.StringSegment",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1B884C67DC09BFBE6E7E79C19070076EA8B2C1F3067DEC9FCFF6A2059A0B7A0E6F56012A64F3C04FF9CB15BFCF93EFE6182008462DE2D167C61D37150CDF650A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.primitives@10.0.12",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Abstractions",
+      "version": "8.23.0",
+      "description": "A package containing thin abstractions for Microsoft.IdentityModel.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2B9E440253ACF978416C5382E7C639DBF4DB7B96B619D9C9A7385EB02CBF5D40006829C5F115BA4A50B19AE48E991DF590F32DC3E950D586EDD0C120894F7651"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Abstractions",
+      "version": "8.23.0",
+      "description": "A package containing thin abstractions for Microsoft.IdentityModel.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2B9E440253ACF978416C5382E7C639DBF4DB7B96B619D9C9A7385EB02CBF5D40006829C5F115BA4A50B19AE48E991DF590F32DC3E950D586EDD0C120894F7651"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.JsonWebTokens",
+      "version": "8.23.0",
+      "description": "Includes types that provide support for creating, serializing and validating JSON Web Tokens. This is a newer, faster version of System.IdentityModel.Tokens.Jwt that has additional functionality.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "006321D0C0A05FCAE119D345D25D5DC3950B87AD30A2BC93639BB38AA75D7EBFF655D1E4AC607F459B6A27CAE82F245819D9707FE2F44C6A1D7490E4039E4378"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.JsonWebTokens",
+      "version": "8.23.0",
+      "description": "Includes types that provide support for creating, serializing and validating JSON Web Tokens. This is a newer, faster version of System.IdentityModel.Tokens.Jwt that has additional functionality.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "006321D0C0A05FCAE119D345D25D5DC3950B87AD30A2BC93639BB38AA75D7EBFF655D1E4AC607F459B6A27CAE82F245819D9707FE2F44C6A1D7490E4039E4378"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.logging@8.23.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Logging",
+      "version": "8.23.0",
+      "description": "Includes Event Source based logging support.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5EAB50C76A0EA7EE52D777C7464F2FA1830A35518CAC4BD0B60BD78B6F892DC4B1373485454CA8BA7FF36364C93A2165FA19A4975078019AEE35C7C8F36B63E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.logging@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.logging@8.23.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Logging",
+      "version": "8.23.0",
+      "description": "Includes Event Source based logging support.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5EAB50C76A0EA7EE52D777C7464F2FA1830A35518CAC4BD0B60BD78B6F892DC4B1373485454CA8BA7FF36364C93A2165FA19A4975078019AEE35C7C8F36B63E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.logging@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Protocols.OpenIdConnect",
+      "version": "8.19.2",
+      "description": "Includes types that provide support for OpenIdConnect protocol.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "24C8A8A345DF0BA1A4E948B949BB3D952CE4164A7BF2F8DCC5BEEAB734602B793505707C05A7A0ABF4ABFD13A0D34AA4ABDF4CB19659B779A00C67400854EFD3"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Protocols.OpenIdConnect",
+      "version": "8.19.2",
+      "description": "Includes types that provide support for OpenIdConnect protocol.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "24C8A8A345DF0BA1A4E948B949BB3D952CE4164A7BF2F8DCC5BEEAB734602B793505707C05A7A0ABF4ABFD13A0D34AA4ABDF4CB19659B779A00C67400854EFD3"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.protocols@8.19.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Protocols",
+      "version": "8.19.2",
+      "description": "Provides base protocol support for OpenIdConnect and WsFederation.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F8E4D1898AFD9310EFB8668DB4F6E54B466551C326805D3B6243DAFB9959D702FB3979D70DECA6DBD5D05A2B8A9E299F9E190EED3E229AD900F1DCB8EA9E3839"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.protocols@8.19.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.protocols@8.19.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Protocols",
+      "version": "8.19.2",
+      "description": "Provides base protocol support for OpenIdConnect and WsFederation.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F8E4D1898AFD9310EFB8668DB4F6E54B466551C326805D3B6243DAFB9959D702FB3979D70DECA6DBD5D05A2B8A9E299F9E190EED3E229AD900F1DCB8EA9E3839"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.protocols@8.19.2",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Tokens",
+      "version": "8.23.0",
+      "description": "Includes types that provide support for SecurityTokens, Cryptographic operations: Signing, Verifying Signatures, Encryption.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2D069542D746B51DB5643C7DBB995BDDF372EF661F803C5446AF7DD684D417A7AE093458F8B78545EBEE9B1339CA218F3B80387B694DC0E7561EFF85F0B2ED6B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.tokens@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.IdentityModel.Tokens",
+      "version": "8.23.0",
+      "description": "Includes types that provide support for SecurityTokens, Cryptographic operations: Signing, Verifying Signatures, Encryption.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "2D069542D746B51DB5643C7DBB995BDDF372EF661F803C5446AF7DD684D417A7AE093458F8B78545EBEE9B1339CA218F3B80387B694DC0E7561EFF85F0B2ED6B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.identitymodel.tokens@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.openapi@1.6.31#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.OpenApi",
+      "version": "1.6.31",
+      "description": ".NET models with JSON and YAML writers for OpenAPI specification",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "200CDBF5F55EF3EB7DA5E14EDB710B7342C03BD03CE7A873F2C0DFCF046BA9EBC77DF40B7CBFAB4F7FFB781E7D6251FE0AC2655098FE06190A3D19ED4F4CE04E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.openapi@1.6.31",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Microsoft/OpenAPI.NET",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Microsoft/OpenAPI.NET",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.openapi@1.6.31#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.OpenApi",
+      "version": "1.6.31",
+      "description": ".NET models with JSON and YAML writers for OpenAPI specification",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "200CDBF5F55EF3EB7DA5E14EDB710B7342C03BD03CE7A873F2C0DFCF046BA9EBC77DF40B7CBFAB4F7FFB781E7D6251FE0AC2655098FE06190A3D19ED4F4CE04E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.openapi@1.6.31",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Microsoft/OpenAPI.NET",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Microsoft/OpenAPI.NET",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Core",
+      "version": "3.4.30",
+      "description": "The protobuf-net serialization engine and build-time tooling; most projects should reference protobuf-net, which adds the runtime type model",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "66CC732FDF61CAACAAF6C87AA80C2FE304285DF624D4E41A053400CF2710DEE5F368FBB4556B7D846583795E5D524FF0CE2D1D5414B575A38EF690563ED0C52A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net.core@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Core",
+      "version": "3.4.30",
+      "description": "The protobuf-net serialization engine and build-time tooling; most projects should reference protobuf-net, which adds the runtime type model",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "66CC732FDF61CAACAAF6C87AA80C2FE304285DF624D4E41A053400CF2710DEE5F368FBB4556B7D846583795E5D524FF0CE2D1D5414B575A38EF690563ED0C52A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net.core@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Grpc.AspNetCore",
+      "version": "1.3.14",
+      "description": "Hosts code-first gRPC services in ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5C3B03526819BD72BCC36410E7652144670DBE808CB589642A520220035E916FC382816F5C69D0C0146187BA8A3673036A494DE1D9311D00EADAFBBC54F5F671"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Marc Gravell, 2019-",
+      "purl": "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Grpc.AspNetCore",
+      "version": "1.3.14",
+      "description": "Hosts code-first gRPC services in ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5C3B03526819BD72BCC36410E7652144670DBE808CB589642A520220035E916FC382816F5C69D0C0146187BA8A3673036A494DE1D9311D00EADAFBBC54F5F671"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Marc Gravell, 2019-",
+      "purl": "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Grpc",
+      "version": "1.3.14",
+      "description": "Code-first gRPC for .NET: declare services as .NET interfaces, with no .proto file and no generated client; shared core for clients and servers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BFE8B52387D623DA3F986E8F6836C9FFB9D15FA9F0453865865EC18AE921C0435CFF6568E2C01680D1CB589873FF322907EAE8407FF909C8B4A497216A17D424"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Marc Gravell, 2019-",
+      "purl": "pkg:nuget/protobuf-net.grpc@1.3.14",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net.Grpc",
+      "version": "1.3.14",
+      "description": "Code-first gRPC for .NET: declare services as .NET interfaces, with no .proto file and no generated client; shared core for clients and servers",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BFE8B52387D623DA3F986E8F6836C9FFB9D15FA9F0453865865EC18AE921C0435CFF6568E2C01680D1CB589873FF322907EAE8407FF909C8B4A497216A17D424"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "Marc Gravell, 2019-",
+      "purl": "pkg:nuget/protobuf-net.grpc@1.3.14",
+      "externalReferences": [
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net.Grpc",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net",
+      "version": "3.4.30",
+      "description": "Provides simple access to fast and efficient \"Protocol Buffers\" serialization from .NET applications",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "7142DCF1178EA3DDA8744B5167D89F705F9D23CEDCA24A8F66B59F48DBD33CD04F8AC961537A8FB29FE737FFED53D65E44717E5E4417BA225345FD69F6721CEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Marc Gravell"
+        }
+      ],
+      "name": "protobuf-net",
+      "version": "3.4.30",
+      "description": "Provides simple access to fast and efficient \"Protocol Buffers\" serialization from .NET applications",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "7142DCF1178EA3DDA8744B5167D89F705F9D23CEDCA24A8F66B59F48DBD33CD04F8AC961537A8FB29FE737FFED53D65E44717E5E4417BA225345FD69F6721CEF"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ],
+      "copyright": "See https://github.com/protobuf-net/protobuf-net",
+      "purl": "pkg:nuget/protobuf-net@3.4.30",
+      "externalReferences": [
+        {
+          "url": "https://protobuf-net.dev/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/protobuf-net/protobuf-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.AspNetCore.OpenApi",
+      "version": "10.4.0",
+      "description": "Package Description",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "7A1CC4BD7F7DF75D77441BA3CD29E08CB51DA3E34F8F80828E0C5A9D5B808CEA948FB903462E8EDD7EAE5CE2AB5CBDE61CFD3FB266AAFD2A627F37B005504C84"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.AspNetCore.OpenApi",
+      "version": "10.4.0",
+      "description": "Package Description",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "7A1CC4BD7F7DF75D77441BA3CD29E08CB51DA3E34F8F80828E0C5A9D5B808CEA948FB903462E8EDD7EAE5CE2AB5CBDE61CFD3FB266AAFD2A627F37B005504C84"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Client",
+      "version": "10.4.0",
+      "description": "JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "30D6888A78FF13E278E7588E89D7A239A32448106B98861DFB5C43B9198318C2E622B87CFCB421BB03FDE33C105B2597A3A1DFDB2C69786CA2D1FE4EA8B2AE02"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.client@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Client",
+      "version": "10.4.0",
+      "description": "JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "30D6888A78FF13E278E7588E89D7A239A32448106B98861DFB5C43B9198318C2E622B87CFCB421BB03FDE33C105B2597A3A1DFDB2C69786CA2D1FE4EA8B2AE02"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.client@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.extensions@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Extensions",
+      "version": "10.4.0",
+      "description": "ServiceStack extensions for .NET Core Apps, including GrpcFeature",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E06237A19804A6296EF03025BAF36E2229DB54BEF4E203E47E6B50BFE3B7AECD12A2096045168E92412ECF9291AA438D722CC8945BF86A5CF90E10710A4BCC2"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.extensions@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.extensions@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Extensions",
+      "version": "10.4.0",
+      "description": "ServiceStack extensions for .NET Core Apps, including GrpcFeature",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E06237A19804A6296EF03025BAF36E2229DB54BEF4E203E47E6B50BFE3B7AECD12A2096045168E92412ECF9291AA438D722CC8945BF86A5CF90E10710A4BCC2"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.extensions@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.GrpcClient",
+      "version": "10.4.0",
+      "description": "ServiceStack's gRPC GrpcServiceClient",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "315EFA82568F6D925F6179001052D361792CC517E99FABC3C8AF64A1F51C1DFC1FB4A8D45EACD23A5EA43EC56777C09BFB2961B085865C8BF1ADEADD30771938"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.GrpcClient",
+      "version": "10.4.0",
+      "description": "ServiceStack's gRPC GrpcServiceClient",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "315EFA82568F6D925F6179001052D361792CC517E99FABC3C8AF64A1F51C1DFC1FB4A8D45EACD23A5EA43EC56777C09BFB2961B085865C8BF1ADEADD30771938"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.grpcclient@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack",
+      "version": "10.4.0",
+      "description": "ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services and web apps that's intuitive and Easy to use!\n\n    To get started see: https://servicestack.net/getting-started",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "91368CD980402941235DBCE63FCECEE7220D1BEBBE46A033D3970B55465716F5470D0F672AED6B14F98EF869119E0700212E619279941033C8B20F4346FAA177"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack",
+      "version": "10.4.0",
+      "description": "ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services and web apps that's intuitive and Easy to use!\n\n    To get started see: https://servicestack.net/getting-started",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "91368CD980402941235DBCE63FCECEE7220D1BEBBE46A033D3970B55465716F5470D0F672AED6B14F98EF869119E0700212E619279941033C8B20F4346FAA177"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net10.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore.Swagger",
+      "version": "8.1.4",
+      "description": "Middleware to expose Swagger JSON endpoints from APIs built on ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5B70E8BF305F5D3245AAC48808B141DDB4CB7996C715B0E5E64E6E880F40AB321FCA9FBE3319880EBA76088D6A093FEEB06831BB157ACE71385F4FA5D7B67AB6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2016-2025 Richard Morris",
+      "purl": "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net8.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore.Swagger",
+      "version": "8.1.4",
+      "description": "Middleware to expose Swagger JSON endpoints from APIs built on ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5B70E8BF305F5D3245AAC48808B141DDB4CB7996C715B0E5E64E6E880F40AB321FCA9FBE3319880EBA76088D6A093FEEB06831BB157ACE71385F4FA5D7B67AB6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2016-2025 Richard Morris",
+      "purl": "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4#tfm=net10.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore.SwaggerGen",
+      "version": "8.1.4",
+      "description": "Swagger Generator for APIs built on ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BFCE5374556A952410A10F6489D392D9A4173106C58EBA83F659E6215DB8752A3C52220ABAE8E20F5866F097805C09412D46689353F13B89AB8B2941EA271BC6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2016-2025 Richard Morris",
+      "purl": "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4#tfm=net8.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore.SwaggerGen",
+      "version": "8.1.4",
+      "description": "Swagger Generator for APIs built on ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "BFCE5374556A952410A10F6489D392D9A4173106C58EBA83F659E6215DB8752A3C52220ABAE8E20F5866F097805C09412D46689353F13B89AB8B2941EA271BC6"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2016-2025 Richard Morris",
+      "purl": "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4#tfm=net10.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore.SwaggerUI",
+      "version": "8.1.4",
+      "description": "Middleware to expose an embedded version of the swagger-ui from an ASP.NET Core application",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "11E129CBB68195BFD5CBC1BFD789560C38E884F8BD3C4829B609D13C6034EFF1955EB86928AF4EB0287487156752858EBF9F001BE8B94F9FDBF38A02FE80B8D4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2016-2025 Richard Morris",
+      "purl": "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4#tfm=net8.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore.SwaggerUI",
+      "version": "8.1.4",
+      "description": "Middleware to expose an embedded version of the swagger-ui from an ASP.NET Core application",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "11E129CBB68195BFD5CBC1BFD789560C38E884F8BD3C4829B609D13C6034EFF1955EB86928AF4EB0287487156752858EBF9F001BE8B94F9FDBF38A02FE80B8D4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2016-2025 Richard Morris",
+      "purl": "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore@8.1.4#tfm=net10.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore",
+      "version": "8.1.4",
+      "description": "Swagger tools for documenting APIs built on ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C71DACE70FF24CB6967E635B60C7C370959A8D401BCE1A22A0D4B4E5C22BD8374494B2178165CB9AE39B5470FC5E71BE405E204AB993EB40652680E4731695AC"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:nuget/swashbuckle.aspnetcore@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/swashbuckle.aspnetcore@8.1.4#tfm=net8.0",
+      "authors": [
+        {
+          "name": "domaindrivendev"
+        }
+      ],
+      "name": "Swashbuckle.AspNetCore",
+      "version": "8.1.4",
+      "description": "Swagger tools for documenting APIs built on ASP.NET Core",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C71DACE70FF24CB6967E635B60C7C370959A8D401BCE1A22A0D4B4E5C22BD8374494B2178165CB9AE39B5470FC5E71BE405E204AB993EB40652680E4731695AC"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "purl": "pkg:nuget/swashbuckle.aspnetcore@8.1.4",
+      "externalReferences": [
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/domaindrivendev/Swashbuckle.AspNetCore.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.IdentityModel.Tokens.Jwt",
+      "version": "8.23.0",
+      "description": "Includes types that provide support for creating, serializing and validating JSON Web Tokens. As of IdentityModel 7x, this is a legacy tool that should be replaced with Microsoft.IdentityModel.JsonWebTokens.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DCA72E57F5EEB4ABDFA30BA9F911FBBFB0640AEB24189B4BE743F501FFA952E02B11517624304A0D41317723F8A0DEE0CD9ABBDABCFFB0FE7DC8C7F74948291C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.IdentityModel.Tokens.Jwt",
+      "version": "8.23.0",
+      "description": "Includes types that provide support for creating, serializing and validating JSON Web Tokens. As of IdentityModel 7x, this is a legacy tool that should be replaced with Microsoft.IdentityModel.JsonWebTokens.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DCA72E57F5EEB4ABDFA30BA9F911FBBFB0640AEB24189B4BE743F501FFA952E02B11517624304A0D41317723F8A0DEE0CD9ABBDABCFFB0FE7DC8C7F74948291C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/AzureAD/azure-activedirectory-identitymodel-extensions-for-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.common@2.84.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.common@2.84.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.common@2.84.0#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.client@2.84.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.common@2.84.0#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/grpc.net.common@2.84.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.aspnetcore.cryptography.internal@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.identity.stores@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.identity.stores@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.openapi@1.6.31#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.openapi@1.6.31#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.cryptography@10.0.2#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.cryptography@10.0.2#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.entityframeworkcore@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore.relational@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.entityframeworkcore@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.entityframeworkcore@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.entityframeworkcore.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.entityframeworkcore.analyzers@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.caching.memory@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.identity.core@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.identity.core@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.aspnetcore.cryptography.keyderivation@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.diagnostics@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.identity.stores@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.identity.core@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.identity.stores@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.identity.core@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options.configurationextensions@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.configuration.binder@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options@10.0.12#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.primitives@10.0.12#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.logging@8.23.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.logging@8.23.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.abstractions@8.23.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.protocols@8.19.2#tfm=net10.0",
+        "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.protocols.openidconnect@8.19.2#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.protocols@8.19.2#tfm=net8.0",
+        "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.protocols@8.19.2#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.protocols@8.19.2#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.cryptography@10.0.2#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.identitymodel.logging@8.23.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.cryptography@10.0.2#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.identitymodel.logging@8.23.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.openapi@1.6.31#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.openapi@1.6.31#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.core@3.4.30#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net10.0",
+        "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net8.0",
+        "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/protobuf-net.core@3.4.30#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/protobuf-net.core@3.4.30#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31#tfm=net10.0",
+        "pkg:nuget/microsoft.openapi@1.6.31#tfm=net10.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.extensions@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack@10.4.0#tfm=net10.0",
+        "pkg:nuget/swashbuckle.aspnetcore@8.1.4#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.aspnetcore.openapi@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.aspnetcore.openapi@8.0.31#tfm=net8.0",
+        "pkg:nuget/microsoft.openapi@1.6.31#tfm=net8.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.extensions@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack@10.4.0#tfm=net8.0",
+        "pkg:nuget/swashbuckle.aspnetcore@8.1.4#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.http@10.0.12#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.extensions@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net10.0",
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net10.0",
+        "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12#tfm=net10.0",
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net10.0",
+        "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14#tfm=net10.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack@10.4.0#tfm=net10.0",
+        "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.extensions@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.aspnetcore.server@2.84.0#tfm=net8.0",
+        "pkg:nuget/grpc.core.api@2.84.0#tfm=net8.0",
+        "pkg:nuget/microsoft.aspnetcore.authentication.jwtbearer@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.aspnetcore.identity.entityframeworkcore@10.0.12#tfm=net8.0",
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net8.0",
+        "pkg:nuget/protobuf-net.grpc.aspnetcore@1.3.14#tfm=net8.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack@10.4.0#tfm=net8.0",
+        "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.client@2.84.0#tfm=net10.0",
+        "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net10.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net10.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.grpcclient@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/grpc.net.client@2.84.0#tfm=net8.0",
+        "pkg:nuget/protobuf-net.grpc@1.3.14#tfm=net8.0",
+        "pkg:nuget/protobuf-net@3.4.30#tfm=net8.0",
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.client@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.openapi@1.6.31#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.openapi@1.6.31#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore@8.1.4#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5#tfm=net10.0",
+        "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net10.0",
+        "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4#tfm=net10.0",
+        "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/swashbuckle.aspnetcore@8.1.4#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.apidescription.server@6.0.5#tfm=net8.0",
+        "pkg:nuget/swashbuckle.aspnetcore.swagger@8.1.4#tfm=net8.0",
+        "pkg:nuget/swashbuckle.aspnetcore.swaggergen@8.1.4#tfm=net8.0",
+        "pkg:nuget/swashbuckle.aspnetcore.swaggerui@8.1.4#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0#tfm=net10.0",
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.identitymodel.tokens.jwt@8.23.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.identitymodel.jsonwebtokens@8.23.0#tfm=net8.0",
+        "pkg:nuget/microsoft.identitymodel.tokens@8.23.0#tfm=net8.0"
+      ]
+    }
+  ]
+}

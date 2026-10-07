@@ -1,0 +1,280 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Extensions.Logging",
+          "version": "10.0.12",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "log4net",
+          "version": "3.5.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "log4net",
+          "version": "3.5.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net6.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Extensions.Logging",
+          "version": "5.0.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "log4net",
+          "version": "3.5.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Extensions.Logging",
+          "version": "8.0.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "log4net",
+          "version": "3.5.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.12": {},
+      "Microsoft.Extensions.DependencyInjection/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Logging/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection": "10.0.12",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12"
+      },
+      "Microsoft.Extensions.Options/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.Primitives/10.0.12": {},
+      "Microsoft.NETCore.Platforms/2.0.0": {},
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Logging.Log4Net/10.4.0": {
+        "Microsoft.Extensions.Logging": "10.0.12",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "log4net": "3.5.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Configuration.ConfigurationManager/4.5.0": {
+        "System.Security.Cryptography.ProtectedData": "4.5.0",
+        "System.Security.Permissions": "4.5.0"
+      },
+      "System.Security.AccessControl/4.5.0": {
+        "Microsoft.NETCore.Platforms": "2.0.0",
+        "System.Security.Principal.Windows": "4.5.0"
+      },
+      "System.Security.Cryptography.ProtectedData/4.5.0": {},
+      "System.Security.Permissions/4.5.0": {
+        "System.Security.AccessControl": "4.5.0"
+      },
+      "System.Security.Principal.Windows/4.5.0": {
+        "Microsoft.NETCore.Platforms": "2.0.0"
+      },
+      "log4net/3.5.0": {
+        "System.Configuration.ConfigurationManager": "4.5.0"
+      }
+    },
+    "net472": {
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Logging.Log4Net/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "log4net": "3.5.0"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "log4net/3.5.0": {}
+    },
+    "net6.0": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/5.0.0": {},
+      "Microsoft.Extensions.DependencyInjection/5.0.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/5.0.0": {},
+      "Microsoft.Extensions.Logging/5.0.0": {
+        "Microsoft.Extensions.DependencyInjection": "5.0.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+        "Microsoft.Extensions.Logging.Abstractions": "5.0.0",
+        "Microsoft.Extensions.Options": "5.0.0"
+      },
+      "Microsoft.Extensions.Options/5.0.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
+        "Microsoft.Extensions.Primitives": "5.0.0"
+      },
+      "Microsoft.Extensions.Primitives/5.0.0": {},
+      "Microsoft.NETCore.Platforms/2.0.0": {},
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Logging.Log4Net/10.4.0": {
+        "Microsoft.Extensions.Logging": "5.0.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "log4net": "3.5.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Configuration.ConfigurationManager/4.5.0": {
+        "System.Security.Cryptography.ProtectedData": "4.5.0",
+        "System.Security.Permissions": "4.5.0"
+      },
+      "System.Security.AccessControl/4.5.0": {
+        "Microsoft.NETCore.Platforms": "2.0.0",
+        "System.Security.Principal.Windows": "4.5.0"
+      },
+      "System.Security.Cryptography.ProtectedData/4.5.0": {},
+      "System.Security.Permissions/4.5.0": {
+        "System.Security.AccessControl": "4.5.0"
+      },
+      "System.Security.Principal.Windows/4.5.0": {
+        "Microsoft.NETCore.Platforms": "2.0.0"
+      },
+      "log4net/3.5.0": {
+        "System.Configuration.ConfigurationManager": "4.5.0"
+      }
+    },
+    "net8.0": {
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Microsoft.Extensions.DependencyInjection/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+      },
+      "Microsoft.Extensions.Logging/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection": "8.0.1",
+        "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2"
+      },
+      "Microsoft.Extensions.Options/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Primitives/8.0.0": {},
+      "Microsoft.NETCore.Platforms/2.0.0": {},
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Logging.Log4Net/10.4.0": {
+        "Microsoft.Extensions.Logging": "8.0.1",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "log4net": "3.5.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Configuration.ConfigurationManager/4.5.0": {
+        "System.Security.Cryptography.ProtectedData": "4.5.0",
+        "System.Security.Permissions": "4.5.0"
+      },
+      "System.Security.AccessControl/4.5.0": {
+        "Microsoft.NETCore.Platforms": "2.0.0",
+        "System.Security.Principal.Windows": "4.5.0"
+      },
+      "System.Security.Cryptography.ProtectedData/4.5.0": {},
+      "System.Security.Permissions/4.5.0": {
+        "System.Security.AccessControl": "4.5.0"
+      },
+      "System.Security.Principal.Windows/4.5.0": {
+        "Microsoft.NETCore.Platforms": "2.0.0"
+      },
+      "log4net/3.5.0": {
+        "System.Configuration.ConfigurationManager": "4.5.0"
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.Text",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:16:14Z",
+  "packageSha256": "1dd491eb7d94b0f6dadc5aca47c12cd5a9a101f5f8fa9bf2516bf9315c18d30e",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0",
+    "netstandard2.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.0.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "83dc7b1dad4ff9cbede6153599848c2041ba4ecfc7535ab5ef9d3a69a1f5fa15",
+    "resolution.json": "3060cdf5b90e47d8105ea6dd1ce671e9e0c1d48c8fbf9fdcfa648ab39b0da641",
+    "audit.json": "3458ab0953c0d6ad6e24ed06ab1b509eaaf5e1eb592d6156cc1e59ce5e115317"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

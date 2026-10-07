@@ -1,0 +1,564 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Speech.V2",
+          "version": "1.8.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Storage.V1",
+          "version": "4.16.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Speech.V2",
+          "version": "1.8.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Storage.V1",
+          "version": "4.16.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Bcl.AsyncInterfaces",
+          "version": "10.0.12",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Linq.Async",
+          "version": "5.1.0",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net6.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Speech.V2",
+          "version": "1.8.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Storage.V1",
+          "version": "4.16.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Linq.Async",
+          "version": "6.0.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Speech.V2",
+          "version": "1.8.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Google.Cloud.Storage.V1",
+          "version": "4.16.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Linq.Async",
+          "version": "6.0.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "Google.Api.CommonProtos/2.17.0": {
+        "Google.Protobuf": "[3.31.1, 4.0.0]"
+      },
+      "Google.Api.Gax.Grpc/4.12.1": {
+        "Google.Api.CommonProtos": "2.17.0",
+        "Google.Api.Gax": "4.12.1",
+        "Google.Apis.Auth": "1.72.0",
+        "Grpc.Auth": "[2.71.0, 3.0.0)",
+        "Grpc.Core.Api": "[2.71.0, 3.0.0)",
+        "Grpc.Net.Client": "[2.71.0, 3.0.0)",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax.Rest/4.13.1": {
+        "Google.Api.Gax": "4.13.1",
+        "Google.Apis.Auth": "1.73.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax/4.13.1": {
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+        "Newtonsoft.Json": "13.0.4",
+        "System.Diagnostics.DiagnosticSource": "6.0.2"
+      },
+      "Google.Apis.Auth/1.74.0": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Core": "1.74.0",
+        "System.Management": "7.0.2"
+      },
+      "Google.Apis.Core/1.74.0": {
+        "Newtonsoft.Json": "13.0.4"
+      },
+      "Google.Apis.Storage.v1/1.74.0.4115": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Auth": "1.74.0"
+      },
+      "Google.Apis/1.74.0": {
+        "Google.Apis.Core": "1.74.0"
+      },
+      "Google.Cloud.Location/2.4.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)"
+      },
+      "Google.Cloud.Speech.V2/1.8.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)",
+        "Google.Cloud.Location": "[2.4.0, 3.0.0)",
+        "Google.LongRunning": "[3.5.0, 4.0.0)"
+      },
+      "Google.Cloud.Storage.V1/4.16.0": {
+        "Google.Api.Gax.Rest": "[4.13.1, 5.0.0)",
+        "Google.Apis.Storage.v1": "[1.74.0.4115, 2.0.0)"
+      },
+      "Google.LongRunning/3.5.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)"
+      },
+      "Google.Protobuf/3.31.1": {},
+      "Grpc.Auth/2.71.0": {
+        "Google.Apis.Auth": "1.69.0",
+        "Grpc.Core.Api": "2.71.0"
+      },
+      "Grpc.Core.Api/2.71.0": {},
+      "Grpc.Net.Client/2.71.0": {
+        "Grpc.Net.Common": "2.71.0",
+        "Microsoft.Extensions.Logging.Abstractions": "6.0.0"
+      },
+      "Grpc.Net.Common/2.71.0": {
+        "Grpc.Core.Api": "2.71.0"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/6.0.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/6.0.0": {},
+      "Microsoft.Extensions.Logging.Abstractions/6.0.0": {},
+      "Newtonsoft.Json/13.0.4": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.GoogleCloud/10.4.0": {
+        "Google.Cloud.Speech.V2": "1.8.0",
+        "Google.Cloud.Storage.V1": "4.16.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "System.CodeDom/7.0.0": {},
+      "System.Diagnostics.DiagnosticSource/6.0.2": {},
+      "System.Management/7.0.2": {
+        "System.CodeDom": "7.0.0"
+      }
+    },
+    "net472": {
+      "Google.Api.CommonProtos/2.17.0": {
+        "Google.Protobuf": "[3.31.1, 4.0.0]"
+      },
+      "Google.Api.Gax.Grpc/4.12.1": {
+        "Google.Api.CommonProtos": "2.17.0",
+        "Google.Api.Gax": "4.12.1",
+        "Google.Apis.Auth": "1.72.0",
+        "Grpc.Auth": "[2.71.0, 3.0.0)",
+        "Grpc.Core.Api": "[2.71.0, 3.0.0)",
+        "Grpc.Net.Client": "[2.71.0, 3.0.0)",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax.Rest/4.13.1": {
+        "Google.Api.Gax": "4.13.1",
+        "Google.Apis.Auth": "1.73.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax/4.13.1": {
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+        "Newtonsoft.Json": "13.0.4",
+        "System.Diagnostics.DiagnosticSource": "6.0.2",
+        "System.ValueTuple": "4.6.2"
+      },
+      "Google.Apis.Auth/1.74.0": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Core": "1.74.0"
+      },
+      "Google.Apis.Core/1.74.0": {
+        "Newtonsoft.Json": "13.0.4"
+      },
+      "Google.Apis.Storage.v1/1.74.0.4115": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Auth": "1.74.0"
+      },
+      "Google.Apis/1.74.0": {
+        "Google.Apis.Core": "1.74.0"
+      },
+      "Google.Cloud.Location/2.4.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)",
+        "Grpc.Core": "[2.46.6, 3.0.0)"
+      },
+      "Google.Cloud.Speech.V2/1.8.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)",
+        "Google.Cloud.Location": "[2.4.0, 3.0.0)",
+        "Google.LongRunning": "[3.5.0, 4.0.0)",
+        "Grpc.Core": "[2.46.6, 3.0.0)"
+      },
+      "Google.Cloud.Storage.V1/4.16.0": {
+        "Google.Api.Gax.Rest": "[4.13.1, 5.0.0)",
+        "Google.Apis.Storage.v1": "[1.74.0.4115, 2.0.0)"
+      },
+      "Google.LongRunning/3.5.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)",
+        "Grpc.Core": "[2.46.6, 3.0.0)"
+      },
+      "Google.Protobuf/3.31.1": {
+        "System.Memory": "4.5.3"
+      },
+      "Grpc.Auth/2.71.0": {
+        "Google.Apis.Auth": "1.69.0",
+        "Grpc.Core.Api": "2.71.0"
+      },
+      "Grpc.Core.Api/2.71.0": {
+        "System.Memory": "4.5.3"
+      },
+      "Grpc.Core/2.46.6": {
+        "Grpc.Core.Api": "2.46.6",
+        "System.Memory": "4.5.3"
+      },
+      "Grpc.Net.Client/2.71.0": {
+        "Grpc.Net.Common": "2.71.0",
+        "Microsoft.Extensions.Logging.Abstractions": "6.0.0",
+        "System.Diagnostics.DiagnosticSource": "6.0.1",
+        "System.Net.Http.WinHttpHandler": "8.0.0"
+      },
+      "Grpc.Net.Common/2.71.0": {
+        "Grpc.Core.Api": "2.71.0",
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/6.0.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/6.0.0": {
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.4"
+      },
+      "Newtonsoft.Json/13.0.4": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Memory": "4.6.3",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.GoogleCloud/10.4.0": {
+        "Google.Cloud.Speech.V2": "1.8.0",
+        "Google.Cloud.Storage.V1": "4.16.0",
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Linq.Async": "5.1.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Linq.Async/5.1.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Net.Http.WinHttpHandler/8.0.0": {
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.5"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.ValueTuple/4.6.2": {}
+    },
+    "net6.0": {
+      "Google.Api.CommonProtos/2.17.0": {
+        "Google.Protobuf": "[3.31.1, 4.0.0]"
+      },
+      "Google.Api.Gax.Grpc/4.12.1": {
+        "Google.Api.CommonProtos": "2.17.0",
+        "Google.Api.Gax": "4.12.1",
+        "Google.Apis.Auth": "1.72.0",
+        "Grpc.Auth": "[2.71.0, 3.0.0)",
+        "Grpc.Core.Api": "[2.71.0, 3.0.0)",
+        "Grpc.Net.Client": "[2.71.0, 3.0.0)",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax.Rest/4.13.1": {
+        "Google.Api.Gax": "4.13.1",
+        "Google.Apis.Auth": "1.73.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax/4.13.1": {
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+        "Newtonsoft.Json": "13.0.4",
+        "System.Diagnostics.DiagnosticSource": "6.0.2"
+      },
+      "Google.Apis.Auth/1.74.0": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Core": "1.74.0",
+        "System.Management": "7.0.2"
+      },
+      "Google.Apis.Core/1.74.0": {
+        "Newtonsoft.Json": "13.0.4"
+      },
+      "Google.Apis.Storage.v1/1.74.0.4115": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Auth": "1.74.0"
+      },
+      "Google.Apis/1.74.0": {
+        "Google.Apis.Core": "1.74.0"
+      },
+      "Google.Cloud.Location/2.4.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)"
+      },
+      "Google.Cloud.Speech.V2/1.8.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)",
+        "Google.Cloud.Location": "[2.4.0, 3.0.0)",
+        "Google.LongRunning": "[3.5.0, 4.0.0)"
+      },
+      "Google.Cloud.Storage.V1/4.16.0": {
+        "Google.Api.Gax.Rest": "[4.13.1, 5.0.0)",
+        "Google.Apis.Storage.v1": "[1.74.0.4115, 2.0.0)"
+      },
+      "Google.LongRunning/3.5.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)"
+      },
+      "Google.Protobuf/3.31.1": {},
+      "Grpc.Auth/2.71.0": {
+        "Google.Apis.Auth": "1.69.0",
+        "Grpc.Core.Api": "2.71.0"
+      },
+      "Grpc.Core.Api/2.71.0": {},
+      "Grpc.Net.Client/2.71.0": {
+        "Grpc.Net.Common": "2.71.0",
+        "Microsoft.Extensions.Logging.Abstractions": "6.0.0"
+      },
+      "Grpc.Net.Common/2.71.0": {
+        "Grpc.Core.Api": "2.71.0"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/6.0.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/6.0.0": {},
+      "Microsoft.Extensions.Logging.Abstractions/6.0.0": {},
+      "Newtonsoft.Json/13.0.4": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.GoogleCloud/10.4.0": {
+        "Google.Cloud.Speech.V2": "1.8.0",
+        "Google.Cloud.Storage.V1": "4.16.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Linq.Async": "6.0.3"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "System.CodeDom/7.0.0": {},
+      "System.Diagnostics.DiagnosticSource/6.0.2": {},
+      "System.Linq.Async/6.0.3": {},
+      "System.Management/7.0.2": {
+        "System.CodeDom": "7.0.0"
+      }
+    },
+    "net8.0": {
+      "Google.Api.CommonProtos/2.17.0": {
+        "Google.Protobuf": "[3.31.1, 4.0.0]"
+      },
+      "Google.Api.Gax.Grpc/4.12.1": {
+        "Google.Api.CommonProtos": "2.17.0",
+        "Google.Api.Gax": "4.12.1",
+        "Google.Apis.Auth": "1.72.0",
+        "Grpc.Auth": "[2.71.0, 3.0.0)",
+        "Grpc.Core.Api": "[2.71.0, 3.0.0)",
+        "Grpc.Net.Client": "[2.71.0, 3.0.0)",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax.Rest/4.13.1": {
+        "Google.Api.Gax": "4.13.1",
+        "Google.Apis.Auth": "1.73.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Google.Api.Gax/4.13.1": {
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
+        "Newtonsoft.Json": "13.0.4",
+        "System.Diagnostics.DiagnosticSource": "6.0.2"
+      },
+      "Google.Apis.Auth/1.74.0": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Core": "1.74.0",
+        "System.Management": "7.0.2"
+      },
+      "Google.Apis.Core/1.74.0": {
+        "Newtonsoft.Json": "13.0.4"
+      },
+      "Google.Apis.Storage.v1/1.74.0.4115": {
+        "Google.Apis": "1.74.0",
+        "Google.Apis.Auth": "1.74.0"
+      },
+      "Google.Apis/1.74.0": {
+        "Google.Apis.Core": "1.74.0"
+      },
+      "Google.Cloud.Location/2.4.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)"
+      },
+      "Google.Cloud.Speech.V2/1.8.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)",
+        "Google.Cloud.Location": "[2.4.0, 3.0.0)",
+        "Google.LongRunning": "[3.5.0, 4.0.0)"
+      },
+      "Google.Cloud.Storage.V1/4.16.0": {
+        "Google.Api.Gax.Rest": "[4.13.1, 5.0.0)",
+        "Google.Apis.Storage.v1": "[1.74.0.4115, 2.0.0)"
+      },
+      "Google.LongRunning/3.5.0": {
+        "Google.Api.Gax.Grpc": "[4.12.1, 5.0.0)"
+      },
+      "Google.Protobuf/3.31.1": {},
+      "Grpc.Auth/2.71.0": {
+        "Google.Apis.Auth": "1.69.0",
+        "Grpc.Core.Api": "2.71.0"
+      },
+      "Grpc.Core.Api/2.71.0": {},
+      "Grpc.Net.Client/2.71.0": {
+        "Grpc.Net.Common": "2.71.0",
+        "Microsoft.Extensions.Logging.Abstractions": "6.0.0"
+      },
+      "Grpc.Net.Common/2.71.0": {
+        "Grpc.Core.Api": "2.71.0"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/6.0.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/6.0.0": {},
+      "Microsoft.Extensions.Logging.Abstractions/6.0.0": {},
+      "Newtonsoft.Json/13.0.4": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.GoogleCloud/10.4.0": {
+        "Google.Cloud.Speech.V2": "1.8.0",
+        "Google.Cloud.Storage.V1": "4.16.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Linq.Async": "6.0.3"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "System.CodeDom/7.0.0": {},
+      "System.Diagnostics.DiagnosticSource/6.0.2": {},
+      "System.Linq.Async/6.0.3": {},
+      "System.Management/7.0.2": {
+        "System.CodeDom": "7.0.0"
+      }
+    }
+  }
+}

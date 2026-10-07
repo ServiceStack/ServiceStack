@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.GoogleCloud",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:48:48Z",
+  "packageSha256": "ede1f7ec5f51862a8eace153a995ed0851ca24f3eb13cf50386382218ca62447",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "3ce4f45a75b8a13d05fb70e3454379f02c180d875a9ccdcf8cc5c73d8ca11be6",
+    "resolution.json": "1cc86da3b47e27d787c5fec0de39637ec85377e8b0d65a4dc1377aacca69d23f",
+    "audit.json": "893e7c2d27853e886d1407b79a9e4302cfb50744705b7a752002dd0e6e11f780"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/grpc.core@2.46.6",
+      "path": "runtimes/linux-arm64/native/libgrpc_csharp_ext.arm64.so",
+      "sha256": "606b4086372fb5eb27e50b0d472fd503c2a62902153ae9ddfdcd73d3d0cd77fc"
+    },
+    {
+      "package": "pkg:nuget/grpc.core@2.46.6",
+      "path": "runtimes/linux-x64/native/libgrpc_csharp_ext.x64.so",
+      "sha256": "776dc19edd2649800a93bd35b74b61d0b81ae840edc659cffef504ee28b5d581"
+    },
+    {
+      "package": "pkg:nuget/grpc.core@2.46.6",
+      "path": "runtimes/osx-x64/native/libgrpc_csharp_ext.x64.dylib",
+      "sha256": "63bc27c2149f56d299da77a36b5ebce66962521a62137dcbd0b2067a86d422c2"
+    },
+    {
+      "package": "pkg:nuget/grpc.core@2.46.6",
+      "path": "runtimes/win-x64/native/grpc_csharp_ext.x64.dll",
+      "sha256": "4151229b6e31dae91d459be70655417dd18e6b0869c9a72fef08a5bb28d980b8"
+    },
+    {
+      "package": "pkg:nuget/grpc.core@2.46.6",
+      "path": "runtimes/win-x86/native/grpc_csharp_ext.x86.dll",
+      "sha256": "f6a6b19a8ea19e51cd4fb8e120a8b3df609429193653618e56d24c5d9704e56c"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

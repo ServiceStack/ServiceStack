@@ -1,0 +1,628 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Client",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.Core",
+          "version": "4.0.102.8",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.DynamoDBv2",
+          "version": "4.0.107",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.S3",
+          "version": "4.0.104.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.SQS",
+          "version": "4.0.100.15",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.TranscribeService",
+          "version": "4.0.102.1",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Client",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.Core",
+          "version": "4.0.102.8",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.DynamoDBv2",
+          "version": "4.0.107",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.S3",
+          "version": "4.0.104.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.SQS",
+          "version": "4.0.100.15",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.TranscribeService",
+          "version": "4.0.102.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Bcl.AsyncInterfaces",
+          "version": "10.0.12",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Linq.Async",
+          "version": "5.1.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Text.Json",
+          "version": "10.0.12",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net6.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Client",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.Core",
+          "version": "4.0.102.8",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.DynamoDBv2",
+          "version": "4.0.107",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.S3",
+          "version": "4.0.104.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.SQS",
+          "version": "4.0.100.15",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.TranscribeService",
+          "version": "4.0.102.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Linq.Async",
+          "version": "6.0.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.Text",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Client",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Interfaces",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.Core",
+          "version": "4.0.102.8",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.DynamoDBv2",
+          "version": "4.0.107",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.S3",
+          "version": "4.0.104.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.SQS",
+          "version": "4.0.100.15",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "AWSSDK.TranscribeService",
+          "version": "4.0.102.1",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "System.Linq.Async",
+          "version": "6.0.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "AWSSDK.Core/4.0.102.8": {},
+      "AWSSDK.DynamoDBv2/4.0.107": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.S3/4.0.104.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.SQS/4.0.100.15": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.TranscribeService/4.0.102.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/10.0.12": {
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.Configuration.Binder/10.0.12": {
+        "Microsoft.Extensions.Configuration": "10.0.12",
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Configuration/10.0.12": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.12": {},
+      "Microsoft.Extensions.DependencyInjection/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Diagnostics.Abstractions/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12"
+      },
+      "Microsoft.Extensions.Diagnostics/10.0.12": {
+        "Microsoft.Extensions.Configuration": "10.0.12",
+        "Microsoft.Extensions.Diagnostics.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options.ConfigurationExtensions": "10.0.12"
+      },
+      "Microsoft.Extensions.Http/10.0.12": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Diagnostics": "10.0.12",
+        "Microsoft.Extensions.Logging": "10.0.12",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12"
+      },
+      "Microsoft.Extensions.Logging/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection": "10.0.12",
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12"
+      },
+      "Microsoft.Extensions.Options.ConfigurationExtensions/10.0.12": {
+        "Microsoft.Extensions.Configuration.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Configuration.Binder": "10.0.12",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Options": "10.0.12",
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.Options/10.0.12": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.12",
+        "Microsoft.Extensions.Primitives": "10.0.12"
+      },
+      "Microsoft.Extensions.Primitives/10.0.12": {},
+      "ServiceStack.Aws/10.4.0": {
+        "AWSSDK.Core": "4.0.102.8",
+        "AWSSDK.DynamoDBv2": "4.0.107",
+        "AWSSDK.S3": "4.0.104.1",
+        "AWSSDK.SQS": "4.0.100.15",
+        "AWSSDK.TranscribeService": "4.0.102.1",
+        "ServiceStack": "10.4.0",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Client/10.4.0": {
+        "Microsoft.Extensions.Http": "10.0.12",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "ServiceStack/10.4.0": {
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      }
+    },
+    "net472": {
+      "AWSSDK.Core/4.0.102.8": {
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.5",
+        "System.Text.Json": "8.0.6"
+      },
+      "AWSSDK.DynamoDBv2/4.0.107": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.S3/4.0.104.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.SQS/4.0.100.15": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.TranscribeService/4.0.102.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
+        "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "ServiceStack.Aws/10.4.0": {
+        "AWSSDK.Core": "4.0.102.8",
+        "AWSSDK.DynamoDBv2": "4.0.107",
+        "AWSSDK.S3": "4.0.104.1",
+        "AWSSDK.SQS": "4.0.100.15",
+        "AWSSDK.TranscribeService": "4.0.102.1",
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "ServiceStack": "10.4.0",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Linq.Async": "5.1.0",
+        "System.Text.Json": "10.0.12"
+      },
+      "ServiceStack.Client/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Memory": "4.6.3",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "ServiceStack/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.IO.Pipelines/10.0.12": {
+        "System.Buffers": "4.6.1",
+        "System.Memory": "4.6.3",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "System.Linq.Async/5.1.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "6.0.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Text.Encodings.Web/10.0.12": {
+        "System.Buffers": "4.6.1",
+        "System.Memory": "4.6.3",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Text.Json/10.0.12": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Buffers": "4.6.1",
+        "System.IO.Pipelines": "10.0.12",
+        "System.Memory": "4.6.3",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2",
+        "System.Text.Encodings.Web": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3",
+        "System.ValueTuple": "4.6.2"
+      },
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.ValueTuple/4.6.2": {}
+    },
+    "net6.0": {
+      "AWSSDK.Core/4.0.102.8": {},
+      "AWSSDK.DynamoDBv2/4.0.107": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.S3/4.0.104.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.SQS/4.0.100.15": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.TranscribeService/4.0.102.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/6.0.0": {},
+      "Microsoft.Extensions.DependencyInjection/6.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0"
+      },
+      "Microsoft.Extensions.Http/6.0.1": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0",
+        "Microsoft.Extensions.Logging": "6.0.1",
+        "Microsoft.Extensions.Logging.Abstractions": "6.0.4",
+        "Microsoft.Extensions.Options": "6.0.1"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/6.0.4": {},
+      "Microsoft.Extensions.Logging/6.0.1": {
+        "Microsoft.Extensions.DependencyInjection": "6.0.2",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0",
+        "Microsoft.Extensions.Logging.Abstractions": "6.0.4",
+        "Microsoft.Extensions.Options": "6.0.1",
+        "System.Diagnostics.DiagnosticSource": "6.0.2"
+      },
+      "Microsoft.Extensions.Options/6.0.1": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "6.0.0",
+        "Microsoft.Extensions.Primitives": "6.0.1"
+      },
+      "Microsoft.Extensions.Primitives/6.0.1": {},
+      "ServiceStack.Aws/10.4.0": {
+        "AWSSDK.Core": "4.0.102.8",
+        "AWSSDK.DynamoDBv2": "4.0.107",
+        "AWSSDK.S3": "4.0.104.1",
+        "AWSSDK.SQS": "4.0.100.15",
+        "AWSSDK.TranscribeService": "4.0.102.1",
+        "ServiceStack": "10.4.0",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Linq.Async": "6.0.3"
+      },
+      "ServiceStack.Client/10.4.0": {
+        "Microsoft.Extensions.Http": "6.0.1",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "ServiceStack/10.4.0": {
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "System.Diagnostics.DiagnosticSource/6.0.2": {},
+      "System.Linq.Async/6.0.3": {}
+    },
+    "net8.0": {
+      "AWSSDK.Core/4.0.102.8": {},
+      "AWSSDK.DynamoDBv2/4.0.107": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.S3/4.0.104.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.SQS/4.0.100.15": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "AWSSDK.TranscribeService/4.0.102.1": {
+        "AWSSDK.Core": "[4.0.102.8, 5.0.0)"
+      },
+      "Microsoft.Extensions.Configuration.Abstractions/8.0.0": {
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Configuration.Binder/8.0.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0"
+      },
+      "Microsoft.Extensions.Configuration/8.0.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Microsoft.Extensions.DependencyInjection/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+      },
+      "Microsoft.Extensions.Diagnostics.Abstractions/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2"
+      },
+      "Microsoft.Extensions.Diagnostics/8.0.1": {
+        "Microsoft.Extensions.Configuration": "8.0.0",
+        "Microsoft.Extensions.Diagnostics.Abstractions": "8.0.1",
+        "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0"
+      },
+      "Microsoft.Extensions.Http/8.0.1": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Diagnostics": "8.0.1",
+        "Microsoft.Extensions.Logging": "8.0.1",
+        "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2"
+      },
+      "Microsoft.Extensions.Logging.Abstractions/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+      },
+      "Microsoft.Extensions.Logging/8.0.1": {
+        "Microsoft.Extensions.DependencyInjection": "8.0.1",
+        "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2"
+      },
+      "Microsoft.Extensions.Options.ConfigurationExtensions/8.0.0": {
+        "Microsoft.Extensions.Configuration.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Configuration.Binder": "8.0.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Options": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Options/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Primitives/8.0.0": {},
+      "ServiceStack.Aws/10.4.0": {
+        "AWSSDK.Core": "4.0.102.8",
+        "AWSSDK.DynamoDBv2": "4.0.107",
+        "AWSSDK.S3": "4.0.104.1",
+        "AWSSDK.SQS": "4.0.100.15",
+        "AWSSDK.TranscribeService": "4.0.102.1",
+        "ServiceStack": "10.4.0",
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Linq.Async": "6.0.3"
+      },
+      "ServiceStack.Client/10.4.0": {
+        "Microsoft.Extensions.Http": "8.0.1",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.Text/10.4.0": {},
+      "ServiceStack/10.4.0": {
+        "ServiceStack.Client": "10.4.0",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "System.Linq.Async/6.0.3": {}
+    }
+  }
+}

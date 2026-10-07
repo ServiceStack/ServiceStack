@@ -1,0 +1,2 @@
+# Development/CI validation only; no dependency is added to ServiceStack packages.
+jsonschema==4.25.1

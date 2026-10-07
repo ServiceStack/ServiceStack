@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.Logging.Elmah",
+  "version": "10.4.0",
+  "created": "2026-10-07T08:03:38Z",
+  "packageSha256": "d03858b341c2c1f7516cab72525b77122f48971db7cd669898703ba51e0fb011",
+  "frameworks": [
+    "net472"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "96eb421929791820c620bed05df9dd358928400e3447da24046df63555269282",
+    "resolution.json": "a2c5fdc08c86f36c1d9ba9a0e5870f99eadcbdaa89cd261d915a4747410cbede",
+    "audit.json": "fc035f137c55ca53bbb5324ba968a65958f91e60565ac66c06be8725da1fb82e"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

@@ -1,4 +1,4 @@
-﻿name: A Pre Release Pack
+name: A Pre Release Pack
 
 on: workflow_dispatch
 
@@ -48,8 +48,25 @@ jobs:
           ls -1 ./build/staging/*.nupkg
           exit 1
 
+      - name: Set up Python for security artifacts
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Generate core package SBOM and VEX evidence
+        run: |
+          python3 -m pip install -r build/security/requirements.txt
+          python3 build/security/security_artifacts.py generate --package-directory build/staging --output-root build/security-output
+          python3 build/security/security_artifacts.py verify --repo build/security-output --package-directory build/staging --require-clean
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
+        with:
+          name: ServiceStack Security
+          retention-days: 90
+          path: ./build/security-output/
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4
         with:
           name: ServiceStack Packages
-          retention-days: 1
+          retention-days: 90
           path: ./build/staging/*.nupkg

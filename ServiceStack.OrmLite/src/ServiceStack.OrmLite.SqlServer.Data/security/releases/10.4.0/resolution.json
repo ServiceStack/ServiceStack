@@ -1,0 +1,561 @@
+{
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "declaredDependencyGroups": [
+    {
+      "targetFramework": "net10.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Data.SqlClient",
+          "version": "7.1.1",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": ".NETFramework4.7.2",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Data.SqlClient",
+          "version": "5.2.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net6.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Data.SqlClient",
+          "version": "5.2.3",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    },
+    {
+      "targetFramework": "net8.0",
+      "dependencies": [
+        {
+          "id": "ServiceStack.OrmLite",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "ServiceStack.Common",
+          "version": "10.4.0",
+          "exclude": "Build,Analyzers"
+        },
+        {
+          "id": "Microsoft.Data.SqlClient",
+          "version": "7.1.1",
+          "exclude": "Build,Analyzers"
+        }
+      ]
+    }
+  ],
+  "targets": {
+    "net10.0": {
+      "Microsoft.Bcl.Cryptography/9.0.18": {},
+      "Microsoft.Data.SqlClient.Extensions.Abstractions/7.1.1": {
+        "Microsoft.Data.SqlClient.Internal.Logging": "[7.1.1, 8.0.0)"
+      },
+      "Microsoft.Data.SqlClient.Internal.Logging/7.1.1": {},
+      "Microsoft.Data.SqlClient.SNI.runtime/7.1.0": {},
+      "Microsoft.Data.SqlClient/7.1.1": {
+        "Microsoft.Bcl.Cryptography": "9.0.18",
+        "Microsoft.Data.SqlClient.Extensions.Abstractions": "[7.1.1, 8.0.0)",
+        "Microsoft.Data.SqlClient.Internal.Logging": "[7.1.1, 8.0.0)",
+        "Microsoft.Data.SqlClient.SNI.runtime": "[7.1.0, 8.0.0)",
+        "Microsoft.Extensions.Caching.Memory": "9.0.18",
+        "Microsoft.IdentityModel.JsonWebTokens": "8.16.0",
+        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.16.0",
+        "Microsoft.SqlServer.Server": "[1.0.0, 2.0.0)",
+        "System.Configuration.ConfigurationManager": "9.0.18",
+        "System.Security.Cryptography.Pkcs": "9.0.18",
+        "System.Threading.RateLimiting": "9.0.18"
+      },
+      "Microsoft.Extensions.Caching.Abstractions/9.0.18": {
+        "Microsoft.Extensions.Primitives": "9.0.18"
+      },
+      "Microsoft.Extensions.Caching.Memory/9.0.18": {
+        "Microsoft.Extensions.Caching.Abstractions": "9.0.18",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.18",
+        "Microsoft.Extensions.Logging.Abstractions": "9.0.18",
+        "Microsoft.Extensions.Options": "9.0.18",
+        "Microsoft.Extensions.Primitives": "9.0.18"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/10.0.0": {},
+      "Microsoft.Extensions.Logging.Abstractions/10.0.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.0"
+      },
+      "Microsoft.Extensions.Options/9.0.18": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.18",
+        "Microsoft.Extensions.Primitives": "9.0.18"
+      },
+      "Microsoft.Extensions.Primitives/9.0.18": {},
+      "Microsoft.IdentityModel.Abstractions/8.16.0": {},
+      "Microsoft.IdentityModel.JsonWebTokens/8.16.0": {
+        "Microsoft.IdentityModel.Tokens": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Logging/8.16.0": {
+        "Microsoft.IdentityModel.Abstractions": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Protocols.OpenIdConnect/8.16.0": {
+        "Microsoft.IdentityModel.Protocols": "8.16.0",
+        "System.IdentityModel.Tokens.Jwt": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Protocols/8.16.0": {
+        "Microsoft.IdentityModel.Tokens": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Tokens/8.16.0": {
+        "Microsoft.Extensions.Logging.Abstractions": "10.0.0",
+        "Microsoft.IdentityModel.Logging": "8.16.0"
+      },
+      "Microsoft.SqlServer.Server/1.0.0": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.SqlServer.Data/10.4.0": {
+        "Microsoft.Data.SqlClient": "7.1.1",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Configuration.ConfigurationManager/9.0.18": {
+        "System.Diagnostics.EventLog": "9.0.18",
+        "System.Security.Cryptography.ProtectedData": "9.0.18"
+      },
+      "System.Diagnostics.EventLog/9.0.18": {},
+      "System.IdentityModel.Tokens.Jwt/8.16.0": {
+        "Microsoft.IdentityModel.JsonWebTokens": "8.16.0",
+        "Microsoft.IdentityModel.Tokens": "8.16.0"
+      },
+      "System.Security.Cryptography.Pkcs/9.0.18": {},
+      "System.Security.Cryptography.ProtectedData/9.0.18": {},
+      "System.Threading.RateLimiting/9.0.18": {}
+    },
+    "net472": {
+      "Azure.Core/1.38.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "1.1.1",
+        "System.ClientModel": "1.0.0",
+        "System.Diagnostics.DiagnosticSource": "6.0.1",
+        "System.Memory.Data": "1.0.2",
+        "System.Numerics.Vectors": "4.5.0",
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.7.2",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "Azure.Identity/1.11.4": {
+        "Azure.Core": "1.38.0",
+        "Microsoft.Identity.Client": "4.61.3",
+        "Microsoft.Identity.Client.Extensions.Msal": "4.61.3",
+        "System.Memory": "4.5.4",
+        "System.Security.Cryptography.ProtectedData": "4.7.0",
+        "System.Text.Json": "4.7.2",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/10.0.12": {
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "Microsoft.CSharp/4.7.0": {},
+      "Microsoft.Data.SqlClient.SNI/5.2.0": {},
+      "Microsoft.Data.SqlClient/5.2.3": {
+        "Azure.Identity": "1.11.4",
+        "Microsoft.Data.SqlClient.SNI": "5.2.0",
+        "Microsoft.Identity.Client": "4.61.3",
+        "Microsoft.IdentityModel.JsonWebTokens": "6.35.0",
+        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "6.35.0",
+        "System.Buffers": "4.5.1",
+        "System.Configuration.ConfigurationManager": "6.0.1",
+        "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
+        "System.Text.Encodings.Web": "6.0.0"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {
+        "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "Microsoft.Identity.Client.Extensions.Msal/4.61.3": {
+        "Microsoft.Identity.Client": "4.61.3",
+        "System.IO.FileSystem.AccessControl": "5.0.0",
+        "System.Security.Cryptography.ProtectedData": "4.5.0"
+      },
+      "Microsoft.Identity.Client/4.61.3": {
+        "Microsoft.IdentityModel.Abstractions": "6.35.0",
+        "System.Diagnostics.DiagnosticSource": "6.0.1"
+      },
+      "Microsoft.IdentityModel.Abstractions/6.35.0": {},
+      "Microsoft.IdentityModel.JsonWebTokens/6.35.0": {
+        "Microsoft.IdentityModel.Tokens": "6.35.0",
+        "System.Text.Encoding": "4.3.0",
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.7.2"
+      },
+      "Microsoft.IdentityModel.Logging/6.35.0": {
+        "Microsoft.IdentityModel.Abstractions": "6.35.0"
+      },
+      "Microsoft.IdentityModel.Protocols.OpenIdConnect/6.35.0": {
+        "Microsoft.IdentityModel.Protocols": "6.35.0",
+        "System.IdentityModel.Tokens.Jwt": "6.35.0",
+        "System.Text.Encoding": "4.3.0",
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.7.2"
+      },
+      "Microsoft.IdentityModel.Protocols/6.35.0": {
+        "Microsoft.IdentityModel.Logging": "6.35.0",
+        "Microsoft.IdentityModel.Tokens": "6.35.0"
+      },
+      "Microsoft.IdentityModel.Tokens/6.35.0": {
+        "Microsoft.IdentityModel.Logging": "6.35.0",
+        "System.Text.Encoding": "4.3.0",
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.7.2"
+      },
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0",
+        "System.Memory": "4.6.3",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.Interfaces/10.4.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "10.0.12",
+        "System.Threading.Tasks.Extensions": "4.6.3"
+      },
+      "ServiceStack.OrmLite.SqlServer.Data/10.4.0": {
+        "Microsoft.Data.SqlClient": "5.2.3",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0",
+        "System.Memory": "4.6.3"
+      },
+      "ServiceStack.Text/10.4.0": {
+        "Microsoft.CSharp": "4.7.0",
+        "System.Diagnostics.DiagnosticSource": "8.0.1",
+        "System.Memory": "4.6.3"
+      },
+      "System.Buffers/4.6.1": {},
+      "System.ClientModel/1.0.0": {
+        "System.Memory.Data": "1.0.2",
+        "System.Text.Json": "4.7.2"
+      },
+      "System.Configuration.ConfigurationManager/6.0.1": {
+        "System.Security.Permissions": "6.0.0"
+      },
+      "System.Diagnostics.DiagnosticSource/8.0.1": {
+        "System.Memory": "4.5.5",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.IO.FileSystem.AccessControl/5.0.0": {
+        "System.Security.AccessControl": "5.0.0",
+        "System.Security.Principal.Windows": "5.0.0"
+      },
+      "System.IdentityModel.Tokens.Jwt/6.35.0": {
+        "Microsoft.IdentityModel.JsonWebTokens": "6.35.0",
+        "Microsoft.IdentityModel.Tokens": "6.35.0"
+      },
+      "System.Memory.Data/1.0.2": {
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.6.0"
+      },
+      "System.Memory/4.6.3": {
+        "System.Buffers": "4.6.1",
+        "System.Numerics.Vectors": "4.6.1",
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.Numerics.Vectors/4.6.1": {},
+      "System.Runtime.CompilerServices.Unsafe/6.1.2": {},
+      "System.Runtime.InteropServices.RuntimeInformation/4.3.0": {},
+      "System.Security.AccessControl/6.0.0": {
+        "System.Security.Principal.Windows": "5.0.0"
+      },
+      "System.Security.Cryptography.ProtectedData/4.7.0": {},
+      "System.Security.Permissions/6.0.0": {
+        "System.Security.AccessControl": "6.0.0"
+      },
+      "System.Security.Principal.Windows/5.0.0": {},
+      "System.Text.Encoding/4.3.0": {},
+      "System.Text.Encodings.Web/6.0.0": {
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.4",
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Text.Json/4.7.2": {
+        "Microsoft.Bcl.AsyncInterfaces": "1.1.0",
+        "System.Buffers": "4.5.1",
+        "System.Memory": "4.5.4",
+        "System.Numerics.Vectors": "4.5.0",
+        "System.Runtime.CompilerServices.Unsafe": "4.7.1",
+        "System.Text.Encodings.Web": "4.7.1",
+        "System.Threading.Tasks.Extensions": "4.5.4",
+        "System.ValueTuple": "4.5.0"
+      },
+      "System.Threading.Tasks.Extensions/4.6.3": {
+        "System.Runtime.CompilerServices.Unsafe": "6.1.2"
+      },
+      "System.ValueTuple/4.5.0": {}
+    },
+    "net6.0": {
+      "Azure.Core/1.38.0": {
+        "Microsoft.Bcl.AsyncInterfaces": "1.1.1",
+        "System.ClientModel": "1.0.0",
+        "System.Diagnostics.DiagnosticSource": "6.0.1",
+        "System.Memory.Data": "1.0.2",
+        "System.Numerics.Vectors": "4.5.0",
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.7.2",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "Azure.Identity/1.11.4": {
+        "Azure.Core": "1.38.0",
+        "Microsoft.Identity.Client": "4.61.3",
+        "Microsoft.Identity.Client.Extensions.Msal": "4.61.3",
+        "System.Memory": "4.5.4",
+        "System.Security.Cryptography.ProtectedData": "4.7.0",
+        "System.Text.Json": "4.7.2",
+        "System.Threading.Tasks.Extensions": "4.5.4"
+      },
+      "Microsoft.Bcl.AsyncInterfaces/1.1.1": {},
+      "Microsoft.CSharp/4.5.0": {},
+      "Microsoft.Data.SqlClient.SNI.runtime/5.2.0": {},
+      "Microsoft.Data.SqlClient/5.2.3": {
+        "Azure.Identity": "1.11.4",
+        "Microsoft.Data.SqlClient.SNI.runtime": "5.2.0",
+        "Microsoft.Identity.Client": "4.61.3",
+        "Microsoft.IdentityModel.JsonWebTokens": "6.35.0",
+        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "6.35.0",
+        "Microsoft.SqlServer.Server": "1.0.0",
+        "System.Configuration.ConfigurationManager": "6.0.1",
+        "System.Runtime.Caching": "6.0.0"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Microsoft.Identity.Client.Extensions.Msal/4.61.3": {
+        "Microsoft.Identity.Client": "4.61.3",
+        "System.Security.Cryptography.ProtectedData": "4.5.0"
+      },
+      "Microsoft.Identity.Client/4.61.3": {
+        "Microsoft.IdentityModel.Abstractions": "6.35.0",
+        "System.Diagnostics.DiagnosticSource": "6.0.1"
+      },
+      "Microsoft.IdentityModel.Abstractions/6.35.0": {},
+      "Microsoft.IdentityModel.JsonWebTokens/6.35.0": {
+        "Microsoft.IdentityModel.Tokens": "6.35.0",
+        "System.Text.Encoding": "4.3.0",
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.7.2"
+      },
+      "Microsoft.IdentityModel.Logging/6.35.0": {
+        "Microsoft.IdentityModel.Abstractions": "6.35.0"
+      },
+      "Microsoft.IdentityModel.Protocols.OpenIdConnect/6.35.0": {
+        "Microsoft.IdentityModel.Protocols": "6.35.0",
+        "System.IdentityModel.Tokens.Jwt": "6.35.0"
+      },
+      "Microsoft.IdentityModel.Protocols/6.35.0": {
+        "Microsoft.IdentityModel.Logging": "6.35.0",
+        "Microsoft.IdentityModel.Tokens": "6.35.0"
+      },
+      "Microsoft.IdentityModel.Tokens/6.35.0": {
+        "Microsoft.CSharp": "4.5.0",
+        "Microsoft.IdentityModel.Logging": "6.35.0",
+        "System.Security.Cryptography.Cng": "4.5.0"
+      },
+      "Microsoft.NETCore.Platforms/1.1.0": {},
+      "Microsoft.NETCore.Targets/1.1.0": {},
+      "Microsoft.SqlServer.Server/1.0.0": {},
+      "Microsoft.Win32.SystemEvents/6.0.0": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.SqlServer.Data/10.4.0": {
+        "Microsoft.Data.SqlClient": "5.2.3",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.ClientModel/1.0.0": {
+        "System.Memory.Data": "1.0.2",
+        "System.Text.Json": "4.7.2"
+      },
+      "System.Configuration.ConfigurationManager/6.0.1": {
+        "System.Security.Cryptography.ProtectedData": "6.0.0",
+        "System.Security.Permissions": "6.0.0"
+      },
+      "System.Diagnostics.DiagnosticSource/6.0.1": {
+        "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+      },
+      "System.Drawing.Common/6.0.0": {
+        "Microsoft.Win32.SystemEvents": "6.0.0"
+      },
+      "System.IdentityModel.Tokens.Jwt/6.35.0": {
+        "Microsoft.IdentityModel.JsonWebTokens": "6.35.0",
+        "Microsoft.IdentityModel.Tokens": "6.35.0"
+      },
+      "System.Memory.Data/1.0.2": {
+        "System.Text.Encodings.Web": "4.7.2",
+        "System.Text.Json": "4.6.0"
+      },
+      "System.Memory/4.5.4": {},
+      "System.Numerics.Vectors/4.5.0": {},
+      "System.Runtime.Caching/6.0.0": {
+        "System.Configuration.ConfigurationManager": "6.0.0"
+      },
+      "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
+      "System.Runtime/4.3.0": {
+        "Microsoft.NETCore.Platforms": "1.1.0",
+        "Microsoft.NETCore.Targets": "1.1.0"
+      },
+      "System.Security.AccessControl/6.0.0": {},
+      "System.Security.Cryptography.Cng/4.5.0": {},
+      "System.Security.Cryptography.ProtectedData/6.0.0": {},
+      "System.Security.Permissions/6.0.0": {
+        "System.Security.AccessControl": "6.0.0",
+        "System.Windows.Extensions": "6.0.0"
+      },
+      "System.Text.Encoding/4.3.0": {
+        "Microsoft.NETCore.Platforms": "1.1.0",
+        "Microsoft.NETCore.Targets": "1.1.0",
+        "System.Runtime": "4.3.0"
+      },
+      "System.Text.Encodings.Web/4.7.2": {},
+      "System.Text.Json/4.7.2": {},
+      "System.Threading.Tasks.Extensions/4.5.4": {},
+      "System.Windows.Extensions/6.0.0": {
+        "System.Drawing.Common": "6.0.0"
+      }
+    },
+    "net8.0": {
+      "Microsoft.Bcl.Cryptography/8.0.0": {},
+      "Microsoft.Data.SqlClient.Extensions.Abstractions/7.1.1": {
+        "Microsoft.Data.SqlClient.Internal.Logging": "[7.1.1, 8.0.0)"
+      },
+      "Microsoft.Data.SqlClient.Internal.Logging/7.1.1": {},
+      "Microsoft.Data.SqlClient.SNI.runtime/7.1.0": {},
+      "Microsoft.Data.SqlClient/7.1.1": {
+        "Microsoft.Bcl.Cryptography": "8.0.0",
+        "Microsoft.Data.SqlClient.Extensions.Abstractions": "[7.1.1, 8.0.0)",
+        "Microsoft.Data.SqlClient.Internal.Logging": "[7.1.1, 8.0.0)",
+        "Microsoft.Data.SqlClient.SNI.runtime": "[7.1.0, 8.0.0)",
+        "Microsoft.Extensions.Caching.Memory": "8.0.1",
+        "Microsoft.IdentityModel.JsonWebTokens": "8.16.0",
+        "Microsoft.IdentityModel.Protocols.OpenIdConnect": "8.16.0",
+        "Microsoft.SqlServer.Server": "[1.0.0, 2.0.0)",
+        "System.Configuration.ConfigurationManager": "8.0.1",
+        "System.Security.Cryptography.Pkcs": "8.0.1",
+        "System.Threading.RateLimiting": "8.0.0"
+      },
+      "Microsoft.Extensions.Caching.Abstractions/8.0.0": {
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Caching.Memory/8.0.1": {
+        "Microsoft.Extensions.Caching.Abstractions": "8.0.0",
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Logging.Abstractions": "8.0.2",
+        "Microsoft.Extensions.Options": "8.0.2",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.DependencyInjection.Abstractions/8.0.2": {},
+      "Microsoft.Extensions.Logging.Abstractions/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2"
+      },
+      "Microsoft.Extensions.Options/8.0.2": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
+        "Microsoft.Extensions.Primitives": "8.0.0"
+      },
+      "Microsoft.Extensions.Primitives/8.0.0": {},
+      "Microsoft.IdentityModel.Abstractions/8.16.0": {},
+      "Microsoft.IdentityModel.JsonWebTokens/8.16.0": {
+        "Microsoft.IdentityModel.Tokens": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Logging/8.16.0": {
+        "Microsoft.IdentityModel.Abstractions": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Protocols.OpenIdConnect/8.16.0": {
+        "Microsoft.IdentityModel.Protocols": "8.16.0",
+        "System.IdentityModel.Tokens.Jwt": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Protocols/8.16.0": {
+        "Microsoft.IdentityModel.Tokens": "8.16.0"
+      },
+      "Microsoft.IdentityModel.Tokens/8.16.0": {
+        "Microsoft.Extensions.Logging.Abstractions": "8.0.0",
+        "Microsoft.IdentityModel.Logging": "8.16.0"
+      },
+      "Microsoft.SqlServer.Server/1.0.0": {},
+      "ServiceStack.Common/10.4.0": {
+        "ServiceStack.Interfaces": "10.4.0",
+        "ServiceStack.Text": "10.4.0"
+      },
+      "ServiceStack.Interfaces/10.4.0": {},
+      "ServiceStack.OrmLite.SqlServer.Data/10.4.0": {
+        "Microsoft.Data.SqlClient": "7.1.1",
+        "ServiceStack.Common": "10.4.0",
+        "ServiceStack.OrmLite": "10.4.0"
+      },
+      "ServiceStack.OrmLite/10.4.0": {
+        "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.2",
+        "ServiceStack.Common": "10.4.0"
+      },
+      "ServiceStack.Text/10.4.0": {},
+      "System.Configuration.ConfigurationManager/8.0.1": {
+        "System.Diagnostics.EventLog": "8.0.1",
+        "System.Security.Cryptography.ProtectedData": "8.0.0"
+      },
+      "System.Diagnostics.EventLog/8.0.1": {},
+      "System.IdentityModel.Tokens.Jwt/8.16.0": {
+        "Microsoft.IdentityModel.JsonWebTokens": "8.16.0",
+        "Microsoft.IdentityModel.Tokens": "8.16.0"
+      },
+      "System.Security.Cryptography.Pkcs/8.0.1": {},
+      "System.Security.Cryptography.ProtectedData/8.0.0": {},
+      "System.Threading.RateLimiting/8.0.0": {}
+    }
+  }
+}

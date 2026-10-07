@@ -1,0 +1,3205 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.6.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:f6a64f9a-e878-480f-bb71-7ae93d194183",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2026-10-07T07:47:46Z",
+    "component": {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ai@10.4.0",
+      "name": "ServiceStack.AI",
+      "version": "10.4.0",
+      "purl": "pkg:nuget/servicestack.ai@10.4.0",
+      "supplier": {
+        "name": "ServiceStack, Inc."
+      },
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f63656738768900087b99916f3aece8c7bed968ecb12799ddae3177367d31077"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-frameworks",
+          "value": "net10.0;net8.0"
+        },
+        {
+          "name": "servicestack:inventory-kind",
+          "value": "Exact NuGet archive and resolved consumer baseline"
+        },
+        {
+          "name": "servicestack:declared-dependency-groups",
+          "value": "[{\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.SemanticKernel\", \"version\": \"1.80.1\"}], \"targetFramework\": \"net10.0\"}, {\"dependencies\": [{\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Text\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Common\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"ServiceStack.Interfaces\", \"version\": \"10.4.0\"}, {\"exclude\": \"Build,Analyzers\", \"id\": \"Microsoft.SemanticKernel\", \"version\": \"1.80.1\"}], \"targetFramework\": \"net8.0\"}]"
+        },
+        {
+          "name": "servicestack:resolution-limits",
+          "value": "Consumers can resolve other versions allowed by NuGet ranges; runtime/OS framework components are not inventoried."
+        },
+        {
+          "name": "servicestack:package-source-commit",
+          "value": "da90504435109bee9c5199e1902bcabc9d472a1b"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Declared package license",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ]
+    },
+    "tools": {
+      "components": [
+        {
+          "type": "application",
+          "name": "CycloneDX .NET",
+          "version": "6.2.0"
+        },
+        {
+          "type": "application",
+          "name": "ServiceStack security artifacts",
+          "version": "1.1.0"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/azure.ai.openai@2.9.0-beta.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Azure.AI.OpenAI",
+      "version": "2.9.0-beta.1",
+      "description": "Azure OpenAI's official extension package for using OpenAI's .NET library with the Azure OpenAI Service.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "EA9B4AC54D9F52063A5FA36DB4921D550C64418D7AE360248FF7A2DF556874EF14A6FDB3C42C7075A260439B40A6EA96FD14763F2C83AD3E3329E3DF566C6A38"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/azure.ai.openai@2.9.0-beta.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net/blob/Azure.AI.OpenAI_2.9.0-beta.1/sdk/openai/Azure.AI.OpenAI/README.md",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/azure.ai.openai@2.9.0-beta.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Azure.AI.OpenAI",
+      "version": "2.9.0-beta.1",
+      "description": "Azure OpenAI's official extension package for using OpenAI's .NET library with the Azure OpenAI Service.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "EA9B4AC54D9F52063A5FA36DB4921D550C64418D7AE360248FF7A2DF556874EF14A6FDB3C42C7075A260439B40A6EA96FD14763F2C83AD3E3329E3DF566C6A38"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/azure.ai.openai@2.9.0-beta.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net/blob/Azure.AI.OpenAI_2.9.0-beta.1/sdk/openai/Azure.AI.OpenAI/README.md",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/azure.core@1.51.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Azure.Core",
+      "version": "1.51.1",
+      "description": "This is the implementation of the Azure Client Pipeline",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E083AAEF28DC7D9DFA73B481DF1F47E7E4922DE8293E4EA1F5A6E71B05187B5CA24741B24A6271FD710468496D5F908F6BCF277365862BD795B3175D5443920"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/azure.core@1.51.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net/blob/Azure.Core_1.51.1/sdk/core/Azure.Core/README.md",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/azure.core@1.51.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Azure.Core",
+      "version": "1.51.1",
+      "description": "This is the implementation of the Azure Client Pipeline",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4E083AAEF28DC7D9DFA73B481DF1F47E7E4922DE8293E4EA1F5A6E71B05187B5CA24741B24A6271FD710468496D5F908F6BCF277365862BD795B3175D5443920"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/azure.core@1.51.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net/blob/Azure.Core_1.51.1/sdk/core/Azure.Core/README.md",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.2",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E468920114EF57CA100F912CC81A3567A632AD693E04902F773798536D6AB23D426032571C8C15D2105CDFFE860230F11A9AE9E980675AC251852662398D8A1A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.AsyncInterfaces",
+      "version": "10.0.2",
+      "description": "Provides the IAsyncEnumerable<T> and IAsyncDisposable interfaces and helper types for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E468920114EF57CA100F912CC81A3567A632AD693E04902F773798536D6AB23D426032571C8C15D2105CDFFE860230F11A9AE9E980675AC251852662398D8A1A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.hashcode@1.1.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.HashCode",
+      "version": "1.1.1",
+      "description": "Provides the HashCode type for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.\n\nCommonly Used Types:\nSystem.HashCode\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "50C11207F3131C6499D6573D33C0951EDECDBA944BCD08762B5A912B9A4C9CD3844D4C7FE19686C219623365D6F7740818A825200CE4575B14C079B1F7FC6F3E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.hashcode@1.1.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.bcl.hashcode@1.1.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Bcl.HashCode",
+      "version": "1.1.1",
+      "description": "Provides the HashCode type for .NET Standard 2.0. This package is not required starting with .NET Standard 2.1 and .NET Core 3.0.\n\nCommonly Used Types:\nSystem.HashCode\n \nWhen using NuGet 3.x this package requires at least version 3.4.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "50C11207F3131C6499D6573D33C0951EDECDBA944BCD08762B5A912B9A4C9CD3844D4C7FE19686C219623365D6F7740818A825200CE4575B14C079B1F7FC6F3E"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.bcl.hashcode@1.1.1",
+      "externalReferences": [
+        {
+          "url": "https://github.com/dotnet/corefx",
+          "type": "website"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.AI.Abstractions",
+      "version": "10.5.2",
+      "description": "Abstractions representing generative AI components.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "A3F4AB99D09D91341713BE33975A13BCCA2FF48448C42D381FF0774A800DD3CFA2A64CEAA4C8CE4D709A0CA11FCB3408532CECEE3E9FCD5E4DFFF1B5A2D377CE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.AI.Abstractions",
+      "version": "10.5.2",
+      "description": "Abstractions representing generative AI components.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "A3F4AB99D09D91341713BE33975A13BCCA2FF48448C42D381FF0774A800DD3CFA2A64CEAA4C8CE4D709A0CA11FCB3408532CECEE3E9FCD5E4DFFF1B5A2D377CE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.ai.openai@10.5.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.AI.OpenAI",
+      "version": "10.5.0",
+      "description": "Implementation of generative AI abstractions for OpenAI-compatible endpoints.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8E0C666A2374B2978AAFA6E9834D3F82C22C9747228620A91C7356819C71C4C54D934D1E2EF46C3D76447C1BB399CB564EC36CD75D23D0516ED13259CE16A496"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.ai.openai@10.5.0",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.ai.openai@10.5.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.AI.OpenAI",
+      "version": "10.5.0",
+      "description": "Implementation of generative AI abstractions for OpenAI-compatible endpoints.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8E0C666A2374B2978AAFA6E9834D3F82C22C9747228620A91C7356819C71C4C54D934D1E2EF46C3D76447C1BB399CB564EC36CD75D23D0516ED13259CE16A496"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.ai.openai@10.5.0",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.ai@10.5.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.AI",
+      "version": "10.5.0",
+      "description": "Utilities for working with generative AI components.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C773DE407BAB41D13AB53D016B86B61C19FFB4C6FB6FC0BC162989C547BB821E08702AD056ACB9C6FDA130DC30493E0369BFD929449A3FE45E6F90FCC85862EA"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.ai@10.5.0",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.ai@10.5.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.AI",
+      "version": "10.5.0",
+      "description": "Utilities for working with generative AI components.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "C773DE407BAB41D13AB53D016B86B61C19FFB4C6FB6FC0BC162989C547BB821E08702AD056ACB9C6FDA130DC30493E0369BFD929449A3FE45E6F90FCC85862EA"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.ai@10.5.0",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Caching.Abstractions",
+      "version": "10.0.6",
+      "description": "Caching abstractions for in-memory cache and distributed cache.\n\nCommonly Used Types:\nMicrosoft.Extensions.Caching.Distributed.IDistributedCache\nMicrosoft.Extensions.Caching.Memory.IMemoryCache",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CACA95F8C253DBABCECF1CE6F832379EC89D389C94933DD0F6F97DAE8F89B71842F53F6C277E17F1FD7EB1226991BE447DA9E16B1807D3897F18CACA8FCC9740"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Caching.Abstractions",
+      "version": "10.0.6",
+      "description": "Caching abstractions for in-memory cache and distributed cache.\n\nCommonly Used Types:\nMicrosoft.Extensions.Caching.Distributed.IDistributedCache\nMicrosoft.Extensions.Caching.Memory.IMemoryCache",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "CACA95F8C253DBABCECF1CE6F832379EC89D389C94933DD0F6F97DAE8F89B71842F53F6C277E17F1FD7EB1226991BE447DA9E16B1807D3897F18CACA8FCC9740"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.3",
+      "description": "Provides abstractions of key-value pair based configuration. Interfaces defined in this package are implemented by classes in Microsoft.Extensions.Configuration and other configuration packages.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "09AB56E0B69F6126BE3A0008A3D11C9F6E5E819C4A1CA065541CF3CFAECA5ED82C52B75897C14D09795C0E7022673C828EFC15028AC3393E3553F702D27850C5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Configuration.Abstractions",
+      "version": "10.0.3",
+      "description": "Provides abstractions of key-value pair based configuration. Interfaces defined in this package are implemented by classes in Microsoft.Extensions.Configuration and other configuration packages.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "09AB56E0B69F6126BE3A0008A3D11C9F6E5E819C4A1CA065541CF3CFAECA5ED82C52B75897C14D09795C0E7022673C828EFC15028AC3393E3553F702D27850C5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.6",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1FD6FF22E50F08EF4D1A6659A743034DFB910FC766ED520EBAC0EEF4615C6785B930CD69A7F02B278ED36C43413D39746965F281BBFCCED553F246CB7B11293F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection.Abstractions",
+      "version": "10.0.6",
+      "description": "Abstractions for dependency injection.\n\nCommonly Used Types:\nMicrosoft.Extensions.DependencyInjection.IServiceCollection",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "1FD6FF22E50F08EF4D1A6659A743034DFB910FC766ED520EBAC0EEF4615C6785B930CD69A7F02B278ED36C43413D39746965F281BBFCCED553F246CB7B11293F"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.2",
+      "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6B4A9645F23634972902DF0DB25C5F641E1691AEBDB1A855001587DC0748C18CDF4EEDFA751E74E06AA6C459F4AA79BFD5541661964A5872038521EC2D838EC1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.DependencyInjection",
+      "version": "10.0.2",
+      "description": "Default implementation of dependency injection for Microsoft.Extensions.DependencyInjection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6B4A9645F23634972902DF0DB25C5F641E1691AEBDB1A855001587DC0748C18CDF4EEDFA751E74E06AA6C459F4AA79BFD5541661964A5872038521EC2D838EC1"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.3",
+      "description": "Diagnostic abstractions for Microsoft.Extensions.Diagnostics.\n\nCommonly Used Types:\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsBuilder\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsListener\nMicrosoft.Extensions.Diagnostics.Metrics.InstrumentRule\nMicrosoft.Extensions.Diagnostics.Metrics.MeterScope\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsBuilderExtensions\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsOptions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "19E573E1869E0B2E85FBB3563173BCD8D45BE36A3CB2BE02BE2F24CC35048ADC2387697E7C0176C6534AD927E801F454B15F8DA674B59588B6C564324CA4B9A5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Diagnostics.Abstractions",
+      "version": "10.0.3",
+      "description": "Diagnostic abstractions for Microsoft.Extensions.Diagnostics.\n\nCommonly Used Types:\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsBuilder\nMicrosoft.Extensions.Diagnostics.Metrics.IMetricsListener\nMicrosoft.Extensions.Diagnostics.Metrics.InstrumentRule\nMicrosoft.Extensions.Diagnostics.Metrics.MeterScope\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsBuilderExtensions\nMicrosoft.Extensions.Diagnostics.Metrics.MetricsOptions",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "19E573E1869E0B2E85FBB3563173BCD8D45BE36A3CB2BE02BE2F24CC35048ADC2387697E7C0176C6534AD927E801F454B15F8DA674B59588B6C564324CA4B9A5"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.FileProviders.Abstractions",
+      "version": "10.0.3",
+      "description": "Abstractions of files and directories.\n\nCommonly Used Types:\nMicrosoft.Extensions.FileProviders.IDirectoryContents\nMicrosoft.Extensions.FileProviders.IFileInfo\nMicrosoft.Extensions.FileProviders.IFileProvider",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4DB97DFAE10B5D9F418EA935E0BED02CB9991B14F17848DEF6EB4A4A7399D1B5A3CDEF8CE5AF9F9F8ED7D18A12774D3B00648165C21FC76A504502AF31F080E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.FileProviders.Abstractions",
+      "version": "10.0.3",
+      "description": "Abstractions of files and directories.\n\nCommonly Used Types:\nMicrosoft.Extensions.FileProviders.IDirectoryContents\nMicrosoft.Extensions.FileProviders.IFileInfo\nMicrosoft.Extensions.FileProviders.IFileProvider",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4DB97DFAE10B5D9F418EA935E0BED02CB9991B14F17848DEF6EB4A4A7399D1B5A3CDEF8CE5AF9F9F8ED7D18A12774D3B00648165C21FC76A504502AF31F080E4"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Hosting.Abstractions",
+      "version": "10.0.3",
+      "description": "Hosting and startup abstractions for applications.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6805E74602D7206E1AE54988C4C87CA1C2AFE6192CBA6FF2BAC9864C85E959551B6C52A84529091A44CA8AC8E0364BCFC52C818AD1DF4CFE465399DBD6D70BAC"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Hosting.Abstractions",
+      "version": "10.0.3",
+      "description": "Hosting and startup abstractions for applications.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6805E74602D7206E1AE54988C4C87CA1C2AFE6192CBA6FF2BAC9864C85E959551B6C52A84529091A44CA8AC8E0364BCFC52C818AD1DF4CFE465399DBD6D70BAC"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.6",
+      "description": "Logging abstractions for Microsoft.Extensions.Logging.\n\nCommonly Used Types:\nMicrosoft.Extensions.Logging.ILogger\nMicrosoft.Extensions.Logging.ILoggerFactory\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\nMicrosoft.Extensions.Logging.LogLevel\nMicrosoft.Extensions.Logging.Logger<T>\nMicrosoft.Extensions.Logging.LoggerMessage\nMicrosoft.Extensions.Logging.Abstractions.NullLogger",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FD5496970C3C436BBA816DB78D0F77989C0FBAEB03D834F5C2A1B03B599A42080E9A8DF8AA4CA9ACE1BFD7A0D3C880EB9C887DFE831EE2A89464D409BA044E01"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Logging.Abstractions",
+      "version": "10.0.6",
+      "description": "Logging abstractions for Microsoft.Extensions.Logging.\n\nCommonly Used Types:\nMicrosoft.Extensions.Logging.ILogger\nMicrosoft.Extensions.Logging.ILoggerFactory\nMicrosoft.Extensions.Logging.ILogger<TCategoryName>\nMicrosoft.Extensions.Logging.LogLevel\nMicrosoft.Extensions.Logging.Logger<T>\nMicrosoft.Extensions.Logging.LoggerMessage\nMicrosoft.Extensions.Logging.Abstractions.NullLogger",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "FD5496970C3C436BBA816DB78D0F77989C0FBAEB03D834F5C2A1B03B599A42080E9A8DF8AA4CA9ACE1BFD7A0D3C880EB9C887DFE831EE2A89464D409BA044E01"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options@10.0.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.3",
+      "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D9932C46257DBC039A1ECCEB70868BA959590A27E0DC7746663A28D8AAEF0E8348849BF57282A1FF193FC071BEBFEE7B66CFD12975EC65E1C99D381F5C39F227"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.options@10.0.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Options",
+      "version": "10.0.3",
+      "description": "Provides a strongly typed way of specifying and accessing settings using dependency injection.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "D9932C46257DBC039A1ECCEB70868BA959590A27E0DC7746663A28D8AAEF0E8348849BF57282A1FF193FC071BEBFEE7B66CFD12975EC65E1C99D381F5C39F227"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.options@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.6",
+      "description": "Primitives shared by framework extensions. Commonly used types include:\n\nCommonly Used Types:\nMicrosoft.Extensions.Primitives.IChangeToken\nMicrosoft.Extensions.Primitives.StringValues\nMicrosoft.Extensions.Primitives.StringSegment",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F03C7EDA1875A0F8B672C9BCFB1EB63B9707FF903A034C5A71BBDF40BA8847811E362065A3F5C51AC017C451B67B1898DCF68AA022895F5F14EDFACF9FF95AF0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.primitives@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.Primitives",
+      "version": "10.0.6",
+      "description": "Primitives shared by framework extensions. Commonly used types include:\n\nCommonly Used Types:\nMicrosoft.Extensions.Primitives.IChangeToken\nMicrosoft.Extensions.Primitives.StringValues\nMicrosoft.Extensions.Primitives.StringSegment",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F03C7EDA1875A0F8B672C9BCFB1EB63B9707FF903A034C5A71BBDF40BA8847811E362065A3F5C51AC017C451B67B1898DCF68AA022895F5F14EDFACF9FF95AF0"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.primitives@10.0.6",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.VectorData.Abstractions",
+      "version": "10.5.2",
+      "description": "Abstractions for vector database access.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E5D9B1A8FEC2EE14EC9BE6ECDC88C8F11E68E27C8D891270A836DBEA062A4F422910D891556EC87C2B3C47908C525BF494717CEFF741237D34E60F7BBD12320B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2",
+      "externalReferences": [
+        {
+          "url": "https://learn.microsoft.com/dotnet/ai/vector-stores/overview",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.Extensions.VectorData.Abstractions",
+      "version": "10.5.2",
+      "description": "Abstractions for vector database access.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E5D9B1A8FEC2EE14EC9BE6ECDC88C8F11E68E27C8D891270A836DBEA062A4F422910D891556EC87C2B3C47908C525BF494717CEFF741237D34E60F7BBD12320B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2",
+      "externalReferences": [
+        {
+          "url": "https://learn.microsoft.com/dotnet/ai/vector-stores/overview",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/extensions",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Abstractions",
+      "version": "1.80.1",
+      "description": "Semantic Kernel interfaces and abstractions. This package is automatically installed by Semantic Kernel packages if needed.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F8ED24CE350288992EB2C3F926AF4663CE6AEBED02FA92A6749E90D868D19C3267702B10D68583C77F6D156C7BF4F54FC18A41E438C0689D6E719CA456424B73"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Abstractions",
+      "version": "1.80.1",
+      "description": "Semantic Kernel interfaces and abstractions. This package is automatically installed by Semantic Kernel packages if needed.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F8ED24CE350288992EB2C3F926AF4663CE6AEBED02FA92A6749E90D868D19C3267702B10D68583C77F6D156C7BF4F54FC18A41E438C0689D6E719CA456424B73"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Connectors.AzureOpenAI",
+      "version": "1.80.1",
+      "description": "Semantic Kernel connectors for Azure OpenAI. Contains clients for chat completion, embedding and DALL-E text to image.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DE07F7387CB94322C12D1639AF8016D79222BFADBE6C8B636BAA3BCA4B58AD1367908BF2D494742276B24E1063B91146266557AAF2B2CDB785057123FA6B6305"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Connectors.AzureOpenAI",
+      "version": "1.80.1",
+      "description": "Semantic Kernel connectors for Azure OpenAI. Contains clients for chat completion, embedding and DALL-E text to image.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "DE07F7387CB94322C12D1639AF8016D79222BFADBE6C8B636BAA3BCA4B58AD1367908BF2D494742276B24E1063B91146266557AAF2B2CDB785057123FA6B6305"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Connectors.OpenAI",
+      "version": "1.80.1",
+      "description": "Semantic Kernel connectors for OpenAI. Contains clients for chat completion, embedding and DALL-E text to image.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E344DC55C2A38056D79A1A8AF67DC5052E626D2BD368CE30FA55A104264B9B5D7708A188B20FF6FE08AF6C40562113F808795C91F5C5306CF00CCDE94C79D5AB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Connectors.OpenAI",
+      "version": "1.80.1",
+      "description": "Semantic Kernel connectors for OpenAI. Contains clients for chat completion, embedding and DALL-E text to image.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "E344DC55C2A38056D79A1A8AF67DC5052E626D2BD368CE30FA55A104264B9B5D7708A188B20FF6FE08AF6C40562113F808795C91F5C5306CF00CCDE94C79D5AB"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Core",
+      "version": "1.80.1",
+      "description": "Semantic Kernel core orchestration, runtime and functions.\n      This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.\n      Install this package manually only if you are selecting individual Semantic Kernel components.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "3D6ED8E2F9F417559FBE17212166F464A9FDCAB7A76DEDA5977797234901053A2F40BD1B06E67E0C1B04BB2CA8C1D268A52626D66F9FE9735C4A7DFE21F2282D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.core@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel.Core",
+      "version": "1.80.1",
+      "description": "Semantic Kernel core orchestration, runtime and functions.\n      This package is automatically installed by 'Microsoft.SemanticKernel' package with other useful packages.\n      Install this package manually only if you are selecting individual Semantic Kernel components.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "3D6ED8E2F9F417559FBE17212166F464A9FDCAB7A76DEDA5977797234901053A2F40BD1B06E67E0C1B04BB2CA8C1D268A52626D66F9FE9735C4A7DFE21F2282D"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel.core@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel@1.80.1#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel",
+      "version": "1.80.1",
+      "description": "Semantic Kernel common package collection, including SK Core, OpenAI, Azure OpenAI, DALL-E 2.\nEmpowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0F60961D009593F14D9E34C23D6E459050ECB5E177687545C4F10F904135FB241923A9048FEB2F6F6B2BDF143831A5E4E97030A17AB338788AFDC189ADC1BE9C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/microsoft.semantickernel@1.80.1#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "Microsoft.SemanticKernel",
+      "version": "1.80.1",
+      "description": "Semantic Kernel common package collection, including SK Core, OpenAI, Azure OpenAI, DALL-E 2.\nEmpowers app owners to integrate cutting-edge LLM technology quickly and easily into their apps.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "0F60961D009593F14D9E34C23D6E459050ECB5E177687545C4F10F904135FB241923A9048FEB2F6F6B2BDF143831A5E4E97030A17AB338788AFDC189ADC1BE9C"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/microsoft.semantickernel@1.80.1",
+      "externalReferences": [
+        {
+          "url": "https://aka.ms/semantic-kernel",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/microsoft/semantic-kernel",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/openai@2.10.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "OpenAI"
+        }
+      ],
+      "name": "OpenAI",
+      "version": "2.10.0",
+      "description": "The official .NET library for the OpenAI service API.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F6B581754AE3F304A2A3DAB39A5CC664EC3D38FB5BAA229DBB357FEF767A57FDB4CDF3EC3BA073787B3D1C42747203A8CD1588E87D552CA0782839A76DAE0C7"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2026 OpenAI (https://openai.com)",
+      "purl": "pkg:nuget/openai@2.10.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/openai/openai-dotnet/tree/OpenAI_2.10.0",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/openai/openai-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/openai@2.10.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "OpenAI"
+        }
+      ],
+      "name": "OpenAI",
+      "version": "2.10.0",
+      "description": "The official .NET library for the OpenAI service API.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6F6B581754AE3F304A2A3DAB39A5CC664EC3D38FB5BAA229DBB357FEF767A57FDB4CDF3EC3BA073787B3D1C42747203A8CD1588E87D552CA0782839A76DAE0C7"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "Copyright (c) 2026 OpenAI (https://openai.com)",
+      "purl": "pkg:nuget/openai@2.10.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/openai/openai-dotnet/tree/OpenAI_2.10.0",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/openai/openai-dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ai@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.AI",
+      "version": "10.4.0",
+      "description": "ServiceStack functionality for AI, Microsoft.SemanticKernel, OpenAI Whisper and TypeScript's TypeChat features",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8A3954F9DBD40EF96B8EA8FA169C15B5F34E76979CC3C68FB88D21CDB2ACA8BA2AF8A48FC1398B37836976FC68D1ABB2477ADDEA9241B93A0B10F301ED9AC5C7"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ai@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.ai@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.AI",
+      "version": "10.4.0",
+      "description": "ServiceStack functionality for AI, Microsoft.SemanticKernel, OpenAI Whisper and TypeScript's TypeChat features",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "8A3954F9DBD40EF96B8EA8FA169C15B5F34E76979CC3C68FB88D21CDB2ACA8BA2AF8A48FC1398B37836976FC68D1ABB2477ADDEA9241B93A0B10F301ED9AC5C7"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.ai@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Common",
+      "version": "10.4.0",
+      "description": "#Script, Virtual File System, SimpleContainer and Common library for ServiceStack projects.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "210612AE75372B7EDDB6557607D401E52EBF9756A4FE504FD45BBF8D9C1DC6B8009207FAC61A90C13DF4AF577C47482ACB9CD5F8B683C0767DABC968FE94EC7B"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.common@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Interfaces",
+      "version": "10.4.0",
+      "description": "Lightweight and implementation-free interfaces for DTO's, providers and adapters.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "6008932808D049FCEDD1567B78273FDCA4E18F86648919BA65C11F428929784097B4CBF28A9447472C1D16DC2D69E1C83E2F004B7A9E23C5E90EA7CD1808B344"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.interfaces@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "ServiceStack"
+        }
+      ],
+      "name": "ServiceStack.Text",
+      "version": "10.4.0",
+      "description": ".NET's fastest JSON, JSV and CSV Text Serializers. Fast, Light, Resilient.\n      Contains ServiceStack's high-performance text-processing powers, for more info see:\n      https://github.com/ServiceStack/ServiceStack.Text",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "5799C43FA67BBA7BBD5DB06509B8261019536703136694EEB01D891C7A1F7DF3C9A7FA109C6A06EE6EE076720C6F71D30C54D8935F7CD148405268F26EAB61DE"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "name": "Unknown - See URL",
+            "url": "https://servicestack.net/terms"
+          }
+        }
+      ],
+      "copyright": "© 2008-2026 ServiceStack, Inc",
+      "purl": "pkg:nuget/servicestack.text@10.4.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/ServiceStack/ServiceStack.git",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.clientmodel@1.10.0#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.ClientModel",
+      "version": "1.10.0",
+      "description": "Contains building blocks for clients that call cloud services.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "60FEEB2031C5EF61E2F185ABC2A3D0527B2BF8B8B4D456AE4B141B8D98F102B6B4603994885FEA2E40C8DF3C025DB40D622278022611986FBB941950D8DCDA1A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.clientmodel@1.10.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net/blob/System.ClientModel_1.10.0/sdk/core/System.ClientModel/README.md",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.clientmodel@1.10.0#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.ClientModel",
+      "version": "1.10.0",
+      "description": "Contains building blocks for clients that call cloud services.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "60FEEB2031C5EF61E2F185ABC2A3D0527B2BF8B8B4D456AE4B141B8D98F102B6B4603994885FEA2E40C8DF3C025DB40D622278022611986FBB941950D8DCDA1A"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.clientmodel@1.10.0",
+      "externalReferences": [
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net/blob/System.ClientModel_1.10.0/sdk/core/System.ClientModel/README.md",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/Azure/azure-sdk-for-net",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory.data@10.0.3#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory.Data",
+      "version": "10.0.3",
+      "description": "A lightweight abstraction for a payload of bytes. Provides methods for converting between strings, streams, JSON, and bytes.\n\nCommonly Used Types:\nSystem.BinaryData",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F726F845393C815214AC7755EF10309CD3AA1A1570AA1FF3FA492717F4C1E837CC355DF5A6A07043F3F1ED749BDE87752C9B562B98A9AAAAF819B8C00DC2B553"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory.data@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.memory.data@10.0.3#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Memory.Data",
+      "version": "10.0.3",
+      "description": "A lightweight abstraction for a payload of bytes. Provides methods for converting between strings, streams, JSON, and bytes.\n\nCommonly Used Types:\nSystem.BinaryData",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F726F845393C815214AC7755EF10309CD3AA1A1570AA1FF3FA492717F4C1E837CC355DF5A6A07043F3F1ED749BDE87752C9B562B98A9AAAAF819B8C00DC2B553"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.memory.data@10.0.3",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net10.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Tensors",
+      "version": "10.0.10",
+      "description": "Provides support for operating over tensors.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F0B6E7DD6C85E1EBF6F09EBB130135F7AF928E59EB8A29167774477F776D4C5070632BB39C9E096DBB61E04751E96465651612620E9A31D8403E90C099396E96"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.tensors@10.0.10",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net10.0"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net8.0",
+      "authors": [
+        {
+          "name": "Microsoft"
+        }
+      ],
+      "name": "System.Numerics.Tensors",
+      "version": "10.0.10",
+      "description": "Provides support for operating over tensors.",
+      "scope": "required",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "F0B6E7DD6C85E1EBF6F09EBB130135F7AF928E59EB8A29167774477F776D4C5070632BB39C9E096DBB61E04751E96465651612620E9A31D8403E90C099396E96"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT"
+          }
+        }
+      ],
+      "copyright": "© Microsoft Corporation. All rights reserved.",
+      "purl": "pkg:nuget/system.numerics.tensors@10.0.10",
+      "externalReferences": [
+        {
+          "url": "https://dot.net/",
+          "type": "website"
+        },
+        {
+          "url": "https://github.com/dotnet/dotnet",
+          "type": "vcs"
+        }
+      ],
+      "properties": [
+        {
+          "name": "servicestack:target-framework",
+          "value": "net8.0"
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "pkg:nuget/azure.ai.openai@2.9.0-beta.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/azure.core@1.51.1#tfm=net10.0",
+        "pkg:nuget/openai@2.10.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/azure.ai.openai@2.9.0-beta.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/azure.core@1.51.1#tfm=net8.0",
+        "pkg:nuget/openai@2.10.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/azure.core@1.51.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2#tfm=net10.0",
+        "pkg:nuget/system.clientmodel@1.10.0#tfm=net10.0",
+        "pkg:nuget/system.memory.data@10.0.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/azure.core@1.51.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2#tfm=net8.0",
+        "pkg:nuget/system.clientmodel@1.10.0#tfm=net8.0",
+        "pkg:nuget/system.memory.data@10.0.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.asyncinterfaces@10.0.2#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.hashcode@1.1.1#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.bcl.hashcode@1.1.1#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.ai.openai@10.5.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net10.0",
+        "pkg:nuget/openai@2.10.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.ai.openai@10.5.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net8.0",
+        "pkg:nuget/openai@2.10.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.ai@10.5.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net10.0",
+        "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.ai@10.5.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net8.0",
+        "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.caching.abstractions@10.0.6#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.options@10.0.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.diagnostics.abstractions@10.0.3#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.fileproviders.abstractions@10.0.3#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options@10.0.3#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.options@10.0.3#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection.abstractions@10.0.6#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.primitives@10.0.6#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.abstractions@10.5.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.hashcode@1.1.1#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.ai@10.5.0#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.bcl.hashcode@1.1.1#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.ai@10.5.0#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.vectordata.abstractions@10.5.2#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/azure.ai.openai@2.9.0-beta.1#tfm=net10.0",
+        "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1#tfm=net10.0",
+        "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/azure.ai.openai@2.9.0-beta.1#tfm=net8.0",
+        "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1#tfm=net8.0",
+        "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.openai@10.5.0#tfm=net10.0",
+        "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net10.0",
+        "pkg:nuget/openai@2.10.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.connectors.openai@1.80.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.ai.openai@10.5.0#tfm=net8.0",
+        "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net8.0",
+        "pkg:nuget/openai@2.10.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2#tfm=net10.0",
+        "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1#tfm=net10.0",
+        "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.dependencyinjection@10.0.2#tfm=net8.0",
+        "pkg:nuget/microsoft.semantickernel.abstractions@1.80.1#tfm=net8.0",
+        "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel@1.80.1#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1#tfm=net10.0",
+        "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/microsoft.semantickernel@1.80.1#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.semantickernel.connectors.azureopenai@1.80.1#tfm=net8.0",
+        "pkg:nuget/microsoft.semantickernel.core@1.80.1#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/openai@2.10.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/system.clientmodel@1.10.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/openai@2.10.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/system.clientmodel@1.10.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ai@10.4.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.ai@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.ai@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ai@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.semantickernel@1.80.1#tfm=net10.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.ai@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.semantickernel@1.80.1#tfm=net8.0",
+        "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.common@10.4.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+        "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.interfaces@10.4.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/servicestack.text@10.4.0#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.clientmodel@1.10.0#tfm=net10.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3#tfm=net10.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net10.0",
+        "pkg:nuget/system.memory.data@10.0.3#tfm=net10.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.clientmodel@1.10.0#tfm=net8.0",
+      "dependsOn": [
+        "pkg:nuget/microsoft.extensions.configuration.abstractions@10.0.3#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.hosting.abstractions@10.0.3#tfm=net8.0",
+        "pkg:nuget/microsoft.extensions.logging.abstractions@10.0.6#tfm=net8.0",
+        "pkg:nuget/system.memory.data@10.0.3#tfm=net8.0"
+      ]
+    },
+    {
+      "ref": "pkg:nuget/system.memory.data@10.0.3#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.memory.data@10.0.3#tfm=net8.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net10.0",
+      "dependsOn": []
+    },
+    {
+      "ref": "pkg:nuget/system.numerics.tensors@10.0.10#tfm=net8.0",
+      "dependsOn": []
+    }
+  ]
+}

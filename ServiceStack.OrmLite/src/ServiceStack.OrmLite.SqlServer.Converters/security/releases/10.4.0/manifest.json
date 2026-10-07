@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.OrmLite.SqlServer.Converters",
+  "version": "10.4.0",
+  "created": "2026-10-07T08:04:48Z",
+  "packageSha256": "b5ae00c92a22e42233452e57ac28e8b23edf9a77782639a0f54e56b137e3366c",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "8a75011d00c3add35863bf27c822bbf82054177120fa2633106966aa7650bd70",
+    "resolution.json": "59b3d135c139cd727e55d647a1794f97cd04746bff2b01ad6d06319d01fa794e",
+    "audit.json": "9c73ac565c020eb259213b2c0b114e0eacf0da7c00f6cbb31d61413872160e6a"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/microsoft.sqlserver.types@170.1000.7",
+      "path": "runtimes/win-arm64/native/SqlServerSpatial170.dll",
+      "sha256": "cb1c9b2af26d54988aae8436cdada007811ac70cc93d8b64a6e204c6da556d5f"
+    },
+    {
+      "package": "pkg:nuget/microsoft.sqlserver.types@170.1000.7",
+      "path": "runtimes/win-x64/native/SqlServerSpatial170.dll",
+      "sha256": "c8953369b469ec5fb1829ce96140cf66c3cf7d387a50ef84e047641e95f4ffc7"
+    },
+    {
+      "package": "pkg:nuget/microsoft.sqlserver.types@170.1000.7",
+      "path": "runtimes/win-x86/native/SqlServerSpatial170.dll",
+      "sha256": "5b412f669226cf63d361dbb80c784ab434894c12154d82b359c50f78eab4174c"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

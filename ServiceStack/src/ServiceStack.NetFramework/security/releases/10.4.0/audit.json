@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "parameters": "--vulnerable --include-transitive",
+  "sources": [
+    "https://data.nuget.org/v3/index.json"
+  ],
+  "projects": [
+    {
+      "path": "ServiceStack.NetFramework",
+      "frameworks": [
+        {
+          "framework": "net472",
+          "topLevelPackages": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.OrmLite.Sqlite",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:16:14Z",
+  "packageSha256": "a44cd0c73dbe0732e9b87f8247073e7f9edcadc0e902beec43d4bca11e092164",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.0.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "37c477ebc62fc27230ddd979738385626c26cc2ac5d3d2cfc1b4867d5a2c0299",
+    "resolution.json": "247d4627878be9788c5b7ed64d9bcc9401ce890f14c298e7558ae5fba3699429",
+    "audit.json": "4b6138dec51b0332dd360fda6cd952c0daefe9139cac6681e2b62157c1e018b5"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net20/x64/SQLite.Interop.dll",
+      "sha256": "b33de48c2cab1abe43971843cd796408c6f4beae5185868c342b635e7480c534"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net20/x86/SQLite.Interop.dll",
+      "sha256": "ebed2b1037c6a6a3e64fa5c29bd03760aff4759cc08364e6966ae8dcd5ba1c29"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net40/x64/SQLite.Interop.dll",
+      "sha256": "7f485de7a4e1437a43bf2db01053a1f380a413495b9fff3e5f56cab7e765af4b"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net40/x86/SQLite.Interop.dll",
+      "sha256": "f83159f2d8f6aaf4ee5e54b2b2b3cf47c3d59d9a786d4b8aee51a78fe782903a"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net45/x64/SQLite.Interop.dll",
+      "sha256": "55dfad03babdc4c17b6d6d42269665bf93bfd64e79ac43b0db28bca71bfef1dc"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net45/x86/SQLite.Interop.dll",
+      "sha256": "16155182de45b5d31d9bd959c430035b7fcc05dc3176baaed43381cf713c550c"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net451/x64/SQLite.Interop.dll",
+      "sha256": "5459fab6809a11c2148c235fdf8c431fe370d3f12ff25c054750f47082ccc1c9"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net451/x86/SQLite.Interop.dll",
+      "sha256": "8b6f38f1458fa0b3bfdde677f8806a1752b257c1cd7a07576f6b72a753a9b45c"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net46/x64/SQLite.Interop.dll",
+      "sha256": "1111916dc329a13bd627b2cd90c9b2263de9923fd0bb6059c69c52332f360c37"
+    },
+    {
+      "package": "pkg:nuget/stub.system.data.sqlite.core.netframework@1.0.119",
+      "path": "build/net46/x86/SQLite.Interop.dll",
+      "sha256": "553693b15bda4bbf7788bee09b8bd325ffe4db151686f432194c58e15b9b4f1e"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "package": "ServiceStack.Authentication.RavenDb",
+  "version": "10.4.0",
+  "created": "2026-10-07T07:48:23Z",
+  "packageSha256": "34c6a444d37624dfb0bebccdb987983d586d9bf37b6340b78d0e1592f95d315d",
+  "frameworks": [
+    "net10.0",
+    "net472",
+    "net6.0",
+    "net8.0"
+  ],
+  "packageRepository": {
+    "type": "git",
+    "url": "https://github.com/ServiceStack/ServiceStack.git",
+    "branch": "refs/heads/main",
+    "commit": "da90504435109bee9c5199e1902bcabc9d472a1b"
+  },
+  "generatorVersion": "1.1.0",
+  "cycloneDxVersion": "6.2.0",
+  "dotnetSdk": "10.0.400",
+  "files": {
+    "sbom.cdx.json": "ae802d1eb2901fd382bd33dcdf34166997c5e8485689986b87ec0a2dd838a2b3",
+    "resolution.json": "7161d9fb3a061444df9aa66b9a4692b5b3b1dbfbe27ede2887c921546a9ce606",
+    "audit.json": "11f865ac116ccf5297c70802de1992531fe7cc8317ca24557ba7b721b56a3fcd"
+  },
+  "vex": "No reviewed statements for this exact release",
+  "nativePayloads": [
+    {
+      "package": "pkg:nuget/ravendb.client@5.4.214",
+      "path": "runtimes/linux-arm/native/libzstd.arm.32.so",
+      "sha256": "01bf8c41cd2c0737bf842d8bb771a9bf3e1a7889aaf818b9bb952a03d93f1b23"
+    },
+    {
+      "package": "pkg:nuget/ravendb.client@5.4.214",
+      "path": "runtimes/linux-arm64/native/libzstd.arm.64.so",
+      "sha256": "99a375c1bf8bafc599225f70813e0f0704b9684857609304a103f0db4ba8469d"
+    },
+    {
+      "package": "pkg:nuget/ravendb.client@5.4.214",
+      "path": "runtimes/linux-x64/native/libzstd.linux.x64.so",
+      "sha256": "f0c5b2ad540b455c463b5b003b6434319a3f080103f50d0a5119ac4ec4038386"
+    },
+    {
+      "package": "pkg:nuget/ravendb.client@5.4.214",
+      "path": "runtimes/osx-arm64/native/libzstd.mac.arm64.dylib",
+      "sha256": "ca84048d3833f5fb8793d7a11cf50ac64680b2801bb9f1a0eb53d5a2a2e4693d"
+    },
+    {
+      "package": "pkg:nuget/ravendb.client@5.4.214",
+      "path": "runtimes/osx-x64/native/libzstd.mac.x64.dylib",
+      "sha256": "3d8b6c3f04b6fa8f720f7bed207a4aa3c07bda09536ae60f30a25ef120ce67a4"
+    },
+    {
+      "package": "pkg:nuget/ravendb.client@5.4.214",
+      "path": "runtimes/win-x64/native/libzstd.win.x64.dll",
+      "sha256": "39d5580985c42fdb3add165c4144ed076d5d076ddad7c0c7a1c87796e6637af2"
+    },
+    {
+      "package": "pkg:nuget/ravendb.client@5.4.214",
+      "path": "runtimes/win-x86/native/libzstd.win.x86.dll",
+      "sha256": "1af31802deba882841ed2a6f7fa37a163cf625e4924eb3b888e4a8ec2185f350"
+    }
+  ],
+  "limitations": [
+    "Resolved dependency versions are a consumer baseline; declared ranges may resolve differently.",
+    "Framework/runtime/OS components and ServiceStack code vulnerabilities are outside NuGet advisory scan coverage.",
+    "Native payload hashes are inventoried; embedded engine/version identification and advisory assessment require review."
+  ]
+}
