@@ -62,8 +62,8 @@ services:
           memory: 2G
     healthcheck:
       test: >-
-        /opt/mssql-tools18/bin/sqlcmd -b -S localhost -U sa -P "p@55wOrd" -C
-        -Q "SET NOCOUNT ON; SELECT 1 / COALESCE(CONVERT(int,FULLTEXTSERVICEPROPERTY('IsFullTextInstalled')),0)"
+        /opt/mssql-tools18/bin/sqlcmd -b -S localhost -U sa -P "p@55wOrd" -C -d test
+        -Q "SET NOCOUNT ON; IF COALESCE(CONVERT(int,FULLTEXTSERVICEPROPERTY('IsFullTextInstalled')),0) <> 1 THROW 50000, 'Full-text search is not installed', 1; IF NOT EXISTS (SELECT 1 FROM sys.filegroups WHERE type = 'FX') THROW 50000, 'Test database initialization is incomplete', 1;"
       interval: 10s
       timeout: 5s
       retries: 10
