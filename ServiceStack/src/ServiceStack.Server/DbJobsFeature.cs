@@ -106,6 +106,8 @@ public class DatabaseJobFeature : IPlugin, Model.IHasStringId, IConfigureService
         set => DefaultTimeoutSecs = (int)value.TotalSeconds;
     }
     public Func<BackgroundJob,Exception,bool> ShouldRetry { get; set; } = (_,ex) => ex is not OperationCanceledException;
+    
+    public DateTimeKind? UseDateStyle { get; set; } = DateTimeKind.Utc;
 
     DatabaseJobFeature Resolve(IServiceProvider services)
     {
@@ -138,8 +140,8 @@ public class DatabaseJobFeature : IPlugin, Model.IHasStringId, IConfigureService
             ?? throw new Exception($"{nameof(IDbConnectionFactory)} is not registered");
         DbProvider ??= DbJobsProvider.Create(DbFactory, NamedConnection);
         var dateConverter = Dialect.GetDateTimeConverter();
-        if (dateConverter.DateStyle == DateTimeKind.Unspecified)
-            dateConverter.DateStyle = DateTimeKind.Utc;
+        if (UseDateStyle != null && dateConverter.DateStyle == DateTimeKind.Unspecified)
+            dateConverter.DateStyle = UseDateStyle.Value;
     }
     
     public void Register(IAppHost appHost)
