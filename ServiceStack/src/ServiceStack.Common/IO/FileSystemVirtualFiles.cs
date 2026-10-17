@@ -39,14 +39,71 @@ public class FileSystemVirtualFiles
 
     public override bool DirectoryExists(string virtualPath)
     {
-        var isDirectory = Directory.Exists(RootDirectory.RealPath.CombineWith(SanitizePath(virtualPath)));
+        var isDirectory = Directory.Exists(GetSafePath(virtualPath));
         return isDirectory;
     }
 
     public override bool FileExists(string virtualPath)
     {
-        var isFile = File.Exists(RootDirectory.RealPath.CombineWith(SanitizePath(virtualPath)));
+        var isFile = File.Exists(GetSafePath(virtualPath));
         return isFile;
+    }
+
+    public override IVirtualFile GetFile(string virtualPath)
+    {
+        var realPath = GetSafePath(virtualPath);
+        return base.GetFile(ToVirtualPath(realPath));
+    }
+
+    public override IVirtualDirectory GetDirectory(string virtualPath)
+    {
+        var realPath = GetSafePath(virtualPath);
+        return base.GetDirectory(ToVirtualPath(realPath));
+    }
+
+    private string ToVirtualPath(string realPath) =>
+        realPath.Substring(Path.GetFullPath(RootDir.RealPath).TrimEnd(Path.DirectorySeparatorChar).Length)
+            .TrimStart(Path.DirectorySeparatorChar).Replace('\\', '/');
+
+    private string GetSafePath(string virtualPath)
+    {
+        // Leading separators denote a VFS-rooted path, not an absolute filesystem path.
+        var relativePath = SanitizePath(virtualPath) ?? "";
+        var realPath = ResolveSafePath(RootDir.RealPath, relativePath);
+        AssertNoLinks(RootDir.RealPath, realPath);
+        return realPath;
+    }
+
+    private static void AssertNoLinks(string rootPath, string realPath)
+    {
+        // The configured root is trusted. Links below it are not supported: lexical
+        // containment cannot prevent them redirecting IO outside the root. This check
+        // assumes untrusted local processes cannot replace directories during an operation.
+        var root = Path.GetFullPath(rootPath).TrimEnd(Path.DirectorySeparatorChar);
+        var current = realPath;
+        while (!string.Equals(current.TrimEnd(Path.DirectorySeparatorChar), root, PathComparison))
+        {
+            try
+            {
+                if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                    throw new ArgumentException("Symbolic links are not allowed in virtual file paths.", "virtualPath");
+            }
+            catch (FileNotFoundException) { }
+            catch (DirectoryNotFoundException) { }
+            current = Path.GetDirectoryName(current);
+        }
+    }
+
+    private static void AssertNoTreeLinks(string directory)
+    {
+        foreach (var child in Directory.GetFileSystemEntries(directory))
+        {
+            var attributes = File.GetAttributes(child);
+            if ((attributes & FileAttributes.ReparsePoint) != 0)
+                throw new ArgumentException("Symbolic links are not allowed in virtual file paths.", "dirPath");
+            if ((attributes & FileAttributes.Directory) != 0)
+                AssertNoTreeLinks(child);
+        }
     }
 
     public string EnsureDirectory(string dirPath)
@@ -59,14 +116,14 @@ public class FileSystemVirtualFiles
 
     public void WriteFile(string filePath, string textContents)
     {
-        var realFilePath = RootDir.RealPath.CombineWith(filePath);
+        var realFilePath = GetSafePath(filePath);
         EnsureDirectory(Path.GetDirectoryName(realFilePath));
         File.WriteAllText(realFilePath, textContents);
     }
 
     public void WriteFile(string filePath, Stream stream)
     {
-        var realFilePath = RootDir.RealPath.CombineWith(filePath);
+        var realFilePath = GetSafePath(filePath);
         EnsureDirectory(Path.GetDirectoryName(realFilePath));
         using var fs = File.Open(realFilePath, FileMode.Create, FileAccess.Write);
         stream.WriteTo(fs);
@@ -77,7 +134,7 @@ public class FileSystemVirtualFiles
         if (contents == null)
             return;
 
-        var realFilePath = RootDir.RealPath.CombineWith(filePath);
+        var realFilePath = GetSafePath(filePath);
         EnsureDirectory(Path.GetDirectoryName(realFilePath));
         using var fs = File.Open(realFilePath, FileMode.Create, FileAccess.Write);
 
@@ -104,14 +161,14 @@ public class FileSystemVirtualFiles
 
     public void AppendFile(string filePath, string textContents)
     {
-        var realFilePath = RootDir.RealPath.CombineWith(filePath);
+        var realFilePath = GetSafePath(filePath);
         EnsureDirectory(Path.GetDirectoryName(realFilePath));
         File.AppendAllText(realFilePath, textContents);
     }
 
     public void AppendFile(string filePath, Stream stream)
     {
-        var realFilePath = RootDir.RealPath.CombineWith(filePath);
+        var realFilePath = GetSafePath(filePath);
         EnsureDirectory(Path.GetDirectoryName(realFilePath));
         using (var fs = new FileStream(realFilePath, FileMode.Append))
         {
@@ -121,7 +178,7 @@ public class FileSystemVirtualFiles
 
     public void DeleteFile(string filePath)
     {
-        var realFilePath = RootDir.RealPath.CombineWith(filePath);
+        var realFilePath = GetSafePath(filePath);
         try
         {
             File.Delete(realFilePath);
@@ -139,7 +196,11 @@ public class FileSystemVirtualFiles
 
     public void DeleteFolder(string dirPath)
     {
-        var realPath = RootDir.RealPath.CombineWith(dirPath);
+        var realPath = GetSafePath(dirPath);
+        if (string.IsNullOrEmpty(ToVirtualPath(realPath)))
+            throw new ArgumentException("Cannot delete the virtual file root.", nameof(dirPath));
+        if (Directory.Exists(realPath))
+            AssertNoTreeLinks(realPath);
 #if NETCORE
             // Doesn't properly recursively delete nested dirs/files on .NET Core (win at least)
             if (Directory.Exists(realPath))
@@ -237,36 +298,60 @@ public class FileSystemVirtualFiles
         AssertDirectory(dirPath, timeoutMs);
     }
 
-    /// <summary>
-    /// Validates that a relative path is safe and doesn't traverse outside the intended directory.
-    /// </summary>
-    /// <param name="basePath">The base directory path.</param>
-    /// <param name="relativePath">The relative path to validate.</param>
-    /// <returns>True if the path is safe, false otherwise.</returns>
-    public static bool IsPathSafe(string basePath, string relativePath)
+    private static StringComparison PathComparison => Path.DirectorySeparatorChar == '\\'
+        ? StringComparison.OrdinalIgnoreCase
+        : StringComparison.Ordinal;
+
+    private static string ResolveSafePath(string basePath, string relativePath)
     {
         if (string.IsNullOrEmpty(basePath) || relativePath == null)
-            return false;
+            throw new ArgumentException("Invalid virtual file path.", nameof(relativePath));
 
+        relativePath = relativePath.Replace('\\', '/');
+        if (relativePath.StartsWith("/", StringComparison.Ordinal) || relativePath.IndexOf(':') >= 0 ||
+            relativePath.IndexOf('\0') >= 0)
+            throw new ArgumentException("Invalid virtual file path.", nameof(relativePath));
+
+        // Windows can strip trailing dots/spaces when opening a path. Reject these
+        // aliases so the path checked here is the path the filesystem will use.
+        if (Path.DirectorySeparatorChar == '\\')
+        {
+            foreach (var segment in relativePath.Split('/'))
+            {
+                if (segment != "." && segment != ".." &&
+                    (segment.EndsWith(".", StringComparison.Ordinal) || segment.EndsWith(" ", StringComparison.Ordinal)))
+                    throw new ArgumentException("Invalid virtual file path.", nameof(relativePath));
+            }
+        }
+
+        basePath = Path.GetFullPath(basePath);
+        if (basePath.Length > Path.GetPathRoot(basePath).Length)
+            basePath = basePath.TrimEnd(Path.DirectorySeparatorChar);
+        var fullPath = Path.GetFullPath(Path.Combine(basePath, relativePath));
+        var basePathWithSep = basePath.EndsWith(Path.DirectorySeparatorChar.ToString(), StringComparison.Ordinal)
+            ? basePath
+            : basePath + Path.DirectorySeparatorChar;
+        if (!string.Equals(fullPath, basePath, PathComparison) &&
+            !fullPath.StartsWith(basePathWithSep, PathComparison))
+            throw new ArgumentException("Virtual file path escapes the root directory.", nameof(relativePath));
+        return fullPath;
+    }
+
+    /// <summary>
+    /// Validates lexical containment of a relative path, normalizing both separator forms.
+    /// Does not resolve symbolic links. File operations separately reject links below the root.
+    /// </summary>
+    public static bool IsPathSafe(string basePath, string relativePath)
+    {
         try
         {
-            // Normalize paths to handle different directory separators
-            basePath = Path.GetFullPath(basePath);
-            var separator = Path.DirectorySeparatorChar.ToString();
-            var basePathWithSep = basePath.EndsWith(separator) ? basePath : basePath + separator;
-                    
-            // Combine the base path with the relative path
-            string fullPath = Path.GetFullPath(Path.Combine(basePath, relativePath));
-                    
-            // Check if the resulting path is identical to basePath or starts with basePath + separator
-            return string.Equals(fullPath, basePath, StringComparison.OrdinalIgnoreCase) ||
-                   fullPath.StartsWith(basePathWithSep, StringComparison.OrdinalIgnoreCase);
+            ResolveSafePath(basePath, relativePath);
+            return true;
         }
-        catch (Exception ex) when (ex is ArgumentException || 
-                                   ex is NotSupportedException || 
+        catch (Exception ex) when (ex is ArgumentException ||
+                                   ex is NotSupportedException ||
                                    ex is PathTooLongException)
         {
-            // Path contains invalid characters or is in an invalid format
             return false;
         }
     }

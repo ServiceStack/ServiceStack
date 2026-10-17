@@ -113,6 +113,7 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
     {
         await RequestUtils.AssertAccessRoleAsync(req, accessRole:location.WriteAccessRole, authSecret:req.GetAuthSecret(), requireApiKey:location.RequireApiKey, token: token);
         var feature = HostContext.AppHost.AssertPlugin<FilesUploadFeature>();
+        AssertFileName(file);
         var ctx = new FilesUploadContext(feature, location, req, file);
         if (location.TransformFileAsync != null)
         {
@@ -132,6 +133,7 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
 
     public ResolvedPath ResolveUploadFilePath(FilesUploadContext ctx)
     {
+        AssertFileName(ctx.File);
         var canCreate = ctx.Location.AllowOperations.HasFlag(FilesUploadOperation.Create);
         var canUpdate = ctx.Location.AllowOperations.HasFlag(FilesUploadOperation.Update);
         var publicPath = ctx.Location.ResolvePath(ctx);
@@ -140,7 +142,8 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
         if (publicPath[0] != '/')
             publicPath = '/' + publicPath;
 
-        var vfsPath = publicPath.StartsWith(BasePath)
+        AssertVirtualPath(publicPath);
+        var vfsPath = publicPath.StartsWith(BasePath + "/", StringComparison.Ordinal)
             ? publicPath.Substring(BasePath.Length)
             : publicPath;
 
@@ -161,8 +164,31 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
         return new ResolvedPath(publicPath, vfsPath);
     }
 
+    private static void AssertFileName(IHttpFile file)
+    {
+        var name = file.FileName;
+        if (string.IsNullOrWhiteSpace(name) || name == "." || name == ".." ||
+            name.IndexOfAny(new[] { '/', '\\', ':', '\0' }) >= 0)
+            throw HttpError.BadRequest("Invalid upload file name.");
+    }
+
+    private static void AssertVirtualPath(string path)
+    {
+        if (string.IsNullOrEmpty(path) || path.IndexOfAny(new[] { '\\', ':', '\0' }) >= 0 ||
+            path.StartsWith("//", StringComparison.Ordinal))
+            throw HttpError.BadRequest("Invalid upload path.");
+        foreach (var segment in path.Split('/'))
+        {
+            if (segment == "." || segment == ".." ||
+                segment.EndsWith(".", StringComparison.Ordinal) || segment.EndsWith(" ", StringComparison.Ordinal))
+                throw HttpError.BadRequest("Invalid upload path.");
+        }
+    }
+
     public void ValidateFileUpload(UploadLocation location, IRequest req, IHttpFile file, string vfsPath)
     {
+        AssertFileName(file);
+        AssertVirtualPath(vfsPath);
         var param = file.Name;
         if (location.AllowExtensions != null)
         {
@@ -186,6 +212,7 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Read))
             throw HttpError.NotFound(Errors.NoReadAccess.Localize(req));
 
+        AssertVirtualPath(vfsPath);
         var existingFile = location.VirtualFiles.GetFile(vfsPath);
         location.ValidateDownload?.Invoke(req, existingFile);
         return existingFile;
@@ -200,6 +227,7 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
         if (req.Files.Length != 1)
             throw HttpError.BadRequest(Errors.BadRequest.Localize(req));
         
+        AssertVirtualPath(vfsPath);
         var existingFile = location.VirtualFiles.GetFile(vfsPath);
         if (existingFile != null)
         {
@@ -220,6 +248,7 @@ public class FilesUploadFeature : IPlugin, IConfigureServices, IHasStringId, IPr
         if (!location.AllowOperations.HasFlag(FilesUploadOperation.Delete))
             throw HttpError.Forbidden(Errors.NoDeleteAccess.Localize(req));
         
+        AssertVirtualPath(vfsPath);
         var existingFile = location.VirtualFiles.GetFile(vfsPath);
         if (existingFile != null)
         {
