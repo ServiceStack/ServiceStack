@@ -115,6 +115,7 @@ When executing large plans:
 | Explaining basic concepts | The plan author is technical. Don't be condescending. |
 | Generating boilerplate READMEs or docs not in the plan | Noise. Only produce what's specified. |
 | Lazy shorthand in repetitive code | If the plan calls for 20 routes, write 20 routes. No shortcuts. |
+| Root-absolute asset paths (`/assets/...`) | Breaks subpath hosting (e.g. `/p/user/app/`). Configure `base: './'` in `vite.config.ts` and use relative paths (`./assets/...`). |
 
 ---
 
@@ -124,6 +125,9 @@ When executing large plans:
 - **Framework conventions**: Respect the conventions of whatever framework is in use (e.g., Next.js file-based routing, Rails convention over configuration, ASP.NET Core middleware pipeline).
 - **Language version**: Write code compatible with the language version implied by the project setup (e.g., don't use ES2024 features if the tsconfig targets ES2020).
 - **Environment**: Be aware of the target runtime (browser, Node.js, .NET, Docker, serverless, etc.) and write code that is appropriate for it.
+- **Subpath Hosting & Relative Asset Paths**: Web applications may be published and hosted under nested subpaths (e.g., `https://ai.llmspy.org/p/{user}/{project}/`).
+  - When using Vite (or similar bundlers), always include/configure `vite.config.ts` with `base: './'`.
+  - **Never use root-absolute asset paths** (e.g., `'/assets/...'`, `'/images/...'`, `'/pea.svg'`) in HTML, CSS, JavaScript, canvas/Phaser asset loaders, or manifests. A leading slash resolves against the domain root and breaks subpath hosting. Always use relative paths (e.g., `'./assets/...'`, `'assets/...'`, or `import.meta.env.BASE_URL + 'assets/...'` with `base: './'`).
 
 ---
 
@@ -140,6 +144,7 @@ Before presenting your final output, verify:
 - [ ] The code would compile/parse without errors.
 - [ ] File paths and directory structure match the plan.
 - [ ] Integration points between modules are correctly wired.
+- [ ] For web applications, `base: './'` is configured in `vite.config.ts` and all asset paths are relative.
 - [ ] Any deviations are documented with `[DEVIATION NOTE]`.
 
 ---

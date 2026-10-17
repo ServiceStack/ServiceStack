@@ -21,17 +21,46 @@ public class AiChatMigrationCoreTests
     };
 
     [Test]
-    public void Missing_model_ids_are_filled_on_clones_with_name_deduplication()
+    public void Missing_model_ids_are_filled_on_clones_preserving_each_provider()
     {
         var provider = Provider("one");
         provider.Models["model"].Remove("id");
         var other = Provider("two");
         var feature = new ChatFeature { Providers = { ["one"] = provider, ["two"] = other } };
         var models = feature.GetActiveModels();
-        Assert.That(models.Count, Is.EqualTo(1));
+        Assert.That(models.Count, Is.EqualTo(2));
         Assert.That(models[0]!["id"]!.GetValue<string>(), Is.EqualTo("model"));
         Assert.That(models[0]!["provider"]!.GetValue<string>(), Is.EqualTo("one"));
+        Assert.That(models[1]!["id"]!.GetValue<string>(), Is.EqualTo("model"));
+        Assert.That(models[1]!["provider"]!.GetValue<string>(), Is.EqualTo("two"));
         Assert.That(provider.Models["model"].ContainsKey("id"), Is.False);
+        Assert.That(other.Models["model"].ContainsKey("provider"), Is.False);
+    }
+
+    [Test]
+    public void Bundled_iteracompute_resolves_credentials_and_provider_model_ids()
+    {
+        static JsonObject Bundled(string file)
+        {
+            using var stream = typeof(ChatFeature).Assembly.GetManifestResourceStream("ServiceStack.AI.chat." + file);
+            Assert.That(stream, Is.Not.Null, file);
+            using var reader = new StreamReader(stream!);
+            return ChatJson.ParseObject(reader.ReadToEnd());
+        }
+        var feature = new ChatFeature {
+            Config = Bundled("llms.json"),
+            ProviderModels = Bundled("providers.json"),
+            Variables = { ["ITERACOMPUTE_API_KEY"] = "test-itera-key" },
+        };
+        var definition = feature.Config["providers"]!["iteracompute"]!.AsObject();
+        Assert.That(definition["enabled"]!.GetValue<bool>(), Is.True);
+        var provider = feature.CreateProviderFromDefinition("iteracompute", definition);
+        Assert.That(provider, Is.InstanceOf<OpenAiCompatibleProvider>());
+        Assert.That(provider!.Test(), Is.True);
+        Assert.That(provider.ChatUrl, Is.EqualTo("https://api.iteracompute.com/v1/chat/completions"));
+        Assert.That(provider.Headers["Authorization"], Is.EqualTo("Bearer test-itera-key"));
+        Assert.That(provider.ProviderModel("qwen3.8-27b"), Is.EqualTo("qwen/qwen3.8-27b"));
+        Assert.That(provider.ProviderModel("iteracompute/qwen/qwen3.8-27b"), Is.EqualTo("qwen/qwen3.8-27b"));
     }
 
     [TestCase(null, "two", "model", "two")]

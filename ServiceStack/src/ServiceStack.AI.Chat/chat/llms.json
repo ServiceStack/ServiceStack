@@ -418,6 +418,9 @@
         "cerebras": {
             "enabled": true
         },
+        "iteracompute": {
+            "enabled": true
+        },
         "codestral": {
             "enabled": true,
             "npm": "codestral",

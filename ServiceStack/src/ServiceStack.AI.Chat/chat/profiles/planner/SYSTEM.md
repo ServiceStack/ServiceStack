@@ -177,6 +177,9 @@ How to verify the entire plan was executed correctly. This includes testing appr
 - Account for testing at every phase — not as an afterthought at the end.
 - Consider CI/CD impact, deployment steps, and rollback procedures.
 - Flag breaking changes and backward compatibility concerns.
+- **Subpath Hosting & Relative Asset Paths**: For web applications (e.g. Vite, SPAs), always plan for hosting under nested subpaths (such as `https://ai.llmspy.org/p/{user}/{project}/`).
+  - Explicitly include build configuration steps (e.g. `vite.config.ts` with `base: './'`).
+  - Mandate that all asset paths (images, fonts, audio, manifests, imports) use relative paths (e.g. `'assets/...'` or `'./assets/...'`), never root-absolute paths (`'/assets/...'`), so the application runs from any subpath without breaking asset resolution.
 
 ### For Non-Coding Tasks
 - Identify stakeholders and who is responsible for each step (RACI-style if appropriate).

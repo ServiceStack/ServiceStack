@@ -970,7 +970,6 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     public JsonArray GetActiveModels()
     {
         var ret = new List<JsonObject>();
-        var existingNames = new HashSet<string>();
         foreach (var entry in Providers)
         {
             foreach (var model in entry.Value.Models.Values)
@@ -981,8 +980,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
                     Log.LogInformation("Provider {Provider} model has no name", entry.Key);
                     continue;
                 }
-                if (!existingNames.Add(name))
-                    continue;
+                // Shared display names must not hide another provider's model.
                 var item = model.Clone();
                 item["id"] ??= name;
                 item["provider"] = entry.Key;
