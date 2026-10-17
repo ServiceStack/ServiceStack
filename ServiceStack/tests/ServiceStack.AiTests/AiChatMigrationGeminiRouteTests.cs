@@ -155,6 +155,39 @@ public class AiChatMigrationGeminiRouteTests
         Assert.That(db.GetDocument(b.Id,"alice")!.Name,Is.EqualTo(b.Name));
     }
 
+    [TestCase("/docs/intro.html")]
+    [TestCase("/docs/")]
+    [TestCase("/docs")]
+    public async Task Crawl_follows_siblings_and_nested_pages_with_a_fixed_start_scope(string startPath)
+    {
+        using var host = new AiChatMigrationTestHost();
+        var requested = new System.Collections.Generic.List<string>();
+        var pages = new System.Collections.Generic.Dictionary<string, string> {
+            ["https://fixture.example" + startPath] = """<p>Start</p><a href="/docs/setup.html">Setup</a>""",
+            ["https://fixture.example/docs/setup.html"] = """
+                <link rel="canonical" href="canonical.html"><p>Setup</p>
+                <a href="nested/page">Nested</a><a href="/outside">Outside</a>
+                <a href="/docs-private/leak">Leak</a><a href="https://other.example/docs/page">Other</a>
+                """,
+            ["https://fixture.example/docs/nested/page"] = """<p>Nested</p><a href="/docs/finish.html">Finish</a>""",
+            ["https://fixture.example/docs/finish.html"] = "<p>Finish</p>",
+        };
+        Install(host, (request, _) => {
+            var url = request.RequestUri!.AbsoluteUri;
+            requested.Add(url);
+            var response = Response(pages[url]);
+            response.Content.Headers.ContentType = new("text/html");
+            return Task.FromResult(response);
+        });
+        var result = (JsonObject)(await host.SendAsync("POST", "/ext/gemini/imports/crawl", "alice",
+            new JsonObject { ["url"] = "https://fixture.example" + startPath,
+                ["name"] = "fixture", ["respectRobots"] = false }))!;
+        Assert.That(requested, Is.EquivalentTo(pages.Keys));
+        Assert.That(result.GetInt("pages"), Is.EqualTo(4));
+        var canonical = File.ReadAllText(Path.Combine(result.GetString("path")!, "docs", "canonical.md"));
+        Assert.That(canonical, Does.Contain("https://fixture.example/docs/canonical.html"));
+    }
+
     [TestCase(HttpStatusCode.NotFound)] [TestCase(HttpStatusCode.Gone)]
     public async Task Crawl_skips_missing_pages_instead_of_failing_the_whole_crawl(HttpStatusCode missing)
     {
