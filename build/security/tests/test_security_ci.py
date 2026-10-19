@@ -49,6 +49,20 @@ class WorkflowTests(unittest.TestCase):
             self.assertEqual(outputs['pack_run_id'], 123)
             self.assertTrue((destination / 'packages.json').is_file())
 
+    def test_publication_workflows_report_advisories_without_disabling_integrity_checks(self):
+        repo = Path(__file__).resolve().parents[3]
+        for name in ('nuget-push.yml', 'package-security.yml'):
+            with self.subTest(workflow=name):
+                workflow = (repo / '.github/workflows' / name).read_text()
+                verify = [line for line in workflow.splitlines() if 'security_artifacts.py verify ' in line]
+                self.assertEqual(len(verify), 1)
+                self.assertIn('--report-advisories', verify[0])
+                self.assertNotIn('--require-clean', verify[0])
+                self.assertNotIn('continue-on-error', workflow)
+        monitor = (repo / '.github/workflows/security-core.yml').read_text()
+        self.assertIn('security_artifacts.py scan ', monitor)
+        self.assertNotIn('continue-on-error', monitor)
+
     def test_missing_security_run_blocks_publish(self):
         with tempfile.TemporaryDirectory() as temporary, patch.object(ci_workflows, 'api', side_effect=[self.pack(), {'workflow_runs': []}]):
             with self.assertRaisesRegex(ValueError, 'run Package Security Evidence'):

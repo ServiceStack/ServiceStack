@@ -88,8 +88,8 @@ jobs:
           PACK_RUN_ID: ${{ steps.source.outputs.pack_run_id }}
         run: python3 build/security/bundle_security.py --root build/security-output --output "build/security-archives/servicestack-security-pack-$PACK_RUN_ID.zip"
 
-      - name: Verify evidence and check dependency advisories
-        run: python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --require-clean
+      - name: Verify evidence and report dependency advisory warnings
+        run: python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --report-advisories
 
       - name: Preserve generated security evidence
         if: always()

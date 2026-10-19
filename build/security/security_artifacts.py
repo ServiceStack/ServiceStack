@@ -569,7 +569,7 @@ def verify_release(release, archive=None, require_clean=False):
         findings = [p for project in audit.get('projects', []) for framework in project.get('frameworks', [])
                     for kind in ('topLevelPackages', 'transitivePackages') for p in framework.get(kind, []) if p.get('vulnerabilities')]
         if findings:
-            raise ValueError(f'{manifest["package"]}: {len(findings)} dependency advisory entries require triage; release gate blocks by default')
+            raise ValueError(f'{manifest["package"]}: {len(findings)} dependency advisory entries require triage; blocked by explicit --require-clean policy')
     refs = {root['bom-ref']} | {c['bom-ref'] for c in bom['components']}
     for path in sorted((release / 'vex').glob('*.cdx.json')):
         vex = read_json(path)
@@ -580,6 +580,30 @@ def verify_release(release, archive=None, require_clean=False):
             if not vulnerability.get('affects') or any(x['ref'] not in refs for x in vulnerability['affects']):
                 raise ValueError('VEX has unresolved product references')
     return manifest
+
+
+
+def report_advisories(release, manifest):
+    """Expose verified audit observations without treating findings as a publish gate."""
+    audit = read_json(release / 'audit.json')
+    if any(log.get('level', '').lower() == 'error' for log in audit.get('logs', [])):
+        raise ValueError(f'{manifest["package"]}: dependency audit contains errors; findings are not complete')
+    findings = [package for project in audit.get('projects', []) for framework in project.get('frameworks', [])
+                for kind in ('topLevelPackages', 'transitivePackages') for package in framework.get(kind, [])
+                if package.get('vulnerabilities')]
+    if findings:
+        message = (f'{manifest["package"]} {manifest["version"]}: {len(findings)} dependency package/framework '
+                   'advisory entries require review. Findings are informational for publication; '
+                   'see audit.json in the retained security evidence.')
+        if os.environ.get('GITHUB_ACTIONS') == 'true':
+            escaped = message.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+            print(f'::warning title=Dependency advisories::{escaped}')
+        else:
+            print(f'WARNING: {message}')
+        if os.environ.get('GITHUB_STEP_SUMMARY'):
+            with Path(os.environ['GITHUB_STEP_SUMMARY']).open('a', encoding='utf-8') as summary:
+                summary.write('### Dependency advisory observations\n\n' + message + '\n\n')
+    return len(findings)
 
 
 def scan_release(item, release, args):
@@ -646,6 +670,7 @@ def main():
     parser.add_argument('--scan-output', type=Path, help='Write fresh audit snapshots here instead of package security folders')
     parser.add_argument('--release', help='Exact release for generation, VEX revisions or scans; generation otherwise initializes latest stable for new packages')
     parser.add_argument('--require-clean', action='store_true', help='Block any dependency advisories pending human triage')
+    parser.add_argument('--report-advisories', action='store_true', help='Report recorded dependency advisories as warnings after successful verification')
     args = parser.parse_args()
     try:
         items = configurations(args.repo.resolve(), args.package_config)
@@ -699,7 +724,9 @@ def main():
                 raise ValueError(f'Missing staged package: {item["id"]}')
             archive, info = packages[item['id'].lower()]
             release = item['directory'] / 'security/releases' / info['version']
-            verify_release(release, archive, args.require_clean)
+            manifest = verify_release(release, archive, args.require_clean)
+            if args.report_advisories:
+                report_advisories(release, manifest)
             print(f'Verified {info["id"]} {info["version"]}')
     except (ValueError, OSError, KeyError, zipfile.BadZipFile, ET.ParseError) as error:
         print(f'Security artifacts: {error}', file=sys.stderr)

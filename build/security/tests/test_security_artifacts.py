@@ -1,5 +1,9 @@
 import copy
 import importlib.util
+import contextlib
+import io
+import os
+import sys
 import json
 from pathlib import Path
 import tempfile
@@ -138,6 +142,88 @@ class ArtifactTests(unittest.TestCase):
             (release / 'sbom.cdx.json').write_bytes(data + b' ')
             with self.assertRaisesRegex(ValueError, 'evidence changed'):
                 security.verify_release(release)
+
+
+    def publication_fixture(self, root, audit_errors=False):
+        archive = root / 'test.nupkg'
+        archive.write_bytes(b'synthetic package')
+        release = root / 'security/releases/1.0.0'
+        release.mkdir(parents=True)
+        bom = security.aggregate(self.info, self.documents, security.digest(archive), self.created)
+        audit = {'projects': [{'frameworks': [{'framework': 'net10.0', 'transitivePackages': [
+            {'id': 'Synthetic.Dependency', 'resolvedVersion': '1.0.0',
+             'vulnerabilities': [{'severity': 'High', 'advisoryurl': 'https://example.org/advisory'}]}]}]}]}
+        if audit_errors:
+            audit['logs'] = [{'level': 'error', 'message': 'Advisory source unavailable'}]
+        documents = {'sbom.cdx.json': security.encoded(bom), 'audit.json': security.encoded(audit)}
+        for name, data in documents.items():
+            (release / name).write_bytes(data)
+        manifest = {'package': self.info['id'], 'version': self.info['version'],
+                    'frameworks': self.info['frameworks'], 'packageSha256': security.digest(archive),
+                    'files': {name: security.hashlib.sha256(data).hexdigest() for name, data in documents.items()}}
+        (release / 'manifest.json').write_text(json.dumps(manifest))
+        return archive, release
+
+    def run_publication_verification(self, root, archive, *options):
+        output, errors = io.StringIO(), io.StringIO()
+        with patch.object(security, 'configurations', return_value=[{'id': self.info['id'], 'directory': root}]), \
+             patch.object(security, 'locate_packages', return_value={self.info['id'].lower(): (archive, self.info)}), \
+             patch.object(security, 'package_info', return_value=self.info), \
+             patch.object(sys, 'argv', ['security_artifacts.py', 'verify', '--package-directory', str(root),
+                                       '--report-advisories', *options]), \
+             patch.dict(os.environ, {'GITHUB_ACTIONS': 'true', 'GITHUB_STEP_SUMMARY': str(root / 'summary.md')}), \
+             contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+            try:
+                security.main()
+                code = 0
+            except SystemExit as error:
+                code = error.code
+        return code, output.getvalue(), errors.getvalue()
+
+    def test_publication_verifies_known_findings_and_reports_warning_without_blocking(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, release = self.publication_fixture(root)
+            code, output, errors = self.run_publication_verification(root, archive)
+            self.assertEqual(code, 0, errors)
+            self.assertIn('::warning title=Dependency advisories::', output)
+            self.assertIn('Verified ServiceStack.Test 1.0.0', output)
+            self.assertIn('informational for publication', (root / 'summary.md').read_text())
+            self.assertTrue(security.read_json(release / 'audit.json')['projects'][0]['frameworks'][0]['transitivePackages'][0]['vulnerabilities'])
+
+    def test_publication_still_blocks_modified_evidence_with_findings(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, release = self.publication_fixture(root)
+            (release / 'audit.json').write_text('{}')
+            code, output, errors = self.run_publication_verification(root, archive)
+            self.assertEqual(code, 1)
+            self.assertIn('evidence changed', errors)
+            self.assertNotIn('::warning', output)
+
+    def test_explicit_require_clean_still_blocks_findings(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, _ = self.publication_fixture(root)
+            code, _, errors = self.run_publication_verification(root, archive, '--require-clean')
+            self.assertEqual(code, 1)
+            self.assertIn('explicit --require-clean', errors)
+
+    def test_publication_still_blocks_incomplete_audit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, _ = self.publication_fixture(root, audit_errors=True)
+            code, _, errors = self.run_publication_verification(root, archive)
+            self.assertEqual(code, 1)
+            self.assertIn('dependency audit contains errors', errors)
+
+    def test_publication_still_blocks_missing_audit(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive, release = self.publication_fixture(root)
+            (release / 'audit.json').unlink()
+            code, _, _ = self.run_publication_verification(root, archive)
+            self.assertEqual(code, 1)
 
 
 class GenerationTests(unittest.TestCase):

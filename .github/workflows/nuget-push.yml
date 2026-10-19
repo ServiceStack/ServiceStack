@@ -47,8 +47,8 @@ jobs:
           github-token: ${{ github.token }}
           run-id: ${{ steps.evidence.outputs.pack_run_id }}
 
-      - name: Verify matching package evidence before publishing
-        run: python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --require-clean
+      - name: Verify matching package evidence and report advisory warnings
+        run: python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --report-advisories
 
       - name: Check output
         working-directory: ./build

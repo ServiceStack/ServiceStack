@@ -58,11 +58,11 @@ To regenerate from retained build outputs, select **Package Security Evidence â†
 
 Use the run ID in the pack run URL, not its job ID. Re-running an existing security Actions run also uses the original source run. A fresh manual dispatch uses the selected workflow revision's tooling. Source runs must be successful manually dispatched builds in this repository. Expired package artifacts need restoration or a new build; the workflow never silently substitutes public packages.
 
-NuGet Publish selects the latest successful NuGet Pack for its commit (or the optional `pack_run_id` input). It locates successful security evidence by **source pack run ID and archive provenance**, downloads packages from that exact pack run and verifies all package hashes, schemas and framework coverage. If matching retained security evidence is unavailable, publishing fails with instructions to run security generation first. `--require-clean` blocks advisory entries pending triage; VEX does not automatically bypass this gate.
+NuGet Publish selects the latest successful NuGet Pack for its commit (or the optional `pack_run_id` input). It locates successful security evidence by **source pack run ID and archive provenance**, downloads packages from that exact pack run and verifies all package hashes, schemas and framework coverage. If matching retained security evidence is unavailable, publishing fails with instructions to run security generation first. Package Security Evidence and NuGet Publish use `--report-advisories`: recorded dependency findings produce warning annotations and a job summary, but do not fail evidence generation or block publication of other fixes. Package hashes, schemas, framework coverage, source-run provenance and complete audit data remain required; integrity/verification failures still block publication. No blanket `continue-on-error` bypass is used. `--require-clean` remains an explicit opt-in for callers that want an advisory-free gate.
 
 Verify downloaded evidence with:
 
-    python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --require-clean
+    python3 build/security/security_artifacts.py verify --repo build/security-output --package-config build/security-output/packages.json --package-directory build/staging --report-advisories
 
 Promote each artifact's `security/releases/<version>` folder to its matching package source folder without overwriting previous evidence. Commit those exact files rather than regenerating from another source revision. The workflow does not automatically commit source changes.
 
@@ -93,6 +93,8 @@ Automatic completion/manual triggers require workflow definitions on the default
 
     python3 build/security/security_artifacts.py scan
     python3 build/security/security_artifacts.py scan --release 10.4.0 --package ServiceStack.Common
+
+The daily/manual `security-core.yml` scan is independent of the publication workflows. It deliberately fails when retained release graphs match advisories, preserving the review signal; that failure does not by itself gate NuGet publication. A fixed application dependency does not rewrite a historical release graph or clear its recorded findings.
 
 Scan checks every retained release by default. It restores the EXACT recorded versions, confirms the graph has not changed and verifies the public root archive hash before querying current NuGet advisories. It never overwrites the release SBOM. Private rebuilds need their original feed; the first implementation refuses them rather than substituting a public package.
 
