@@ -2,6 +2,29 @@
 
 This document details security vulnerabilities identified and remediated across `ServiceStack.OrmLite`.
 
+## 19 October 2026 — transitive Pkcs advisories and application-level mitigation
+
+The scheduled frozen-release scan in [Actions run 38666727046](https://github.com/ServiceStack/ServiceStack/actions/runs/38666727046) detected two advisories published on 13 October in `System.Security.Cryptography.Pkcs`:
+
+- [CVE-2026-84008 / GHSA-846f-f764-76mx](https://github.com/advisories/GHSA-846f-f764-76mx): high-severity denial of service in `SignedCms.CheckSignature`.
+- [CVE-2026-70162 / GHSA-2fmv-rv2c-59x7](https://github.com/advisories/GHSA-2fmv-rv2c-59x7): moderate-severity denial of service in `EnvelopedCms.Decode` on Windows.
+
+The archived 10.4.0 consumer baseline resolves Pkcs 8.0.1 for OrmLite.Oracle on net8.0/net10.0, and Pkcs 8.0.1/9.0.18 for OrmLite.SqlServer.Data on net8.0/net10.0 respectively. These versions match the advisories. A dependency match does not establish an exploitable path through a particular application's use of its database driver; no blanket not-affected assertion is made.
+
+ServiceStack library packages do not introduce direct package references to override a driver's transitive dependencies. The earlier uncommitted Pkcs overrides were withdrawn. A major ServiceStack release will adopt the corrected upstream dependency after the driver updates its own requirements; this note does not claim that a provider release has already resolved these findings.
+
+Customers can add an explicit reference in their application to the applicable patched Pkcs version (or a compatible later fixed version):
+
+| Provider baseline | Application target framework | Application Pkcs reference |
+| --- | --- | --- |
+| ServiceStack.OrmLite.Oracle | net8.0, net10.0 | 8.0.2 |
+| ServiceStack.OrmLite.SqlServer.Data | net8.0 | 8.0.2 |
+| ServiceStack.OrmLite.SqlServer.Data | net10.0 | 9.0.21 |
+
+Restore and inspect the application's full dependency graph, rebuild, test the actual database/application behavior and redeploy. Choose a patched version compatible with the resolved major; do not downgrade a newer fixed dependency. Follow Microsoft's runtime-update guidance separately. See the [v10.4 release notes](https://docs.servicestack.net/releases/v10_04#updating-an-affected-transitive-dependency-in-your-application) for application project examples.
+
+The original 10.4.0 SBOMs, hashes and frozen resolutions remain unchanged. Their scheduled scan will continue to flag the original affected baseline. Record application-specific resolutions and retests separately; do not suppress these advisories or assert resolved VEX for the archived release solely because a customer application added an override.
+
 ---
 
 ## 1. SQL Injection Filter Bypass via Unclosed Quotes in `StripQuotedStrings` (`OrmLiteUtils`)
