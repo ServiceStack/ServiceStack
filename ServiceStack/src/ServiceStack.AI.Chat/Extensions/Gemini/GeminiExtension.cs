@@ -106,6 +106,8 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
         ctx.AddPost("capabilities/probe", ProbeCapabilitiesAsync);
         ctx.AddGet("imports", ListCrawlImportsAsync);
         ctx.AddGet("imports/schema", CrawlImportSchemaAsync);
+        // Progress must not acquire the source-operation lock held by an active crawl.
+        ctx.AddGet("imports/crawl/progress", CrawlProgressAsync);
         ctx.AddGet("imports/browse", BrowseImportManifestsAsync);
         ctx.AddPost("imports/load", LoadImportManifestAsync);
         ctx.AddGet("imports/{name}", req => SourceOperationAsync(req, GetCrawlImportAsync));

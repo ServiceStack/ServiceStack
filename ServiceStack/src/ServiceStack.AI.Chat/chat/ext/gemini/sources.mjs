@@ -1,4 +1,5 @@
-import { ref, computed, onMounted } from 'vue'
+import { CrawlStatus, pollCrawlProgress } from './crawl-status.mjs'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { PathText } from './explorer.mjs'
 import { MetaChip } from './metadata.mjs'
 
@@ -17,7 +18,7 @@ export function initSources(extScope) {
  *  the comment, and the remainder stays valid JavaScript, so it fails at runtime not at parse.)
  */
 export const RunReport = {
-    components: { MetaChip },
+    components: { MetaChip, CrawlStatus },
     template: `
         <div v-if="run" class="rounded-lg border p-4 space-y-3" :class="[$styles.chromeBorder]">
             <div class="flex items-center justify-between gap-3 flex-wrap">
@@ -35,6 +36,7 @@ export const RunReport = {
                 </div>
             </div>
 
+            <CrawlStatus v-if="run.crawl" :result="run.crawl" />
             <div v-if="run.deleteRefused" class="px-3 py-2 rounded border text-xs border-red-500 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20">
                 {{ run.deleteRefused }}
             </div>
@@ -109,7 +111,7 @@ export const RunReport = {
 }
 
 export const SourcesPanel = {
-    components: { RunReport, PathText },
+    components: { RunReport, PathText, CrawlStatus },
     template: `
         <div class="space-y-4">
             <div class="flex items-start justify-between gap-3">
@@ -207,6 +209,7 @@ export const SourcesPanel = {
                     </div>
                 </div>
 
+                <CrawlStatus v-if="running === s.id && s.importOptions?.crawl?.url" :loading="true" :progress="crawlProgress" label="Processing saved import…" />
                 <RunReport v-if="reports[s.id]" :run="reports[s.id]"
                     @confirm="run(s, false)" @dismiss="reports[s.id] = null" />
             </div>
@@ -217,11 +220,14 @@ export const SourcesPanel = {
         </div>
     `,
     props: { storeId: [String, Number] },
-    emits: ['imported', 'edit', 'saved', 'removed'],
+    emits: ['imported', 'edit', 'saved', 'removed', 'crawled', 'crawling'],
     setup(props, { emit }) {
         const sources = ref([])
         const reports = ref({})
         const running = ref(null)
+        const crawlProgress = ref(null)
+        let crawlPolling = null
+        onUnmounted(() => crawlPolling?.stop())
         const manifestLoaderOpen = ref(false)
         const manifestPath = ref('')
         const manifestBrowser = ref(null)
@@ -260,18 +266,30 @@ export const SourcesPanel = {
         }
 
         async function run(source, dryRun) {
+            if (running.value !== null) return
             running.value = source.id
+            const refreshCrawl = !dryRun && !!source.importOptions?.crawl?.url
+            reports.value = { ...reports.value, [source.id]: null }
+            if (refreshCrawl) emit('crawling')
             try {
-                const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun })
+                if (refreshCrawl) crawlPolling = pollCrawlProgress(ext, progress => crawlProgress.value = progress)
+                const api = await ext.postJson(`/sources/${source.id}/run`, { dryRun,
+                    ...(refreshCrawl ? {refreshCrawl:true, progressId:crawlPolling.progressId} : {}) })
                 if (api.error) return ext.setError(api.error)
                 reports.value = { ...reports.value, [source.id]: dryRun ? api.response : null }
                 if (!dryRun) {
+                    if (api.response.crawl) emit('crawled', api.response.crawl)
                     await load()
                     emit('imported', api.response)
                     const errors = api.response.deleteErrors || []
                     if (errors.length) ext.setError({message:`Could not remove ${errors.length} upstream document(s). ${errors[0].displayName}: ${errors[0].error}. Run again to retry.`})
                 }
-            } finally { running.value = null }
+            } finally {
+                crawlPolling?.stop()
+                crawlPolling = null
+                crawlProgress.value = null
+                running.value = null
+            }
         }
 
         async function remove(source) {
@@ -282,7 +300,7 @@ export const SourcesPanel = {
         }
 
         onMounted(load)
-        return { sources, reports, running, load, run, remove, importType,
+        return { sources, reports, running, crawlProgress, load, run, remove, importType,
             manifestLoaderOpen, manifestPath, manifestBrowser, manifestEntries, folderRoots, loadingManifest, browseManifests, loadManifest }
     },
 }

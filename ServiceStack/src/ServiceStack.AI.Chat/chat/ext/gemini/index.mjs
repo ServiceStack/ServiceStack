@@ -1,3 +1,4 @@
+import { CrawlStatus } from './crawl-status.mjs'
 import { ref, computed, inject, onBeforeUnmount, onMounted, onUnmounted, toRef, watch } from 'vue'
 import { appendQueryString, lastLeftPart, leftPart, rightPart } from '@servicestack/client'
 import {
@@ -24,7 +25,7 @@ const FileStoreDetails = lazyComponent(async () => {
     assistants.initAssistants(ext, ctx, { GeminiModelSelector })
     searches.initSearches(ext, ctx)
     Object.assign(FileStoreDetailsView.components, {
-        SourcesPanel: sources.SourcesPanel, RunReport: sources.RunReport, TrustedFolders: sources.TrustedFolders,
+        CrawlStatus, SourcesPanel: sources.SourcesPanel, RunReport: sources.RunReport, TrustedFolders: sources.TrustedFolders,
         ImportPanel: imports.ImportPanel, AssistantsPanel: assistants.AssistantsPanel, SearchesPanel: searches.SearchesPanel,
     })
     return FileStoreDetailsView
@@ -1072,8 +1073,10 @@ const FileStoreDetailsView = {
                     <RunReport :run="importPreview.run" @confirm="confirmImport" @dismiss="dismissImport" />
                 </div>
                 <div class="mb-8">
+                    <CrawlStatus v-if="savedCrawlResult" :result="savedCrawlResult" class="mb-4" />
                     <SourcesPanel :key="sourceListVersion" :storeId="storeId" @imported="onImported" @saved="onImported"
-                        @edit="importPanel?.editSource($event)" @removed="onSourceRemoved" />
+                        @edit="importPanel?.editSource($event)" @removed="onSourceRemoved"
+                        @crawling="savedCrawlResult = null" @crawled="savedCrawlResult = $event" />
                     <TrustedFolders />
                 </div>
             </div>
@@ -1741,6 +1744,7 @@ const FileStoreDetailsView = {
         const assistantCount = ref(0)
         const searchCount = ref(0)
         const sourceListVersion = ref(0)
+        const savedCrawlResult = ref(null)
         const importPanel = ref(null)
         const uploadProgress = ref(null)
         const uploadCounts = computed(() => {
@@ -1785,6 +1789,7 @@ const FileStoreDetailsView = {
         }
 
         function onImportPreviewing() {
+            savedCrawlResult.value = null
             uploadProgress.value = null
             importPreview.value = null
         }
@@ -2298,7 +2303,7 @@ const FileStoreDetailsView = {
             docMeta,
             reload,
             view, routeQuery, selectView, onImportNavigate, onAssistantNavigate, onSearchNavigate,
-            sourceCount, assistantCount, searchCount, sourceListVersion, importPanel, uploadProgress, uploadCounts, uploadStatus,
+            sourceCount, assistantCount, searchCount, sourceListVersion, savedCrawlResult, importPanel, uploadProgress, uploadCounts, uploadStatus,
             importCategory,
             importInto,
             onImported, onUploadImported, onSourceRemoved, viewUploads,

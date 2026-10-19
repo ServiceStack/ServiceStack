@@ -191,7 +191,7 @@ public partial class GeminiExtension
         await AssertWriteAsync(req).ConfigureAwait(false);
         var source=db.GetSource(IdOf(req),UserOf(req)) ?? throw HttpError.NotFound("Source does not exist");
         var body=await req.GetJsonBodyAsync().ConfigureAwait(false);
-        var result=await RunSourcePipelineAsync(source,req,body).ConfigureAwait(false);
+        var result=await RunSourcePipelineAsync(source,req,body,refreshCrawl:body.GetBool("refreshCrawl")).ConfigureAwait(false);
         if(!result.GetBool("dryRun") && body.GetBool("saveConfig")) {
             source=db.GetSource(source.Id,UserOf(req))!;ApplySourceSettings(source,EditableSource(source,req));await SaveSourceSettingsAsync(source,req,null).ConfigureAwait(false);db.UpdateSource(source);
         }
@@ -208,9 +208,11 @@ public partial class GeminiExtension
                 source=await RegisterImportManifestAsync(manifest,source.FilestoreId,req).ConfigureAwait(false);row=EditableSource(source,req);manifest=row.GetObject("config").GetString("manifestPath");
             }
             ApplySourceSettings(source,row);AssertSourceAllowed(source,req);
+            JsonObject? crawlResult = null;
             if(refreshCrawl && manifest!=null && row.GetObject("importOptions").GetObject("crawl") is { } crawl && crawl.GetString("url") is { Length:>0 }) {
                 var root=Path.GetDirectoryName(manifest)!;AssertPathAllowed(root,req);
-                await CrawlSiteAsync(crawl,UserOf(req),root,req.Request.RequestAborted).ConfigureAwait(false);
+                crawlResult = await CrawlSiteAsync(crawl,UserOf(req),root,req.Request.RequestAborted,body.GetString("progressId")).ConfigureAwait(false);
+                crawlResult.Remove("config"); crawlResult.Remove("path"); crawlResult.Remove("name");
                 await ApplyTransformsAsync(root,row.GetObject("importOptions").GetArray("transforms")??new JsonArray()).ConfigureAwait(false);
             }
             var dryRun=body.ContainsKey("dryRun")?body.GetBool("dryRun"):source.LastRunId==null;
@@ -224,7 +226,9 @@ public partial class GeminiExtension
                     var selected=body.GetArray("sourceDocuments")?.Select(x=>x!.GetValue<string>()).ToHashSet()??[];
                     foreach(var entry in plan.Added.ToArray()) {var key=source.Id+":"+entry.SourceKey;if(selected.Contains(key))continue;var candidate=entry.ToDto();candidate["key"]=key;candidate["sourceId"]=source.Id;candidate["sourceName"]=source.Name;candidates.Add(candidate);plan.Added.Remove(entry);}
                 }
-                var summary=plan.Summary();summary["newSourceDocuments"]=candidates;summary["newSourceCount"]=candidates.Count;
+                var summary=plan.Summary();
+                if (crawlResult != null) summary["crawl"] = crawlResult;
+                summary["newSourceDocuments"]=candidates;summary["newSourceCount"]=candidates.Count;
                 summary["pendingUploads"]=plan.Unchanged.Count(x=>existing.Any(d=>d.SourceKey==x.SourceKey && d.UploadedAt==null && d.Error==null));
                 summary["sourceChanges"]=new JsonArray(plan.Added.Concat(plan.Changed).Concat(plan.MetadataOnly).Select(x=>(JsonNode)JsonValue.Create(x.SourceKey)!).Concat(plan.Removed.Select(x=>(JsonNode)JsonValue.Create(x.SourceKey??x.DisplayName??"Document")!)).ToArray());
                 var refusal=body.GetBool("confirmDeletes")?null:GeminiIngest.DeleteRefusal(plan,existing.Count);if(refusal!=null){summary["deleteRefused"]=refusal;plan.Removed.Clear();}

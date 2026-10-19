@@ -1,3 +1,4 @@
+import { CrawlStatus, pollCrawlProgress } from './crawl-status.mjs'
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { MetadataInput, MetadataDialog, IMPORT_FIELDS, summariseMetadata, loadFacets } from './metadata.mjs'
 import { Popover, RootsPanel, PathText, CheckBox } from './explorer.mjs'
@@ -57,7 +58,7 @@ export const IMPORT_TABS = [
 
 
 export const ImportPanel = {
-    components: { MetadataDialog, MetadataInput, Popover, RootsPanel, PathText, CheckBox },
+    components: { CrawlStatus, MetadataDialog, MetadataInput, Popover, RootsPanel, PathText, CheckBox },
     template: `
         <div class="rounded-lg border overflow-hidden" :class="[$styles.chromeBorder]">
             <div class="flex border-b" :class="[$styles.chromeBorder]">
@@ -142,10 +143,14 @@ export const ImportPanel = {
                                 <div><label class="block text-xs font-semibold mb-1">Max depth</label>
                                     <input v-model.number="crawlForm.maxDepth" type="number" min="0" max="100"
                                         class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
-                                <div><label class="block text-xs font-semibold mb-1">Additional hosts</label>
+                                <div><label class="block text-xs font-semibold mb-1">Max requests</label>
+                                    <input v-model.number="crawlForm.maxRequests" type="number" min="1" max="50000" placeholder="5 × Max pages"
+                                        title="Includes requests for missing, duplicate, and non-HTML pages. At least Max pages."
+                                        class="w-full px-2.5 py-1.5 rounded-md text-sm border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
+                            </div>
+                            <div><label class="block text-xs font-semibold mb-1">Additional hosts</label>
                                     <input type="text" v-model="crawlForm.allowedHostsText" placeholder="cdn.example.org"
                                         class="w-full px-2.5 py-1.5 rounded-md text-sm font-mono border-2 bg-white dark:bg-gray-900" :class="[$styles.chromeBorder]"></div>
-                            </div>
                         </div>
                         <div class="flex flex-wrap gap-x-5 gap-y-2 text-sm">
                             <label class="inline-flex items-center gap-2"><CheckBox v-model="crawlForm.respectRobots"/> Respect robots.txt</label>
@@ -159,14 +164,25 @@ export const ImportPanel = {
                             <JsonSchemaForm :schema="crawlRuleSchema" :data="crawlRules"
                                 :show-title="false" @change="setCrawlRules" />
                         </div>
-                        <p v-if="crawlError" class="text-xs text-red-600">{{ crawlError }}</p>
-                        <button type="button" @click="startCrawl" :disabled="busy || !crawlForm.url"
-                            class="px-4 py-2 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40">
-                            {{ busy ? 'Crawling…' : 'Crawl website' }}
-                        </button>
+                        <CrawlStatus :result="crawlResult" />
+                        <p v-if="crawlError" role="alert" class="text-xs text-red-600">{{ crawlError }}</p>
+                        <div class="flex items-center gap-3" :aria-busy="crawling">
+                            <button type="button" @click="startCrawl" :disabled="busy || !crawlForm.url"
+                                class="shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-40">
+                                <svg v-if="crawling" class="size-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity="0.25"/>
+                                    <path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                                </svg>
+                                {{ crawling ? 'Crawling…' : 'Crawl website' }}
+                            </button>
+                            <span v-if="crawling && crawlProgress" data-crawl-progress role="status" class="text-sm tabular-nums whitespace-nowrap" :class="[$styles.muted]">
+                                {{ Number(crawlProgress.pages || 0).toLocaleString() }} {{ crawlProgress.pages === 1 ? 'page' : 'pages' }} crawled<span v-if="crawlProgress.failed"> · {{ Number(crawlProgress.failed).toLocaleString() }} {{ crawlProgress.failed === 1 ? 'URL' : 'URLs' }} failed</span>
+                            </span>
+                        </div>
 
                         <div v-if="selectedImport" class="border-t pt-4 space-y-3 min-w-0" :class="[$styles.chromeBorder]">
-                            <div class="text-xs font-mono break-all" :class="[$styles.muted]">{{ selectedImport.path }}</div>
+                            <div dir="rtl" class="text-xs font-mono text-left overflow-hidden text-ellipsis whitespace-nowrap"
+                                :class="[$styles.muted]" :title="selectedImport.path"><span dir="ltr">{{ selectedImport.path }}</span></div>
                             <label class="block text-xs font-semibold">Regex transforms</label>
                             <JsonSchemaForm :schema="transformSchema" :data="transforms"
                                 :show-title="false" @change="setTransforms" />
@@ -414,7 +430,7 @@ export const ImportPanel = {
         const runningImport = ref(false)
         const importCompleted = ref(false)
         const fileInput = ref(null)
-        const newCrawlForm = () => ({ url: '', name: '', maxPages: 500, maxDepth: 10,
+        const newCrawlForm = () => ({ url: '', name: '', maxPages: 500, maxRequests: null, maxDepth: 10,
             includeText: '/**', excludeText: '',
             queryMode: 'ignore', queryAllowText: '', allowedHostsText: '', respectRobots: true,
             respectNoIndex: true, followNoFollow: false, useCanonical: true, dedupeContent: true })
@@ -423,6 +439,11 @@ export const ImportPanel = {
         const crawlRuleSchema = ref({ type: 'array', items: { type: 'object' } })
         const crawlRules = ref([])
         const crawlError = ref('')
+        const crawling = ref(false)
+        const crawlProgress = ref(null)
+        let crawlPolling = null
+        onUnmounted(() => crawlPolling?.stop())
+        const crawlResult = ref(null)
         const crawlImports = ref([])
         const selectedImport = ref(null)
         const transformSchema = ref({ type: 'array', items: { type: 'object' } })
@@ -553,6 +574,7 @@ export const ImportPanel = {
             }
         }
         function showImport(item, navigate=false) {
+            crawlResult.value = null
             selectedImport.value = item
             transforms.value = cloneJson(item.config?.transforms || [])
             const saved = item.config?.crawl || {}
@@ -587,6 +609,7 @@ export const ImportPanel = {
         watch([() => props.routeTab, () => props.routeCrawl], syncRouteState)
         const splitValues = value => String(value || '').split(/[\n,]/).map(x => x.trim()).filter(Boolean)
         function fillSource(source) {
+            crawlResult.value = null
             importCompleted.value = false
             loadedManifest.value = cloneJson(source)
             config.value = { ...source.config, ...source.category,
@@ -628,6 +651,7 @@ export const ImportPanel = {
             emit('navigate', { import:tab.value, crawl:null })
         }
         function finishEditing() {
+            crawlResult.value = null
             importCompleted.value = false
             if (loadedManifest.value?.importOptions?.crawl) {
                 crawlForm.value = newCrawlForm()
@@ -711,6 +735,8 @@ export const ImportPanel = {
             if (busy.value) return
             busy.value = true
             crawlError.value = ''
+            crawlResult.value = null
+            crawling.value = true
             try {
                 emit('previewing')
                 const source = loadedManifest.value?.id ? await persistSource() : null
@@ -720,13 +746,22 @@ export const ImportPanel = {
                     ...(source ? {sourceId:source.id} : {}),
                     sourceSettings: { category:settings.category, rules:settings.rules,
                         config:{requireSourceUrl:settings.config.requireSourceUrl} } }
+                crawlPolling = pollCrawlProgress(ext, progress => crawlProgress.value = progress)
+                body.progressId = crawlPolling.progressId
                 const api = await ext.postJson('/imports/crawl', body)
                 if (api.error) return ext.setError(api.error)
                 await loadImports()
-                await editSource(api.response.source)
+                await editSource(api.response.source, null, false)
+                crawlResult.value = api.response
                 emit('saved', api.response.source)
             } catch (e) { crawlError.value = e.message }
-            finally { busy.value = false }
+            finally {
+                crawlPolling?.stop()
+                crawlPolling = null
+                crawlProgress.value = null
+                crawling.value = false
+                busy.value = false
+            }
         }
         function crawlImportUrl(action, params = {}) {
             const query = new URLSearchParams(params)
@@ -896,7 +931,7 @@ export const ImportPanel = {
             editingSource, savedMessage, loadedManifest,
             editSource, saveImport, closeEditor, finishEditing, runImport,
             busy, runningImport, importCompleted, fileInput, hasArchive, formCells, summary, canSubmit,
-            crawlForm, crawlNameEdited, crawlRuleSchema, crawlRules, crawlError, crawlImports, selectedImport,
+            crawlForm, crawlNameEdited, crawlRuleSchema, crawlRules, crawlError, crawling, crawlProgress, crawlResult, crawlImports, selectedImport,
             transformSchema, transforms, transformError, transformMessage,
             pageBrowserOpen, pageBrowserBusy, pageBrowserError, pagePaths, pageDirectoriesClosed,
             pageEntries, selectedPagePath, selectedPageContent, pageContentBusy,

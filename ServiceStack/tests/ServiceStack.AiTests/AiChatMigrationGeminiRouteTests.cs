@@ -155,6 +155,77 @@ public class AiChatMigrationGeminiRouteTests
         Assert.That(db.GetDocument(b.Id,"alice")!.Name,Is.EqualTo(b.Name));
     }
 
+    [Test]
+    public async Task Crawl_progress_polls_without_waiting_for_crawl_and_resets_on_recrawl()
+    {
+        using var host = new AiChatMigrationTestHost();
+        TaskCompletionSource<bool> firstEntered = null!, firstRelease = null!, nextEntered = null!, nextRelease = null!;
+        Install(host, async (request, _) => {
+            var first = request.RequestUri!.AbsolutePath == "/docs/";
+            (first ? firstEntered : nextEntered).TrySetResult(true);
+            await (first ? firstRelease : nextRelease).Task;
+            var response = Response(first ? """<p>First</p><a href="next">Next</a>""" : "<p>Next</p>");
+            response.Content.Headers.ContentType = new("text/html");
+            return response;
+        });
+        for (var i = 0; i < 2; i++)
+        {
+            firstEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            firstRelease = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            nextEntered = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            nextRelease = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            var id = Guid.NewGuid().ToString();
+            var crawl = host.SendAsync("POST", "/ext/gemini/imports/crawl", "alice", new JsonObject {
+                ["url"] = "https://fixture.example/docs/", ["name"] = "fixture", ["respectRobots"] = false, ["progressId"] = id });
+            async Task<JsonObject> Poll(string user = "alice") => (JsonObject)(await host.SendAsync("GET",
+                "/ext/gemini/imports/crawl/progress?progressId=" + id, user).WaitAsync(TimeSpan.FromSeconds(2)))!;
+            try
+            {
+                await firstEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                var initial = await Poll();
+                Assert.That(initial.GetBool("running"), Is.True);
+                Assert.That(initial.GetInt("pages"), Is.Zero);
+                firstRelease.TrySetResult(true);
+                await nextEntered.Task.WaitAsync(TimeSpan.FromSeconds(2));
+                Assert.That((await Poll()).GetInt("pages"), Is.EqualTo(1));
+                Assert.That((await Poll("bob")).GetBool("running"), Is.False);
+            }
+            finally { firstRelease.TrySetResult(true); nextRelease.TrySetResult(true); }
+            var result = (JsonObject)(await crawl.WaitAsync(TimeSpan.FromSeconds(2)))!;
+            Assert.That(result.GetInt("pages"), Is.EqualTo(2));
+            Assert.That(result.GetObject("config").GetObject("crawl").ContainsKey("progressId"), Is.False);
+            Assert.That((await Poll()).GetBool("running"), Is.False);
+        }
+    }
+
+    [TestCase(1, 10, false, "maxPages", 1, 3)]
+    [TestCase(2, 2, true, "maxRequests", 1, 2)]
+    [TestCase(4, 4, false, "complete", 4, 0)]
+    [TestCase(10, 10, false, "complete", 4, 0)]
+    [TestCase(1, 1, false, "maxPages", 1, 3)]
+    public async Task Crawl_reports_limits_only_when_urls_remain_queued(
+        int maxPages, int maxRequests, bool noindex, string stopReason, int saved, int remaining)
+    {
+        using var host = new AiChatMigrationTestHost();
+        Install(host, (request, _) => {
+            var path = request.RequestUri!.AbsolutePath;
+            var html = path == "/docs/"
+                ? """<p>Start</p><a href="a">A</a><a href="b">B</a><a href="c">C</a>"""
+                : (noindex ? """<meta name="robots" content="noindex">""" : "") + "<p>" + path + "</p>";
+            var response = Response(html);
+            response.Content.Headers.ContentType = new("text/html");
+            return Task.FromResult(response);
+        });
+        var result = (JsonObject)(await host.SendAsync("POST", "/ext/gemini/imports/crawl", "alice",
+            new JsonObject { ["url"] = "https://fixture.example/docs/", ["name"] = "fixture",
+                ["respectRobots"] = false, ["maxPages"] = maxPages, ["maxRequests"] = maxRequests }))!;
+        Assert.That(result.GetInt("pages"), Is.EqualTo(saved));
+        Assert.That(result.GetString("stopReason"), Is.EqualTo(stopReason));
+        Assert.That(result.GetInt("remaining"), Is.EqualTo(remaining));
+        Assert.That(result.GetInt("maxPages"), Is.EqualTo(maxPages));
+        Assert.That(result.GetInt("maxRequests"), Is.EqualTo(maxRequests));
+    }
+
     [TestCase("/docs/intro.html")]
     [TestCase("/docs/")]
     [TestCase("/docs")]
@@ -188,18 +259,53 @@ public class AiChatMigrationGeminiRouteTests
         Assert.That(canonical, Does.Contain("https://fixture.example/docs/canonical.html"));
     }
 
-    [TestCase(HttpStatusCode.NotFound)] [TestCase(HttpStatusCode.Gone)]
-    public async Task Crawl_skips_missing_pages_instead_of_failing_the_whole_crawl(HttpStatusCode missing)
+    [TestCase(302)] [TestCase(404)] [TestCase(410)] [TestCase(429)] [TestCase(503)]
+    [TestCase(0)] [TestCase(-1)]
+    public async Task Crawl_reports_page_failures_and_continues_to_other_pages(int failure)
     {
-        // llms-py parity: a dead link (404/410) is skipped; other HTTP errors still fail the crawl
-        using var host=new AiChatMigrationTestHost();
-        var db=Install(host,(request,_)=>{
-            if(request.RequestUri!.AbsolutePath=="/missing")return Task.FromResult(Response("gone",missing));
-            var response=Response("<html><head><title>Guide</title></head><body>Guide content with a <a href=\"/missing\">dead link</a>.</body></html>");response.Content.Headers.ContentType=new("text/html");return Task.FromResult(response);
-        });var store=Store(db);
-        var created=(JsonObject)(await host.SendAsync("POST","/ext/gemini/imports/crawl","alice",new JsonObject { ["filestoreId"]=store,["url"]="https://fixture.example/guide",["name"]="fixture",["respectRobots"]=false,["maxPages"]=5 }))!;
-        var id=created.GetObject("source")!.GetLong("id")!.Value;
-        var pages=(JsonObject)(await host.SendAsync("GET","/ext/gemini/imports/fixture/pages?sourceId="+id,"alice"))!;Assert.That(pages.GetArray("pages")!.Count,Is.EqualTo(1));
+        using var host = new AiChatMigrationTestHost();
+        var fail = true;
+        Install(host, (request, _) => {
+            var path = request.RequestUri!.AbsolutePath;
+            if (path == "/docs/bad" && fail)
+            {
+                if (failure == 0) throw new HttpRequestException("Connection failed");
+                if (failure == -1) throw new TaskCanceledException("Request timed out");
+                return Task.FromResult(Response("failed", (HttpStatusCode)failure));
+            }
+            var response = Response(path == "/docs/"
+                ? """<p>Start</p><a href="bad">Bad</a><a href="good">Good</a>""" : "<p>Good page</p>");
+            response.Content.Headers.ContentType = new("text/html");
+            return Task.FromResult(response);
+        });
+        var result = (JsonObject)(await host.SendAsync("POST", "/ext/gemini/imports/crawl", "alice",
+            new JsonObject { ["url"] = "https://fixture.example/docs/", ["name"] = "fixture", ["respectRobots"] = false }))!;
+        Assert.That(result.GetInt("pages"), Is.EqualTo(2));
+        Assert.That(result.GetInt("requests"), Is.EqualTo(3));
+        Assert.That(result.GetInt("failed"), Is.EqualTo(1));
+        Assert.That(result.GetString("stopReason"), Is.EqualTo("complete"));
+        var error = result.GetArray("errors")!.Single()!.AsObject();
+        Assert.That(error.GetString("url"), Is.EqualTo("https://fixture.example/docs/bad"));
+        Assert.That(error.GetInt("statusCode"), Is.EqualTo(failure > 0 ? (int?)failure : null));
+        Assert.That(error.GetString("message"), Is.Not.Empty);
+
+        var root = result.GetString("path")!;
+        var old = Path.Combine(root, "old.md");
+        File.WriteAllText(old, "Original content");
+        var config = result.GetObject("config");
+        config.GetObject("crawl").GetArray("generated")!.Add("old.md");
+        File.WriteAllText(Path.Combine(root, "import.json"), config.ToJsonString());
+        async Task<JsonObject> Recrawl() => (JsonObject)(await host.SendAsync("POST", "/ext/gemini/imports/crawl", "alice",
+            new JsonObject { ["url"] = "https://fixture.example/docs/", ["name"] = "fixture", ["respectRobots"] = false }))!;
+        var partial = await Recrawl();
+        Assert.That(partial.GetInt("retainedPages"), Is.EqualTo(1));
+        Assert.That(partial.GetObject("config").GetObject("crawl").GetArray("generated")!.Count, Is.EqualTo(3));
+        Assert.That(File.ReadAllText(old), Is.EqualTo("Original content"));
+        fail = false;
+        var complete = await Recrawl();
+        Assert.That(complete.GetInt("failed"), Is.Zero);
+        Assert.That(complete.GetInt("retainedPages"), Is.Zero);
+        Assert.That(File.Exists(old), Is.False);
     }
 
     [Test]
@@ -236,7 +342,18 @@ public class AiChatMigrationGeminiRouteTests
         var transformed=(JsonObject)(await host.SendAsync("POST","/ext/gemini/imports/wrong-name/transform?sourceId="+id,"alice",new JsonObject { ["transforms"]=new JsonArray(new JsonObject { ["pattern"]="Original",["replacement"]="Edited",["flags"]="g" }) }))!;Assert.That(transformed.GetInt("changed"),Is.EqualTo(1));
         var page=(JsonObject)(await host.SendAsync("GET","/ext/gemini/imports/wrong-name/page?sourceId="+id+"&path="+Uri.EscapeDataString(relative),"alice"))!;Assert.That(page.GetString("content"),Does.Contain("Edited"));
         Assert.ThrowsAsync<HttpError>(async()=>await host.SendAsync("GET","/ext/gemini/imports/wrong-name/pages?sourceId="+id,"bob"));
-        fail=true;Assert.ThrowsAsync<HttpRequestException>(async()=>await host.SendAsync("POST","/ext/gemini/imports/crawl","alice",new JsonObject { ["filestoreId"]=store,["sourceId"]=id }));Assert.That(File.ReadAllText(Path.Combine(root,relative)),Does.Contain("Edited"));Assert.That(db.QuerySources(store,"alice").Count,Is.EqualTo(1));
+        fail=true;
+        var failed = (JsonObject)(await host.SendAsync("POST","/ext/gemini/imports/crawl","alice",new JsonObject { ["filestoreId"]=store,["sourceId"]=id }))!;
+        Assert.That(failed.GetInt("pages"), Is.Zero);
+        Assert.That(failed.GetInt("failed"), Is.EqualTo(1));
+        Assert.That(failed.GetInt("retainedPages"), Is.EqualTo(1));
+        var rerun = (JsonObject)(await host.SendAsync("POST", "/ext/gemini/sources/" + id + "/run", "alice",
+            new JsonObject { ["dryRun"] = true, ["refreshCrawl"] = true }))!;
+        Assert.That(rerun.GetObject("crawl").GetInt("failed"), Is.EqualTo(1));
+        Assert.That(rerun.GetObject("crawl").GetInt("retainedPages"), Is.EqualTo(1));
+        Assert.That(rerun.GetObject("crawl").GetArray("errors")!.Count, Is.EqualTo(1));
+        Assert.That(failed.GetObject("config").GetObject("crawl").GetArray("generated")!.Count, Is.EqualTo(1));
+        Assert.That(File.ReadAllText(Path.Combine(root,relative)),Does.Contain("Edited"));Assert.That(db.QuerySources(store,"alice").Count,Is.EqualTo(1));
     }
 
     [Test]
