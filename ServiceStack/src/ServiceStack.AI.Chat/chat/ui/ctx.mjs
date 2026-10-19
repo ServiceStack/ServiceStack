@@ -1,5 +1,5 @@
 
-import { reactive, markRaw, watch } from 'vue'
+import { reactive, markRaw, toRaw, watch } from 'vue'
 import WorkspaceFilesIcon from './modules/WorkspaceFilesIcon.mjs'
 import SharePanel, { ShareIcon } from './modules/SharePanel.mjs'
 import { EventBus, humanize, combinePaths, pick } from "@servicestack/client"
@@ -389,6 +389,10 @@ export class AppContext {
         Object.entries(icons).forEach(([id, icon]) => {
             if (!icon.component) {
                 console.error(`Icon ${id} is missing component property`)
+            }
+            // Registry metadata is reactive; Vue component definitions must stay raw.
+            if (icon.component && (typeof icon.component === 'object' || typeof icon.component === 'function')) {
+                icon.component = markRaw(toRaw(icon.component))
             }
             icon.id = id
             if (!icon.name) {
