@@ -15,10 +15,12 @@ namespace ServiceStack.AI;
 public class GoogleProvider : OpenAiCompatibleProvider
 {
     public override string Sdk => "@ai-sdk/google";
+    protected override bool PreserveProviderMetadata => true;
 
     public JsonObject? SafetySettings { get; set; }
     public JsonObject? ThinkingConfig { get; set; }
     public JsonObject? SpeechConfig { get; set; }
+    public bool? ToolCombination { get; set; }
 
     public override void Populate(JsonObject kwargs)
     {
@@ -29,6 +31,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
             ?? (kwargs["safety_settings"] is JsonArray arr ? new JsonObject { ["items"] = arr.Clone() } : null);
         ThinkingConfig = kwargs.GetObject("thinking_config")?.Clone();
         SpeechConfig = kwargs.GetObject("speech_config")?.Clone();
+        ToolCombination = kwargs["tool_combination"] == null ? null : kwargs.GetBool("tool_combination");
 
         // Google authenticates with a ?key= query param and rejects the Authorization header
         Headers.Remove("Authorization");
@@ -114,6 +117,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
 
     public override async Task<JsonObject> ChatAsync(JsonObject chat, ChatContext context)
     {
+        chat = chat.Clone();
         var model = chat.GetString("model") ?? throw new ArgumentException("Model not specified");
         chat["model"] = ProviderModel(model) ?? model;
         var modelInfo = context.ModelInfo ?? ModelInfo(chat.GetString("model")!) ?? new JsonObject();
@@ -148,10 +152,47 @@ public class GoogleProvider : OpenAiCompatibleProvider
         if (!isStream)
         {
             var response = await ReadJsonResponseAsync(res).ConfigAwait();
-            return ToGeminiResponse(response, chat, startedAt, context);
+            return ToGeminiResponse(response, chat, startedAt, context,
+                body.GetObject("toolConfig").GetBool("includeServerSideToolInvocations"));
         }
-        return await HandleGeminiStreamAsync(res, chat, startedAt, context).ConfigAwait() ?? new JsonObject();
+        return await HandleGeminiStreamAsync(res, chat, startedAt, context,
+            body.GetObject("toolConfig").GetBool("includeServerSideToolInvocations")).ConfigAwait() ?? new JsonObject();
     }
+
+    public bool SupportsToolCombination(JsonObject chat, JsonObject modelInfo)
+    {
+        if (chat["tool_combination"] != null) return chat.GetBool("tool_combination");
+        if (modelInfo["tool_combination"] != null) return modelInfo.GetBool("tool_combination");
+        if (ToolCombination != null) return ToolCombination.Value;
+        var model = (chat.GetString("model") ?? "").ToLowerInvariant();
+        return System.Text.RegularExpressions.Regex.IsMatch(model, @"^gemini-[34](?:[.-]|$)")
+            || model is "gemini-flash-latest" or "gemini-flash-lite-latest";
+    }
+
+    JsonObject ResponseMetadata(JsonObject content, JsonObject chat, bool includeInvocations) => new()
+    {
+        ["google"] = new JsonObject
+        {
+            ["provider"] = Id, ["model"] = chat.GetString("model"), ["content"] = content.DeepClone(),
+            ["include_server_side_tool_invocations"] = includeInvocations,
+        },
+    };
+
+    static JsonObject? ReplayMetadata(JsonObject message, string? model, string? providerId)
+    {
+        var google = message.GetObject("provider_metadata").GetObject("google");
+        return providerId != null && message.GetString("role") == "assistant"
+            && google.GetString("provider") == providerId && google.GetString("model") == model
+            && google.GetObject("content") is { } content
+            && (content.GetString("role") ?? "model") == "model"
+            && content.GetArray("parts") is { Count: > 0 }
+                ? google : null;
+    }
+
+    static bool HasCirculatedParts(JsonObject metadata) =>
+        metadata.GetBool("include_server_side_tool_invocations")
+        || metadata.GetObject("content").GetArray("parts")?.OfType<JsonObject>()
+            .Any(x => x.ContainsKey("toolCall") || x.ContainsKey("toolResponse")) == true;
 
     /// <summary>
     /// Build the Gemini generateContent request body from an OpenAI-shaped chat.
@@ -164,44 +205,67 @@ public class GoogleProvider : OpenAiCompatibleProvider
         // Gemini models support tool calls unless the catalogue explicitly says otherwise
         var supportsToolCalls = !hasMediaModality && modelInfo.GetBool("tool_call", defaultValue: true);
 
-        // File Search is a Gemini built-in tool and currently cannot be combined reliably with
-        // function declarations. Keep the user's selected tools intact in the thread, but isolate
-        // File Search in the provider-specific outgoing payload.
+        var combinationSupported = SupportsToolCombination(chat, modelInfo);
+        var includeInvocations = false;
         JsonArray? tools = null;
         if (supportsToolCalls && chat.GetArray("tools") is { Count: > 0 } chatTools)
         {
             var fileSearch = chatTools.OfType<JsonObject>()
                 .FirstOrDefault(x => x.GetString("type") == "file_search")?["file_search"];
-            if (fileSearch != null)
+            var geminiTools = new JsonObject();
+            if (fileSearch != null) geminiTools["file_search"] = fileSearch.DeepClone();
+            var functionDeclarations = new JsonArray();
+            foreach (var tool in chatTools.OfType<JsonObject>())
             {
-                tools = new JsonArray(new JsonObject { ["file_search"] = fileSearch.DeepClone() });
-            }
-            else
-            {
-                var functionDeclarations = new JsonArray();
-                foreach (var tool in chatTools.OfType<JsonObject>())
+                if (tool.GetString("type") != "function" || tool.GetObject("function") is not { } fn)
+                    continue;
+                functionDeclarations.Add(new JsonObject
                 {
-                    if (tool.GetString("type") != "function" || tool.GetObject("function") is not { } fn)
-                        continue;
-                    functionDeclarations.Add(new JsonObject
-                    {
-                        ["name"] = fn.GetString("name"),
-                        ["description"] = fn.GetString("description"),
-                        ["parameters"] = SanitizeParameters(fn["parameters"]),
-                    });
-                }
-                if (functionDeclarations.Count > 0)
-                    tools = new JsonArray(new JsonObject { ["function_declarations"] = functionDeclarations });
+                    ["name"] = fn.GetString("name"), ["description"] = fn.GetString("description"),
+                    ["parameters"] = SanitizeParameters(fn["parameters"]),
+                });
             }
+            includeInvocations = fileSearch != null && functionDeclarations.Count > 0 && combinationSupported;
+            if (fileSearch != null && functionDeclarations.Count > 0 && !combinationSupported)
+                Log.LogInformation("File Search function tools omitted: this model does not support tool combination. "
+                    + "Set tool_combination=true only for models supporting tool context circulation.");
+            if (functionDeclarations.Count > 0 && (fileSearch == null || includeInvocations))
+                geminiTools["function_declarations"] = functionDeclarations;
+            if (geminiTools.Count > 0) tools = new JsonArray(geminiTools);
         }
 
-        var (contents, systemPrompt) = ToGeminiContents(chat);
+        foreach (var message in chat.GetArray("messages")?.OfType<JsonObject>() ?? [])
+        {
+            if (ReplayMetadata(message, chat.GetString("model"), Id) is not { } metadata || !HasCirculatedParts(metadata))
+                continue;
+            if (!combinationSupported)
+                throw new ArgumentException("This history requires Gemini tool context circulation; "
+                    + "enable tool_combination or choose a supported model.");
+            includeInvocations = true;
+        }
+        var (contents, systemPrompt) = ToGeminiContents(chat, Id);
         if (hasMediaModality)
             systemPrompt = null;
 
         var body = new JsonObject { ["contents"] = contents };
         if (tools != null)
             body["tools"] = tools;
+        if (includeInvocations)
+        {
+            var functionConfig = new JsonObject { ["mode"] = "VALIDATED" };
+            var choice = chat["tool_choice"];
+            if (choice is JsonValue choiceValue && choiceValue.TryGetValue<string>(out var mode))
+                functionConfig["mode"] = mode switch { "none" => "NONE", "required" => "ANY", _ => "VALIDATED" };
+            else if (choice is JsonObject named && named.GetObject("function").GetString("name") is { } name)
+            {
+                functionConfig["mode"] = "ANY";
+                functionConfig["allowedFunctionNames"] = new JsonArray(name);
+            }
+            body["toolConfig"] = new JsonObject
+            {
+                ["includeServerSideToolInvocations"] = true, ["functionCallingConfig"] = functionConfig,
+            };
+        }
         if (SafetySettingsArray is { } safety)
             body["safetySettings"] = safety.Clone();
         if (systemPrompt != null)
@@ -321,7 +385,10 @@ public class GoogleProvider : OpenAiCompatibleProvider
     }
 
     /// <summary>OpenAI messages → Gemini contents[] (+ the hoisted system prompt)</summary>
-    public static (JsonArray Contents, string? SystemPrompt) ToGeminiContents(JsonObject chat)
+    public static (JsonArray Contents, string? SystemPrompt) ToGeminiContents(JsonObject chat) =>
+        ToGeminiContents(chat, null);
+
+    public static (JsonArray Contents, string? SystemPrompt) ToGeminiContents(JsonObject chat, string? providerId)
     {
         var contents = new JsonArray();
         string? systemPrompt = null;
@@ -332,6 +399,23 @@ public class GoogleProvider : OpenAiCompatibleProvider
             if (messageNode is not JsonObject message)
                 continue;
             var msgRole = message.GetString("role");
+
+            if (ReplayMetadata(message, chat.GetString("model"), providerId) is { } metadata)
+            {
+                var raw = metadata.GetObject("content")!.Clone();
+                var legacyCalls = message.GetArray("tool_calls")?.OfType<JsonObject>().ToList() ?? [];
+                var callIndex = 0;
+                foreach (var part in raw.GetArray("parts")!.OfType<JsonObject>())
+                {
+                    if (part.GetObject("functionCall") is not { } fc) continue;
+                    if (fc.GetString("id") == null && callIndex < legacyCalls.Count)
+                        fc["id"] = legacyCalls[callIndex].GetString("id");
+                    if (fc.GetString("id") is { } callId) toolIdMap[callId] = fc.GetString("name") ?? "";
+                    callIndex++;
+                }
+                contents.Add(raw);
+                continue;
+            }
 
             if (msgRole == "system")
             {
@@ -344,7 +428,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
             var role = msgRole switch
             {
                 "assistant" => "model",
-                "tool" => "function",
+                "tool" => "user",
                 _ => "user",
             };
             var parts = new JsonArray();
@@ -441,7 +525,13 @@ public class GoogleProvider : OpenAiCompatibleProvider
 
             if (parts.Count > 0)
             {
-                contents.Add(new JsonObject { ["role"] = role, ["parts"] = parts });
+                if (msgRole == "tool" && contents.LastOrDefault() is JsonObject previous
+                    && previous.GetArray("parts") is { } previousParts
+                    && previousParts.OfType<JsonObject>().All(x => x.ContainsKey("functionResponse")))
+                {
+                    foreach (var part in parts) previousParts.Add(part?.DeepClone());
+                }
+                else contents.Add(new JsonObject { ["role"] = role, ["parts"] = parts });
             }
         }
         return (contents, systemPrompt);
@@ -466,7 +556,11 @@ public class GoogleProvider : OpenAiCompatibleProvider
 
     /// <summary>Gemini candidates → an OpenAI chat.completion</summary>
     public JsonObject ToGeminiResponse(JsonObject response, JsonObject chat,
-        DateTimeOffset startedAt, ChatContext? context)
+        DateTimeOffset startedAt, ChatContext? context) =>
+        ToGeminiResponse(response, chat, startedAt, context, false);
+
+    public JsonObject ToGeminiResponse(JsonObject response, JsonObject chat,
+        DateTimeOffset startedAt, ChatContext? context, bool includeInvocations)
     {
         if (context != null)
             context.ProviderResponse = response;
@@ -477,12 +571,14 @@ public class GoogleProvider : OpenAiCompatibleProvider
         var images = new JsonArray();
         JsonObject? groundingAcc = null;
         string? finishReason = null;
+        JsonObject? modelContent = null;
 
-        foreach (var candidateNode in response.GetArray("candidates") ?? [])
+        foreach (var candidateNode in (response.GetArray("candidates") ?? []).Take(1))
         {
             if (candidateNode is not JsonObject candidate)
                 continue;
             finishReason ??= candidate.GetString("finishReason");
+            modelContent = candidate.GetObject("content");
             groundingAcc = GeminiGrounding.Merge(groundingAcc, candidate.GetObject("groundingMetadata"));
 
             foreach (var partNode in candidate.GetObject("content")?.GetArray("parts") ?? [])
@@ -547,6 +643,9 @@ public class GoogleProvider : OpenAiCompatibleProvider
             ["role"] = "assistant",
             ["content"] = string.Join("", textParts),
         };
+        if (modelContent?.GetArray("parts") is { Count: > 0 }
+            && chat.GetArray("modalities")?.Any(x => x?.GetValue<string>() is "image" or "audio") != true)
+            message["provider_metadata"] = ResponseMetadata(modelContent, chat, includeInvocations);
         if (reasoningParts.Count > 0)
             message["reasoning_content"] = string.Join("", reasoningParts);
         if (toolCalls.Count > 0)
@@ -592,8 +691,12 @@ public class GoogleProvider : OpenAiCompatibleProvider
     /// Gemini's `?alt=sse` stream: `data:` lines carrying generateContent payloads, accumulated into
     /// the same shape the OpenAI path produces (incl. throttled partial thread writes for the UI).
     /// </summary>
+    public Task<JsonObject?> HandleGeminiStreamAsync(HttpResponseMessage httpRes, JsonObject chat,
+        DateTimeOffset startedAt, ChatContext context) =>
+        HandleGeminiStreamAsync(httpRes, chat, startedAt, context, false);
+
     public async Task<JsonObject?> HandleGeminiStreamAsync(HttpResponseMessage httpRes, JsonObject chat,
-        DateTimeOffset startedAt, ChatContext context)
+        DateTimeOffset startedAt, ChatContext context, bool includeInvocations)
     {
         if ((int)httpRes.StatusCode >= 300)
         {
@@ -610,6 +713,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
         JsonObject? grounding = null;
         var writer = CreateStreamWriter(context);
         var msgTimestamp = startedAt.ToUnixTimeMilliseconds();
+        var modelContent = new JsonObject { ["role"] = "model", ["parts"] = new JsonArray() };
 
         JsonObject BuildAssistantMsg(bool includeModel)
         {
@@ -621,6 +725,8 @@ public class GoogleProvider : OpenAiCompatibleProvider
             };
             if (includeModel && chat.GetString("model") is { } m)
                 msg["model"] = m;
+            if (modelContent.GetArray("parts") is { Count: > 0 })
+                msg["provider_metadata"] = ResponseMetadata(modelContent, chat, includeInvocations);
             if (reasoningAcc.Length > 0)
                 msg["reasoning_content"] = reasoningAcc.ToString();
             if (toolCalls.Count > 0)
@@ -666,11 +772,19 @@ public class GoogleProvider : OpenAiCompatibleProvider
 
                 foreach (var candidateNode in chunk.GetArray("candidates") ?? [])
                 {
-                    if (candidateNode is not JsonObject candidate)
+                    if (candidateNode is not JsonObject candidate || (candidate.GetInt("index") ?? 0) != 0)
                         continue;
                     if (candidate.GetString("finishReason") is { } fr)
                         finishReason = fr;
                     groundingAcc = GeminiGrounding.Merge(groundingAcc, candidate.GetObject("groundingMetadata"));
+
+                    if (candidate.GetObject("content") is { } rawContent)
+                    {
+                        foreach (var entry in rawContent.Where(x => x.Key != "parts"))
+                            modelContent[entry.Key] = entry.Value?.DeepClone();
+                        foreach (var part in rawContent.GetArray("parts") ?? [])
+                            modelContent.GetArray("parts")!.Add(part?.DeepClone());
+                    }
 
                     foreach (var partNode in candidate.GetObject("content")?.GetArray("parts") ?? [])
                     {
@@ -685,7 +799,7 @@ public class GoogleProvider : OpenAiCompatibleProvider
                         }
                         if (part.GetObject("functionCall") is { } fc)
                         {
-                            toolCalls.Add(new JsonObject
+                            var toolCall = new JsonObject
                             {
                                 ["id"] = fc.GetString("id") ?? $"call_{Guid.NewGuid().ToString("n")[..8]}",
                                 ["type"] = "function",
@@ -694,7 +808,16 @@ public class GoogleProvider : OpenAiCompatibleProvider
                                     ["name"] = fc.GetString("name"),
                                     ["arguments"] = (fc["args"] ?? new JsonObject()).ToJsonString(ChatJson.Options),
                                 },
-                            });
+                            };
+                            if ((part.GetString("thoughtSignature") ?? part.GetString("thought_signature")) is { } signature)
+                            {
+                                toolCall["thoughtSignature"] = signature;
+                                toolCall["extra_content"] = new JsonObject
+                                {
+                                    ["google"] = new JsonObject { ["thought_signature"] = signature },
+                                };
+                            }
+                            toolCalls.Add(toolCall);
                         }
                     }
                 }

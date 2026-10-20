@@ -71,7 +71,7 @@ public partial class AppExtension
         }
         var history = messages.Skip(index).OfType<JsonObject>().Select(x => BoundMessage(x, 200_000)).ToList();
         var recentStart = Math.Max(0, history.Count - recentCount);
-        while (recentStart > 0 && history[recentStart].GetString("role") == "tool") recentStart--;
+        while (recentStart > 0 && recentStart < history.Count && history[recentStart].GetString("role") == "tool") recentStart--;
         if (recentStart > 0 && history[recentStart - 1].GetArray("tool_calls") is { Count: > 0 }) recentStart--;
         var source = history.Take(recentStart).ToList();
         var recent = history.Skip(recentStart).ToList();
@@ -158,9 +158,10 @@ public partial class AppExtension
         var groups = new List<List<JsonObject>>();
         foreach (var message in messages)
         {
-            if (message.GetString("role") == "tool" && groups.Count > 0 &&
-                groups[^1][0].GetArray("tool_calls") is { Count: > 0 }) groups[^1].Add(message);
-            else groups.Add([message]);
+            var projected = BoundMessage(message, 200_000, preserveReplay: false);
+            if (projected.GetString("role") == "tool" && groups.Count > 0 &&
+                groups[^1][0].GetArray("tool_calls") is { Count: > 0 }) groups[^1].Add(projected);
+            else groups.Add([projected]);
         }
         var batches = new List<List<JsonObject>>();
         var batch = new List<JsonObject>(); var tokens = 0L;
@@ -180,9 +181,13 @@ public partial class AppExtension
     static long Tokens(IEnumerable<JsonObject> messages) => DurableAgentUtils.CountTokensApprox(
         new JsonArray(messages.Select(x => (JsonNode)x.Clone()).ToArray()));
 
-    static JsonObject BoundMessage(JsonObject message, int maxChars)
+    static JsonObject BoundMessage(JsonObject message, int maxChars, bool preserveReplay = true)
     {
         var clone = message.Clone();
+        // Signed Gemini parts are an indivisible replay unit. Summaries consume the
+        // provider-neutral view, while retained messages keep their original signatures.
+        if (preserveReplay && clone["provider_metadata"] != null) return clone;
+        clone.Remove("provider_metadata");
         BoundNode(clone, maxChars);
         return clone;
     }

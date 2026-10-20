@@ -194,7 +194,7 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
     [
         "image_config", "temperature", "max_completion_tokens", "seed", "top_p",
         "frequency_penalty", "presence_penalty", "stop", "reasoning_effort", "verbosity",
-        "service_tier", "top_logprobs", "safety_identifier", "store", "enable_thinking",
+        "service_tier", "top_logprobs", "safety_identifier", "store", "enable_thinking", "tool_combination",
     ];
 
     public static readonly Dictionary<string, string> AspectRatios = new()

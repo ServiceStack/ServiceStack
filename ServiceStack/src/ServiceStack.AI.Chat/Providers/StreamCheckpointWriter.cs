@@ -50,6 +50,8 @@ public class StreamCheckpointWriter(
             var fn = (node as JsonObject).GetObject("function");
             total += (fn.GetString("name") ?? "").Length + (fn.GetString("arguments") ?? "").Length;
         }
+        if (message["provider_metadata"] is { } metadata)
+            total += metadata.ToJsonString(ChatJson.Options).Length;
         return total;
     }
 

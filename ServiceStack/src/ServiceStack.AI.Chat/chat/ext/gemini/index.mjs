@@ -369,12 +369,12 @@ export const GeminiModelSelector = {
     },
     emits: ['update:modelValue'],
     template: `<div data-tag="GeminiModelSelector" class="flex items-center gap-2">
-        <ModelPicker provider="google" provider-label="Gemini" :output-modalities="['text']" initial-search="Gemini" trigger-label="Choose Gemini model"
-            :models="models" :model-value="overrideModelName" :placeholder="overrideModelName ? undefined : resolvedDefaultText"
-            :help-text="helpText || 'Select a model for Gemini File Stores requests.'" @select="selectModelOverride" />
         <button v-if="overrideModelName" type="button" @click="clearModelOverride"
             class="px-2.5 py-2 text-xs font-medium text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer shrink-0"
             title="Clear model override">Clear Override</button>
+        <ModelPicker provider="google" provider-label="Gemini" :output-modalities="['text']" initial-search="Gemini" trigger-label="Choose Gemini model"
+            :models="models" :model-value="overrideModelName" :placeholder="overrideModelName ? undefined : resolvedDefaultText"
+            :help-text="helpText || 'Select a model for Gemini File Stores requests.'" @select="selectModelOverride" />
     </div>`,
     setup(props, { emit }) {
         const controlled = computed(() => props.modelValue !== undefined)

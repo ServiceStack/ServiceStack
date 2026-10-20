@@ -13,8 +13,11 @@ namespace ServiceStack.AI;
 /// </summary>
 public partial class OpenAiCompatibleProvider
 {
+    protected virtual bool PreserveProviderMetadata => false;
+
     public virtual async Task<JsonObject> ProcessChatAsync(JsonObject chat, string? providerId = null)
     {
+        if (!PreserveProviderMetadata) chat.Remove("tool_combination");
         chat["stream"] ??= false;
 
         // Some providers don't support empty tools
@@ -92,6 +95,7 @@ public partial class OpenAiCompatibleProvider
                 // provider input. Sending it back wastes context and other providers reject the
                 // unknown field.
                 msg.Remove("groundingMetadata");
+                if (!PreserveProviderMetadata) msg.Remove("provider_metadata");
                 cleaned.Add(msg);
             }
             else

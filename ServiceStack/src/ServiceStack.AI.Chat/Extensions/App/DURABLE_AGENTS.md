@@ -73,6 +73,36 @@ timestamps, usage, or unsupported content cannot corrupt the worker's checkpoint
 The streaming assistant message remains in `ChatThread.StreamingMessage` until committed. An aborted
 stream can therefore lose only its partial response, never the conversation.
 
+Gemini assistant messages also persist `provider_metadata.google`: provider ID, requested model ID,
+the complete ordered candidate `content`, and `include_server_side_tool_invocations`. Same-provider,
+same-model requests replay that content once; other providers strip the metadata. Built-in `toolCall`
+and `toolResponse` parts never enter the local function executor. Streaming checkpoints and final
+answers retain all parts, including opaque thought signatures. This uses existing message JSON storage
+without a schema migration. Retained signed exchanges are never truncated during compaction; summaries
+receive only the provider-neutral view. Context accounting already conservatively includes the full
+JSON replay state.
+
+File Search and custom functions are combined by default on Gemini 3/4 and the latest Flash aliases.
+The optional `tool_combination` boolean resolves request → model metadata → provider configuration →
+model defaults; older models retain retrieval-only behavior. Combined requests enable
+`toolConfig.includeServerSideToolInvocations` and default to `VALIDATED` function calling. Explicit
+`tool_choice` values map to `NONE`, `ANY`, or named `ANY` restrictions. Existing circulated history
+keeps the flag enabled; explicitly disabling it raises an error instead of discarding required state.
+
+The C# implementation passed live verification on 2026-10-20 for `gemini-3.8-flash`,
+`gemini-3.5-flash-lite`, and `gemini-3.1-pro-preview`, in streaming and non-streaming modes. All six
+cases retrieved a private random document code, invoked a custom verification function, replayed its
+result with the original tool context, and returned a final answer. Citations were present for both
+combined and File Search-only requests. Temporary test storage was deleted. See the
+[recorded results](../../../../tests/ServiceStack.AiTests/AiChatFixtures/google-tool-combination-live-2026-10-20.json).
+
+`AiChatGoogleToolCombinationTests` covers translation, capability overrides, parallel calls, signatures,
+provider isolation, checkpoints, canonical JSON reload, and compaction. Its explicit
+`Live_round_trip_with_file_search_and_custom_function` cases require `GEMINI_API_KEY` (or
+`GOOGLE_API_KEY`), `GEMINI_TOOL_COMBINATION_STORE`, and `GEMINI_TOOL_COMBINATION_CODE`. Provision an
+isolated test document/store and clean it up after running those billable tests. Citation availability
+in this fixture does not guarantee citations for every prompt or validate browser rendering.
+
 ## Context accounting and compaction
 
 Before each slice, the worker builds context from the latest snapshot and canonical tail and stores

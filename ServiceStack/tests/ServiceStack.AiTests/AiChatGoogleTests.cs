@@ -279,7 +279,7 @@ public class AiChatGoogleTests
 
         // Gemini identifies tool results by function name, not by call id
         var functionResponse = contents[2]!["parts"]!.AsArray()[0]!["functionResponse"]!.AsObject();
-        Assert.That(contents[2]!["role"]!.GetValue<string>(), Is.EqualTo("function"));
+        Assert.That(contents[2]!["role"]!.GetValue<string>(), Is.EqualTo("user"));
         Assert.That(functionResponse["name"]!.GetValue<string>(), Is.EqualTo("get_weather"));
         Assert.That(functionResponse["response"]!["temp"]!.GetValue<int>(), Is.EqualTo(22));
     }

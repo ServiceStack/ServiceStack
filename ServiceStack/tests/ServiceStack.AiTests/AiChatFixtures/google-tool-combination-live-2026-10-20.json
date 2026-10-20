@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-20",
+  "implementation": "ServiceStack.AI.Chat GoogleProvider",
+  "results": [
+    {
+      "model": "gemini-3.8-flash",
+      "stream": false,
+      "verified": true,
+      "builtinParts": 2,
+      "combinedCitations": true,
+      "fileSearchOnlyCitations": true
+    },
+    {
+      "model": "gemini-3.8-flash",
+      "stream": true,
+      "verified": true,
+      "builtinParts": 2,
+      "combinedCitations": true,
+      "fileSearchOnlyCitations": true
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "stream": false,
+      "verified": true,
+      "builtinParts": 2,
+      "combinedCitations": true,
+      "fileSearchOnlyCitations": true
+    },
+    {
+      "model": "gemini-3.5-flash-lite",
+      "stream": true,
+      "verified": true,
+      "builtinParts": 2,
+      "combinedCitations": true,
+      "fileSearchOnlyCitations": true
+    },
+    {
+      "model": "gemini-3.1-pro-preview",
+      "stream": false,
+      "verified": true,
+      "builtinParts": 2,
+      "combinedCitations": true,
+      "fileSearchOnlyCitations": true
+    },
+    {
+      "model": "gemini-3.1-pro-preview",
+      "stream": true,
+      "verified": true,
+      "builtinParts": 2,
+      "combinedCitations": true,
+      "fileSearchOnlyCitations": true
+    }
+  ],
+  "temporaryStoreDeleted": true
+}

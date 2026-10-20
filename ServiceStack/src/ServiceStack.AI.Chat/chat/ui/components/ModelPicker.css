@@ -172,21 +172,28 @@ dialog.llms-model-dialog::backdrop {
     opacity: 0.5;
     cursor: not-allowed;
 }
-.llms-model-trigger > span {
-    flex: 1;
+.llms-model-picker {
     min-width: 0;
 }
+.llms-model-trigger > span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+}
 .llms-model-trigger strong {
-    display: block;
     font-size: 13px;
     font-weight: 500;
-    overflow-wrap: anywhere;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .llms-model-trigger small {
-    display: block;
+    flex-shrink: 0;
     color: var(--mp-muted);
     font-size: 11px;
-    margin-top: 2px;
 }
 .llms-provider-icon {
     width: 18px;
