@@ -145,8 +145,20 @@ silently rewritten by these repairs.
 
 Thread list queries omit the large compatibility message/tool blobs and return one-message previews
 plus authoritative `messageCount`. A selected thread receives at most 20 messages from the beginning
-and 100 from the end, separately bounded to 128 KiB and 384 KiB. `messageWindow` exposes stable ranges,
-and `threads/{id}/messages?before=&after=&take=&maxBytes=` pages through the omitted middle.
+and 100 from the end. Client projections strip server-only replay metadata and compatibility thought
+signatures before applying independent 128 KiB head and 384 KiB tail budgets, even in short threads.
+The newest complete message/tool group is always included; one oversized group may exceed its soft
+budget. `messageWindow` exposes stable ranges, and
+`threads/{id}/messages?before=&after=&take=&maxBytes=` pages through the omitted middle. Full-history,
+preview, streaming checkpoint and update responses use the same lightweight projection. Visible content,
+function calls/results, media and grounding citations remain intact.
+
+Client submissions extend canonical server history rather than replacing it with an echoed UI window.
+Explicit edits/deletes hydrate surviving signed messages; redo/edit submissions retain any omitted
+canonical prefix before their branch point. Explicit changes to a signed message invalidate its old
+replay state. These rules apply at the client route boundary; internal provider and scheduler DTOs
+retain their original replay metadata. `AiChatThreadWindowProjectionTests` verifies these contracts,
+including same-model Gemini replay after a follow-up and reload.
 
 Update routes are fixed:
 

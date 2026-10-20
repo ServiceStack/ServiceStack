@@ -46,18 +46,19 @@ public partial class AppExtension
         dto["sig"] = ChatSignature.Compute(bounds.Count, bounds.Last, row.StreamingMessage,
             row.Status, row.CompletedAt, row.Error, row.MetadataVersion);
         AttachRun(dto, row);
-        return dto;
+        return ChatClientHistory.Thread(dto);
     }
 
     JsonObject ThreadWindowDto(ChatThread row, int head = 20, int tail = 100)
     {
         var bounds = Db.GetChatMessageBounds(row.Id);
         var window = Db.GetChatMessageWindow(row.Id, head, tail);
-        var first = bounds.First ?? 1;
-        var headRows = window.Where(x => (x.GetLong("_sequence") ?? 0) < first + head).ToList();
-        var tailRows = window.Except(headRows).ToList();
-        var messages = LimitMessagePayload(headRows, 128 * 1024)
-            .Concat(LimitMessagePayload(tailRows, 384 * 1024, fromEnd: true)).ToList();
+        window = window.Select(ChatClientHistory.Message).ToList();
+        // Budget both ends independently even when the count-based head and tail overlap.
+        // A single oversized group is retained so the newest complete reply is always visible.
+        var messages = LimitMessagePayload(window, 128 * 1024)
+            .Concat(LimitMessagePayload(window, 384 * 1024, fromEnd: true))
+            .DistinctBy(x => x.GetLong("_sequence")).OrderBy(x => x.GetLong("_sequence")).ToList();
         var dto = row.ToDto(includeMessages: false);
         dto["messages"] = new JsonArray(messages.Select(x => (JsonNode)x).ToArray());
         ChatDtos.MergeStreamingMessage(dto.GetArray("messages")!,
@@ -73,7 +74,7 @@ public partial class AppExtension
             ["ranges"] = MessageRanges(messages),
         };
         AttachRun(dto, row);
-        return dto;
+        return ChatClientHistory.Thread(dto);
     }
 
     JsonObject FullThreadDto(ChatThread row)
@@ -86,7 +87,7 @@ public partial class AppExtension
         dto["sig"] = ChatSignature.Compute(messages.Count, last, row.StreamingMessage,
             row.Status, row.CompletedAt, row.Error, row.MetadataVersion);
         AttachRun(dto, row);
-        return dto;
+        return ChatClientHistory.Thread(dto);
     }
 
     void AttachRun(JsonObject dto, ChatThread row)
@@ -158,7 +159,7 @@ public partial class AppExtension
         long? before = long.TryParse(req.QueryString("before"), out var b) ? b : null;
         long? after = long.TryParse(req.QueryString("after"), out var a) ? a : 0;
         var rows = Db.GetChatMessagePage(id, before, after, take);
-        rows = LimitMessagePayload(rows, maxBytes, before != null);
+        rows = LimitMessagePayload(rows.Select(ChatClientHistory.Message), maxBytes, before != null);
         var bounds = Db.GetChatMessageBounds(id);
         return Task.FromResult<object?>(new JsonObject
         {

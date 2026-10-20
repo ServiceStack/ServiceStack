@@ -138,6 +138,9 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
                 thread.Remove("title");
             }
             RemoveProtectedFields(thread);
+            if (thread.GetArray("messages") is { } incoming)
+                thread["messages"] = ChatClientHistory.Reconcile(Db.GetActiveMessagesAfter(id, 0),
+                    TimestampMessages(incoming), rewrite: thread.GetBool(DbThreadApi.TruncateKey));
             if (thread.Count > 0 && !await threadApi.UpdateThreadInternalAsync(id, thread, user).ConfigAwait())
                 throw HttpError.NotFound("Thread not found");
             Updates.NotifyThreadUpdate(id);
@@ -241,6 +244,8 @@ public partial class AppExtension() : ChatExtension("app"), IHasSchema
 
         var threadRow = Db.GetThread(id, user, includeMessages: false) ?? throw new Exception("Thread not found");
         var thread = threadRow.ToDto(includeMessages: false);
+        messages = ChatClientHistory.Reconcile(Db.GetActiveMessagesAfter(id, 0), messages,
+            rewrite: chatReq.GetBool(DbThreadApi.TruncateKey), keepPrefix: true);
         // Runs execute in the thread's stored project, resolved server-side, never a browser preference
         var workspace = ResolveWorkspace(threadRow.ProjectId, threadRow.User ?? user);
 
