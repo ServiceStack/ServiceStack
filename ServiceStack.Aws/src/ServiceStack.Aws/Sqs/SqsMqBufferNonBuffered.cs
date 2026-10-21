@@ -65,7 +65,10 @@ namespace ServiceStack.Aws.Sqs
             request.MaxNumberOfMessages = 1;
 
             var response = SqsClient.ReceiveMessage(request);
-            return response?.Messages.SingleOrDefault();
+            // AWSSDK.SQS v4 returns Messages = null when the receive is empty
+            return response?.Messages is { Count: > 0 } messages
+                ? messages.SingleOrDefault()
+                : null;
         }
 
         public int DeleteBufferCount => 0;
