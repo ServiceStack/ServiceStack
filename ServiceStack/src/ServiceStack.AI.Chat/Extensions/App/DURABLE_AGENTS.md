@@ -103,6 +103,24 @@ provider isolation, checkpoints, canonical JSON reload, and compaction. Its expl
 isolated test document/store and clean it up after running those billable tests. Citation availability
 in this fixture does not guarantee citations for every prompt or validate browser rendering.
 
+## Extension-controlled replay projection
+
+Provider replay remains complete by default. `ChatFeature.Filters.ProviderReplayFilters` and
+`ExtensionContext.RegisterProviderReplayFilter` expose ordered synchronous callbacks of
+`ProviderReplayContext`. The Google instance request path invokes them on detached native assistant
+content after provider/model matching and capability validation, before request serialization and
+function-ID mapping. Filters see the resolved model, message index, last actual user-message index and
+`IsCurrentTurn`; function results are not user-turn boundaries. No user prompt means all replay is
+current. Empty `parts` drops that native message; malformed parts and callback failures abort preparation.
+
+`GeminiReplayFilters.ExcludeCompletedTurnToolInvocations` is an opt-in helper, mirrored by
+`llms.provider_replay.GeminiReplayFilters.exclude_completed_turn_tool_invocations` in Python. It removes
+only historical built-in `toolCall`/`toolResponse` parts, keeping other signatures and current-turn
+context. It is a compatibility workaround for missing follow-up citations, not a citation guarantee or
+new default. Canonical/compatibility history, compaction, response grounding and UI projections remain
+unchanged. See the plugin initializer and extension examples in the project README, and
+`AiChatProviderReplayFilterTests` for isolation, ordering and tool-loop regression coverage.
+
 ## Context accounting and compaction
 
 Before each slice, the worker builds context from the latest snapshot and canonical tail and stores

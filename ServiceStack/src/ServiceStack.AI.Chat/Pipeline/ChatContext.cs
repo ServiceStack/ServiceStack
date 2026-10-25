@@ -150,6 +150,8 @@ public sealed class AgentSliceYieldException(int iterations) : Exception
 public class ChatFilters
 {
     public List<Func<JsonObject, ChatContext, Task>> ChatRequestFilters { get; } = [];
+    /// <summary>Synchronous filters of detached native replay content, currently invoked by Google.</summary>
+    public List<Action<ProviderReplayContext>> ProviderReplayFilters { get; } = [];
     public List<Func<JsonObject, ChatContext, Task>> ChatToolFilters { get; } = [];
     public List<Func<JsonObject, ChatContext, Task>> ChatApprovalFilters { get; } = [];
     public List<Func<string, ChatContext, Task>> ChatStatusFilters { get; } = [];
@@ -159,6 +161,12 @@ public class ChatFilters
     public List<Func<IRequest, Task>> SetupUserHandlers { get; } = [];
     public List<Func<CancellationToken, Task>> AsyncShutdownHandlers { get; } = [];
     public List<Action> ShutdownHandlers { get; } = [];
+
+    public void OnProviderReplay(ProviderReplayContext replay)
+    {
+        foreach (var filter in ProviderReplayFilters)
+            filter(replay);
+    }
 
     public async Task OnChatRequestAsync(JsonObject chat, ChatContext context)
     {

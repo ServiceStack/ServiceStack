@@ -37,6 +37,43 @@ appears in the gallery.
 > **both** `@ai-sdk/anthropic` and `@ai-sdk/anthropic-cli` to the API-key provider — `anthropic` works with
 > `ANTHROPIC_API_KEY` out of the box.
 
+### Optional provider replay filters
+
+Extensions and plugin registration share `Filters.ProviderReplayFilters`. To opt into the workaround
+for missing Gemini File Search citations on follow-ups (ServiceStack/Discuss#163):
+
+```csharp
+services.AddPlugin(new ChatFeature {
+    Filters = {
+        ProviderReplayFilters = {
+            GeminiReplayFilters.ExcludeCompletedTurnToolInvocations
+        }
+    }
+});
+```
+
+Without this registration, native replay remains unchanged. The helper removes only completed user
+turns' built-in `toolCall`/`toolResponse` parts; current-turn tool context, other signed parts, and
+function calls/results remain. Stored messages and existing citations are never modified. This differs
+from Google's documented full replay contract and may improve citation availability, but cannot
+guarantee citations. No automatic retries or prior-turn citation reuse are added.
+
+Custom callbacks can be placed in the same collection, or registered from an extension:
+
+```csharp
+ctx.RegisterProviderReplayFilter(replay => {
+    // Inspect replay.Provider, Model, MessageIndex, LastUserMessageIndex, IsCurrentTurn.
+    // Mutate replay.Content (a detached native JSON object) in place.
+});
+```
+
+Callbacks run synchronously in registration order, on every matching assistant replay for each provider
+request, including function-loop continuations. Currently Google invokes this hook for same-provider,
+same-model native replay. Tool results do not start a user turn; with no user prompt, all replay is
+current. Empty `parts` omits the native message, invalid `parts` raises an argument error, and callback
+exceptions abort preparation. The legacy static `ToGeminiContents` helpers remain unfiltered; the
+instance `ToGeminiRequest`/`ChatAsync` path applies the owning feature's filters.
+
 ### Configuration
 
 ```csharp

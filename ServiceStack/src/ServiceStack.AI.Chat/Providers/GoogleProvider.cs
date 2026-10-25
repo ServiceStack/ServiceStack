@@ -243,7 +243,9 @@ public class GoogleProvider : OpenAiCompatibleProvider
                     + "enable tool_combination or choose a supported model.");
             includeInvocations = true;
         }
-        var (contents, systemPrompt) = ToGeminiContents(chat, Id);
+        var (contents, systemPrompt) = ToGeminiContents(chat, Id, (content, index, lastUserIndex) =>
+            Feature?.Filters.OnProviderReplay(new ProviderReplayContext(this, chat.GetString("model") ?? "",
+                index, lastUserIndex, content)));
         if (hasMediaModality)
             systemPrompt = null;
 
@@ -388,21 +390,34 @@ public class GoogleProvider : OpenAiCompatibleProvider
     public static (JsonArray Contents, string? SystemPrompt) ToGeminiContents(JsonObject chat) =>
         ToGeminiContents(chat, null);
 
-    public static (JsonArray Contents, string? SystemPrompt) ToGeminiContents(JsonObject chat, string? providerId)
+    public static (JsonArray Contents, string? SystemPrompt) ToGeminiContents(JsonObject chat, string? providerId) =>
+        ToGeminiContents(chat, providerId, null);
+
+    static (JsonArray Contents, string? SystemPrompt) ToGeminiContents(JsonObject chat, string? providerId,
+        Action<JsonObject, int, int>? replayFilter)
     {
         var contents = new JsonArray();
         string? systemPrompt = null;
         var toolIdMap = new Dictionary<string, string>();
 
-        foreach (var messageNode in chat.GetArray("messages") ?? [])
+        // Compute the boundary before function results are converted to Gemini user parts.
+        var messages = chat.GetArray("messages") ?? [];
+        var lastUserIndex = messages.Select((message, index) => (message, index))
+            .Where(x => (x.message as JsonObject).GetString("role") == "user")
+            .Select(x => x.index).DefaultIfEmpty(-1).Max();
+        for (var messageIndex = 0; messageIndex < messages.Count; messageIndex++)
         {
-            if (messageNode is not JsonObject message)
+            if (messages[messageIndex] is not JsonObject message)
                 continue;
             var msgRole = message.GetString("role");
 
             if (ReplayMetadata(message, chat.GetString("model"), providerId) is { } metadata)
             {
                 var raw = metadata.GetObject("content")!.Clone();
+                replayFilter?.Invoke(raw, messageIndex, lastUserIndex);
+                if (raw.GetArray("parts") is not { } replayParts)
+                    throw new ArgumentException("Provider replay content.parts must be an array");
+                if (replayParts.Count == 0) continue;
                 var legacyCalls = message.GetArray("tool_calls")?.OfType<JsonObject>().ToList() ?? [];
                 var callIndex = 0;
                 foreach (var part in raw.GetArray("parts")!.OfType<JsonObject>())

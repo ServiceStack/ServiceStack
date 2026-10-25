@@ -72,6 +72,8 @@ public class ExtensionContext(ChatFeature feature, string name)
     // ── Chat pipeline filters ──
 
     public void RegisterChatRequestFilter(Func<JsonObject, ChatContext, Task> handler) => feature.Filters.ChatRequestFilters.Add(handler);
+    /// <summary>Customize detached provider-native replay content without changing stored history.</summary>
+    public void RegisterProviderReplayFilter(Action<ProviderReplayContext> handler) => feature.Filters.ProviderReplayFilters.Add(handler);
     public void RegisterChatToolFilter(Func<JsonObject, ChatContext, Task> handler) => feature.Filters.ChatToolFilters.Add(handler);
     public void RegisterChatApprovalFilter(Func<JsonObject, ChatContext, Task> handler) => feature.Filters.ChatApprovalFilters.Add(handler);
     public void RegisterChatStatusFilter(Func<string, ChatContext, Task> handler) => feature.Filters.ChatStatusFilters.Add(handler);
