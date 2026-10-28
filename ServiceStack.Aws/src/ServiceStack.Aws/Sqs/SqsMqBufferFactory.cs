@@ -13,6 +13,8 @@ namespace ServiceStack.Aws.Sqs
 
         private int disposing;
         private Timer timer;
+        // Guards every use of timer: OnTimerElapsed re-arms it, and Dispose() can dispose it at the same time
+        private readonly object timerLock = new();
         private int processingTimer = 0;
 
         public SqsMqBufferFactory(SqsConnectionFactory sqsConnectionFactory)
@@ -31,22 +33,25 @@ namespace ServiceStack.Aws.Sqs
             get { return bufferFlushIntervalSeconds; }
             set
             {
-                if (disposing > 0)
+                lock (timerLock)
                 {
-                    return;
-                }
+                    if (disposing > 0)
+                    {
+                        return;
+                    }
 
-                bufferFlushIntervalSeconds = value > 0
-                    ? value
-                    : 0;
+                    bufferFlushIntervalSeconds = value > 0
+                        ? value
+                        : 0;
 
-                if (timer != null)
-                {
-                    timer.Change(bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
-                }
-                else
-                {
-                    timer = new Timer(OnTimerElapsed, null, bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                    if (timer != null)
+                    {
+                        timer.Change(bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                    }
+                    else
+                    {
+                        timer = new Timer(OnTimerElapsed, null, bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                    }
                 }
             }
         }
@@ -65,9 +70,12 @@ namespace ServiceStack.Aws.Sqs
             finally
             {
                 Interlocked.CompareExchange(ref processingTimer, 0, 1);
-                if (disposing == 0)
+                lock (timerLock)
                 {
-                    timer.Change(bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                    if (disposing == 0)
+                    {
+                        timer.Change(bufferFlushIntervalSeconds * 1000, Timeout.Infinite);
+                    }
                 }
             }
         }
@@ -97,7 +105,12 @@ namespace ServiceStack.Aws.Sqs
                 return;
             }
 
-            timer?.Dispose();
+            lock (timerLock)
+            {
+                timer?.Dispose();
+                timer = null;
+            }
+
             // Remove and dispose all the buffers
             foreach (var buffer in queueNameBuffers)
             {
@@ -106,7 +119,6 @@ namespace ServiceStack.Aws.Sqs
                     b.Dispose();
                 }
             }
-            timer = null;            
         }
     }
 }
