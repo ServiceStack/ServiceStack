@@ -307,3 +307,10 @@ Consult the package version conflict notes above. A move from `Microsoft.OpenApi
 switching to the `ServiceStack.OpenApi.Swashbuckle` package. Within the v1.x line, update the
 `ServiceStack.AspNetCore.OpenApi.csproj` PackageReference versions and run the full test suite
 against a live Swagger UI to verify schema output.
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.

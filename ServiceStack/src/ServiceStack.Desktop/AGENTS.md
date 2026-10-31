@@ -173,3 +173,10 @@ Folder name lookups keyed on strings (e.g., `"downloads"`, `"Downloads"`, `"DOWN
 | Fix cross-platform build issues | Check `#if WINDOWS` / `[SupportedOSPlatform("windows")]` guards; provide `else` branch for non-Windows |
 | Tighten file access security | `AssertFile` in `DesktopFileService.cs` — extend the deny-list of traversal characters |
 | Change async result serialization | `DesktopFeature.cs` around the `MemoryStream` result channel — always reset position before read |
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.

@@ -1,3 +1,70 @@
+# ServiceStack.Server features
+
+OrmLite and Redis integrations, AutoQuery/AutoCrud, relational jobs and database administration.
+
+First-pass source inventory: 2026-10-31. Baseline and review policy: [root catalog](../FEATURES.md).
+Status: implementation entry points located in this checkout; behavioral verification is partial and published-version availability is not established. This is a capability map, not an exhaustive public API reference.
+
+## Package and boundaries
+
+- Declared target frameworks: `net472;net6.0;net8.0;net10.0`; see [ServiceStack.Server.csproj](ServiceStack.Server.csproj) for conditional compilation and dependencies.
+- DatabaseJobFeature is conditionally compiled for NET8_0_OR_GREATER even though the package has older targets. SQL and Redis behavior depends on the selected provider. Detailed existing Background Jobs notes are preserved below.
+- Project dependencies: [ServiceStack.Text](../../../ServiceStack.Text/src/ServiceStack.Text/ServiceStack.Text.csproj); [ServiceStack.OrmLite](../../../ServiceStack.OrmLite/src/ServiceStack.OrmLite/ServiceStack.OrmLite.csproj); [ServiceStack.Redis](../../../ServiceStack.Redis/src/ServiceStack.Redis/ServiceStack.Redis.csproj); [ServiceStack.Interfaces](../ServiceStack.Interfaces/ServiceStack.Interfaces.csproj); [ServiceStack.Client](../ServiceStack.Client/ServiceStack.Client.csproj); [ServiceStack.Common](../ServiceStack.Common/ServiceStack.Common.csproj); [ServiceStack](../ServiceStack/ServiceStack.csproj)
+
+## Existing capabilities
+
+| Capability | Customer outcome | Implementation entry points |
+| --- | --- | --- |
+| AutoQuery RDBMS | Generate parameterized data queries from typed request contracts. | [AutoQueryFeature.cs](AutoQueryFeature.cs), [AutoQueryScripts.cs](AutoQueryScripts.cs) |
+| AutoCrud and audit events | Generate create/update/patch/delete services and capture CRUD audit events. | [AutoQueryFeature.AutoCrud.cs](AutoQueryFeature.AutoCrud.cs), [GenerateCrudServices.cs](GenerateCrudServices.cs), [CrudEvents.cs](CrudEvents.cs), [CrudUtils.cs](CrudUtils.cs) |
+| RDBMS authentication and API keys | Persist users, external auth links and managed API keys with OrmLite. | [Auth/OrmLiteAuthRepository.cs](Auth/OrmLiteAuthRepository.cs), [Auth/OrmLiteAuthRepositoryAsync.cs](Auth/OrmLiteAuthRepositoryAsync.cs), [ApiKeysFeature.cs](ApiKeysFeature.cs), [ApiKeyCredentialsProvider.cs](ApiKeyCredentialsProvider.cs) |
+| Database cache, settings and validation | Store cached values, settings and editable validation rules in relational tables. | [Caching/OrmLiteCacheClient.cs](Caching/OrmLiteCacheClient.cs), [Configuration/OrmLiteAppSettings.cs](Configuration/OrmLiteAppSettings.cs), [OrmLiteValidationSource.cs](OrmLiteValidationSource.cs) |
+| Redis messaging and real-time distribution | Run Redis-backed MQ handlers and fan out SSE events between hosts. | [Messaging/Redis/RedisMqServer.cs](Messaging/Redis/RedisMqServer.cs), [RedisServerEvents.cs](RedisServerEvents.cs) |
+| Request analytics | Persist request logs and query application analytics. | [DbRequestLogger.cs](DbRequestLogger.cs), [Host/RedisRequestLogger.cs](Host/RedisRequestLogger.cs) |
+| Distributed background jobs | Coordinate leased job ownership, retries, fencing and recovery across database-backed nodes. | [DbJobsFeature.cs](DbJobsFeature.cs), [DbJobs.cs](DbJobs.cs), [DbJobsWorker.cs](DbJobsWorker.cs), [BackgroundJobsProviderBase.cs](BackgroundJobsProviderBase.cs) |
+| Scheduling, batches and queue controls | Schedule durable jobs, coordinate dependencies and batches, and operate queues. | [DbJobs.ScheduledTasks.cs](DbJobs.ScheduledTasks.cs), [DbJobs.Batches.cs](DbJobs.Batches.cs), [DbJobsAdminServices.cs](DbJobsAdminServices.cs) |
+| Database administration and schema comparison | Inspect data and compare model schemas with database schemas. | [AdminDatabaseFeature.cs](AdminDatabaseFeature.cs), [AdminQueryService.cs](AdminQueryService.cs), [AdminSchemaDiffService.cs](AdminSchemaDiffService.cs) |
+
+## Public documentation
+
+These are related local documentation sources, not a claim that every provider detail is documented or current.
+
+- [autoquery/rdbms.md](../../../../docs.servicestack.net/MyApp/_pages/autoquery/rdbms.md)
+- [autoquery/crud.md](../../../../docs.servicestack.net/MyApp/_pages/autoquery/crud.md)
+- [autoquery/audit-log.md](../../../../docs.servicestack.net/MyApp/_pages/autoquery/audit-log.md)
+- [autoquery/autogen.md](../../../../docs.servicestack.net/MyApp/_pages/autoquery/autogen.md)
+- [auth/auth-repository.md](../../../../docs.servicestack.net/MyApp/_pages/auth/auth-repository.md)
+- [auth/apikeys.md](../../../../docs.servicestack.net/MyApp/_pages/auth/apikeys.md)
+- [caching.md](../../../../docs.servicestack.net/MyApp/_pages/caching.md)
+- [config-api.md](../../../../docs.servicestack.net/MyApp/_pages/config-api.md)
+- [redis-mq.md](../../../../docs.servicestack.net/MyApp/_pages/redis-mq.md)
+- [redis-server-events.md](../../../../docs.servicestack.net/MyApp/_pages/redis-server-events.md)
+- [jobs/rdbms.md](../../../../docs.servicestack.net/MyApp/_pages/jobs/rdbms.md)
+- [jobs/reliability.md](../../../../docs.servicestack.net/MyApp/_pages/jobs/reliability.md)
+- [jobs/queues.md](../../../../docs.servicestack.net/MyApp/_pages/jobs/queues.md)
+- [jobs/workflows.md](../../../../docs.servicestack.net/MyApp/_pages/jobs/workflows.md)
+- [jobs/monitoring.md](../../../../docs.servicestack.net/MyApp/_pages/jobs/monitoring.md)
+- [admin-ui-database.md](../../../../docs.servicestack.net/MyApp/_pages/admin-ui-database.md)
+
+## Test evidence and review limits
+
+Related test files located (not run in this documentation pass; not proof that every capability or database dialect is covered):
+
+- [ServiceStack.Extensions.Tests/DbJobsTests.cs](../../tests/ServiceStack.Extensions.Tests/DbJobsTests.cs)
+- [ServiceStack.Extensions.Tests/AutoQueryCrudTests.cs](../../tests/ServiceStack.Extensions.Tests/AutoQueryCrudTests.cs)
+
+Follow-up: review per-capability assertions, target-framework/provider behavior, documentation examples and the published release that first supports each capability. Source links identify where to begin that review.
+
+## Planning
+
+- [Unaccepted feature proposals](plan/FEATURE-PROPOSALS.md)
+- [Accepted improvements and implementation tracking](plan/FEATURE-IMPROVEMENTS.md)
+- [Suite-wide prioritization and scope](../plan/FEATURE-PROPOSALS.md)
+
+---
+
+The existing detailed Background Jobs feature notes below are preserved. They describe current implementation work; they do not constitute acceptance of the new proposals above. Review against source when precise guarantees matter. The older [PLAN.md](PLAN.md) is historical implementation context, not the new acceptance ledger.
+
 # Background Jobs features
 
 The Background Jobs improvements provide practical benefits to existing ServiceStack customers while keeping the SQLite and RDBMS providers available through the same APIs and Admin UI.

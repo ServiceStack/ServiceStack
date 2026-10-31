@@ -96,3 +96,10 @@ Delegates URL and query string construction to `UrlExtensions` (from `ServiceSta
 3. **Handling File Uploads**
    - Use `PostFileWithRequest` or `PostFilesWithRequestAsync`.
    - Ensure both the form field name and file name are supplied in `UploadFile`.
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.

@@ -192,3 +192,10 @@ Dynamic method binding code that uses reflection to enumerate gRPC service metho
 6. **Apple auth key rotation** — the `.p8` file path is configured via `AppleAuthProvider.KeyId` / `P8KeyFilePath`. Any change to key loading must include the non-empty validation guard.
 
 7. **Adding a new auth claim mapping** — update `IdentityUtils.GetClaimsPrincipalRoles` if the claim type used for roles changes, and ensure `BasicAuthenticationHandler` forwards the right `ClaimsPrincipal` into the ServiceStack request context.
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.

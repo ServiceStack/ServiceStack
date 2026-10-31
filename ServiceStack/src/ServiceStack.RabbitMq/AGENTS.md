@@ -101,3 +101,10 @@ Each registered request type can be configured with its own worker pool count, a
 2. **Publishing Messages**
    - Inject `IMessageProducer` or call `Publish<T>(new MyRequest { ... })`.
    - Ensure channel disposal is handled cleanly under exceptions.
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.

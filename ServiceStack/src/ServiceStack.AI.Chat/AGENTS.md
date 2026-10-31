@@ -382,3 +382,12 @@ Before finishing:
 UI assets revalidate with content ETags and `Cache-Control: no-cache`. Buffered text/JSON responses
 negotiate gzip or deflate; file downloads and SSE retain their streaming paths. Core module preloads
 use the resolved, prefix-aware import map. CodeMirror is loaded by the shared UI on demand.
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.
+
+These three files are project documentation additions to the documentation map above; they are C# repository records, not synchronized runtime prompts or shared UI assets.

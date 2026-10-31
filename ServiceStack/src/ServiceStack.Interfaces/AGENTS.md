@@ -138,3 +138,10 @@ Where provider interfaces support asynchronous operations, pair interfaces are d
 4. **Adding Target Frameworks or Conditional Compilation**
    - `ServiceStack.Interfaces` multi-targets from `net472` to modern .NET (`net6.0`, `net8.0`, `net10.0`).
    - Keep framework-specific `#if` defines minimal. Favor standard .NET standard abstractions.
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.

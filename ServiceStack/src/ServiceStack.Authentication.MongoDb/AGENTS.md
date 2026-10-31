@@ -157,3 +157,10 @@ var userName = digestHeaders["username"];
 6. **Porting a bug fix from sync to async** — Both `MongoDbAuthRepository` and `MongoDbAuthRepositoryAsync` must be updated together. The async class cannot simply call the sync class's methods (sync-over-async); it must replicate the logic using async driver APIs.
 
 7. **Supporting a new ServiceStack auth interface** — Register the implementation against the new interface in the IoC container registration documentation/example and implement both sync and async variants.
+
+## Feature catalog and planning
+
+- Read [FEATURES.md](FEATURES.md) for the first-pass capability inventory, implementation entry points, related documentation and review limits.
+- Record unaccepted ideas in [plan/FEATURE-PROPOSALS.md](plan/FEATURE-PROPOSALS.md).
+- Only after explicit acceptance, move the proposal into [plan/FEATURE-IMPROVEMENTS.md](plan/FEATURE-IMPROVEMENTS.md) with its decision, scope and validation criteria.
+- Follow the [root catalog workflow](../FEATURES.md#planning-workflow); keep feature descriptions out of this development-guidance file and update the catalog when supported behavior changes.
