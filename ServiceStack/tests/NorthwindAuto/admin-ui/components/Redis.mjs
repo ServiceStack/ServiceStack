@@ -251,7 +251,8 @@ export const Redis = {
         </div>
       </div>
     </div>
-    <div v-if="selected" class="pl-4 flex-1">
+    <div v-if="selected" class="relative pl-4 flex-1">
+      <CloseButton class="z-20" @close="toggle(selected)" title="Close selected item" />
       <div>
         <div v-if="item" class="p-2 relative w-full">
             <span class="relative z-0 inline-flex shadow-sm rounded-md">
@@ -816,7 +817,7 @@ export const Redis = {
 
             let request = createRequest()
             if (type === 'list') {
-                request.args = ['LREM', id, 1, value]
+                request.args = ['LREM', id, '1', value]
             } else if (type === 'set') {
                 request.args = ['SREM', id, value]
             } else if (type === 'zset') {
