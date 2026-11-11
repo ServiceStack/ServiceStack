@@ -64,9 +64,19 @@ Every project owns `FEATURES.md`, `plan/FEATURE-PROPOSALS.md` and `plan/FEATURE-
 | [ServiceStack.Server](ServiceStack.Server/FEATURES.md) | OrmLite and Redis integrations, AutoQuery/AutoCrud, relational jobs and database administration. | [Proposals](ServiceStack.Server/plan/FEATURE-PROPOSALS.md) · [Accepted](ServiceStack.Server/plan/FEATURE-IMPROVEMENTS.md) |
 | [ServiceStack.Skia](ServiceStack.Skia/FEATURES.md) | SkiaSharp implementation of the shared image provider. | [Proposals](ServiceStack.Skia/plan/FEATURE-PROPOSALS.md) · [Accepted](ServiceStack.Skia/plan/FEATURE-IMPROVEMENTS.md) |
 
+## Sibling project inventories
+
+These separately reviewed sibling libraries are outside the original 29-project inventory above. Each catalog records its own source baseline, validation limits and proposal decisions.
+
+| Project | Review and ownership | Planning |
+| --- | --- | --- |
+| [ServiceStack.Blazor](../../ServiceStack.Blazor/src/ServiceStack.Blazor/FEATURES.md) | Reviewed 2026-11-11: Razor components, metadata-driven grids/forms, WASM auth and gateway/client integration; core/Extensions/Server boundaries are recorded in the project inventory. | [Proposals](../../ServiceStack.Blazor/src/ServiceStack.Blazor/plan/FEATURE-PROPOSALS.md) · [Accepted](../../ServiceStack.Blazor/src/ServiceStack.Blazor/plan/FEATURE-IMPROVEMENTS.md) |
+| [ServiceStack.Aws](../../ServiceStack.Aws/src/ServiceStack.Aws/FEATURES.md) | Reviewed 2026-11-11: PocoDynamo, DynamoDB cache/auth/settings, S3/R2 storage, SQS MQ and Transcribe; source ownership, all-target builds and credential-free validation are recorded in the inventory. | [Proposals](../../ServiceStack.Aws/src/ServiceStack.Aws/plan/FEATURE-PROPOSALS.md) · [Accepted](../../ServiceStack.Aws/src/ServiceStack.Aws/plan/FEATURE-IMPROVEMENTS.md) |
+| [ServiceStack.Azure](../../ServiceStack.Azure/src/ServiceStack.Azure/FEATURES.md) | Reviewed 2026-11-11: block/append Blob VFS, Table cache, Service Bus MQ and Azure Speech; SDK/adapter boundaries, all-target builds and isolated credential-free checks are recorded in the inventory. | [Proposals](../../ServiceStack.Azure/src/ServiceStack.Azure/plan/FEATURE-PROPOSALS.md) · [Accepted](../../ServiceStack.Azure/src/ServiceStack.Azure/plan/FEATURE-IMPROVEMENTS.md) |
+
 ## Scope still to cover
 
-Sibling source trees such as ServiceStack.OrmLite (including dialects), ServiceStack.Redis, ServiceStack.Text, ServiceStack.Blazor, ServiceStack.Aws, ServiceStack.Azure, ServiceStack.Logging and ServiceStack.Stripe have not been inventoried here. Their integrations may be referenced, but that does not constitute coverage of the owning libraries.
+Sibling source trees such as ServiceStack.OrmLite (including dialects), ServiceStack.Redis, ServiceStack.Text, ServiceStack.Logging and ServiceStack.Stripe have not been inventoried in this original core-project pass. Consult any separately maintained project catalogs for later sibling reviews. Integration references alone do not constitute coverage of the owning libraries.
 
 Java/Swift and other language clients, JavaScript/Vue/React packages, tools, templates, AI Server, SharpScript and upstream llms-py also require separate inventories. Framework docs include examples, releases, third-party integrations and products outside these 29 projects; unassigned pages are not automatically missing features.
 
