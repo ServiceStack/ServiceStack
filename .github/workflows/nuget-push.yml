@@ -15,6 +15,10 @@ permissions:
 jobs:
   nuget-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      id-token: write # Required for NuGet Trusted Publishing
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd #v5
       - name: Setup dotnet
@@ -57,13 +61,22 @@ jobs:
           export number_of_packages=$(ls -1 | wc -l)
           echo "number_of_packages=${number_of_packages}" >> $GITHUB_ENV
 
+      # Configure the matching NuGet.org policy using .github/NUGET_PUBLISHING.md.
+      - name: NuGet login with Trusted Publishing
+        id: nuget_login
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 #v1.2.0
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
       - name: Push to NuGet
+        env:
+          NUGET_API_KEY: ${{ steps.nuget_login.outputs.NUGET_API_KEY }}
         working-directory: ./build/staging
         run: |
           # Check if more than 48 packages 
           if [[ ${number_of_packages} -gt 48 ]]; then
             echo "Pushing to NuGet"
-            dotnet nuget push '*.nupkg' -s 'https://api.nuget.org/v3/index.json' -k '${{ secrets.NUGET_APIKEY }}' --skip-duplicate
+            dotnet nuget push '*.nupkg' -s 'https://api.nuget.org/v3/index.json' -k "$NUGET_API_KEY" --skip-duplicate
           else
             echo 'Less files than expected, skipping push'
             exit 1
