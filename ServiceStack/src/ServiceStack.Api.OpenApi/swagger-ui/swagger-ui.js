@@ -831,7 +831,7 @@ $(function() {
 	$('ul.downplayed li div.content p').vAlign();
 
 	// When a sandbox form is submitted..
-	$("form.sandbox").submit(function(){
+	$("form.sandbox").on("submit", function(){
 
 		var error_free = true;
 
@@ -22833,9 +22833,9 @@ SwaggerUi.Views.MainView = Backbone.View.extend({
       this.addResource(resource, this.model.auths);
     }
 
-    $('.propWrap').hover(function onHover(){
+    $('.propWrap').on('mouseenter', function onHover(){
       $('.optionsWrapper', $(this)).show();
-    }, function offhover(){
+    }).on('mouseleave', function offhover(){
       $('.optionsWrapper', $(this)).hide();
     });
     return this;
@@ -23416,12 +23416,12 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
     error_free = true;
     form.find('input.required').each(function() {
       $(this).removeClass('error');
-      if (jQuery.trim($(this).val()) === '') {
+      if (String($(this).val() == null ? '' : $(this).val()).trim() === '') {
         $(this).addClass('error');
         $(this).wiggle({
           callback: (function(_this) {
             return function() {
-              $(_this).focus();
+              $(_this).trigger("focus");
             };
           })(this)
         });
@@ -23430,12 +23430,12 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
     });
     form.find('textarea.required:visible').each(function() {
       $(this).removeClass('error');
-      if (jQuery.trim($(this).val()) === '') {
+      if (String($(this).val() == null ? '' : $(this).val()).trim() === '') {
         $(this).addClass('error');
         $(this).wiggle({
           callback: (function(_this) {
             return function() {
-              return $(_this).focus();
+              return $(_this).trigger("focus");
             };
           })(this)
         });
@@ -23449,7 +23449,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
         $(this).wiggle({
           callback: (function(_this) {
             return function() {
-              $(_this).focus();
+              $(_this).trigger("focus");
             };
           })(this)
         });
@@ -23501,7 +23501,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
     ref1 = form.find('input');
     for (l = 0, len = ref1.length; l < len; l++) {
       o = ref1[l];
-      if ((o.value !== null) && jQuery.trim(o.value).length > 0) {
+      if ((o.value !== null) && String(o.value == null ? '' : o.value).trim().length > 0) {
         map[o.name] = o.value;
       }
       if (o.type === 'file') {
@@ -23512,7 +23512,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
     for (m = 0, len1 = ref2.length; m < len1; m++) {
       o = ref2[m];
       val = this.getTextAreaValue(o);
-      if ((val !== null) && jQuery.trim(val).length > 0) {
+      if ((val !== null) && String(val == null ? '' : val).trim().length > 0) {
         map[o.name] = val;
       }
     }
@@ -23520,7 +23520,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
     for (n = 0, len2 = ref3.length; n < len2; n++) {
       o = ref3[n];
       val = this.getSelectedValue(o);
-      if ((val !== null) && jQuery.trim(val).length > 0) {
+      if ((val !== null) && String(val == null ? '' : val).trim().length > 0) {
         map[o.name] = val;
       }
     }
@@ -23700,7 +23700,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
     }
     var headers = response.headers;
     if(typeof content === 'string') {
-      content = jQuery.trim(content);
+      content = String(content == null ? '' : content).trim();
     }
 
     // if server is nice, and sends content-type back, we can use it
@@ -23845,12 +23845,12 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
       opts.responseHooks[this.nickname](response, this);
     }
 
-    var response_body_el = $('.response_body', $(this.el))[0];
+    var response_body_el = $('.response_body pre code', $(this.el))[0];
     // only highlight the response if response is less than threshold, default state is highlight response
-    if (opts.highlightSizeThreshold && typeof response.data !== 'undefined' && response.data.length > opts.highlightSizeThreshold || skipHighlight) {
+    if (!response_body_el || opts.highlightSizeThreshold && typeof response.data !== 'undefined' && response.data.length > opts.highlightSizeThreshold || skipHighlight) {
       return response_body_el;
     } else {
-      return hljs.highlightBlock(response_body_el);
+      return hljs.highlightElement(response_body_el);
     }
   },
 
@@ -23867,7 +23867,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
 
   getTextAreaValue: function(textArea) {
     var param, parsed, result, i;
-    if (textArea.value === null || jQuery.trim(textArea.value).length === 0) {
+    if (textArea.value === null || String(textArea.value == null ? '' : textArea.value).trim().length === 0) {
       return null;
     }
     param = this.getParamByName(textArea.name);
@@ -23875,7 +23875,7 @@ SwaggerUi.Views.OperationView = Backbone.View.extend({
       parsed = textArea.value.split('\n');
       result = [];
       for (i = 0; i < parsed.length; i++) {
-        if (parsed[i] !== null && jQuery.trim(parsed[i]).length > 0) {
+        if (parsed[i] !== null && String(parsed[i] == null ? '' : parsed[i]).trim().length > 0) {
           result.push(parsed[i]);
         }
       }
@@ -24024,7 +24024,7 @@ SwaggerUi.Views.ParameterView = Backbone.View.extend({
       $('.body-textarea', $self).hide();
       $('.editor_holder', $self).show();
       $('.parameter-content-type', $self)
-        .change(function(e){
+        .on("change", function(e){
             if(e.target.value === 'application/xml'){
               $('.body-textarea', $self).show();
               $('.editor_holder', $self).hide();
@@ -25187,9 +25187,9 @@ SwaggerUi.Views.ResourceView = Backbone.View.extend({
       this.addOperation(operation);
     }
 
-    $('.toggleEndpointList', this.el).click(this.callDocs.bind(this, 'toggleEndpointListForResource'));
-    $('.collapseResource', this.el).click(this.callDocs.bind(this, 'collapseOperationsForResource'));
-    $('.expandResource', this.el).click(this.callDocs.bind(this, 'expandOperationsForResource'));
+    $('.toggleEndpointList', this.el).on("click", this.callDocs.bind(this, 'toggleEndpointListForResource'));
+    $('.collapseResource', this.el).on("click", this.callDocs.bind(this, 'collapseOperationsForResource'));
+    $('.expandResource', this.el).on("click", this.callDocs.bind(this, 'expandOperationsForResource'));
 
     return this;
   },
@@ -25284,7 +25284,7 @@ SwaggerUi.Views.SignatureView = Backbone.View.extend({
     var textArea = $('textarea', $(this.el.parentNode.parentNode.parentNode));
 
     // Fix for bug in IE 10/11 which causes placeholder text to be copied to "value"
-    if ($.trim(textArea.val()) === '' || textArea.prop('placeholder') === textArea.val()) {
+    if (String(textArea.val() == null ? '' : textArea.val()).trim() === '' || textArea.prop('placeholder') === textArea.val()) {
       textArea.val(val);
       // TODO move this code outside of the view and expose an event instead
       if( this.model.jsonEditor && this.model.jsonEditor.isEnabled()){
