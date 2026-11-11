@@ -98,3 +98,10 @@ Avoids static component state. All queues and render actions are scoped to compo
 
 2. **Customizing Form Inputs**
    - Use `[Input(Type = InputType.Combobox)]` or `[FieldCss]` on Request DTO properties.
+
+## Feature inventory and planning
+
+- [Existing capabilities](src/ServiceStack.Blazor/FEATURES.md) maps implementation, ownership, docs, validation and limits. Consult it and source before proposing a feature; historical shorthand here is not proof of an API or supported hosting matrix.
+- [Proposals](src/ServiceStack.Blazor/plan/FEATURE-PROPOSALS.md) contains unaccepted improvements with source evidence and explicit scope. The review/documentation request does not authorize product implementation.
+- Move a proposal into [accepted improvements](src/ServiceStack.Blazor/plan/FEATURE-IMPROVEMENTS.md) only after explicit acceptance, preserving its ID and recording the decision/scope. Keep source presence, validated behavior and confirmed release availability distinct.
+- Update the inventory when behavior changes; keep cross-project ownership canonical and retain the architecture/security rules above.
