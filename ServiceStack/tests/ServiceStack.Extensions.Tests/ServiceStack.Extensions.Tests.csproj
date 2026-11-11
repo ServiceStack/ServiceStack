@@ -37,11 +37,11 @@
         <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
         <PackageReference Include="NUnit" Version="3.*" />
-        <PackageReference Include="Grpc.Net.Client" Version="2.84.0" />
+        <PackageReference Include="Grpc.Net.Client" Version="2.85.0" />
         <PackageReference Include="Grpc.Core" Version="2.46.6" />
         <PackageReference Include="Google.Protobuf" Version="3.36.2" />
         <PackageReference Include="System.ServiceModel.Primitives" Version="8.1.2" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.31" />
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.34" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.4" />
     </ItemGroup>
 

@@ -15,8 +15,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="ModelContextProtocol.Core" Version="2.2.0" />
-        <PackageReference Include="JsonSchema.Net" Version="9.4.0" />
+        <PackageReference Include="ModelContextProtocol.Core" Version="2.4.0" />
+        <PackageReference Include="JsonSchema.Net" Version="9.6.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.SemanticKernel" Version="1.80.1" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.82.0" />
     </ItemGroup>
 
     <ItemGroup>
