@@ -8,7 +8,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Redis;
 
-public class RedisEndpoint : IRedisEndpoint
+public partial class RedisEndpoint : IRedisEndpoint
 {
     public RedisEndpoint()
     {
@@ -54,11 +54,11 @@ public class RedisEndpoint : IRedisEndpoint
     public override string ToString()
     {
         var sb = StringBuilderCache.Allocate();
-        sb.Append($"{Host}:{Port}");
+        sb.Append(Host.IndexOf(':') >= 0 ? $"[{Host}]:{Port}" : $"{Host}:{Port}");
 
         var args = new List<string>();
         if (Client != null)
-            args.Add("Client=" + Client);
+            args.Add("Client=" + Client.UrlEncode());
         if (Username != null)
             args.Add("Username=" + Username.UrlEncode());
         if (Password != null)

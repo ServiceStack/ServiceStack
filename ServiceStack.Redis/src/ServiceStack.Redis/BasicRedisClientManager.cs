@@ -120,7 +120,13 @@ public partial class BasicRedisClientManager
     private RedisClient InitNewClient(RedisClient client)
     {
         client.Id = Interlocked.Increment(ref RedisClientCounter);
+        return ConfigureClient(client);
+    }
+
+    private RedisClient ConfigureClient(RedisClient client, bool deferDb = false)
+    {
         client.ConnectionFilter = ConnectionFilter;
+        client.ConnectionFilterAsync = ConnectionFilterAsync;
         if (this.ConnectTimeout != null)
             client.ConnectTimeout = this.ConnectTimeout.Value;
         if (this.SocketSendTimeout.HasValue)
@@ -132,7 +138,10 @@ public partial class BasicRedisClientManager
         if (this.NamespacePrefix != null)
             client.NamespacePrefix = NamespacePrefix;
         if (Db != null && client.Db != Db) //Reset database to default if changed
-            client.ChangeDb(Db.Value);
+        {
+            if (!deferDb) client.ChangeDb(Db.Value);
+            else if (!client.HasConnected) client.Db = Db.Value;
+        }
 
         return client;
     }

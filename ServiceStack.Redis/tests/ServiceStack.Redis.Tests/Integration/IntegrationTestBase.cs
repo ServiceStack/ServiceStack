@@ -71,13 +71,14 @@ namespace ServiceStack.Redis.Tests.Integration
                     clientAsyncResults.Add(action.BeginInvoke(null, null));
 #endif
                 }
-            }
 
+                // Wait inside the using: the manager must outlive every client that borrows from it.
 #if NETCORE
-            Task.WaitAll(tasks.ToArray());
-#else            
-            WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
+                Task.WaitAll(tasks.ToArray());
+#else
+                WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
 #endif
+            }
 
             Debug.WriteLine($"Time Taken: {(Stopwatch.GetTimestamp() - before) / 1000}");
         }

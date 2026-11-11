@@ -107,16 +107,7 @@ public partial class RedisClient
     public bool Add<T>(string key, T value, DateTime expiresAt)
     {
         AssertNotInTransaction();
-
-        return Exec(r =>
-        {
-            if (r.Add(key, value))
-            {
-                r.ExpireEntryAt(key, ConvertToServerDate(expiresAt));
-                return true;
-            }
-            return false;
-        });
+        return Exec(r => r.SetCacheValueWithAbsoluteExpiry(key, ToBytes(value), expiresAt, exists: false));
     }
 
     public bool Add<T>(string key, T value, TimeSpan expiresIn)
@@ -140,28 +131,13 @@ public partial class RedisClient
     public bool Set<T>(string key, T value, DateTime expiresAt)
     {
         AssertNotInTransaction();
-
-        Exec(r =>
-        {
-            Set(key, value);
-            ExpireEntryAt(key, ConvertToServerDate(expiresAt));
-        });
-        return true;
+        return Exec(r => r.SetCacheValueWithAbsoluteExpiry(key, ToBytes(value), expiresAt));
     }
 
     public bool Replace<T>(string key, T value, DateTime expiresAt)
     {
         AssertNotInTransaction();
-
-        return Exec(r =>
-        {
-            if (r.Replace(key, value))
-            {
-                r.ExpireEntryAt(key, ConvertToServerDate(expiresAt));
-                return true;
-            }
-            return false;
-        });
+        return Exec(r => r.SetCacheValueWithAbsoluteExpiry(key, ToBytes(value), expiresAt, exists: true));
     }
 
     public bool Replace<T>(string key, T value, TimeSpan expiresIn)

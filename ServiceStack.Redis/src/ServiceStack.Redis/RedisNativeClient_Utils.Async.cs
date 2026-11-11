@@ -74,7 +74,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         var s = await ReadLineAsync(token).ConfigureAwait(false);
         if (log.IsDebugEnabled)
@@ -118,7 +118,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         var s = await ReadLineAsync(token).ConfigureAwait(false);
         if (log.IsDebugEnabled)
@@ -127,10 +127,8 @@ partial class RedisNativeClient
         switch (c)
         {
             case '$':
-                return new RedisData
-                {
-                    Data = await ParseSingleLineAsync(string.Concat(char.ToString((char)c), s), token).ConfigureAwait(false)
-                };
+                var bytes = await ParseSingleLineAsync(string.Concat(char.ToString((char)c), s), token).ConfigureAwait(false);
+                return new RedisData { Data = bytes, IsNull = bytes == null };
 
             case '-':
                 throw CreateResponseError(StripErrPrefix(s));
@@ -138,7 +136,7 @@ partial class RedisNativeClient
             case '*':
                 if (int.TryParse(s, out var count))
                 {
-                    var ret = new RedisData { Children = new List<RedisData>() };
+                    var ret = new RedisData { Children = new List<RedisData>(), IsNull = count == -1 };
                     for (var i = 0; i < count; i++)
                     {
                         ret.Children.Add(await ReadComplexResponseAsync(token).ConfigureAwait(false));
@@ -192,7 +190,7 @@ partial class RedisNativeClient
             useToken.ThrowIfCancellationRequested();
             try
             {
-                if (TryConnectIfNeeded()) // TODO: asyncify
+                if (await TryConnectIfNeededAsync(useToken).ConfigureAwait(false))
                     didWriteToBuffer = false;
 
                 if (socket == null)
@@ -259,6 +257,15 @@ partial class RedisNativeClient
                 if (log.IsDebugEnabled)
                     logDebug("SendReceive Exception: " + outerEx.Message);
 
+                if (outerEx is OperationCanceledException || outerEx is TimeoutException || outerEx is ObjectDisposedException)
+                {
+                    DeactivatedAt = DateTime.UtcNow;
+                    SafeConnectionClose();
+                    ResetSendBuffer();
+                    token.ThrowIfCancellationRequested();
+                    throw;
+                }
+
                 var retryableEx = outerEx as RedisRetryableException;
                 if (retryableEx == null && outerEx is RedisException
                     || outerEx is LicenseException)
@@ -296,16 +303,42 @@ partial class RedisNativeClient
         }
     }
 
-    internal ValueTask FlushSendBufferAsync(CancellationToken token)
+    internal async ValueTask FlushSendBufferAsync(CancellationToken token)
     {
-        if (currentBufferIndex > 0)
-            PushCurrentBuffer();
-
-        if (cmdBuffer.Count > 0)
+        token.ThrowIfCancellationRequested();
+        if (currentBufferIndex > 0) PushCurrentBuffer();
+        if (cmdBuffer.Count == 0) return;
+        OnBeforeFlush?.Invoke();
+        token.ThrowIfCancellationRequested();
+        using var cancellation = CloseSocketOnCancellation(token);
+        try
         {
-            OnBeforeFlush?.Invoke();
-
-            if (!Env.IsMono && sslStream == null)
+            if (sslStream != null)
+            {
+                foreach (var segment in cmdBuffer)
+                {
+#if NET6_0_OR_GREATER
+                    await sslStream.WriteAsync(new ReadOnlyMemory<byte>(segment.Array, segment.Offset, segment.Count), token).ConfigureAwait(false);
+#else
+                    await sslStream.WriteAsync(segment.Array, segment.Offset, segment.Count, token).ConfigureAwait(false);
+#endif
+                }
+            }
+            else if (Env.IsMono)
+            {
+                foreach (var segment in cmdBuffer)
+                {
+                    var sent = 0;
+                    while (sent < segment.Count)
+                    {
+                        var count = await socket.SendAsync(new ArraySegment<byte>(segment.Array,
+                            segment.Offset + sent, segment.Count - sent), SocketFlags.None).ConfigureAwait(false);
+                        if (count <= 0) throw new IOException("Redis socket closed while sending a command.");
+                        sent += count;
+                    }
+                }
+            }
+            else
             {
                 if (log.IsDebugEnabled && RedisConfig.EnableVerboseLogging)
                 {
@@ -317,43 +350,23 @@ partial class RedisNativeClient
 
                         sb.Append(Encoding.UTF8.GetString(cmd.Array, cmd.Offset, cmd.Count));
                     }
-                    logDebug("socket.Send: " + StringBuilderCache.ReturnAndFree(sb.Replace("\r\n", " ")).SafeSubstring(0, 50));
+                    logDebug("socket.Send: " + StringBuilderCache.ReturnAndFree(sb.Replace("\r\n", " ")).SafeSubstring(0,50));
                 }
 
-                return new ValueTask(socket.SendAsync(cmdBuffer, SocketFlags.None));
-            }
-            else
-            {
-                //Sending IList<ArraySegment> Throws 'Message to Large' SocketException in Mono
-                if (sslStream == null)
+                IList<ArraySegment<byte>> pending = cmdBuffer;
+                do
                 {
-                    foreach (var segment in cmdBuffer)
-                    {   // TODO: what is modern Mono behavior here?
-                        socket.Send(segment.Array, segment.Offset, segment.Count, SocketFlags.None);
-                    }
-                }
-                else
-                {
-                    return WriteAsync(sslStream, cmdBuffer, token);
-                }
+                    var sent = await socket.SendAsync(pending, SocketFlags.None).ConfigureAwait(false);
+                    pending = RemainingSendBuffers(pending, sent);
+                } while (pending != null);
             }
         }
-
-        return default;
-
-        static async ValueTask WriteAsync(Stream destination, List<ArraySegment<byte>> buffer, CancellationToken token)
+        catch
         {
-            foreach (var segment in buffer)
-            {
-#if NET6_0_OR_GREATER
-                await destination.WriteAsync(new ReadOnlyMemory<byte>(segment.Array, segment.Offset, segment.Count), token).ConfigureAwait(false);
-#else
-                    await destination.WriteAsync(segment.Array, segment.Offset, segment.Count, token).ConfigureAwait(false);
-#endif
-            }
+            token.ThrowIfCancellationRequested();
+            throw;
         }
     }
-
 
     private ValueTask<int> SafeReadByteAsync(in CancellationToken token, [CallerMemberName]string name = null)
     {
@@ -365,22 +378,33 @@ partial class RedisNativeClient
         return bufferedReader.ReadByteAsync(token);
     }
 
+    private RedisRetryableException CreateAsyncNoMoreDataError()
+    {
+        // A parser owns no reconnection policy. The async command loop may retry with its own token.
+        AbortConnection();
+        return new RedisRetryableException("Redis connection closed before a complete response.");
+    }
+
     private async ValueTask<string> ReadLineAsync(CancellationToken token)
     {
-        AssertNotDisposed();
-
         var sb = StringBuilderCache.Allocate();
-
-        int c;
-        while ((c = await bufferedReader.ReadByteAsync(token).ConfigureAwait(false)) != -1)
+        try
         {
-            if (c == '\r')
-                continue;
-            if (c == '\n')
-                break;
-            sb.Append((char)c);
+            while (true)
+            {
+                var value = await bufferedReader.ReadByteAsync(token).ConfigureAwait(false);
+                if (value == -1) throw CreateAsyncNoMoreDataError();
+                if (value == '\r')
+                {
+                    if (await bufferedReader.ReadByteAsync(token).ConfigureAwait(false) != '\n')
+                        throw new System.IO.IOException("Invalid Redis response terminator.");
+                    return sb.ToString();
+                }
+                if (value == '\n') throw new System.IO.IOException("Invalid Redis response terminator.");
+                sb.Append((char)value);
+            }
         }
-        return StringBuilderCache.ReturnAndFree(sb);
+        finally { StringBuilderCache.Free(sb); }
     }
 
     private async ValueTask<byte[]> ParseSingleLineAsync(string r, CancellationToken token)
@@ -388,7 +412,7 @@ partial class RedisNativeClient
         if (log.IsDebugEnabled)
             Log("R: {0}", r);
         if (r.Length == 0)
-            throw CreateResponseError("Zero length response");
+            throw new IOException("Zero length response");
 
         char c = r[0];
         if (c == '-')
@@ -408,7 +432,7 @@ partial class RedisNativeClient
                 {
                     var readCount = await bufferedReader.ReadAsync(retbuf, offset, count, token).ConfigureAwait(false);
                     if (readCount <= 0)
-                        throw CreateResponseError("Unexpected end of Stream");
+                        throw new IOException("Unexpected end of Stream");
 
                     offset += readCount;
                     count -= readCount;
@@ -416,11 +440,11 @@ partial class RedisNativeClient
 
                 if (await bufferedReader.ReadByteAsync(token).ConfigureAwait(false) != '\r'
                     || await bufferedReader.ReadByteAsync(token).ConfigureAwait(false) != '\n')
-                    throw CreateResponseError("Invalid termination");
+                    throw new IOException("Invalid termination");
 
                 return retbuf;
             }
-            throw CreateResponseError("Invalid length");
+            throw new IOException("Invalid length");
         }
 
         if (c is ':' or '+')
@@ -432,7 +456,7 @@ partial class RedisNativeClient
         if (r == "*0")
             return Array.Empty<byte>();
             
-        throw CreateResponseError("Unexpected reply: " + r);
+        throw new IOException("Unexpected reply: " + r);
     }
 
     private ValueTask<byte[]> ReadDataAsync(CancellationToken token)
@@ -453,7 +477,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         var s = await ReadLineAsync(token).ConfigureAwait(false);
 
@@ -470,7 +494,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         var s = await ReadLineAsync(token).ConfigureAwait(false);
         if (log.IsDebugEnabled)
@@ -513,7 +537,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         return ParseLong(c, await ReadLineAsync(token).ConfigureAwait(false));
     }
@@ -543,7 +567,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         var s = await ReadLineAsync(token).ConfigureAwait(false);
 
@@ -559,7 +583,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         var s = await ReadLineAsync(token).ConfigureAwait(false);
 
@@ -577,7 +601,7 @@ partial class RedisNativeClient
     {
         int c = await SafeReadByteAsync(token).ConfigureAwait(false);
         if (c == -1)
-            throw CreateNoMoreDataError();
+            throw CreateAsyncNoMoreDataError();
 
         var s = await ReadLineAsync(token).ConfigureAwait(false);
         if (log.IsDebugEnabled)

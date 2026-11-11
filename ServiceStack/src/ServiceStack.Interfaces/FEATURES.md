@@ -19,6 +19,9 @@ Status: implementation entry points located in this checkout; behavioral verific
 | Routing and API metadata | Declare routes, parameter descriptions and UI/metadata behavior on DTOs. | [RouteAttribute.cs](RouteAttribute.cs), [ApiMemberAttribute.cs](ApiMemberAttribute.cs), [ToolAttribute.cs](ToolAttribute.cs), [McpAttribute.cs](McpAttribute.cs) |
 | Query and CRUD contracts | Declare database/data query and CRUD request shapes. | [IQuery.cs](IQuery.cs) |
 | Provider abstractions | Share caching, authentication, VFS and messaging contracts. | [Caching](Caching), [Auth](Auth), [IO](IO), [Messaging](Messaging) |
+| Optional Redis cleanup and Streams contracts | Opt into SCAN/UNLINK cleanup and binary Streams/group APIs, including primitive command pipelines; preserve nil reply metadata. | [Pattern commands](Redis/IRedisPatternCommands.cs), [Streams](Redis/IRedisStreamCommands.cs), [async](Redis/IRedisStreamCommandsAsync.cs), [models](Redis/RedisStreams.cs), [RedisData](Redis/RedisData.cs) |
+| Optional Redis key-command contracts | Opt in to GETEX/GETDEL/UNLINK without adding required members to existing provider interfaces. | [Sync](Redis/IRedisNativeKeyCommands.cs), [async](Redis/IRedisNativeKeyCommandsAsync.cs), [GETEX options](Redis/RedisGetExOptions.cs) |
+| Optional Redis hash-field expiry contracts | Expire/query/persist individual binary hash fields and preserve ordered per-field results. | [Sync](Redis/IRedisHashExpiryCommands.cs), [async](Redis/IRedisHashExpiryCommandsAsync.cs), [condition enum](Redis/RedisHashExpiryCondition.cs); standalone calls, Redis 7.4+ / compatible native servers |
 | Jobs and commands | Describe durable work, schedules, dependencies and typed command execution. | [Jobs/IBackgroundJobs.cs](Jobs/IBackgroundJobs.cs), [Jobs/BackgroundJob.cs](Jobs/BackgroundJob.cs), [Jobs/ScheduledTasks.cs](Jobs/ScheduledTasks.cs), [Commands](Commands) |
 
 ## Public documentation
@@ -38,8 +41,14 @@ No focused test file has been mapped in this first pass. This does not establish
 
 Follow-up: review per-capability assertions, target-framework/provider behavior, documentation examples and the published release that first supports each capability. Source links identify where to begin that review.
 
+Redis key-command contracts were added on 2026-11-10 under [REDIS-001](../../../ServiceStack.Redis/src/ServiceStack.Redis/plan/FEATURE-IMPROVEMENTS.md#command-group-decision-2026-11-10), owned by ServiceStack.Redis. Contracts build for all five Interfaces target frameworks; Redis integration evidence and release status are recorded by that owner.
+
 ## Planning
 
 - [Unaccepted feature proposals](plan/FEATURE-PROPOSALS.md)
 - [Accepted improvements and implementation tracking](plan/FEATURE-IMPROVEMENTS.md)
 - [Suite-wide prioritization and scope](../plan/FEATURE-PROPOSALS.md)
+
+The cleanup and Streams increments are owned by [REDIS-001 / REDIS-004](../../../ServiceStack.Redis/src/ServiceStack.Redis/plan/FEATURE-IMPROVEMENTS.md). Additive contracts/models do not add required members to existing client interfaces; execution, verification and release status live in the Redis owner record.
+
+Hash-field expiration was accepted on 2026-11-11 under [REDIS-001](../../../ServiceStack.Redis/src/ServiceStack.Redis/plan/FEATURE-IMPROVEMENTS.md#hash-field-expiration-decision-2026-11-11). The new optional contracts/enum add no required members to existing providers. All five contract targets build; Redis owns behavior, compatibility tests and unconfirmed release status.

@@ -7,7 +7,7 @@ using ServiceStack.Logging;
 
 namespace ServiceStack.Redis;
 
-public class RedisResolver : IRedisResolver, IRedisResolverExtended
+public partial class RedisResolver : IRedisResolver, IRedisResolverExtended
 {
     static ILog log = LogManager.GetLogger(typeof(RedisResolver));
 

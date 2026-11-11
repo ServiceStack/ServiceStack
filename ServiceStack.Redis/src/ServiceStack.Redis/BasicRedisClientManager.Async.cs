@@ -30,23 +30,42 @@ public partial class BasicRedisClientManager
     private ValueTask<ICacheClientAsync> GetCacheClientAsync(in CancellationToken _)
         => new RedisClientManagerCacheClient(this).AsValueTaskResult<ICacheClientAsync>();
 
-    private ValueTask<ICacheClientAsync> GetReadOnlyCacheClientAsync(in CancellationToken _)
-        => ConfigureRedisClientAsync(this.GetReadOnlyClientImpl()).AsValueTaskResult<ICacheClientAsync>();
+    public Func<IRedisNativeClientAsync, CancellationToken, ValueTask> ConnectionFilterAsync { get; set; }
 
-    private IRedisClientAsync ConfigureRedisClientAsync(IRedisClientAsync client)
-        => client;
+    private async ValueTask<ICacheClientAsync> GetReadOnlyCacheClientAsync(CancellationToken token)
+        => await GetClientAsync(true, token).ConfigureAwait(false);
+
+    private void ConfigureAsyncClient(RedisClient client) => ConfigureClient(client, deferDb: true);
+
+    private async ValueTask<IRedisClientAsync> GetClientAsync(bool readOnly, CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        var client = readOnly
+            ? await RedisResolver.CreateSlaveClientAsync(Interlocked.Increment(ref readOnlyHostsIndex) - 1, token, ConfigureAsyncClient).ConfigureAwait(false)
+            : await RedisResolver.CreateMasterClientAsync(Interlocked.Increment(ref readWriteHostsIndex) - 1, token, ConfigureAsyncClient).ConfigureAwait(false);
+        try
+        {
+            client.Id = Interlocked.Increment(ref RedisClientCounter);
+            ConfigureAsyncClient(client);
+            if (Db != null && client.Db != Db)
+                await ((IRedisClientAsync)client).SelectAsync(Db.Value, token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
+            return client;
+        }
+        catch { client.AbortConnection(); client.ClientManager = null; client.Dispose(); throw; }
+    }
 
     ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetCacheClientAsync(CancellationToken token)
         => GetCacheClientAsync(token);
 
     ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetClientAsync(CancellationToken token)
-        => GetClientImpl().AsValueTaskResult<IRedisClientAsync>();
+        => GetClientAsync(false, token);
 
     ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetReadOnlyCacheClientAsync(CancellationToken token)
         => GetReadOnlyCacheClientAsync(token);
 
     ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetReadOnlyClientAsync(CancellationToken token)
-        => GetReadOnlyClientImpl().AsValueTaskResult<IRedisClientAsync>();
+        => GetClientAsync(true, token);
 
     ValueTask IAsyncDisposable.DisposeAsync()
     {

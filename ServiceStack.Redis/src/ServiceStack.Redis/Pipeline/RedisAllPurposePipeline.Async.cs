@@ -36,23 +36,49 @@ public partial class RedisAllPurposePipeline : IRedisPipelineAsync
 
     async ValueTask IRedisPipelineSharedAsync.FlushAsync(CancellationToken token)
     {
-        // flush send buffers
-        await RedisClient.FlushSendBufferAsync(token).ConfigureAwait(false);
-        RedisClient.ResetSendBuffer();
-            
+        token.ThrowIfCancellationRequested();
+        using var cancellation = RedisClient.CloseSocketOnCancellation(token);
         try
         {
-            //receive expected results
+            using (var send = CancellationTokenSource.CreateLinkedTokenSource(token))
+            {
+                if (RedisClient.SendTimeout > 0) send.CancelAfter(RedisClient.SendTimeout);
+                using var close = RedisClient.CloseSocketOnCancellation(send.Token);
+                try { await RedisClient.FlushSendBufferAsync(send.Token).ConfigureAwait(false); }
+                catch (Exception ex) when (send.IsCancellationRequested)
+                {
+                    token.ThrowIfCancellationRequested();
+                    throw new TimeoutException($"Redis pipeline send exceeded SendTimeout {RedisClient.SendTimeout}ms.", ex);
+                }
+            }
+            RedisClient.ResetSendBuffer();
+            // One linked source and socket-close registration per flush; re-arming CancelAfter restarts the
+            // ReceiveTimeout for each reply without allocating per queued command.
+            using var receive = CancellationTokenSource.CreateLinkedTokenSource(token);
+            using var closeOnReceiveCancel = RedisClient.CloseSocketOnCancellation(receive.Token);
             foreach (var queuedCommand in QueuedCommands)
             {
-                await queuedCommand.ProcessResultAsync(token).ConfigureAwait(false);
+                if (RedisClient.ReceiveTimeout > 0) receive.CancelAfter(RedisClient.ReceiveTimeout);
+                try
+                {
+                    await queuedCommand.ProcessResultAsync(receive.Token).ConfigureAwait(false);
+                    receive.Token.ThrowIfCancellationRequested();
+                }
+                catch (Exception ex) when (receive.IsCancellationRequested)
+                {
+                    token.ThrowIfCancellationRequested();
+                    throw new TimeoutException($"Redis pipeline receive exceeded ReceiveTimeout {RedisClient.ReceiveTimeout}ms.", ex);
+                }
             }
+            token.ThrowIfCancellationRequested();
         }
         catch (Exception)
         {
             // The connection cannot be reused anymore. All queued commands have been sent to redis. Even if a new command is executed, the next response read from the
             // network stream can be the response of one of the queued commands, depending on when the exception occurred. This response would be invalid for the new command.
-            RedisClient.DisposeConnection();
+            RedisClient.DeactivatedAt = DateTime.UtcNow;
+            RedisClient.AbortConnection();
+            token.ThrowIfCancellationRequested();
             throw;
         }
 

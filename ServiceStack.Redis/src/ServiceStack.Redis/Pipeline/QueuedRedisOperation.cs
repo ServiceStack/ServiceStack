@@ -77,13 +77,12 @@ internal partial class QueuedRedisOperation
             else if (BytesReadCommand != null)
             {
                 var result = BytesReadCommand();
-                if (result != null && result.Length == 0)
-                    result = null;
-
+                if (RedisConfig.PipelineEmptyValuesAsNull && result is { Length: 0 }) result = null;
                 OnSuccessBytesCallback?.Invoke(result);
                 OnSuccessStringCallback?.Invoke(result != null ? Encoding.UTF8.GetString(result) : null);
                 OnSuccessTypeCallback?.Invoke(result != null ? Encoding.UTF8.GetString(result) : null);
-                OnSuccessIntCallback?.Invoke(result != null ? int.Parse(Encoding.UTF8.GetString(result)) : 0);
+                // An empty value reads as 0, as it did when empty values were returned as null.
+                OnSuccessIntCallback?.Invoke(result is { Length: > 0 } ? int.Parse(Encoding.UTF8.GetString(result)) : 0);
                 OnSuccessBoolCallback?.Invoke(result != null && Encoding.UTF8.GetString(result) == "OK");
             }
             else if (StringReadCommand != null)

@@ -75,11 +75,12 @@ internal partial class QueuedRedisOperation
                     break;
                 case Func<CancellationToken, ValueTask<byte[]>> BytesReadCommandAsync:
                     var bytes = await BytesReadCommandAsync(token).ConfigureAwait(false);
-                    if (bytes != null && bytes.Length == 0) bytes = null;
+                    if (RedisConfig.PipelineEmptyValuesAsNull && bytes is { Length: 0 }) bytes = null;
                     OnSuccessBytesCallback?.Invoke(bytes);
                     OnSuccessStringCallback?.Invoke(bytes != null ? Encoding.UTF8.GetString(bytes) : null);
                     OnSuccessTypeCallback?.Invoke(bytes != null ? Encoding.UTF8.GetString(bytes) : null);
-                    OnSuccessIntCallback?.Invoke(bytes != null ? int.Parse(Encoding.UTF8.GetString(bytes)) : 0);
+                    // An empty value reads as 0, as it did when empty values were returned as null.
+                    OnSuccessIntCallback?.Invoke(bytes is { Length: > 0 } ? int.Parse(Encoding.UTF8.GetString(bytes)) : 0);
                     OnSuccessBoolCallback?.Invoke(bytes != null && Encoding.UTF8.GetString(bytes) == "OK");
                     break;
                 case Func<CancellationToken, ValueTask<string>> StringReadCommandAsync:

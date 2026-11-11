@@ -51,9 +51,13 @@ public partial class PooledRedisClientManager
     public List<Action<IRedisClientsManager>> OnFailover { get; private set; }
 
     private RedisClient[] writeClients = TypeConstants<RedisClient>.EmptyArray;
+    private RedisPoolReservation[] writeReservations = Array.Empty<RedisPoolReservation>();
+    private int writeGeneration;
     protected int WritePoolIndex;
 
     private RedisClient[] readClients = TypeConstants<RedisClient>.EmptyArray;
+    private RedisPoolReservation[] readReservations = Array.Empty<RedisPoolReservation>();
+    private int readGeneration;
     protected int ReadPoolIndex;
 
     protected int RedisClientCounter = 0;
@@ -166,6 +170,8 @@ public partial class PooledRedisClientManager
 
         lock (readClients)
         {
+            readGeneration++;
+            Array.Clear(readReservations, 0, readReservations.Length);
             for (var i = 0; i < readClients.Length; i++)
             {
                 var redis = readClients[i];
@@ -175,10 +181,13 @@ public partial class PooledRedisClientManager
                 readClients[i] = null;
             }
             RedisResolver.ResetSlaves(replicas);
+            PulseAllRead();
         }
 
         lock (writeClients)
         {
+            writeGeneration++;
+            Array.Clear(writeReservations, 0, writeReservations.Length);
             for (var i = 0; i < writeClients.Length; i++)
             {
                 var redis = writeClients[i];
@@ -188,6 +197,7 @@ public partial class PooledRedisClientManager
                 writeClients[i] = null;
             }
             RedisResolver.ResetMasters(masters);
+            PulseAllWrite();
         }
 
         if (this.OnFailover != null)
@@ -219,99 +229,9 @@ public partial class PooledRedisClientManager
 
     private RedisClient GetClientBlocking()
     {
-        try
-        {
-            var poolTimedOut = false;
-            var inactivePoolIndex = -1;
-            lock (writeClients)
-            {
-                AssertValidReadWritePool();
-
-                RedisClient inActiveClient;
-                while ((inactivePoolIndex = GetInActiveWriteClient(out inActiveClient)) == -1)
-                {
-                    if (PoolTimeout.HasValue)
-                    {
-                        // wait for a connection, cry out if made to wait too long
-                        if (!Monitor.Wait(writeClients, PoolTimeout.Value))
-                        {
-                            poolTimedOut = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        Monitor.Wait(writeClients, RecheckPoolAfterMs);
-                    }
-                }
-
-                //inActiveClient != null only for Valid InActive Clients
-                if (inActiveClient != null)
-                {
-                    WritePoolIndex++;
-                    inActiveClient.Activate();
-
-                    InitClient(inActiveClient);
-
-                    return (!AssertAccessOnlyOnSameThread)
-                        ? inActiveClient
-                        : inActiveClient.LimitAccessToThread(Thread.CurrentThread.ManagedThreadId, Environment.StackTrace);
-                }
-            }
-
-            if (poolTimedOut)
-                throw new TimeoutException(PoolTimeoutError);
-
-            //Reaches here when there's no Valid InActive Clients
-            try
-            {
-                //inactivePoolIndex = index of reservedSlot || index of invalid client
-                var existingClient = writeClients[inactivePoolIndex];
-                if (existingClient != null && existingClient != reservedSlot && existingClient.HadExceptions)
-                {
-                    RedisState.DeactivateClient(existingClient);
-                }
-
-                var newClient = InitNewClient(RedisResolver.CreateMasterClient(inactivePoolIndex));
-
-                //Put all blocking I/O or potential Exceptions before lock
-                lock (writeClients)
-                {
-                    //If existingClient at inactivePoolIndex changed (failover) return new client outside of pool
-                    if (writeClients[inactivePoolIndex] != existingClient)
-                    {
-                        if (Log.IsDebugEnabled)
-                            Log.Debug("writeClients[inactivePoolIndex] != existingClient: {0}".Fmt(writeClients[inactivePoolIndex]));
-
-                        Interlocked.Increment(ref RedisState.TotalClientsCreatedOutsidePool);
-
-                        //Don't handle callbacks for new client outside pool so Dispose() closes its connection
-                        newClient.ClientManager = null;
-                        return newClient; //return client outside of pool
-                    }
-
-                    WritePoolIndex++;
-                    writeClients[inactivePoolIndex] = newClient;
-
-                    return (!AssertAccessOnlyOnSameThread)
-                        ? newClient
-                        : newClient.LimitAccessToThread(Thread.CurrentThread.ManagedThreadId, Environment.StackTrace);
-                }
-            }
-            catch
-            {
-                //Revert free-slot for any I/O exceptions that can throw (before lock)
-                lock (writeClients)
-                {
-                    writeClients[inactivePoolIndex] = null; //free slot
-                }
-                throw;
-            }
-        }
-        finally
-        {
-            RedisState.DisposeExpiredClients();
-        }
+        var client = (RedisClient)RedisPoolWaiters.Completed(GetPooledClientAsync(false, CancellationToken.None, forAsync: false));
+        return !AssertAccessOnlyOnSameThread ? client
+            : client.LimitAccessToThread(Thread.CurrentThread.ManagedThreadId, Environment.StackTrace);
     }
 
     class ReservedClient : RedisClient
@@ -350,12 +270,15 @@ public partial class PooledRedisClientManager
                 if (writeClients[i] == null)
                 {
                     writeClients[i] = reservedSlot;
+                    writeReservations[i] = new RedisPoolReservation(writeGeneration);
                     inactiveClient = null;
                     return i;
                 }
 
                 if (writeClients[i] != reservedSlot && writeClients[i].HadExceptions)
                 {
+                    writeReservations[i] = new RedisPoolReservation(writeGeneration, writeClients[i]);
+                    writeClients[i] = reservedSlot;
                     inactiveClient = null;
                     return i;
                 }
@@ -372,96 +295,7 @@ public partial class PooledRedisClientManager
     public virtual IRedisClient GetReadOnlyClient() => GetReadOnlyClientBlocking();
 
     private RedisClient GetReadOnlyClientBlocking()
-    {
-        try
-        {
-            var poolTimedOut = false;
-            var inactivePoolIndex = -1;
-            lock (readClients)
-            {
-                AssertValidReadOnlyPool();
-
-                RedisClient inActiveClient;
-                while ((inactivePoolIndex = GetInActiveReadClient(out inActiveClient)) == -1)
-                {
-                    if (PoolTimeout.HasValue)
-                    {
-                        // wait for a connection, break out if made to wait too long
-                        if (!Monitor.Wait(readClients, PoolTimeout.Value))
-                        {
-                            poolTimedOut = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        Monitor.Wait(readClients, RecheckPoolAfterMs);
-                    }
-                }
-
-                //inActiveClient != null only for Valid InActive Clients
-                if (inActiveClient != null)
-                {
-                    ReadPoolIndex++;
-                    inActiveClient.Activate();
-
-                    InitClient(inActiveClient);
-
-                    return inActiveClient;
-                }
-            }
-
-            if (poolTimedOut)
-                throw new TimeoutException(PoolTimeoutError);
-
-            //Reaches here when there's no Valid InActive Clients
-            try
-            {
-                //inactivePoolIndex = index of reservedSlot || index of invalid client
-                var existingClient = readClients[inactivePoolIndex];
-                if (existingClient != null && existingClient != reservedSlot && existingClient.HadExceptions)
-                {
-                    RedisState.DeactivateClient(existingClient);
-                }
-
-                var newClient = InitNewClient(RedisResolver.CreateSlaveClient(inactivePoolIndex));
-
-                //Put all blocking I/O or potential Exceptions before lock
-                lock (readClients)
-                {
-                    //If existingClient at inactivePoolIndex changed (failover) return new client outside of pool
-                    if (readClients[inactivePoolIndex] != existingClient)
-                    {
-                        if (Log.IsDebugEnabled)
-                            Log.Debug("readClients[inactivePoolIndex] != existingClient: {0}".Fmt(readClients[inactivePoolIndex]));
-
-                        Interlocked.Increment(ref RedisState.TotalClientsCreatedOutsidePool);
-
-                        //Don't handle callbacks for new client outside pool
-                        newClient.ClientManager = null;
-                        return newClient; //return client outside of pool
-                    }
-
-                    ReadPoolIndex++;
-                    readClients[inactivePoolIndex] = newClient;
-                    return newClient;
-                }
-            }
-            catch
-            {
-                //Revert free-slot for any I/O exceptions that can throw
-                lock (readClients)
-                {
-                    readClients[inactivePoolIndex] = null; //free slot
-                }
-                throw;
-            }
-        }
-        finally
-        {
-            RedisState.DisposeExpiredClients();
-        }
-    }
+        => (RedisClient)RedisPoolWaiters.Completed(GetPooledClientAsync(true, CancellationToken.None, forAsync: false));
 
     /// <summary>
     /// Called within a lock
@@ -487,12 +321,15 @@ public partial class PooledRedisClientManager
                 if (readClients[i] == null)
                 {
                     readClients[i] = reservedSlot;
+                    readReservations[i] = new RedisPoolReservation(readGeneration);
                     inactiveClient = null;
                     return i;
                 }
 
                 if (readClients[i] != reservedSlot && readClients[i].HadExceptions)
                 {
+                    readReservations[i] = new RedisPoolReservation(readGeneration, readClients[i]);
+                    readClients[i] = reservedSlot;
                     inactiveClient = null;
                     return i;
                 }
@@ -508,13 +345,14 @@ public partial class PooledRedisClientManager
         client.Activate(newClient:true);
         client.ClientManager = this;
         client.ConnectionFilter = ConnectionFilter;
+        client.ConnectionFilterAsync = ConnectionFilterAsync;
         if (NamespacePrefix != null)
             client.NamespacePrefix = NamespacePrefix;
 
         return InitClient(client);
     }
 
-    private RedisClient InitClient(RedisClient client)
+    private RedisClient InitClient(RedisClient client, bool deferDb = false)
     {
         if (this.ConnectTimeout != null)
             client.ConnectTimeout = this.ConnectTimeout.Value;
@@ -527,7 +365,10 @@ public partial class PooledRedisClientManager
         if (this.NamespacePrefix != null)
             client.NamespacePrefix = NamespacePrefix;
         if (Db != null && client.Db != Db) //Reset database to default if changed
-            client.ChangeDb(Db.Value);
+        {
+            if (!deferDb) client.ChangeDb(Db.Value);
+            else if (!client.HasConnected) client.Db = Db.Value;
+        }
         return client;
     }
 
@@ -563,7 +404,7 @@ public partial class PooledRedisClientManager
                     client.Deactivate();
                 }
 
-                PulseAllRead();
+                WakeOneRead();
                 return;
             }
         }
@@ -584,20 +425,20 @@ public partial class PooledRedisClientManager
                     client.Deactivate();
                 }
 
-                PulseAllWrite();
+                WakeOneWrite();
                 return;
             }
         }
 
-        //Client not found in any pool, pulse both pools.
+        //Client not found in any pool, wake a waiter in both pools.
         lock (readClients)
         {
-            PulseAllRead();
+            WakeOneRead();
         }
 
         lock (writeClients)
         {
-            PulseAllWrite();
+            WakeOneWrite();
         }
     }
 
@@ -610,7 +451,7 @@ public partial class PooledRedisClientManager
         lock (readClients)
         {
             client.Deactivate();
-            PulseAllRead();
+            WakeOneRead();
         }
     }
 
@@ -623,7 +464,7 @@ public partial class PooledRedisClientManager
         lock (writeClients)
         {
             client.Deactivate();
-            PulseAllWrite();
+            WakeOneWrite();
         }
     }
 
@@ -633,9 +474,11 @@ public partial class PooledRedisClientManager
             throw new InvalidOperationException("Pool has already been started");
 
         writeClients = new RedisClient[Config.MaxWritePoolSize];
+        writeReservations = new RedisPoolReservation[writeClients.Length];
         WritePoolIndex = 0;
 
         readClients = new RedisClient[Config.MaxReadPoolSize];
+        readReservations = new RedisPoolReservation[readClients.Length];
         ReadPoolIndex = 0;
     }
 
@@ -708,12 +551,16 @@ public partial class PooledRedisClientManager
 
     private void AssertValidReadWritePool()
     {
+        if (Volatile.Read(ref disposeAttempts) > 0)
+            throw new ObjectDisposedException(nameof(PooledRedisClientManager));
         if (writeClients.Length < 1)
             throw new InvalidOperationException("Need a minimum read-write pool size of 1, then call Start()");
     }
 
     private void AssertValidReadOnlyPool()
     {
+        if (Volatile.Read(ref disposeAttempts) > 0)
+            throw new ObjectDisposedException(nameof(PooledRedisClientManager));
         if (readClients.Length < 1)
             throw new InvalidOperationException("Need a minimum read pool size of 1, then call Start()");
     }
@@ -762,6 +609,11 @@ public partial class PooledRedisClientManager
     protected virtual void Dispose(bool disposing)
     {
         if (Interlocked.Increment(ref disposeAttempts) > 1) return;
+
+        lock (readClients)
+            PulseAllRead();
+        lock (writeClients)
+            PulseAllWrite();
 
         if (disposing)
         {

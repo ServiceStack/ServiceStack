@@ -69,6 +69,9 @@ public static class Commands
     public static readonly byte[] Set = "SET".ToUtf8Bytes();
     public static readonly byte[] Get = "GET".ToUtf8Bytes();
     public static readonly byte[] GetSet = "GETSET".ToUtf8Bytes();
+    public static readonly byte[] GetEx = "GETEX".ToUtf8Bytes();
+    public static readonly byte[] GetDel = "GETDEL".ToUtf8Bytes();
+    public static readonly byte[] Unlink = "UNLINK".ToUtf8Bytes();
     public static readonly byte[] MGet = "MGET".ToUtf8Bytes();
     public static readonly byte[] SetNx = "SETNX".ToUtf8Bytes();
     public static readonly byte[] SetEx = "SETEX".ToUtf8Bytes();
@@ -166,6 +169,15 @@ public static class Commands
     public static readonly byte[] HLen = "HLEN".ToUtf8Bytes();
     public static readonly byte[] HKeys = "HKEYS".ToUtf8Bytes();
     public static readonly byte[] HVals = "HVALS".ToUtf8Bytes();
+    public static readonly byte[] HExpire = "HEXPIRE".ToUtf8Bytes();
+    public static readonly byte[] HPExpire = "HPEXPIRE".ToUtf8Bytes();
+    public static readonly byte[] HExpireAt = "HEXPIREAT".ToUtf8Bytes();
+    public static readonly byte[] HPExpireAt = "HPEXPIREAT".ToUtf8Bytes();
+    public static readonly byte[] HTtl = "HTTL".ToUtf8Bytes();
+    public static readonly byte[] HPTtl = "HPTTL".ToUtf8Bytes();
+    public static readonly byte[] HExpireTime = "HEXPIRETIME".ToUtf8Bytes();
+    public static readonly byte[] HPExpireTime = "HPEXPIRETIME".ToUtf8Bytes();
+    public static readonly byte[] HPersist = "HPERSIST".ToUtf8Bytes();
     public static readonly byte[] HGetAll = "HGETALL".ToUtf8Bytes();
 
     public static readonly byte[] Sort = "SORT".ToUtf8Bytes();

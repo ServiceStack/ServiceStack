@@ -34,20 +34,37 @@ public static class RedisExtensions
     {
         if (connectionString == null)
             throw new ArgumentNullException(nameof(connectionString));
+        if (connectionString.StartsWith("rediss://", StringComparison.OrdinalIgnoreCase))
+            return RedisEndpoint.ParseUri(connectionString, defaultPort);
         if (connectionString.StartsWith("redis://"))
             connectionString = connectionString.Substring("redis://".Length);
 
         var domainParts = connectionString.SplitOnLast('@');
         var qsParts = domainParts.Last().SplitOnFirst('?');
-        var hostParts = qsParts[0].SplitOnLast(':');
         var useDefaultPort = true;
         var port = defaultPort.GetValueOrDefault(RedisConfig.DefaultPort);
-        if (hostParts.Length > 1)
+        string host;
+        if (qsParts[0].StartsWith("[", StringComparison.Ordinal))
         {
-            port = int.Parse(hostParts[1]);
-            useDefaultPort = false;
+            var close = qsParts[0].IndexOf(']');
+            if (close < 1) throw new ArgumentException("Invalid bracketed Redis host.");
+            host = qsParts[0].Substring(1, close - 1);
+            var suffix = qsParts[0].Substring(close + 1);
+            if (suffix.Length != 0)
+            {
+                if (!suffix.StartsWith(":", StringComparison.Ordinal)) throw new ArgumentException("Invalid Redis host port.");
+                port = int.Parse(suffix.Substring(1));
+                useDefaultPort = false;
+            }
         }
-        var endpoint = new RedisEndpoint(hostParts[0], port);
+        else
+        {
+            var hostParts = qsParts[0].SplitOnLast(':');
+            host = hostParts[0];
+            if (host.IndexOf(':') >= 0) throw new ArgumentException("IPv6 connection strings require a bracketed host.");
+            if (hostParts.Length > 1) { port = int.Parse(hostParts[1]); useDefaultPort = false; }
+        }
+        var endpoint = new RedisEndpoint(host, port);
         if (domainParts.Length > 1)
         {
             var authParts = domainParts[0].SplitOnFirst(':');

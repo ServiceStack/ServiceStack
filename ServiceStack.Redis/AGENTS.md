@@ -56,7 +56,10 @@ Distributed Caching & Sessions                  Enterprise Messaging & Real-Time
 ## Architecture & Design Patterns
 
 ### RESP Protocol & Socket Management
-`RedisNativeClient` reads and writes the Redis Serialization Protocol (RESP) directly to buffered socket streams, minimizing heap allocations and encoding overhead.
+`RedisNativeClient` reads and writes the Redis Serialization Protocol (RESP) directly to buffered socket streams, minimizing heap allocations and encoding overhead. Async connection setup is in `RedisNativeClient.Connection.Async.cs`; keep DNS, TCP, TLS and initialization under one cancellation/deadline budget, preserve certificate validation, and close interrupted sockets. Default async manager resolution uses the optional `IRedisResolverAsync`; preserve existing sync resolver policy and configure clients before role verification.
+
+### Microsoft distributed cache (.NET 10)
+`RedisDistributedCache`, its options and DI registration live in the main package under `#if NET10_0_OR_GREATER`, with Microsoft package references guarded by the net10.0 MSBuild target. Keep older targets free of those APIs/dependencies. Preserve raw binary payloads, atomic expiry, exclusive writer leases even for Get, the private versioned key namespace, and explicit manager ownership. Guard related tests and test-only Microsoft/HybridCache references to .NET 10 as well. Canonical scope: REDIS-006 in the project accepted-improvements record.
 
 ### Master / Replica Separation
 `BasicRedisClientManager` and `PooledRedisClientManager` route mutating operations (`GetClient()`, `GetCacheClient()`) to master nodes while distributing read-only operations (`GetReadOnlyClient()`, `GetReadOnlyCacheClient()`) across replica nodes.
@@ -116,3 +119,9 @@ Distributed Caching & Sessions                  Enterprise Messaging & Real-Time
 3. **Subscribing to Redis Pub/Sub Channels**
    - Use `RedisPubSubServer` or `redis.CreateSubscription()`.
    - Ensure message loops catch transient socket disconnects and reconnect gracefully.
+
+## Feature inventory and planning
+
+- [Existing capabilities](src/ServiceStack.Redis/FEATURES.md) links implementation, documentation and test evidence with review limits.
+- [Feature proposals](src/ServiceStack.Redis/plan/FEATURE-PROPOSALS.md) contains the current source-based shortlist; FUTURE.md remains unaccepted idea history.
+- Move a proposal to [accepted improvements](src/ServiceStack.Redis/plan/FEATURE-IMPROVEMENTS.md) only after explicit acceptance, preserving its ID and recording the decision/scope. Update the inventory when supported behavior changes.

@@ -13,6 +13,8 @@
 using ServiceStack.Caching;
 using ServiceStack.Redis.Internal;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.AsyncEx;
@@ -26,20 +28,53 @@ public partial class PooledRedisClientManager
     /// Use previous client resolving behavior
     /// </summary>
     public static bool UseGetClientBlocking = false;
+
+    public Func<IRedisNativeClientAsync, CancellationToken, ValueTask> ConnectionFilterAsync { get; set; }
+
+    private void ConfigureAsyncClient(RedisClient client)
+    {
+        client.ConnectionFilter = ConnectionFilter;
+        client.ConnectionFilterAsync = ConnectionFilterAsync;
+        InitClient(client, deferDb: true);
+    }
+
+    private async ValueTask InitClientAsync(RedisClient client, CancellationToken token)
+    {
+        ConfigureAsyncClient(client);
+        if (Db != null && client.Db != Db)
+            await ((IRedisClientAsync)client).SelectAsync(Db.Value, token).ConfigureAwait(false);
+        token.ThrowIfCancellationRequested();
+    }
+
+    private async ValueTask InitNewClientAsync(RedisClient client, CancellationToken token)
+    {
+        client.Id = Interlocked.Increment(ref RedisClientCounter);
+        client.Activate(newClient: true);
+        client.ClientManager = this;
+        await InitClientAsync(client, token).ConfigureAwait(false);
+    }
         
     ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetCacheClientAsync(CancellationToken token)
         => new RedisClientManagerCacheClient(this).AsValueTaskResult<ICacheClientAsync>();
 
-    ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetClientAsync(CancellationToken token) => UseGetClientBlocking
-        ? GetClientBlocking().AsValueTaskResult<IRedisClientAsync>()
-        : GetClientAsync();
+    ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetClientAsync(CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        return UseGetClientBlocking
+            ? GetClientBlocking().AsValueTaskResult<IRedisClientAsync>()
+            : GetClientAsync(token);
+    }
 
     ValueTask<ICacheClientAsync> IRedisClientsManagerAsync.GetReadOnlyCacheClientAsync(CancellationToken token)
         => new RedisClientManagerCacheClient(this) { ReadOnly = true }.AsValueTaskResult<ICacheClientAsync>();
 
-    ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetReadOnlyClientAsync(CancellationToken token) => UseGetClientBlocking
-        ? GetReadOnlyClientBlocking().AsValueTaskResult<IRedisClientAsync>()
-        : GetReadOnlyClientAsync();
+    ValueTask<IRedisClientAsync> IRedisClientsManagerAsync.GetReadOnlyClientAsync(CancellationToken token)
+    {
+        token.ThrowIfCancellationRequested();
+        return UseGetClientBlocking
+            ? GetReadOnlyClientBlocking().AsValueTaskResult<IRedisClientAsync>()
+            : GetReadOnlyClientAsync(token);
+    }
 
     ValueTask IAsyncDisposable.DisposeAsync()
     {
@@ -47,238 +82,146 @@ public partial class PooledRedisClientManager
         return default;
     }
 
-    private AsyncManualResetEvent readAsyncEvent;
-    partial void PulseAllReadAsync()
-    {
-        readAsyncEvent?.Set();
-        readAsyncEvent?.Reset();
-    }
+    // FIFO waiters: each released slot wakes one caller; failover and disposal wake all.
+    private readonly RedisPoolWaiters readWaiters = new();
+    private readonly RedisPoolWaiters writeWaiters = new();
 
-    private AsyncManualResetEvent writeAsyncEvent;
-    partial void PulseAllWriteAsync()
-    {
-        writeAsyncEvent?.Set();
-        writeAsyncEvent?.Reset();
-    }
+    partial void PulseAllReadAsync() => readWaiters.WakeAll();
+    partial void PulseAllWriteAsync() => writeWaiters.WakeAll();
+    private void WakeOneRead() => readWaiters.WakeOne();
+    private void WakeOneWrite() => writeWaiters.WakeOne();
 
-    private async Task<bool> WaitForWriter(int msTimeout)
+    private ValueTask<IRedisClientAsync> GetClientAsync(CancellationToken token)
+        => GetPooledClientAsync(false, token);
+
+    private ValueTask<IRedisClientAsync> GetReadOnlyClientAsync(CancellationToken token)
+        => GetPooledClientAsync(true, token);
+
+    private async ValueTask<IRedisClientAsync> GetPooledClientAsync(bool reader, CancellationToken token, bool forAsync = true)
     {
-        // If we're not doing async, no need to create this till we need it.
-        writeAsyncEvent ??= new AsyncManualResetEvent(false);
-        var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(msTimeout));
+        var startedAt = Stopwatch.GetTimestamp();
+        var timeout = PoolTimeout;
+        var pool = reader ? readClients : writeClients;
+        var reservations = reader ? readReservations : writeReservations;
+        var waiters = reader ? readWaiters : writeWaiters;
+        var woken = false;
         try
         {
-            await writeAsyncEvent.WaitAsync(cts.Token);
-        }
-        catch (OperationCanceledException) { return false; }
-        return true;
-    }
-
-    private async ValueTask<IRedisClientAsync> GetClientAsync()
-    {
-        try
-        {
-            var inactivePoolIndex = -1;
-            do
+            while (true)
             {
-                lock (writeClients)
+                token.ThrowIfCancellationRequested();
+                RedisClient reused, created = null;
+                RedisPoolReservation reservation;
+                LinkedListNode<TaskCompletionSource<bool>> waiter = null;
+                int index, generation;
+                lock (pool)
                 {
-                    AssertValidReadWritePool();
-
-                    // If it's -1, then we want to try again after a delay of some kind. So if it's NOT negative one, process it...
-                    if ((inactivePoolIndex = GetInActiveWriteClient(out var inActiveClient)) != -1)
+                    if (reader) AssertValidReadOnlyPool(); else AssertValidReadWritePool();
+                    generation = reader ? readGeneration : writeGeneration;
+                    index = reader ? GetInActiveReadClient(out reused) : GetInActiveWriteClient(out reused);
+                    reservation = index >= 0 ? reservations[index] : null;
+                    if (reused != null) reused.Activate();
+                    if (index < 0)
                     {
-                        //inActiveClient != null only for Valid InActive Clients
-                        if (inActiveClient != null)
+                        waiter = waiters.Enqueue(front: woken);
+                        woken = false; // the queued waiter now owns any wakeup (Wait/WaitAsync abandon it)
+                    }
+                }
+
+                if (waiter != null)
+                {
+                    // Sync callers must block on the signal itself, never on an async continuation.
+                    if (forAsync) await waiters.WaitAsync(pool, waiter, startedAt, timeout, PoolTimeoutError, token).ConfigureAwait(false);
+                    else waiters.Wait(pool, waiter, startedAt, timeout, PoolTimeoutError);
+                    woken = true;
+                    continue;
+                }
+
+                var handedOff = false;
+                try
+                {
+                    if (reused != null)
+                    {
+                        if (forAsync) await InitClientAsync(reused, token).ConfigureAwait(false);
+                        else InitClient(reused);
+                    }
+                    else
+                    {
+                        if (reservation.Replaced != null) RedisState.DeactivateClient(reservation.Replaced);
+                        token.ThrowIfCancellationRequested();
+                        if (forAsync)
                         {
-                            WritePoolIndex++;
-                            inActiveClient.Activate();
-
-                            InitClient(inActiveClient);
-
-                            return inActiveClient;
+                            created = reader
+                                ? await RedisResolver.CreateSlaveClientAsync(index, token, ConfigureAsyncClient).ConfigureAwait(false)
+                                : await RedisResolver.CreateMasterClientAsync(index, token, ConfigureAsyncClient).ConfigureAwait(false);
+                            await InitNewClientAsync(created, token).ConfigureAwait(false);
                         }
                         else
                         {
-                            // Still need to be in lock for this!
-                            break;
+                            created = reader ? RedisResolver.CreateSlaveClient(index) : RedisResolver.CreateMasterClient(index);
+                            InitNewClient(created);
                         }
                     }
-                }
 
-                if (PoolTimeout.HasValue)
-                {
-                    // We have a timeout value set - so try to not wait longer than this.
-                    if (!await WaitForWriter(PoolTimeout.Value))
+                    lock (pool)
                     {
-                        throw new TimeoutException(PoolTimeoutError);
+                        if (reader) AssertValidReadOnlyPool(); else AssertValidReadWritePool();
+                        token.ThrowIfCancellationRequested();
+                        // Never hand out a creation/reinitialized lease from an obsolete topology.
+                        if ((reservation?.Generation ?? generation) != (reader ? readGeneration : writeGeneration)
+                            || (reused != null ? pool[index] != reused : reservations[index] != reservation))
+                            continue;
+                        if (created != null) { pool[index] = created; reservations[index] = null; }
+                        if (reader) ReadPoolIndex++; else WritePoolIndex++;
+                        handedOff = true;
+                        return reused ?? created;
                     }
                 }
-                else
+                catch (Exception ex) when (reused != null && (ex is RedisException || ex is ObjectDisposedException))
                 {
-                    // Wait forever, so just retry till we get one.
-                    await WaitForWriter(RecheckPoolAfterMs);
-                }
-            } while (true); // Just keep repeating until we get a slot.
-
-            //Reaches here when there's no Valid InActive Clients, but we have a slot for one!
-            try
-            {
-                //inactivePoolIndex = index of reservedSlot || index of invalid client
-                var existingClient = writeClients[inactivePoolIndex];
-                if (existingClient != null && existingClient != reservedSlot && existingClient.HadExceptions)
-                {
-                    RedisState.DeactivateClient(existingClient);
-                }
-
-                var newClient = InitNewClient(RedisResolver.CreateMasterClient(inactivePoolIndex));
-
-                //Put all blocking I/O or potential Exceptions before lock
-                lock (writeClients)
-                {
-                    //If existingClient at inactivePoolIndex changed (failover) return new client outside of pool
-                    if (writeClients[inactivePoolIndex] != existingClient)
+                    lock (pool)
                     {
-                        if (Log.IsDebugEnabled)
-                            Log.Debug("writeClients[inactivePoolIndex] != existingClient: {0}".Fmt(writeClients[inactivePoolIndex]));
-
-                        Interlocked.Increment(ref RedisState.TotalClientsCreatedOutsidePool);
-
-                        //Don't handle callbacks for new client outside pool so Dispose() closes its connection
-                        newClient.ClientManager = null;
-                        return newClient; //return client outside of pool
+                        token.ThrowIfCancellationRequested();
+                        if (reader) AssertValidReadOnlyPool(); else AssertValidReadWritePool();
+                        if (generation == (reader ? readGeneration : writeGeneration)) throw;
                     }
-
-                    WritePoolIndex++;
-                    writeClients[inactivePoolIndex] = newClient;
-
-                    // async continuations can resume on any thread so never limit access to the current thread
-                    return newClient;
+                    // Failover can close a connection while SELECT resets a reused lease.
+                    continue;
                 }
-            }
-            catch
-            {
-                //Revert free-slot for any I/O exceptions that can throw (before lock)
-                lock (writeClients)
+                finally
                 {
-                    writeClients[inactivePoolIndex] = null; //free slot
-                }
-                throw;
-            }
-        }
-        finally
-        {
-            RedisState.DisposeExpiredClients();
-        }
-    }
-        
-    private async Task<bool> WaitForReader(int msTimeout)
-    {
-        // If we're not doing async, no need to create this till we need it.
-        readAsyncEvent ??= new AsyncManualResetEvent(false);
-        var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(msTimeout));
-        try
-        {
-            await readAsyncEvent.WaitAsync(cts.Token);
-        }
-        catch (OperationCanceledException) { return false; }
-        return true;
-    }
-
-    private async ValueTask<IRedisClientAsync> GetReadOnlyClientAsync()
-    {
-        try
-        {
-            var inactivePoolIndex = -1;
-            do
-            {
-                lock (readClients)
-                {
-                    AssertValidReadOnlyPool();
-
-                    // If it's -1, then we want to try again after a delay of some kind. So if it's NOT negative one, process it...
-                    if ((inactivePoolIndex = GetInActiveReadClient(out var inActiveClient)) != -1)
+                    if (!handedOff)
                     {
-                        //inActiveClient != null only for Valid InActive Clients
-                        if (inActiveClient != null)
+                        try
                         {
-                            ReadPoolIndex++;
-                            inActiveClient.Activate();
-
-                            InitClient(inActiveClient);
-
-                            return inActiveClient;
+                            var abandoned = reused ?? created;
+                            if (abandoned != null)
+                            {
+                                abandoned.AbortConnection();
+                                abandoned.ClientManager = null;
+                                abandoned.Dispose();
+                            }
                         }
-                        else
+                        finally
                         {
-                            // Still need to be in lock for this!
-                            break;
+                            lock (pool)
+                            {
+                                if (reused != null ? pool[index] == reused : reservations[index] == reservation)
+                                { pool[index] = null; reservations[index] = null; }
+                                if (reader) WakeOneRead(); else WakeOneWrite();
+                            }
                         }
                     }
                 }
-
-                if (PoolTimeout.HasValue)
-                {
-                    // We have a timeout value set - so try to not wait longer than this.
-                    if (!await WaitForReader(PoolTimeout.Value))
-                    {
-                        throw new TimeoutException(PoolTimeoutError);
-                    }
-                }
-                else
-                {
-                    // Wait forever, so just retry till we get one.
-                    await WaitForReader(RecheckPoolAfterMs);
-                }
-            } while (true); // Just keep repeating until we get a slot.
-                
-            //Reaches here when there's no Valid InActive Clients
-            try
-            {
-                //inactivePoolIndex = index of reservedSlot || index of invalid client
-                var existingClient = readClients[inactivePoolIndex];
-                if (existingClient != null && existingClient != reservedSlot && existingClient.HadExceptions)
-                {
-                    RedisState.DeactivateClient(existingClient);
-                }
-
-                var newClient = InitNewClient(RedisResolver.CreateSlaveClient(inactivePoolIndex));
-
-                //Put all blocking I/O or potential Exceptions before lock
-                lock (readClients)
-                {
-                    //If existingClient at inactivePoolIndex changed (failover) return new client outside of pool
-                    if (readClients[inactivePoolIndex] != existingClient)
-                    {
-                        if (Log.IsDebugEnabled)
-                            Log.Debug("readClients[inactivePoolIndex] != existingClient: {0}".Fmt(readClients[inactivePoolIndex]));
-
-                        Interlocked.Increment(ref RedisState.TotalClientsCreatedOutsidePool);
-
-                        //Don't handle callbacks for new client outside pool
-                        newClient.ClientManager = null;
-                        return newClient; //return client outside of pool
-                    }
-
-                    ReadPoolIndex++;
-                    readClients[inactivePoolIndex] = newClient;
-                    return newClient;
-                }
-            }
-            catch
-            {
-                //Revert free-slot for any I/O exceptions that can throw
-                lock (readClients)
-                {
-                    readClients[inactivePoolIndex] = null; //free slot
-                }
-                throw;
             }
         }
-        finally
+        catch when (woken)
         {
-            RedisState.DisposeExpiredClients();
+            // Woken, then failed before acquiring (e.g. cancellation): pass the wakeup on so it isn't lost.
+            // A spurious wakeup only makes the next waiter recheck; a lost one strands it until PoolTimeout.
+            lock (pool) waiters.WakeOne();
+            throw;
         }
+        finally { RedisState.DisposeExpiredClients(); }
     }
-
 }

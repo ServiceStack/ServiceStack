@@ -97,7 +97,7 @@ public partial class RedisNativeClient
         }
     }
 
-    private void Connect()
+    private static void InitUsageTimer()
     {
         if (UsageTimer == null)
         {
@@ -110,12 +110,20 @@ public partial class RedisNativeClient
                 }, null, TimeSpan.FromMilliseconds(0), TimeSpan.FromHours(1));
             }
         }
+    }
 
-        socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp)
+    private void Connect()
+    {
+        InitUsageTimer();
+
+        var literal = IPAddress.TryParse(Host, out var hostAddress);
+        var family = literal ? hostAddress.AddressFamily : Socket.OSSupportsIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
+        socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp)
         {
             SendTimeout = SendTimeout,
             ReceiveTimeout = ReceiveTimeout
         };
+        if (!literal && family == AddressFamily.InterNetworkV6) socket.DualMode = true;
 #if DEBUG
         // allow sync commands during connect (we're OK with sync for connect; the
         // DebugAllowSync feature being used here only impacts tests)
@@ -133,16 +141,58 @@ public partial class RedisNativeClient
             }
 
             id = Diagnostics.Redis.WriteConnectionOpenBefore(this);
-            if (ConnectTimeout <= 0)
             {
-                socket.Connect(Host, Port);
-            }
-            else
-            {
-                var connectResult = IPAddress.TryParse(Host, out var ip)
-                    ? socket.BeginConnect(ip, Port, null, null)
-                    : socket.BeginConnect(Host, Port, null, null);
-                connectResult.AsyncWaitHandle.WaitOne(ConnectTimeout, true);
+                // Resolve once and try IPv4 addresses before IPv6, so any host reachable over IPv4 connects as it
+                // did when hostnames were IPv4-only, and an unreachable IPv6 address can't stall it. With a
+                // ConnectTimeout, each attempt but the last also gets a share of the remaining budget.
+                var timer = Stopwatch.StartNew();
+                IPAddress[] addresses;
+                if (literal) addresses = [hostAddress];
+                else if (ConnectTimeout <= 0) addresses = Dns.GetHostAddresses(Host);
+                else
+                {
+                    var lookup = Dns.GetHostAddressesAsync(Host);
+                    if (lookup.Wait(ConnectTimeout)) addresses = lookup.GetAwaiter().GetResult();
+                    else
+                    {
+                        _ = lookup.ContinueWith(t => _ = t.Exception, CancellationToken.None,
+                            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                            TaskScheduler.Default);
+                        addresses = [];
+                    }
+                }
+                addresses = PreferIPv4(addresses);
+
+                for (var i = 0; i < addresses.Length; i++)
+                {
+                    var addressesLeft = addresses.Length - i;
+                    var attemptTimeout = Timeout.Infinite;
+                    if (ConnectTimeout > 0)
+                    {
+                        var remaining = ConnectTimeout - timer.ElapsedMilliseconds;
+                        if (remaining <= 0) break;
+                        attemptTimeout = (int)(addressesLeft > 1 ? Math.Max(1, remaining / addressesLeft) : remaining);
+                    }
+                    // A socket whose connect timed out can't be reused; use one socket per attempt.
+                    socket.Close();
+                    socket = new Socket(addresses[i].AddressFamily, SocketType.Stream, ProtocolType.Tcp)
+                    {
+                        SendTimeout = SendTimeout,
+                        ReceiveTimeout = ReceiveTimeout
+                    };
+                    try
+                    {
+                        if (attemptTimeout == Timeout.Infinite) socket.Connect(addresses[i], Port);
+                        else
+                        {
+                            var connectResult = socket.BeginConnect(addresses[i], Port, null, null);
+                            using var wait = connectResult.AsyncWaitHandle;
+                            if (wait.WaitOne(attemptTimeout, true)) socket.EndConnect(connectResult);
+                        }
+                    }
+                    catch (SocketException) when (addressesLeft > 1) { } // try the next address
+                    if (socket.Connected) break;
+                }
             }
 
             if (!socket.Connected)
@@ -385,6 +435,7 @@ public partial class RedisNativeClient
         // an unexpected error (e.g. cancellation or TLS IOException) mid-command leaves unread replies on the
         // connection, close it so it can't return another command's reply if this client is reused
         SafeConnectionClose();
+        ResetSendBuffer();
         var throwEx = new RedisException(
             $"[{DateTime.UtcNow:HH:mm:ss.fff}] Unable to Connect: sPort: {clientPort}{(originalEx != null ? ", Error: " + originalEx.Message + "\n" + originalEx.StackTrace : "")}",
             originalEx ?? lastSocketException);
@@ -409,12 +460,7 @@ public partial class RedisNativeClient
         return cmdBytes;
     }
 
-    /// <summary>
-    /// Command to set multiple binary safe arguments
-    /// </summary>
-    /// <param name="cmdWithBinaryArgs"></param>
-    /// <returns></returns>
-    protected void WriteCommandToSendBuffer(params byte[][] cmdWithBinaryArgs)
+    private void TrackCommandUsage()
     {
         if (Pipeline == null && Transaction == null)
         {
@@ -422,6 +468,16 @@ public partial class RedisNativeClient
             if (__requestsPerHour % 20 == 0)
                 LicenseUtils.AssertValidUsage(LicenseFeature.Redis, QuotaType.RequestsPerHour, __requestsPerHour);
         }
+    }
+
+    /// <summary>
+    /// Command to set multiple binary safe arguments
+    /// </summary>
+    /// <param name="cmdWithBinaryArgs"></param>
+    /// <returns></returns>
+    protected void WriteCommandToSendBuffer(params byte[][] cmdWithBinaryArgs)
+    {
+        TrackCommandUsage();
 
         if (log.IsDebugEnabled && RedisConfig.EnableVerboseLogging)
             CmdLog(cmdWithBinaryArgs);
@@ -545,7 +601,9 @@ public partial class RedisNativeClient
                     logDebug("socket.Send: " + StringBuilderCache.ReturnAndFree(sb.Replace("\r\n", " ")).SafeSubstring(0,50));
                 }
                     
-                socket.Send(cmdBuffer); //Optimized for Windows
+                IList<ArraySegment<byte>> pending = cmdBuffer;
+                do { pending = RemainingSendBuffers(pending, socket.Send(pending)); }
+                while (pending != null);
             }
             else
             {
@@ -558,11 +616,50 @@ public partial class RedisNativeClient
         }
     }
 
+    /// <summary>
+    /// Order resolved addresses IPv4 first (stable within each family). Hostnames previously connected over IPv4
+    /// only; trying IPv4 first keeps those hosts exactly as fast, while IPv6-only hosts still connect.
+    /// </summary>
+    internal static IPAddress[] PreferIPv4(IPAddress[] addresses)
+    {
+        if (addresses.Length < 2) return addresses;
+        var ordered = new List<IPAddress>(addresses.Length);
+        foreach (var address in addresses)
+            if (address.AddressFamily != AddressFamily.InterNetworkV6) ordered.Add(address);
+        foreach (var address in addresses)
+            if (address.AddressFamily == AddressFamily.InterNetworkV6) ordered.Add(address);
+        return ordered.ToArray();
+    }
+
+    // Socket sends may complete after writing only part of a gather buffer.
+    private static List<ArraySegment<byte>> RemainingSendBuffers(IList<ArraySegment<byte>> buffers, int sent)
+    {
+        if (sent <= 0) throw new IOException("Redis socket closed while sending commands.");
+        var index = 0;
+        while (index < buffers.Count && sent >= buffers[index].Count)
+        {
+            sent -= buffers[index].Count;
+            index++;
+        }
+        if (index == buffers.Count) return null;
+        var remaining = new List<ArraySegment<byte>>(buffers.Count - index);
+        var first = buffers[index];
+        remaining.Add(new ArraySegment<byte>(first.Array, first.Offset + sent, first.Count - sent));
+        for (var i = index + 1; i < buffers.Count; i++) remaining.Add(buffers[i]);
+        return remaining;
+    }
+
     private void SendDirectToSocket(ArraySegment<byte> segment)
     {
         if (sslStream == null)
         {
-            socket.Send(segment.Array, segment.Offset, segment.Count, SocketFlags.None);
+            var sent = 0;
+            while (sent < segment.Count)
+            {
+                var count = socket.Send(segment.Array, segment.Offset + sent, segment.Count - sent, SocketFlags.None);
+                if (count <= 0) throw new IOException("Redis socket closed while sending a command.");
+                sent += count;
+            }
         }
         else
         {
@@ -718,6 +815,8 @@ public partial class RedisNativeClient
                 wasError = outerEx;
                 if (log.IsDebugEnabled)
                     logDebug("SendReceive Exception: " + outerEx.Message);
+
+                if (outerEx is ObjectDisposedException) { AbortConnection(); throw; }
 
                 var retryableEx = outerEx as RedisRetryableException;
                 if (retryableEx == null && outerEx is RedisException
@@ -1192,10 +1291,8 @@ public partial class RedisNativeClient
         switch (c)
         {
             case '$':
-                return new RedisData
-                {
-                    Data = ParseSingleLine(string.Concat(char.ToString((char)c), s))
-                };
+                var bytes = ParseSingleLine(string.Concat(char.ToString((char)c), s));
+                return new RedisData { Data = bytes, IsNull = bytes == null };
 
             case '-':
                 throw CreateResponseError(StripErrPrefix(s));
@@ -1203,7 +1300,7 @@ public partial class RedisNativeClient
             case '*':
                 if (int.TryParse(s, out var count))
                 {
-                    var ret = new RedisData { Children = new List<RedisData>() };
+                    var ret = new RedisData { Children = new List<RedisData>(), IsNull = count == -1 };
                     for (var i = 0; i < count; i++)
                     {
                         ret.Children.Add(ReadComplexResponse());

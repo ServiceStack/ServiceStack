@@ -127,6 +127,12 @@ public class RedisConfig
     public static bool AssertAccessOnlyOnSameThread = false;
 
     /// <summary>
+    /// Restore the pre-v10.5 behavior where queued pipeline/transaction reads return null for empty strings and
+    /// byte arrays instead of the empty value. Non-queued calls always return the empty value. (default false)
+    /// </summary>
+    public static bool PipelineEmptyValuesAsNull = false;
+
+    /// <summary>
     /// Resets Redis Config and Redis Stats back to default values
     /// </summary>
     public static void Reset()
@@ -151,5 +157,6 @@ public class RedisConfig
         CertificateSelectionCallback = null;
         CertificateValidationCallback = null;
         AssertAccessOnlyOnSameThread = false;
+        PipelineEmptyValuesAsNull = false;
     }
 }

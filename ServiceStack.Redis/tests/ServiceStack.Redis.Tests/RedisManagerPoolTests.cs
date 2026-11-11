@@ -202,13 +202,13 @@ namespace ServiceStack.Redis.Tests
                     clientAsyncResults.Add(action.BeginInvoke(null, null));
 #endif
                 }
-            }
-
+                // Keep the manager alive until all borrowers have returned their leases.
 #if NETCORE
-            Task.WaitAll(tasks.ToArray());
-#else            
-            WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
+                Task.WaitAll(tasks.ToArray());
+#else
+                WaitHandle.WaitAll(clientAsyncResults.ConvertAll(x => x.AsyncWaitHandle).ToArray());
 #endif
+            }
 
             Debug.WriteLine(TypeSerializer.SerializeToString(clientUsageMap));
 

@@ -6,9 +6,9 @@ namespace ServiceStack.Redis;
 
 public static partial class RedisClientExtensions
 {
-    public static string GetHostString(this IRedisClient redis) => $"{redis.Host}:{redis.Port}";
+    public static string GetHostString(this IRedisClient redis) => redis.Host.IndexOf(':') >= 0 ? $"[{redis.Host}]:{redis.Port}" : $"{redis.Host}:{redis.Port}";
 
-    public static string GetHostString(this RedisEndpoint config) => $"{config.Host}:{config.Port}";
+    public static string GetHostString(this RedisEndpoint config) => config.Host.IndexOf(':') >= 0 ? $"[{config.Host}]:{config.Port}" : $"{config.Host}:{config.Port}";
 
     [Obsolete("Use AppendTo")]
     public static long AppendToValue(this IRedisClient redis, string key, string value) =>

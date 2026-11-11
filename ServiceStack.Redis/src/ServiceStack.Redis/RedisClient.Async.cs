@@ -84,10 +84,10 @@ partial class RedisClient : IRedisClientAsync, IRemoveByPatternAsync, ICacheClie
     IRedisPipelineAsync IRedisClientAsync.CreatePipeline()
         => new RedisAllPurposePipeline(this);
 
-    ValueTask<IRedisTransactionAsync> IRedisClientAsync.CreateTransactionAsync(CancellationToken token)
+    async ValueTask<IRedisTransactionAsync> IRedisClientAsync.CreateTransactionAsync(CancellationToken token)
     {
-        AssertServerVersionNumber(); // pre-fetch call to INFO before transaction if needed
-        return new RedisTransaction(this, true).AsValueTaskResult<IRedisTransactionAsync>(); // note that the MULTI here will be held and flushed async
+        await AssertServerVersionNumberAsync(token).ConfigureAwait(false); // pre-fetch INFO before transaction
+        return new RedisTransaction(this, true); // note that the MULTI here will be held and flushed async
     }
 
     ValueTask<bool> IRedisClientAsync.RemoveEntryAsync(string[] keys, CancellationToken token)
@@ -219,15 +219,15 @@ partial class RedisClient : IRedisClientAsync, IRemoveByPatternAsync, ICacheClie
     ValueTask IRedisClientAsync.SelectAsync(long db, CancellationToken token)
         => NativeAsync.SelectAsync(db, token);
 
-    ValueTask<bool> IRedisClientAsync.ExpireEntryInAsync(string key, TimeSpan expireIn, CancellationToken token)
-        => UseMillisecondExpiration(expireIn)
+    async ValueTask<bool> IRedisClientAsync.ExpireEntryInAsync(string key, TimeSpan expireIn, CancellationToken token)
+        => await (await AssertServerVersionNumberAsync(token).ConfigureAwait(false) >= 2600 && expireIn.Milliseconds > 0
             ? NativeAsync.PExpireAsync(key, (long)expireIn.TotalMilliseconds, token)
-            : NativeAsync.ExpireAsync(key, (int)expireIn.TotalSeconds, token);
+            : NativeAsync.ExpireAsync(key, (int)expireIn.TotalSeconds, token)).ConfigureAwait(false);
 
-    ValueTask<bool> IRedisClientAsync.ExpireEntryAtAsync(string key, DateTime expireAt, CancellationToken token)
-        => AssertServerVersionNumber() >= 2600
+    async ValueTask<bool> IRedisClientAsync.ExpireEntryAtAsync(string key, DateTime expireAt, CancellationToken token)
+        => await (await AssertServerVersionNumberAsync(token).ConfigureAwait(false) >= 2600
             ? NativeAsync.PExpireAtAsync(key, ConvertToServerDate(expireAt).ToUnixTimeMs(), token)
-            : NativeAsync.ExpireAtAsync(key, ConvertToServerDate(expireAt).ToUnixTime(), token);
+            : NativeAsync.ExpireAtAsync(key, ConvertToServerDate(expireAt).ToUnixTime(), token)).ConfigureAwait(false);
 
     Task<TimeSpan?> ICacheClientAsync.GetTimeToLiveAsync(string key, CancellationToken token)
         => NativeAsync.TtlAsync(key, token).Await(ParseTimeToLiveResult).AsTask();
@@ -293,19 +293,19 @@ partial class RedisClient : IRedisClientAsync, IRemoveByPatternAsync, ICacheClie
     ValueTask<IAsyncDisposable> IRedisClientAsync.AcquireLockAsync(string key, TimeSpan? timeOut, CancellationToken token)
         => RedisLock.CreateAsync(this, key, timeOut, token).Await<RedisLock, IAsyncDisposable>(value => value);
 
-    ValueTask IRedisClientAsync.SetValueAsync(string key, string value, TimeSpan expireIn, CancellationToken token)
+    async ValueTask IRedisClientAsync.SetValueAsync(string key, string value, TimeSpan expireIn, CancellationToken token)
     {
         var bytesValue = value?.ToUtf8Bytes();
 
-        if (AssertServerVersionNumber() >= 2610)
+        if (await AssertServerVersionNumberAsync(token).ConfigureAwait(false) >= 2610)
         {
             PickTime(expireIn, out var seconds, out var milliseconds);
-            return NativeAsync.SetAsync(key, bytesValue, expirySeconds: seconds,
-                expiryMilliseconds: milliseconds, token: token);
+            await NativeAsync.SetAsync(key, bytesValue, expirySeconds: seconds,
+                expiryMilliseconds: milliseconds, token: token).ConfigureAwait(false);
         }
         else
         {
-            return NativeAsync.SetExAsync(key, (int)expireIn.TotalSeconds, bytesValue, token);
+            await NativeAsync.SetExAsync(key, (int)expireIn.TotalSeconds, bytesValue, token).ConfigureAwait(false);
         }
     }
 
@@ -420,23 +420,20 @@ partial class RedisClient : IRedisClientAsync, IRemoveByPatternAsync, ICacheClie
     Task<bool> ICacheClientAsync.SetAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token)
     {
         AssertNotInTransaction();
-        return ExecAsync(async r =>
-        {
-            await r.SetAsync(key, value, token).ConfigureAwait(false);
-            await r.ExpireEntryAtAsync(key, ConvertToServerDate(expiresAt), token).ConfigureAwait(false);
-        }).AwaitAsTrueTask();
+        return ExecAsync(r => ((RedisClient)r).SetCacheValueWithAbsoluteExpiryAsync(key, ToBytes(value), expiresAt,
+            exists: null, token)).AsTask();
     }
-    Task<bool> ICacheClientAsync.SetAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token)
+    async Task<bool> ICacheClientAsync.SetAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token)
     {
-        if (AssertServerVersionNumber() >= 2600)
+        if (await AssertServerVersionNumberAsync(token).ConfigureAwait(false) >= 2600)
         {
-            return ExecAsync(r => ((IRedisNativeClientAsync)r)
-                .SetAsync(key, ToBytes(value), 0, expiryMilliseconds: (long)expiresIn.TotalMilliseconds, token)).AwaitAsTrueTask();
+            return await ExecAsync(r => ((IRedisNativeClientAsync)r)
+                .SetAsync(key, ToBytes(value), 0, expiryMilliseconds: (long)expiresIn.TotalMilliseconds, token)).AwaitAsTrueTask().ConfigureAwait(false);
         }
         else
         {
-            return ExecAsync(r => ((IRedisNativeClientAsync)r)
-                .SetExAsync(key, (int)expiresIn.TotalSeconds, ToBytes(value), token)).AwaitAsTrueTask();
+            return await ExecAsync(r => ((IRedisNativeClientAsync)r)
+                .SetExAsync(key, (int)expiresIn.TotalSeconds, ToBytes(value), token)).AwaitAsTrueTask().ConfigureAwait(false);
         }
     }
 
@@ -506,38 +503,22 @@ partial class RedisClient : IRedisClientAsync, IRemoveByPatternAsync, ICacheClie
     Task<bool> ICacheClientAsync.AddAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token)
     {
         AssertNotInTransaction();
-
-        return ExecAsync(async r =>
-        {
-            if (await r.AddAsync(key, value, token).ConfigureAwait(false))
-            {
-                await r.ExpireEntryAtAsync(key, ConvertToServerDate(expiresAt), token).ConfigureAwait(false);
-                return true;
-            }
-            return false;
-        }).AsTask();
+        return ExecAsync(r => ((RedisClient)r).SetCacheValueWithAbsoluteExpiryAsync(key, ToBytes(value), expiresAt,
+            exists: false, token)).AsTask();
     }
 
     Task<bool> ICacheClientAsync.ReplaceAsync<T>(string key, T value, DateTime expiresAt, CancellationToken token)
     {
         AssertNotInTransaction();
-
-        return ExecAsync(async r =>
-        {
-            if (await r.ReplaceAsync(key, value, token).ConfigureAwait(false))
-            {
-                await r.ExpireEntryAtAsync(key, ConvertToServerDate(expiresAt), token).ConfigureAwait(false);
-                return true;
-            }
-            return false;
-        }).AsTask();
+        return ExecAsync(r => ((RedisClient)r).SetCacheValueWithAbsoluteExpiryAsync(key, ToBytes(value), expiresAt,
+            exists: true, token)).AsTask();
     }
 
     Task<bool> ICacheClientAsync.AddAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token)
-        => ExecAsync(r => ((IRedisNativeClientAsync)r).SetAsync(key, ToBytes(value), exists: false, token: token)).AsTask();
+        => ExecAsync(r => ((IRedisNativeClientAsync)r).SetAsync(key, ToBytes(value), exists: false, expiryMilliseconds: (long)expiresIn.TotalMilliseconds, token: token)).AsTask();
 
     Task<bool> ICacheClientAsync.ReplaceAsync<T>(string key, T value, TimeSpan expiresIn, CancellationToken token)
-        => ExecAsync(r => ((IRedisNativeClientAsync)r).SetAsync(key, ToBytes(value), exists: true, token: token)).AsTask();
+        => ExecAsync(r => ((IRedisNativeClientAsync)r).SetAsync(key, ToBytes(value), exists: true, expiryMilliseconds: (long)expiresIn.TotalMilliseconds, token: token)).AsTask();
 
     ValueTask<long> IRedisClientAsync.DbSizeAsync(CancellationToken token)
         => NativeAsync.DbSizeAsync(token);
@@ -843,7 +824,7 @@ partial class RedisClient : IRedisClientAsync, IRemoveByPatternAsync, ICacheClie
 
     async ValueTask<RedisServerRole> IRedisClientAsync.GetServerRoleAsync(CancellationToken token)
     {
-        if (AssertServerVersionNumber() >= 2812)
+        if (await AssertServerVersionNumberAsync(token).ConfigureAwait(false) >= 2812)
         {
             var text = await NativeAsync.RoleAsync(token).ConfigureAwait(false);
             var roleName = text.Children[0].Text;

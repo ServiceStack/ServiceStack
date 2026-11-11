@@ -608,7 +608,6 @@ namespace ServiceStack.Redis.Tests
                 Assert.That(await redis.GetAsync<int>(key), Is.EqualTo(0));
                 await redis.SelectAsync(1);
                 Assert.That(await redis.GetAsync<int>(key), Is.EqualTo(val));
-                await redis.DisposeAsync();
             }
             finally
             {
