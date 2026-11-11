@@ -98,3 +98,10 @@ PocoDynamo       S3VirtualFiles    SqsMqServer    DynamoDb Providers
    db.InitSchema();
    container.Register<IUserAuthRepository>(c => new DynamoDbAuthRepository(db));
    ```
+
+## Feature inventory and planning
+
+- [Existing capabilities](src/ServiceStack.Aws/FEATURES.md) maps adapters, source/docs, ownership and validation limits. Verify implementation before suggesting a feature; SDK escape hatches, emulator tests and deployed-service guarantees are different kinds of evidence.
+- [Proposals](src/ServiceStack.Aws/plan/FEATURE-PROPOSALS.md) contains unaccepted corrections/extensions. The review/documentation request does not accept product implementation.
+- Move a complete proposal into [accepted improvements](src/ServiceStack.Aws/plan/FEATURE-IMPROVEMENTS.md) only after explicit acceptance, preserving its ID and recording scope/decision/status.
+- Update the inventory when behavior changes. Distinguish source presence, tested behavior and confirmed release availability; preserve architecture/security rules above and keep shared-contract/core-service ownership explicit.
