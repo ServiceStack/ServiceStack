@@ -5,7 +5,7 @@
 `ServiceStack.Azure` provides integrations with Microsoft Azure cloud services for ServiceStack applications.
 
 Key capabilities include:
-- **Azure Service Bus Messaging (`ServiceBusMqServer`)**: ServiceStack MQ broker host utilizing Azure Service Bus topics and queues for asynchronous messaging.
+- **Azure Service Bus Messaging (`ServiceBusMqServer`)**: ServiceStack MQ broker host utilizing Azure Service Bus queues for asynchronous messaging.
 - **Azure Blob Storage VFS (`AzureBlobVirtualFiles`)**: Read/write `IVirtualFiles` implementation allowing ServiceStack to mount Azure Blob Storage containers as virtual directories.
 - **Azure Table Storage Cache (`AzureTableCacheClient`)**: Distributed `ICacheClient` backed by Azure Data Tables (`Azure.Data.Tables`).
 - **Azure Cognitive Services Speech (`AzureSpeechToText`)**: Enterprise speech recognition and transcription implementing `ISpeechToText`.
@@ -40,7 +40,7 @@ ServiceBusMqServer  AzureBlobVirtualFiles  AzureTableCacheClient
 ### Primary Types
 | Class | Role |
 |---|---|
-| `ServiceBusMqServer` | `IMessageService` host processing ServiceStack service requests from Azure Service Bus queues and topics. |
+| `ServiceBusMqServer` | `IMessageService` host processing ServiceStack service requests from Azure Service Bus queues. |
 | `AzureBlobVirtualFiles` | `IVirtualFiles` provider mapping Azure Blob containers to virtual files and directories. |
 | `AzureTableCacheClient` | Implements `ICacheClient` and `ICacheClientAsync` using Azure Table Storage with TTL support. |
 | `AzureSpeechToText` | Implements `ISpeechToText` using Azure Cognitive Services Speech SDK. |
@@ -50,10 +50,10 @@ ServiceBusMqServer  AzureBlobVirtualFiles  AzureTableCacheClient
 ## Architecture & Design Patterns
 
 ### Modern Azure SDK Integration
-Built on modern `Azure.*` client libraries (`Azure.Messaging.ServiceBus`, `Azure.Storage.Blobs`), supporting managed identity (`TokenCredential`), connection strings, and asynchronous streaming.
+Built on modern `Azure.*` client libraries (`Azure.Messaging.ServiceBus`, `Azure.Storage.Blobs`, `Azure.Data.Tables`). Blob providers accept caller-configured `BlobContainerClient` instances, including SDK `TokenCredential` clients. The inspected Table cache and MQ constructors use connection strings; native async and credential-injection support must be checked per adapter.
 
 ### Path Sanitization in Blob Hierarchies
-Virtual blob paths normalize forward slashes and resolve `..` segments to ensure directory boundaries are respected within Azure Blob containers.
+Virtual blob paths normalize forward slashes and resolve `..` segments. Canonicalization is not an application prefix/tenant authorization boundary; validate access separately.
 
 ---
 
@@ -92,3 +92,10 @@ Virtual blob paths normalize forward slashes and resolve `..` segments to ensure
    mqServer.RegisterHandler<MyRequest>(ExecuteMessage);
    mqServer.Start();
    ```
+
+## Feature inventory and planning
+
+- [Existing capabilities](src/ServiceStack.Azure/FEATURES.md) maps implementation, docs, ownership and actual validation. Check source before recommending functionality; SDK support alone does not establish high-level adapter support.
+- [Proposals](src/ServiceStack.Azure/plan/FEATURE-PROPOSALS.md) contains unaccepted corrections/extensions. Documentation approval does not accept product implementation.
+- Move a complete proposal into [accepted improvements](src/ServiceStack.Azure/plan/FEATURE-IMPROVEMENTS.md) only after explicit acceptance, preserving its ID and recording decision, scope and status.
+- Update the catalog when capabilities change, distinguishing source presence, validated behavior and released availability. Retain the architecture/security rules above and shared-contract ownership boundaries.
