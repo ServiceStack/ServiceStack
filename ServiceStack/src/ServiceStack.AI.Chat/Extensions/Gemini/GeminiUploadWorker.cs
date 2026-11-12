@@ -221,6 +221,7 @@ public class GeminiUploadWorker
                         && !GeminiMetadata.Differs(doc, ChatDtos.ParseJson(remote.CustomMetadata) as JsonArray))
                     {
                         remote.ApplyTo(doc);
+                        doc.UploadOperationName = doc.UploadOperationHash = null;
                         db.UpdateDocument(doc);
                         await CleanupRemoteCopiesAsync(doc, token).ConfigAwait();
                         ctx.Log.LogInformation("Recovered completed Gemini upload for {Document}", doc.DisplayName);
@@ -271,17 +272,41 @@ public class GeminiUploadWorker
             ctx.Log.LogDebug("Uploading {Document} to {Store}\n{Config}",
                 doc.DisplayName, storeName, config.ToJsonString(ChatJson.Indented));
 
-            var operation = await UploadWithRetryAsync(storeName, fullPath, config, contentType, token).ConfigAwait();
+            var operationHash = GeminiIngest.Sha256(storeName + "\n" + doc.Hash + "\n" + contentType
+                + "\n" + config.ToJsonString(ChatJson.Options));
+            JsonObject operation;
+            if (doc.UploadOperationName != null && doc.UploadOperationHash == operationHash)
+            {
+                ctx.Log.LogInformation("Resuming Gemini indexing operation {Operation} for document {Id}",
+                    doc.UploadOperationName, doc.Id);
+                operation = new JsonObject { ["name"] = doc.UploadOperationName };
+            }
+            else
+            {
+                operation = await UploadWithRetryAsync(storeName, fullPath, config, contentType, token).ConfigAwait();
+                doc.UploadOperationName = operation.GetString("name");
+                doc.UploadOperationHash = operationHash;
+                // Save before polling: a timeout or host restart must not lose the receipt.
+                db.UpdateDocument(doc);
+            }
             operation = await client.WaitForOperationAsync(operation, token).ConfigAwait();
 
             if (operation.GetObject("error") is { } error)
-                throw new Exception(error.GetString("message") ?? "Gemini upload failed");
+            {
+                // A terminal operation failure can be submitted again on an explicit retry.
+                var operationName = doc.UploadOperationName;
+                doc.UploadOperationName = doc.UploadOperationHash = null;
+                db.UpdateDocument(doc);
+                throw new Exception($"Gemini indexing operation {operationName} failed (code {error.GetInt("code")}): "
+                    + (error.GetString("message") ?? "Gemini upload failed"));
+            }
 
             var response = operation.GetObject("response");
             var documentName = response.GetString("documentName") ?? response.GetString("name")
                 ?? throw new Exception("Gemini upload did not return a document name");
 
             doc.UploadedAt = DateTime.Now;
+            doc.UploadOperationName = doc.UploadOperationHash = null;
             doc.StartedAt = null;
             doc.Name = documentName;
             doc.Error = null;
@@ -314,7 +339,8 @@ public class GeminiUploadWorker
         }
         catch (Exception e)
         {
-            ctx.Log.LogError(e, "Failed to upload document {Id}", doc.Id);
+            ctx.Log.LogError(e, "Failed to upload document {Id} ({Document}) to store {StoreId}; indexing operation {Operation}",
+                doc.Id, doc.DisplayName, doc.FilestoreId, doc.UploadOperationName);
             db.UpdateDocumentError(doc.Id, ChatJson.ToErrorMessage(e));
             return false;
         }

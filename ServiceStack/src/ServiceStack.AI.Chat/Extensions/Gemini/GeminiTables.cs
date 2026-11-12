@@ -129,6 +129,11 @@ public class ChatDocument
     public long? SourceUpdatedAt { get; set; }      // epoch seconds
     public string? Tags { get; set; }               // JSON string[]
 
+    /// <summary>C# bounded-polling receipt; retry the accepted operation instead of uploading again.</summary>
+    public string? UploadOperationName { get; set; }
+    /// <summary>Content/store/config signature so a changed document cannot adopt an old operation.</summary>
+    public string? UploadOperationHash { get; set; }
+
     public DateTime? StartedAt { get; set; }
     public DateTime? UploadedAt { get; set; }
 

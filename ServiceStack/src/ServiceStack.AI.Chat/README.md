@@ -302,7 +302,12 @@ state, while prune removes unreachable duplicate remote copies.
 The extension resolves `$GOOGLE_API_KEY`, then `$GEMINI_API_KEY`, then the configured `google` provider
 key, and self-disables when none is available. `$GEMINI_UPLOAD_MIME_TYPES` overrides declared MIME
 types (default `"mdx:text/markdown,cshtml:text/html"`). Uploads use bounded concurrency and transient
-failure backoff; tune them with `$GEMINI_UPLOAD_CONCURRENCY` (default `4`) and
+failure backoff. The C# worker durably records accepted indexing operations; retrying after a
+polling timeout or host restart checks that operation rather than transferring the file again.
+Transient polling failures are retried within the operation deadline, and deadline errors include
+the operation name and last polling error. An explicit retry after a terminal Gemini operation
+error submits a new upload. Existing errors from older versions have no operation receipt;
+reconcile the store before retrying those rows to avoid duplicate remote copies. Tune uploads with `$GEMINI_UPLOAD_CONCURRENCY` (default `4`) and
 `$GEMINI_UPLOAD_MAX_RETRIES` (default `4`). Set `$GEMINI_WRITE_ROLE` (or `gemini_write_role` in config)
 to restrict corpus mutations to a role. Admins configure non-admin filesystem access under
 `gemini.importRoots` in the deployment-wide `config.json` or in the Import UI.

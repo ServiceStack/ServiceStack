@@ -144,6 +144,7 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
         uploadReq.Headers.TryAddWithoutValidation("X-Goog-Upload-Offset", "0");
         uploadReq.Headers.TryAddWithoutValidation("X-Goog-Upload-Command", "upload, finalize");
         uploadReq.Content = new ByteArrayContent(content);
+        uploadReq.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(contentType);
 
         using var uploadRes = await client.SendAsync(uploadReq, token).ConfigAwait();
         return await ReadJsonAsync(uploadRes).ConfigAwait();
@@ -155,18 +156,51 @@ public class GeminiClient(IHttpClientFactory httpClientFactory, string apiKey)
     /// <summary>Poll an Operation until it reports done, then return it (errors are left for the caller)</summary>
     public async Task<JsonObject> WaitForOperationAsync(JsonObject operation, CancellationToken token = default)
     {
+        var callerToken = token;
+        var name = operation.GetString("name");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         deadline.CancelAfter(OperationTimeout);
         token = deadline.Token;
-        while (!operation.GetBool("done"))
+        Exception? lastPollError = null;
+        var pollFailures = 0;
+        try
         {
-            var name = operation.GetString("name")
-                ?? throw new Exception("Gemini upload operation has no name");
-            await Task.Delay(PollInterval, token).ConfigAwait();
-            operation = await GetOperationAsync(name, token).ConfigAwait();
+            while (!operation.GetBool("done"))
+            {
+                name = operation.GetString("name") ?? name
+                    ?? throw new Exception("Gemini upload operation has no name");
+                await Task.Delay(PollInterval, token).ConfigAwait();
+                try
+                {
+                    operation = await GetOperationAsync(name, token).ConfigAwait();
+                    pollFailures = 0;
+                }
+                catch (Exception e) when (!token.IsCancellationRequested && IsTransientPollFailure(e))
+                {
+                    // Retrying this GET is safe. Starting another upload here could duplicate
+                    // a document that Gemini is still indexing.
+                    lastPollError = e;
+                    pollFailures++;
+                    var delay = TimeSpan.FromSeconds(Math.Min(30, Math.Pow(2, Math.Min(pollFailures, 5))));
+                    await Task.Delay(delay, token).ConfigAwait();
+                }
+            }
+            return operation;
         }
-        return operation;
+        catch (OperationCanceledException e) when (!callerToken.IsCancellationRequested && deadline.IsCancellationRequested)
+        {
+            throw new TimeoutException(
+                $"Gemini indexing operation {name ?? "(unnamed)"} did not complete within {OperationTimeout}. "
+                + "The file was transferred, but indexing has not been confirmed. Retry to check the same operation."
+                + (lastPollError == null ? "" : $" Last polling error: "
+                    + (lastPollError is GeminiApiException apiError ? $"HTTP {apiError.StatusCode}: " : "")
+                    + lastPollError.Message), e);
+        }
     }
+
+    static bool IsTransientPollFailure(Exception e) =>
+        e is GeminiApiException { StatusCode: 408 or 429 or 500 or 502 or 503 or 504 }
+            or HttpRequestException or OperationCanceledException;
 
     // ── HTTP ──
 

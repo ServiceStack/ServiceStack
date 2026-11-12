@@ -179,6 +179,17 @@ the built-in Chat UI pipeline and the MCP projection. The two approval systems a
 the browser UI can pause a thread for its rich approval form, while external MCP clients use signed,
 short-lived confirmation tokens.
 
+### Gemini operation receipts
+
+The C# client bounds indexing polls to `GeminiClient.OperationTimeout` (10 minutes by default),
+while Python's worker polls until completion (with bounded retries for consecutive polling errors).
+Both backends now persist operation receipts; C# stores `UploadOperationName` and
+`UploadOperationHash` on `ChatDocument` before polling. Explicit retry or restart resumes the same
+operation only for an identical store/content/config signature. Timeout and transient polling
+errors keep the receipt; terminal operation errors and successful completion clear it. The Python equivalents are `uploadOperationName`/`uploadOperationHash`, committed through its SQLite
+writer before polling. C# uses internal additive OrmLite columns, omitted from document DTOs. Polling GETs retry transient HTTP
+and transport failures within the deadline; cancellation by the host remains cancellation.
+
 ### Other host-oriented differences
 
 - The C# port stores files below the host application's `App_Data/chat` instead of `~/.llms`.
