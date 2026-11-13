@@ -18,6 +18,25 @@ public class AiChatGeminiUploadTests
         new(status) { Content = new StringContent(json) };
 
     [Test]
+    public void Worker_status_is_valid_json_before_first_start()
+    {
+        using var host = new AiChatMigrationTestHost();
+        var db = new GeminiDb(host.Db);
+        var context = new ExtensionContext(host.Feature, "gemini");
+        var client = new GeminiClient(new Factory((_, _) => Task.FromResult(Response())), "fixture");
+        var worker = new GeminiUploadWorker(context, db, client, new GeminiStores(db, client, NullLogger.Instance));
+
+        var status = JsonNode.Parse(worker.Status().ToJsonString())!.AsObject();
+
+        Assert.Multiple(() => {
+            Assert.That(status["rate"]!.GetValue<double>(), Is.Zero);
+            Assert.That(status["etaSeconds"], Is.Null);
+            Assert.That(status["startedAt"], Is.Null);
+            Assert.That(status["running"]!.GetValue<bool>(), Is.False);
+        });
+    }
+
+    [Test]
     public async Task Polling_retries_unavailable_response_without_starting_another_upload()
     {
         var polls = 0;

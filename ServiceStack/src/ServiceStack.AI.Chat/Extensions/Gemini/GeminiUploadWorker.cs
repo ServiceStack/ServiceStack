@@ -38,7 +38,7 @@ public class GeminiUploadWorker
         lock (syncRoot)
         {
             var elapsed = startedAt == null ? 0 : Math.Max(0.001, (DateTime.UtcNow - startedAt.Value).TotalSeconds);
-            var rate = done / elapsed;
+            var rate = elapsed > 0 ? done / elapsed : 0;
             return new JsonObject
             {
                 ["total"] = total, ["done"] = done, ["failed"] = failed,
