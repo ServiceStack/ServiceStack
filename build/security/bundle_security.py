@@ -36,7 +36,7 @@ def bundle(root, output, version=None):
                     if path.is_symlink() or not path.resolve().is_relative_to(root.resolve()):
                         raise ValueError('Evidence must not link outside the archive')
                     files[path.relative_to(root).as_posix()] = path.read_bytes()
-    for name in ('packages.json', 'source-run.json'):
+    for name in ('packages.json', 'source-run.json', 'publication.json'):
         path = root / name
         if path.is_file():
             files[name] = path.read_bytes()

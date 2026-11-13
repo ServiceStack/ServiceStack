@@ -7,6 +7,11 @@ from pathlib import Path
 import shutil
 import subprocess
 import tempfile
+import time
+
+class EvidenceUnavailable(ValueError):
+    pass
+
 
 PACK_PATHS = {'.github/workflows/nuget-pack.yml', '.github/workflows/pre-release-pack.yml'}
 
@@ -78,13 +83,29 @@ def resolve_publish(repo, commit, destination, run_id=None):
                 return {'pack_run_id': pack['id'], 'security_run_id': run['id'], 'pack_commit': commit}
         if len(runs) < 100:
             break
-    raise ValueError(f'No retained successful security evidence for NuGet Pack run {pack["id"]}; run Package Security Evidence with that pack_run_id first')
+    raise EvidenceUnavailable(f'No retained successful security evidence for NuGet Pack run {pack["id"]}; run Package Security Evidence with that pack_run_id first')
+
+
+def resolve_publish_wait(repo, commit, destination, run_id=None, wait_seconds=0):
+    if wait_seconds < 0:
+        raise ValueError('Wait duration must not be negative')
+    deadline = time.monotonic() + wait_seconds
+    while True:
+        try:
+            return resolve_publish(repo, commit, destination, run_id)
+        except EvidenceUnavailable:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise
+            print('Waiting for matching Package Security Evidence to finish...', flush=True)
+            time.sleep(min(20, remaining))
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('command', choices=['source', 'publish'])
     parser.add_argument('--run-id')
+    parser.add_argument('--wait-seconds', type=int, default=0, help='Bounded wait for matching security generation to complete')
     parser.add_argument('--repo', default=os.environ.get('GITHUB_REPOSITORY'))
     parser.add_argument('--commit', default=os.environ.get('GITHUB_SHA'))
     parser.add_argument('--destination', type=Path, default=Path('build/security-output'))
@@ -93,7 +114,7 @@ def main():
         run = source_run(args.repo, args.run_id)
         write_outputs({'pack_run_id': run['id'], 'pack_commit': run['head_sha'], 'pack_url': run['html_url']})
     else:
-        write_outputs(resolve_publish(args.repo, args.commit, args.destination, args.run_id))
+        write_outputs(resolve_publish_wait(args.repo, args.commit, args.destination, args.run_id, args.wait_seconds))
 
 
 if __name__ == '__main__':

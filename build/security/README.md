@@ -68,26 +68,38 @@ Promote each artifact's `security/releases/<version>` folder to its matching pac
 
 ## Public release downloads
 
-Publishing a GitHub release triggers **Release Security Download** (`release-security.yml`). It downloads each configured package's **exact version from NuGet**, generates/validates a fresh consumer baseline and attaches these public release assets:
+Release security assets now come from the original pack evidence, without downloading packages from NuGet again:
+
+1. **NuGet Pack** builds and uploads packages; **Package Security Evidence** generates their SBOM/VEX evidence independently.
+2. Run **NuGet Publish**. It waits up to 20 minutes for matching security evidence if generation is still running, then verifies the exact packages against that evidence before pushing them.
+3. After a successful push, the publish job adds `publication.json` and uploads **ServiceStack Published Security**, retaining the original inventories and source provenance for 90 days.
+4. A separate `release-assets` job compresses that evidence and attaches it to the matching GitHub release. If no matching release exists, it creates a **versioned draft** (for example, `v10.6` for package version `10.6.0`) with placeholder notes and the assets already attached. It does not publish the draft or alter existing release notes.
+5. Complete the draft's release notes and publish it when ready. The **Release Security Download** workflow can also reattach the same retained evidence when the release is published or manually dispatched.
+
+This avoids the NuGet publication/indexing race. Release-time jobs do not restore dependencies or silently generate a different graph. An attachment failure leaves the package publication and its evidence intact; rerun the failed attachment job or use the manual release workflow.
+
+The public assets are:
 
 - `servicestack-security-<version>.zip`
 - `servicestack-security-<version>.zip.sha256`
 
-Tags such as `v10.4` map to `10.4.0`; `v10.4.1` maps to `10.4.1`. The ZIP includes all configured package SBOMs, manifests, resolutions, audit snapshots, dated reviewed VEX when present, an index, provenance and `SHA256SUMS`. Unrendered VEX decision inputs and confidential company documents are excluded. Native/template-host coverage limitations remain explicit in the manifests.
+The ZIP includes all configured package SBOMs, manifests, resolutions, audit snapshots, dated reviewed VEX when present, an index, source/publication provenance and `SHA256SUMS`. Unrendered VEX decisions and confidential company documents are excluded. Native/template-host coverage limitations remain explicit in the manifests. Recorded advisories remain visible; inventory publication is not a certification or an advisory-free assertion.
 
-Anyone can download the ZIP from the release's **Assets** section. For example, the stable public download path for tag `v10.4` is:
+Anyone can download these assets from the published release's **Assets** section, for example:
 
-    https://github.com/ServiceStack/ServiceStack/releases/download/v10.4/servicestack-security-10.4.0.zip
+    https://github.com/ServiceStack/ServiceStack/releases/download/v10.6/servicestack-security-10.6.0.zip
 
-The URL becomes available only after the release security workflow completes successfully. Release archives are generated from published NuGet artifacts and current reviewed decisions, not claimed to be the original pack run's dependency resolution. Dependency ranges can resolve differently at regeneration time; provenance states this explicitly. Advisory observations are shared even when they contain findings; publishing an inventory is not a security certification or a release gate.
+This example URL exists only after the matching draft has been published with its assets. Tags such as `v10.6` map to `10.6.0`; `v10.6.1` maps to `10.6.1`. Existing alternate tag formats are matched by normalized version. Multiple matching releases require an explicit tag rather than guessing.
 
-Create the GitHub release after all configured versions are available on NuGet. Missing package versions fail generation instead of substituting another version or publishing a partial ZIP. To regenerate an existing release's assets after an indexing delay or reviewed VEX update, select **Release Security Download → Run workflow**, or:
+To reattach an existing release's ZIP from its original publish evidence:
 
-    gh workflow run release-security.yml -f release_tag=v10.4
+    gh workflow run release-security.yml -f release_tag=v10.6
 
-A regeneration replaces these named release assets; retain previous snapshots separately if needed. The Actions evidence artifact is kept for 90 days; public release assets and an independently backed-up archive provide longer-lived access. Hashes detect accidental changes, not publisher authenticity.
+Optionally select an exact NuGet Publish run with `-f publish_run_id=123456789`. The resolver verifies the publishing workflow/repository, successful package-publish job, package version, pack run, source commit and evidence integrity. It also accepts runs where package publishing succeeded but the later attachment job failed. Expired or missing evidence fails explicitly; there is no automatic fallback to nuget.org or a different release. Older releases created before **ServiceStack Published Security** was introduced need their original evidence restored or deliberate separate generation and verification.
 
-Automatic completion/manual triggers require workflow definitions on the default branch. Publishing releases via a workflow's `GITHUB_TOKEN` generally does not trigger another workflow; in that case dispatch `release-security.yml` explicitly using an appropriate token. Neither security workflow is dispatched by editing these files locally.
+Reattaching packages the same retained evidence and replaces the named ZIP/checksum assets. To update reviewed VEX or regenerate a package graph, run the appropriate generation/review workflow and preserve its provenance separately; a release download rerun does not perform a fresh vulnerability assessment. Preserve an independent long-term backup beyond the Actions retention window.
+
+Automatic completion/manual triggers require workflow definitions on the default branch. Publishing a GitHub release using a workflow's `GITHUB_TOKEN` generally does not trigger another workflow, but assets are already attached by NuGet Publish in this flow. Neither package publication nor a release workflow is dispatched by editing these files locally.
 
 ## Advisory monitoring
 
