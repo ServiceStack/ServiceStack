@@ -21,7 +21,8 @@ public partial class DbJobs
     protected override IBackgroundJobsOptions Options => feature;
     protected override CancellationToken JobsToken => ct;
     protected override List<DateTime> GetArchiveMonths(IDbConnection db) => feature.GetTableMonths(db);
-    protected override void DropArchive(DateTime month) => feature.DbProvider.DropTables(month);
+    protected override void DropArchive(DateTime month) => feature.DbProvider.DropArchive(month);
+    protected override void PurgeArchives(DateTime cutoffUtc) => feature.DbProvider.PurgeArchives(cutoffUtc);
     protected override List<string>? NodeQueues => feature.Queues;
 
     /// <summary>

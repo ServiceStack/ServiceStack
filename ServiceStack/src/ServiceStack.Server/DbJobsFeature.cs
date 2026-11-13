@@ -65,7 +65,9 @@ public class DatabaseJobFeature : IPlugin, Model.IHasStringId, IConfigureService
     /// </summary>
     public int MaxResponseBodyChars { get; set; } = 1_000_000;
     /// <summary>
-    /// How long monthly CompletedJob/FailedJob archives are kept, null to keep them indefinitely
+    /// How long CompletedJob/FailedJob history is kept. Null or non-positive values disable cleanup.
+    /// Shared RDBMS tables delete rows before the UTC cutoff; monthly partitions/files are removed
+    /// only when the entire month is expired. Operational Jobs tables are never removed.
     /// </summary>
     public TimeSpan? ArchiveRetention { get; set; }
     /// <summary>

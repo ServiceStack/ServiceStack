@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using ServiceStack.Data;
@@ -87,8 +88,12 @@ public static class PostgresUtils
         //["RequestLog_2025_10"]
         var monthDbs = partitionNames
             .Where(x => x.Contains('_'))
-            .Select(x =>
-                DateTime.TryParse(x.StripDbQuotes().RightPart('_').Replace('_', '-') + "-01", out var date) ? date : (DateTime?)null)
+            .Select(x => {
+                var name = x.StripDbQuotes().TrimEnd('"');
+                return name.Length >= 7 && DateTime.TryParseExact(name.Substring(name.Length - 7),
+                    "yyyy_MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+                    ? date : (DateTime?)null;
+            })
             .Where(x => x != null)
             .Select(x => x!.Value)
             .OrderByDescending(x => x)

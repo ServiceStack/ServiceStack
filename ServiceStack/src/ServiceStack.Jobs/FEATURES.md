@@ -47,3 +47,9 @@ Follow-up: review per-capability assertions, target-framework/provider behavior,
 - [Unaccepted feature proposals](plan/FEATURE-PROPOSALS.md)
 - [Accepted improvements and implementation tracking](plan/FEATURE-IMPROVEMENTS.md)
 - [Suite-wide prioritization and scope](../plan/FEATURE-PROPOSALS.md)
+
+## Archive retention boundary correction — issue 829
+
+Source correction reviewed 2026-11-13: shared retention now uses `UtcNow - ArchiveRetention` and removes a monthly SQLite archive only when the entire month has expired (month end at or before the cutoff). Partially expired months remain. Null or non-positive retention disables cleanup. The separate SQLite file deletion path is retained; the RDBMS schema teardown bug belongs to ServiceStack.Server.
+
+See the [canonical ServiceStack.Server record](../ServiceStack.Server/plan/FEATURE-IMPROVEMENTS.md#server-829-safe-archive-retention) and [DbJobsRetentionTests.cs](../../tests/ServiceStack.Extensions.Tests/DbJobsRetentionTests.cs) for boundary coverage and validation limits. Released-package availability is unconfirmed.

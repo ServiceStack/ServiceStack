@@ -177,7 +177,7 @@ services.AddHealthChecks()
 
 ## History retention
 
-- **Archive retention** optionally drops monthly `CompletedJob`/`FailedJob` archives older than `ArchiveRetention`, which summary retention alone doesn't cover.
+- **Archive retention** optionally removes expired `CompletedJob`/`FailedJob` history without changing operational tables. SQL Server, MySQL and the portable RDBMS provider delete rows with `CreatedDate` before the UTC cutoff (`UtcNow - ArchiveRetention`). PostgreSQL drops only monthly child archives whose end is at or before that cutoff; partially expired months remain. Completed and failed archives are discovered independently. Null or non-positive retention disables cleanup. Summary retention is separate.
 - **Job summary retention** optionally deletes completed job history older than a configured period, so long-running applications don't accumulate summary rows indefinitely. It's off by default, and only ever removes jobs that have finished. Note that a job's reference ID becomes reusable once its summary has been deleted.
 
 ## Stronger RDBMS processing
@@ -395,3 +395,9 @@ jobs.SetRecurringTaskEnabled("Nightly report", enabled:false);
 jobs.SetRecurringTaskEnabled("Nightly report", enabled:true);
 jobs.RunRecurringTaskNow("Nightly report");
 ```
+
+## Archive retention correction — issue 829
+
+Source correction reviewed 2026-11-13 against baseline `77ee02d63860ce13a1c5187acb9ba77633dfa77f` plus this working-tree change. Retention uses dedicated `DbJobsProvider.PurgeArchives`/`DropArchive` operations; `DropTables` remains explicit schema teardown. PostgreSQL cleanup does not create partitions and invalidates the local cache after a successful drop so late writes can recreate them. Partition month parsing supports the default underscore-separated PostgreSQL names.
+
+Regression coverage: [DbJobsRetentionTests.cs](../../tests/ServiceStack.Extensions.Tests/DbJobsRetentionTests.cs), including failed-only history, UTC cutoff boundaries, active jobs/schedules/summaries, disabled retention, repeated cleanup, and PostgreSQL partition recreation. Validation results and provider limits are recorded in the [canonical decision record](plan/FEATURE-IMPROVEMENTS.md#server-829-safe-archive-retention). First fixed published package version is not yet established.

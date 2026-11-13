@@ -75,12 +75,12 @@ public class DbJobsProvider
 
     public virtual List<DateTime> GetTableMonths(IDbConnection db)
     {
-        var q = db.From<CompletedJob>();
-        var dateTimeColumn = q.Column<CompletedJob>(c => c.CreatedDate);
-        var months = db.SqlColumn<string>(q
-            .SelectDistinct(x => new {
-                Month = SqlDateFormat(dateTimeColumn, "%Y-%m"),
-            }));
+        var completed = db.From<CompletedJob>();
+        var failed = db.From<FailedJob>();
+        var months = db.SqlColumn<string>(completed.SelectDistinct(
+                SqlDateFormat(completed.Column<CompletedJob>(x => x.CreatedDate), "%Y-%m")))
+            .Concat(db.SqlColumn<string>(failed.SelectDistinct(
+                SqlDateFormat(failed.Column<FailedJob>(x => x.CreatedDate), "%Y-%m"))));
 
         var ret = months
             .Select(x => {
@@ -115,6 +115,32 @@ public class DbJobsProvider
     /// </summary>
     public virtual string SqlSkipLocked() => "";
 
+    /// <summary>
+    /// Deletes expired history in shared tables without changing the Jobs schema or operational data.
+    /// Partitioned providers override this to remove only whole expired archives.
+    /// </summary>
+    public virtual void PurgeArchives(DateTime cutoffUtc)
+    {
+        using var db = OpenDb();
+        using var trans = db.OpenTransaction();
+        db.Delete<CompletedJob>(x => x.CreatedDate < cutoffUtc);
+        db.Delete<FailedJob>(x => x.CreatedDate < cutoffUtc);
+        trans.Commit();
+    }
+
+    /// <summary>Deletes only the history created in the specified month.</summary>
+    public virtual void DropArchive(DateTime month)
+    {
+        var start = new DateTime(month.Year, month.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var end = start.AddMonths(1);
+        using var db = OpenDb();
+        using var trans = db.OpenTransaction();
+        db.Delete<CompletedJob>(x => x.CreatedDate >= start && x.CreatedDate < end);
+        db.Delete<FailedJob>(x => x.CreatedDate >= start && x.CreatedDate < end);
+        trans.Commit();
+    }
+
+    /// <summary>Explicit schema teardown. Must never be used for history retention.</summary>
     public virtual void DropTables(DateTime? createdDate=null)
     {
         using var db = OpenDb();
@@ -175,19 +201,51 @@ public class PostgresDbJobsProvider : DbJobsProvider
         var partTableName = PostgresUtils.GetMonthTableName(Dialect, typeof(CompletedJob), createdDate);
         var db = OpenDb();
         ConfigureDb?.Invoke(db);
-        if (monthDbs.TryAdd(partTableName, true))
+        lock (monthDbs)
         {
-            db.ExecuteSql(PostgresUtils.CreatePartitionSql(Dialect, typeof(CompletedJob), createdDate));
-            db.ExecuteSql(PostgresUtils.CreatePartitionSql(Dialect, typeof(FailedJob), createdDate));
+            if (!monthDbs.ContainsKey(partTableName))
+            {
+                db.ExecuteSql(PostgresUtils.CreatePartitionSql(Dialect, typeof(CompletedJob), createdDate));
+                db.ExecuteSql(PostgresUtils.CreatePartitionSql(Dialect, typeof(FailedJob), createdDate));
+                monthDbs[partTableName] = true;
+            }
         }
         return db;
     }
 
     public override List<DateTime> GetTableMonths(IDbConnection db)
     {
-        return PostgresUtils.GetTableMonths(Dialect, db, typeof(CompletedJob));
+        return PostgresUtils.GetTableMonths(Dialect, db, typeof(CompletedJob))
+            .Concat(PostgresUtils.GetTableMonths(Dialect, db, typeof(FailedJob)))
+            .Distinct().OrderDescending().ToList();
     }
     
+    public override void PurgeArchives(DateTime cutoffUtc)
+    {
+        using var db = OpenDb();
+        foreach (var month in GetTableMonths(db))
+        {
+            if (month.AddMonths(1) <= cutoffUtc)
+                DropArchive(month);
+        }
+    }
+
+    public override void DropArchive(DateTime month)
+    {
+        // Do not open a month DB here: that would create partitions during cleanup.
+        var completed = PostgresUtils.GetMonthTableName(Dialect, typeof(CompletedJob), month);
+        var failed = PostgresUtils.GetMonthTableName(Dialect, typeof(FailedJob), month);
+        lock (monthDbs)
+        {
+            using var db = OpenDb();
+            using var trans = db.OpenTransaction();
+            db.ExecuteSql($"DROP TABLE IF EXISTS {Dialect.QuoteTable(completed)}");
+            db.ExecuteSql($"DROP TABLE IF EXISTS {Dialect.QuoteTable(failed)}");
+            trans.Commit();
+            monthDbs.TryRemove(completed, out _);
+        }
+    }
+
     public override void DropTables(DateTime? createdDate=null)
     {
         using var db = OpenDb();

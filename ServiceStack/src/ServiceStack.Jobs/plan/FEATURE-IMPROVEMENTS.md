@@ -15,3 +15,7 @@ For each explicitly accepted proposal, move its full record here with its stable
 - Release version and release-note link when confirmed.
 
 After implementation, update FEATURES.md to describe the actual supported behavior and constraints. Keep this decision/implementation record for history.
+
+## SERVER-829 participant: monthly retention boundaries
+
+The user accepted implementation on 2026-11-13. ServiceStack.Server owns the [canonical decision and validation record](../../ServiceStack.Server/plan/FEATURE-IMPROVEMENTS.md#server-829-safe-archive-retention). ServiceStack.Jobs participates through shared whole-month retention boundaries and configuration documentation; it retains its existing SQLite file cleanup implementation. Implemented in the working tree; released-package availability unconfirmed.

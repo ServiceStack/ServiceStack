@@ -60,6 +60,19 @@ public abstract class BackgroundJobsProviderBase : IBackgroundJobsQueues
     /// <summary>Drops the CompletedJob/FailedJob archive of a month</summary>
     protected abstract void DropArchive(DateTime month);
 
+    /// <summary>Removes only whole monthly archives entirely before the retention cutoff.</summary>
+    protected virtual void PurgeArchives(DateTime cutoffUtc)
+    {
+        using var db = OpenDb();
+        foreach (var month in GetArchiveMonths(db))
+        {
+            if (month.AddMonths(1) > cutoffUtc)
+                continue;
+            Log.LogInformation("JOBS Dropping Job archive for {Month:yyyy-MM}", month);
+            DropArchive(month);
+        }
+    }
+
     /// <summary>
     /// Runs a write against the Jobs database. SQLite overrides it to take the database's write lock.
     /// </summary>
@@ -888,12 +901,12 @@ public abstract class BackgroundJobsProviderBase : IBackgroundJobsQueues
     private DateTime lastArchivePurge = DateTime.MinValue;
 
     /// <summary>
-    /// Drops monthly CompletedJob/FailedJob archives older than ArchiveRetention. JobSummaryRetention
+    /// Removes CompletedJob/FailedJob archives older than ArchiveRetention. JobSummaryRetention
     /// only trims the summaries, so without this the archives grow forever.
     /// </summary>
     protected void PurgeExpiredArchives()
     {
-        if (Options.ArchiveRetention == null)
+        if (Options.ArchiveRetention == null || Options.ArchiveRetention <= TimeSpan.Zero)
             return;
         var now = DateTime.UtcNow;
         if (now - lastArchivePurge < TimeSpan.FromHours(1))
@@ -902,15 +915,7 @@ public abstract class BackgroundJobsProviderBase : IBackgroundJobsQueues
 
         try
         {
-            var oldestMonth = new DateTime(now.Year, now.Month, 1).Add(-Options.ArchiveRetention.Value);
-            using var db = OpenDb();
-            foreach (var month in GetArchiveMonths(db))
-            {
-                if (month >= oldestMonth)
-                    continue;
-                Log.LogInformation("JOBS Dropping Job archive for {Month:yyyy-MM}", month);
-                DropArchive(month);
-            }
+            PurgeArchives(now - Options.ArchiveRetention.Value);
         }
         catch (Exception e)
         {
