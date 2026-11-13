@@ -58,7 +58,7 @@
     "chat/ext/gemini/crawl-status.mjs": "45ed12e560cef5246ed499b7639583a070d7d0509185bd64ad04f6290b7ac51d",
     "chat/ext/gemini/explorer.mjs": "df5b9456a060b264ac270eae330a15c896c559917b304937958cf3a1d2de07f1",
     "chat/ext/gemini/import.mjs": "37d7c00c50cfcecc602cb82c62fc8b11c3e9fc12c70e9d52ee27837c6dc111bc",
-    "chat/ext/gemini/index.mjs": "94c7f995f2de8404c2a8f65e9c3853567a98c707c16ffed9a9a578265915a958",
+    "chat/ext/gemini/index.mjs": "687105c7b33e8565e5be04b193d71358d361c18d0bd979007634a1cf60772c5b",
     "chat/ext/gemini/metadata.mjs": "45064be16a964a8022af2eb72a50657db675e67925d4f29d95972b962674821e",
     "chat/ext/gemini/search-widget.js": "deccaa4a39dcef932b9d4a10c8dd4c51c06f03b50c02934cc925ec906ae2d09d",
     "chat/ext/gemini/searches.mjs": "157bf1b03c6b780818fce8f6dca5ec28b59f03ab9b6ba16c94af20d5a2d7f7db",

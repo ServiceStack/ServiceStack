@@ -185,16 +185,16 @@ const SyncReport = {
     emits: ['sync', 'prune', 'add-source-documents'],
     template: `
         <div data-tag="SyncReport" class="mb-8">
-            <div class="flex justify-between items-start mb-4">
+            <div class="flex justify-between items-start gap-4 mb-4">
                 <div>
                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Sync Store</h3>
-                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Refresh all enabled saved imports using their import.json settings, queue new and changed files, repair upload errors, and remove redundant Gemini copies.</p>
+                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Refresh all enabled saved imports using their import.json settings, queue new and changed files, and reconcile with Gemini.</p>
                 </div>
                 <button type="button"
                     @click="$emit('sync')"
                     :disabled="syncing"
                     :class="[$styles.primaryButton]"
-                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium" 
+                    class="inline-flex shrink-0 items-center whitespace-nowrap px-4 py-2 border border-transparent shadow-sm text-sm font-medium"
                 >
                     <span v-if="syncing">Syncing...</span>
                     <span v-else>Sync Store</span>
