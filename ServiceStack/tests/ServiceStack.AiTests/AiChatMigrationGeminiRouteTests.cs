@@ -15,7 +15,7 @@ using ServiceStack.OrmLite;
 
 namespace ServiceStack.AiTests;
 
-public class AiChatMigrationGeminiRouteTests
+public partial class AiChatMigrationGeminiRouteTests
 {
     sealed class HttpFactory(HttpMessageHandler handler) : IHttpClientFactory
     {

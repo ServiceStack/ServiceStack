@@ -188,7 +188,7 @@ const SyncReport = {
             <div class="flex justify-between items-start mb-4">
                 <div>
                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">Sync Store</h3>
-                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Refresh all enabled saved imports using their import.json settings, queue new and changed files, and reconcile with Gemini.</p>
+                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Refresh all enabled saved imports using their import.json settings, queue new and changed files, repair upload errors, and remove redundant Gemini copies.</p>
                 </div>
                 <button type="button"
                     @click="$emit('sync')"
@@ -243,6 +243,7 @@ const SyncReport = {
                     <IssueCard name="Duplicate Documents" :issue="syncResult['Duplicate Documents']" />
                     <IssueCard name="Source Changes" :issue="syncResult['Source Changes']" />
                     <IssueCard name="Source Errors" :issue="syncResult['Source Errors']" />
+                    <IssueCard name="Repair Errors" :issue="syncResult['Repair Errors']" />
                     <IssueCard name="Pending Uploads" :issue="syncResult['Pending Uploads']" />
                     <IssueCard name="New Source Documents" :issue="syncResult['New Source Documents']" />
                 </div>
@@ -325,6 +326,7 @@ const SyncReport = {
                 (props.syncResult['Duplicate Documents']?.count || 0) > 0 ||
                 (props.syncResult['Source Changes']?.count || 0) > 0 ||
                 (props.syncResult['Source Errors']?.count || 0) > 0 ||
+                (props.syncResult['Repair Errors']?.count || 0) > 0 ||
                 (props.syncResult['Pending Uploads']?.count || 0) > 0 ||
                 (props.syncResult['New Source Documents']?.count || 0) > 0
             )

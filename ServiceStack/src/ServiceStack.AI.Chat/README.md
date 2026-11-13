@@ -347,6 +347,16 @@ conversations, messages and resolved source citations are retained in `ChatAssis
 access but retains that history; permanent deletion removes it. Set `$GEMINI_ASSISTANT_MODEL` to
 override the default `gemini-flash-latest` model.
 
+### Repairing Gemini store synchronization
+
+Sync Store refreshes saved imports, retries cached documents with upload or metadata errors, and
+removes redundant remote copies by document identity. Identical content in separate source documents
+is preserved. A healthy copy with the desired content and metadata is retained; when none exists,
+the cached document is queued again and superseded copies are removed only after its replacement
+succeeds. Failed cleanup is retained for retry and shown under **Repair Errors**. Sync skips documents
+currently owned by the upload worker rather than waiting for indexing. Missing cached files and
+provider/billing errors remain visible when automatic repair cannot complete.
+
 ## sync.sh
 
 Re-copies the UI and seed configs from a local llms-py checkout:

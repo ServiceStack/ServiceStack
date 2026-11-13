@@ -433,121 +433,17 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
                 Log.LogWarning(e, "Could not scan saved import {SourceId} during store sync", source.Id);
             }
         }
-        if (sourceChanges.Count > 0) { worker?.Start(); searchWorker?.Start(); }
-
-        var localDocs = db.QueryAllDocuments(id, user).ToList();
-        var localById = localDocs.ToDictionary(x => x.Id);
-        var hashGroups=localDocs.Where(x=>x.Hash!=null).GroupBy(x=>x.Hash!,StringComparer.Ordinal).ToDictionary(x=>x.Key,x=>x.ToList(),StringComparer.Ordinal);
-        var localByHash = new Dictionary<string, ChatDocument>();
-        var localByName = new Dictionary<string, ChatDocument>();
-        foreach (var doc in localDocs)
-        {
-            if (doc.Hash != null)
-                if(hashGroups[doc.Hash].Count==1)localByHash[doc.Hash] = doc;
-            if (doc.Name != null)
-                localByName[doc.Name] = doc;
-        }
-        Log.LogInformation("Found {Count} local documents ({Hashes} hashes)",
-            localDocs.Count, localByHash.Count);
-
-        var localMissing = new List<GeminiRemoteDocument>();   // in Gemini, unknown locally
-        var remoteMissing = new List<ChatDocument>();        // local, missing from Gemini
-        var missingMetadata = new List<ChatDocument>();
-        var metadataMismatch = new List<ChatDocument>();
-        var unmatched = new List<ChatDocument>();
-        var hashCounts = new Dictionary<string, int>();
-        var matchedLocalIds = new HashSet<long>();
-        var matchedByHash = 0;
-
-        var remoteDocs = await client.ListDocumentsAsync(filestore.Name ?? "").ConfigAwait();
-        foreach (var remoteJson in remoteDocs)
-        {
-            var remote = GeminiRemoteDocument.From(remoteJson);
-            var local = remote.Name != null ? localByName.GetValueOrDefault(remote.Name) : null;
-            if(local==null && remote.MetadataId is { } metadataId && localById.TryGetValue(metadataId,out var byId)
-                && byId.Hash==remote.MetadataHash) local=byId;
-            if(local==null && remote.MetadataId==null && remote.MetadataHash!=null)
-                local=localByHash.GetValueOrDefault(remote.MetadataHash);
-
-            if (local == null)
-            {
-                Log.LogDebug("Remote doc not found locally: {Name}", remote.Name);
-                localMissing.Add(remote);
-                continue;
-            }
-            matchedLocalIds.Add(local.Id);
-            if (remote.MetadataHash == null || remote.MetadataId == null)
-            {
-                Log.LogDebug("Remote doc missing metadata: {Name}", remote.Name);
-                missingMetadata.Add(local);
-                continue;
-            }
-
-            matchedByHash++;
-
-            var diff = remote.Diff(local);
-            if (diff.Count > 0 && !(local.UploadedAt == null && (remote.DisplayName != local.DisplayName || remote.MetadataHash != local.Hash || GeminiMetadata.Differs(local, ChatDtos.ParseJson(remote.CustomMetadata) as JsonArray))))
-            {
-                Log.LogDebug("Updating local doc {Doc} unmatched fields: {Fields}",
-                    FileNameOf(local), string.Join(", ", diff));
-                unmatched.Add(local);
-                remote.ApplyTo(local);
-                db.UpdateDocument(local);
-            }
-
-            var remoteMetadata = ChatDtos.ParseJson(remote.CustomMetadata) as JsonArray;
-            if (local.Id != remote.MetadataId || local.Hash != remote.MetadataHash
-                || GeminiMetadata.Differs(local, remoteMetadata))
-            {
-                Log.LogDebug("Metadata mismatch: id={LocalId}|{RemoteId}, hash={LocalHash}|{RemoteHash}",
-                    local.Id, remote.MetadataId, local.Hash, remote.MetadataHash);
-                metadataMismatch.Add(local);
-            }
-
-            hashCounts[remote.MetadataHash] = hashCounts.GetValueOrDefault(remote.MetadataHash) + 1;
-        }
-
-        var pendingUploads = new List<ChatDocument>();
-        foreach (var local in localDocs)
-        {
-            if (matchedLocalIds.Contains(local.Id))
-                continue;
-
-            // A document which has never completed an upload is queued work, not remote drift.
-            // Labelling it MISSING_FROM_REMOTE hides the upload affordance and previously made a
-            // store sync appear to strand interrupted uploads.
-            if (local.UploadedAt == null && local.Error == null && local.TombstonedAt == null)
-                pendingUploads.Add(local);
-            else
-                remoteMissing.Add(local);
-        }
-
-        var duplicates = hashCounts.Where(x => x.Value > 1)
-            .SelectMany(x => hashGroups.GetValueOrDefault(x.Key) ?? [])
-            .ToList();
-
-        foreach (var doc in remoteMissing)
-            db.UpdateDocumentState(doc.Id, "MISSING_FROM_REMOTE");
-        foreach (var doc in missingMetadata)
-            db.UpdateDocumentState(doc.Id, "MISSING_METADATA");
-        foreach (var doc in metadataMismatch)
-            db.UpdateDocumentState(doc.Id, "METADATA_MISMATCH");
-        foreach (var doc in duplicates)
-            db.UpdateDocumentState(doc.Id, "DUPLICATE_FILE");
-
-        // Missing remote copies and broken identity metadata can be repaired from the local cache
-        // (llms-py parity): re-queue them, so the worker uploads a fresh copy. A broken copy keeps
-        // its remote name and is removed only after its replacement succeeds.
-        foreach (var doc in remoteMissing.Concat(missingMetadata).Concat(metadataMismatch).DistinctBy(x => x.Id).ToList())
-        {
-            if (!LocalFileExists(doc)) continue;
-            var current = db.GetDocument(doc.Id, user);
-            if (current == null) continue;
-            current.UploadedAt = null; current.StartedAt = null; current.Error = null;
-            if (remoteMissing.Any(x => x.Id == doc.Id)) current.Name = null;
-            db.UpdateDocument(current);
-            if (pendingUploads.All(x => x.Id != doc.Id)) pendingUploads.Add(current);
-        }
+        var localDocs = db.QueryAllDocuments(id, user).Where(x => x.TombstonedAt == null).ToList();
+        var remoteDocs = await client.ListDocumentsAsync(filestore.Name ?? "", req.Request.RequestAborted).ConfigAwait();
+        var repairs = await RepairDocumentsAsync(localDocs, remoteDocs, user, req.Request.RequestAborted).ConfigAwait();
+        var localMissing = repairs.LocalMissing;
+        var remoteMissing = repairs.RemoteMissing;
+        var missingMetadata = repairs.MissingMetadata;
+        var metadataMismatch = repairs.MetadataMismatch;
+        var unmatched = repairs.Unmatched;
+        var duplicates = repairs.Duplicates;
+        var pendingUploads = repairs.PendingUploads;
+        var matchedByHash = repairs.Matched;
 
         await stores.RefreshAsync(filestore).ConfigAwait();
         db.EnsureSearchDesiredHashes();
@@ -574,6 +470,7 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
             ["Source Changes"] = Issue(sourceChanges.Count, sourceChanges.Take(5)),
             ["Saved Imports"] = Issue(sourcesSynced, []),
             ["Source Errors"] = Issue(sourceErrors.Count, sourceErrors),
+            ["Repair Errors"] = Issue(repairs.Errors.Count, repairs.Errors),
             ["Pending Uploads"] = Issue(pendingUploads.Count, pendingUploads.Take(5).Select(FileNameOf)),
             ["New Source Documents"] = new JsonObject {
                 ["count"] = newSourceDocuments.Count,
@@ -588,6 +485,7 @@ public partial class GeminiExtension() : ChatExtension("gemini"), IHasSchema
                 ["Local Documents"] = localDocs.Count,
                 ["Remote Documents"] = remoteDocs.Count,
                 ["Matched Documents"] = matchedByHash,
+                ["Removed Remote Copies"] = repairs.RemovedCopies,
             },
         };
     }

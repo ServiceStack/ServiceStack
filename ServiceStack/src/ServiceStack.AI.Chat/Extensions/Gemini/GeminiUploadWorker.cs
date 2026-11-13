@@ -175,6 +175,19 @@ public class GeminiUploadWorker
 
     async Task CleanupRemoteCopiesAsync(ChatDocument doc, CancellationToken token)
     {
+        var gate = GeminiDocumentLocks.For(ctx, doc.Id);
+        await gate.WaitAsync(token).ConfigAwait();
+        try
+        {
+            var current = db.GetDocument(doc.Id, doc.User);
+            if (current != null) await CleanupRemoteCopiesCoreAsync(current, token).ConfigAwait();
+        }
+        finally { gate.Release(); }
+    }
+
+    async Task CleanupRemoteCopiesCoreAsync(ChatDocument doc, CancellationToken token)
+    {
+        if (doc.UploadedAt == null) return; // Preserve fallbacks until their replacement succeeds.
         var remaining = GeminiMetadata.AsList(doc.PendingDeleteNames);
         foreach (var name in remaining.ToArray())
         {
@@ -198,6 +211,25 @@ public class GeminiUploadWorker
     }
 
     async Task<bool> ProcessDocumentAsync(ChatDocument doc, CancellationToken token)
+    {
+        var gate = GeminiDocumentLocks.For(ctx, doc.Id);
+        await gate.WaitAsync(token).ConfigAwait();
+        try
+        {
+            var current = db.GetDocument(doc.Id, doc.User);
+            if (current == null || current.TombstonedAt != null) return true;
+            if (current.UploadedAt != null)
+            {
+                await CleanupRemoteCopiesCoreAsync(current, token).ConfigAwait();
+                return true;
+            }
+            if (current.Error != null) return false;
+            return await ProcessDocumentCoreAsync(current, token).ConfigAwait();
+        }
+        finally { gate.Release(); }
+    }
+
+    async Task<bool> ProcessDocumentCoreAsync(ChatDocument doc, CancellationToken token)
     {
         try
         {
@@ -223,7 +255,7 @@ public class GeminiUploadWorker
                         remote.ApplyTo(doc);
                         doc.UploadOperationName = doc.UploadOperationHash = null;
                         db.UpdateDocument(doc);
-                        await CleanupRemoteCopiesAsync(doc, token).ConfigAwait();
+                        await CleanupRemoteCopiesCoreAsync(doc, token).ConfigAwait();
                         ctx.Log.LogInformation("Recovered completed Gemini upload for {Document}", doc.DisplayName);
                         return true;
                     }
@@ -330,7 +362,7 @@ public class GeminiUploadWorker
                 ctx.Log.LogWarning(e, "Uploaded document {Name}, but could not refresh its remote fields", documentName);
             }
 
-            await CleanupRemoteCopiesAsync(doc, token).ConfigAwait();
+            await CleanupRemoteCopiesCoreAsync(doc, token).ConfigAwait();
             return true;
         }
         catch (OperationCanceledException) when (token.IsCancellationRequested)
