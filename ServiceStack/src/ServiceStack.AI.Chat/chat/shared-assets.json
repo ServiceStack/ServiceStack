@@ -261,7 +261,7 @@
     "chat/themes/soft_pink/theme.json": "5b12d6b10a68c6b332e06120a6ae251018e3c1f79e3630d88b408e949fa1ecb6",
     "chat/themes/soft_pink/ui/bg.webp": "56816bc531498aede67405532baf9eb02f922436f9c584fe809f59be740ca698",
     "chat/ui/App.mjs": "035f23e5db28f7fc35dec90a6247f82db64f126fe37e2fdb28e5be0563e7f1a2",
-    "chat/ui/ai.mjs": "580e317830179db759e6f1f38d39c3c00def3658125e188d7538708fb730fd26",
+    "chat/ui/ai.mjs": "3b919515114163f35b383943ee5ef96ca0ed8c91e98a7e0ebcd298c4837f74a5",
     "chat/ui/app.css": "5d3f2e6205eb99ebcf8dad7f53db79e6edc65c1ac2edf600cb9248ccf2c9ad37",
     "chat/ui/components/CheckBox.css": "3ab8c4e37e36f638802d3964bc81076538e8813583953403c47a70f8ea9bf78c",
     "chat/ui/components/CheckBox.mjs": "1307294a246d608822365d5e679ece61e50187b0b6341ad68e2a059cca1f7d4f",
