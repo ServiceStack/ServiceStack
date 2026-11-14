@@ -28,6 +28,12 @@ public class RabbitMqMessageFactory : IMessageFactory
         }
     }
 
+    /// <summary>
+    /// Declare shared topic/output queues as durable. Configure before creating clients.
+    /// Set false only for legacy transient queues on brokers permitting them.
+    /// </summary>
+    public bool DurableTopicQueues { get; set; } = true;
+
     public bool UsePolling { get; set; } 
 
     public RabbitMqMessageFactory(string connectionString = "localhost",

@@ -79,6 +79,24 @@ public class RabbitMqServer : IMessageService
         set => messageFactory.GetMessageFilter = value;
     }
 
+    /// <summary>
+    /// Skip declaring output queues during startup. Explicit client access can still declare them.
+    /// Use with DisablePublishingToOutq when output notifications are not required.
+    /// Configure before Start().
+    /// </summary>
+    public bool DisableTopicQueues { get; set; }
+
+    /// <summary>
+    /// Declare shared topic/output queues as durable (default true).
+    /// Existing transient queues require an operator-managed migration.
+    /// Configure before Start() or creating clients.
+    /// </summary>
+    public bool DurableTopicQueues
+    {
+        get => messageFactory.DurableTopicQueues;
+        set => messageFactory.DurableTopicQueues = value;
+    }
+
     public Action<string, Dictionary<string,object>> CreateQueueFilter { get; set; }
     public Action<string, Dictionary<string,object>> CreateTopicFilter { get; set; }
 
@@ -309,7 +327,7 @@ public class RabbitMqServer : IMessageService
                         WorkerErrorHandler,
                         AutoReconnect)));
 
-                channel.RegisterQueues(queueNames);
+                channel.RegisterQueues(queueNames, DurableTopicQueues, declareTopics: !DisableTopicQueues);
             }
 
             workers = workerBuilder.ToArray();

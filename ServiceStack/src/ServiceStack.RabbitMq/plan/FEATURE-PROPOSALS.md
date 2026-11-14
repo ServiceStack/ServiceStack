@@ -38,6 +38,10 @@ Queue type migration and broker-specific capabilities require explicit planning;
 - [Customer request #149](https://github.com/ServiceStack/Discuss/discussions/149) requests quorum-queue migration; it does not establish current implementation limitations.
 - [RabbitMQ quorum queue documentation](https://www.rabbitmq.com/docs/quorum-queues) describes replicated queues and the removal of classic mirroring in RabbitMQ 4.0. Pin broker versions when validating compatibility. Sources checked 2026-10-31.
 
+## RABBIT-002: RabbitMQ 4.3+ compatible output queue provisioning
+
+Accepted for implementation by the user on 2026-11-14; see the [canonical decision and implementation record](FEATURE-IMPROVEMENTS.md#rabbit-002-rabbitmq-43-compatible-output-queue-provisioning).
+
 ## Decision handling
 
 When explicitly accepted, move the full proposal under the same stable ID into [FEATURE-IMPROVEMENTS.md](FEATURE-IMPROVEMENTS.md), record the decision/date and agreed scope, and leave a short link here. Rejected or deferred proposals remain here with their disposition. Prioritization is not acceptance.

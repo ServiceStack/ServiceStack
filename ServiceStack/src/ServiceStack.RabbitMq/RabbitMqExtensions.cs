@@ -41,17 +41,25 @@ public static class RabbitMqExtensions
 
     public static void RegisterQueues<T>(this IModel channel)
     {
-        channel.RegisterQueue(QueueNames<T>.In);
-        channel.RegisterQueue(QueueNames<T>.Priority);
-        channel.RegisterTopic(QueueNames<T>.Out);
-        channel.RegisterDlq(QueueNames<T>.Dlq);
+        channel.RegisterQueues<T>(GetRabbitMqServer()?.DurableTopicQueues ?? true);
+    }
+
+    public static void RegisterQueues<T>(this IModel channel, bool durableTopics, bool declareTopics = true)
+    {
+        channel.RegisterQueues(new QueueNames(typeof(T)), durableTopics, declareTopics);
     }
 
     public static void RegisterQueues(this IModel channel, QueueNames queueNames)
     {
+        channel.RegisterQueues(queueNames, GetRabbitMqServer()?.DurableTopicQueues ?? true);
+    }
+
+    public static void RegisterQueues(this IModel channel, QueueNames queueNames, bool durableTopics, bool declareTopics = true)
+    {
         channel.RegisterQueue(queueNames.In);
         channel.RegisterQueue(queueNames.Priority);
-        channel.RegisterTopic(queueNames.Out);
+        if (declareTopics)
+            channel.RegisterTopic(queueNames.Out, durableTopics);
         channel.RegisterDlq(queueNames.Dlq);
     }
 
@@ -92,11 +100,16 @@ public static class RabbitMqExtensions
 
     public static void RegisterTopic(this IModel channel, string queueName)
     {
+        channel.RegisterTopic(queueName, GetRabbitMqServer()?.DurableTopicQueues ?? true);
+    }
+
+    public static void RegisterTopic(this IModel channel, string queueName, bool durable)
+    {
         var args = new Dictionary<string, object>();
 
         GetRabbitMqServer()?.CreateTopicFilter?.Invoke(queueName, args);
 
-        channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: args);
+        channel.QueueDeclare(queueName, durable: durable, exclusive: false, autoDelete: false, arguments: args);
         channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
     }
 
@@ -154,10 +167,15 @@ public static class RabbitMqExtensions
 
     public static void RegisterQueueByName(this IModel channel, string queueName)
     {
+        channel.RegisterQueueByName(queueName, GetRabbitMqServer()?.DurableTopicQueues ?? true);
+    }
+
+    public static void RegisterQueueByName(this IModel channel, string queueName, bool durableTopics)
+    {
         if (queueName.EndsWith(".dlq"))
             channel.RegisterDlq(queueName);
         else if (queueName.EndsWith(".outq"))
-            channel.RegisterTopic(queueName);
+            channel.RegisterTopic(queueName, durableTopics);
         else
             channel.RegisterQueue(queueName);
     }

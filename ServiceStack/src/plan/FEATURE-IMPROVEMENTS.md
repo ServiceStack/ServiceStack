@@ -15,3 +15,7 @@ See the [project index](../FEATURES.md#project-index), [unaccepted proposals](FE
 - [REDIS-004: Streams and consumer groups](../../../ServiceStack.Redis/src/ServiceStack.Redis/plan/FEATURE-IMPROVEMENTS.md#redis-004-typed-streams-and-consumer-group-operations) — ServiceStack.Redis owns implementation and decisions, including the accepted primitive pipelines and bounded bulk-append phase; ServiceStack.Interfaces supplies additive stream contracts/models and nil-reply metadata. Implemented in the working tree; release availability unconfirmed.
 
 - [SERVER-829: safe archive retention](../ServiceStack.Server/plan/FEATURE-IMPROVEMENTS.md#server-829-safe-archive-retention) — ServiceStack.Server owns provider cleanup and regression coverage; ServiceStack.Jobs participates through shared monthly cutoff semantics. Accepted by the user on 2026-11-13; implemented in the working tree, release availability unconfirmed.
+
+## Project-owned accepted work
+
+- [RABBIT-002: RabbitMQ 4.3+ compatible output queue provisioning](../ServiceStack.RabbitMq/plan/FEATURE-IMPROVEMENTS.md#rabbit-002-rabbitmq-43-compatible-output-queue-provisioning) — accepted by the user on 2026-11-14; implemented in the working tree, release availability unconfirmed.

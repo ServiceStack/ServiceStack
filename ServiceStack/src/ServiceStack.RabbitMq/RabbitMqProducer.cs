@@ -144,7 +144,8 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
         }
     }
 
-    static readonly ConcurrentDictionary<string, bool> Queues = new();
+    // Declaration state belongs to this client, broker connection and factory configuration.
+    readonly ConcurrentDictionary<string, bool> Queues = new();
 
     public virtual void PublishMessage(string exchange, string routingKey, IBasicProperties basicProperties, byte[] body)
     {
@@ -160,7 +161,7 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
             {
                 if (!Queues.ContainsKey(routingKey))
                 {
-                    Channel.RegisterQueueByName(routingKey);
+                    Channel.RegisterQueueByName(routingKey, msgFactory.DurableTopicQueues);
                     Queues.TryAdd(routingKey, true);
                 }
 
@@ -196,7 +197,7 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
         {
             if (!Queues.ContainsKey(queueName))
             {
-                Channel.RegisterQueueByName(queueName);
+                Channel.RegisterQueueByName(queueName, msgFactory.DurableTopicQueues);
                 Queues.TryAdd(queueName, true);
             }
 
@@ -210,7 +211,7 @@ public class RabbitMqProducer : IMessageProducer, IOneWayClient
         {
             if (ex.Is404())
             {
-                Channel.RegisterQueueByName(queueName);
+                Channel.RegisterQueueByName(queueName, msgFactory.DurableTopicQueues);
 
                 return Channel.BasicGet(queueName, autoAck: noAck);
             }

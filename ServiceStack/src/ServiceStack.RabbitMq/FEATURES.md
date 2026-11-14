@@ -19,6 +19,13 @@ Status: implementation entry points located in this checkout; behavioral verific
 | Producers and queue clients | Publish DTO envelopes, receive messages, acknowledge and reject deliveries. | [RabbitMqProducer.cs](RabbitMqProducer.cs), [RabbitMqQueueClient.cs](RabbitMqQueueClient.cs), [RabbitMqMessageFactory.cs](RabbitMqMessageFactory.cs) |
 | Queue topology and customization | Declare request, priority, topic and dead-letter queues and customize declaration arguments. | [RabbitMqExtensions.cs](RabbitMqExtensions.cs), [RabbitMqServer.cs](RabbitMqServer.cs) |
 
+## RabbitMQ 4 compatibility (working tree, reviewed 2026-11-14)
+
+- Output/topic queues now default to durable, non-exclusive declarations. `RabbitMqServer.DurableTopicQueues` forwards the message factory setting used by startup and standalone/lazy clients. Direct declaration extensions also accept explicit durability.
+- `DisableTopicQueues` skips startup output queue provisioning. Use it with `DisablePublishingToOutq` when notifications are unused; explicit client reads/publishes can still declare output queues. Publishing policy alone continues to leave provisioning enabled.
+- Existing transient output queues require an operator-managed migration, or `DurableTopicQueues = false` on a broker permitting the deprecated feature. No queues are automatically deleted. See [RabbitMQ 4 upgrade guide](RABBITMQ-4-UPGRADE.md).
+- Validated on .NET 10 against RabbitMQ 4.4.0 defaults and 3.13.7 for startup and processing, polling/subscription and output enabled/skipped. Notification persistence, broker restart recovery and published release availability are not established by these checks.
+
 ## Public documentation
 
 These are related local documentation sources, not a claim that every provider detail is documented or current.

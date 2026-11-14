@@ -60,7 +60,7 @@ public class RabbitMqTests
 
     public static void RegisterTopic(IModel channel, string queueName)
     {
-        channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+        channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
         channel.QueueBind(queueName, ExchangeTopic, routingKey: queueName);
     }
 
