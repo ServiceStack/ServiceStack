@@ -77,10 +77,10 @@ public class DbJobsProvider
     {
         var completed = db.From<CompletedJob>();
         var failed = db.From<FailedJob>();
-        var months = db.SqlColumn<string>(completed.SelectDistinct(
-                SqlDateFormat(completed.Column<CompletedJob>(x => x.CreatedDate), "%Y-%m")))
-            .Concat(db.SqlColumn<string>(failed.SelectDistinct(
-                SqlDateFormat(failed.Column<FailedJob>(x => x.CreatedDate), "%Y-%m"))));
+        var completedMonth = SqlTableMonth(completed.Column<CompletedJob>(x => x.CreatedDate));
+        var failedMonth = SqlTableMonth(failed.Column<FailedJob>(x => x.CreatedDate));
+        var months = db.SqlColumn<string>(completed.SelectDistinct(x => Sql.Custom(completedMonth)))
+            .Concat(db.SqlColumn<string>(failed.SelectDistinct(x => Sql.Custom(failedMonth))));
 
         var ret = months
             .Select(x => {
@@ -99,6 +99,8 @@ public class DbJobsProvider
         
         return ret;
     }
+
+    protected virtual string SqlTableMonth(string quotedColumn) => SqlDateFormat(quotedColumn, "%Y-%m");
 
     public virtual string SqlDateFormat(string quotedColumn, string format) => SqliteUtils.SqlDateFormat(quotedColumn, format);
 
@@ -166,6 +168,9 @@ public class MySqlDbJobsProvider : DbJobsProvider
 
 public class SqlServerDbJobsProvider : DbJobsProvider
 {
+    // Month discovery only needs an ISO year/month, without FORMAT's per-row CLR overhead.
+    protected override string SqlTableMonth(string quotedColumn) => $"CONVERT(char(7), {quotedColumn}, 126)";
+
     public override string SqlDateFormat(string quotedColumn, string format) => SqlServerUtils.SqlDateFormat(quotedColumn, format);
 }
 

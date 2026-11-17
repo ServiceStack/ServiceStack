@@ -25,6 +25,12 @@ Status: implementation entry points located in this checkout; behavioral verific
 | Scheduling, batches and queue controls | Schedule durable jobs, coordinate dependencies and batches, and operate queues. | [DbJobs.ScheduledTasks.cs](DbJobs.ScheduledTasks.cs), [DbJobs.Batches.cs](DbJobs.Batches.cs), [DbJobsAdminServices.cs](DbJobsAdminServices.cs) |
 | Database administration and schema comparison | Inspect data and compare model schemas with database schemas. | [AdminDatabaseFeature.cs](AdminDatabaseFeature.cs), [AdminQueryService.cs](AdminQueryService.cs), [AdminSchemaDiffService.cs](AdminSchemaDiffService.cs) |
 
+## SQL Server job archive month discovery
+
+`SqlServerDbJobsProvider.GetTableMonths` projects distinct archive months with `CONVERT(char(7), CreatedDate, 126)` instead of per-row `FORMAT()`. It combines completed and failed history, deduplicates across archives, and returns descending first-of-month dates. Identifier quoting remains provider-generated. The general date formatter and dashboard projections are unchanged; no schema migration is required for this change.
+
+Source: [DbJobsProvider.cs](DbJobsProvider.cs). SQL generation with default/custom naming and SQLite discovery checks passed during implementation on 2026-11-17; the standalone test project was subsequently removed. SQL Server execution, SQL null/language parity and customer performance remain unverified. Implementation is present in the working tree; first published fixed version is unconfirmed.
+
 ## Public documentation
 
 These are related local documentation sources, not a claim that every provider detail is documented or current.
