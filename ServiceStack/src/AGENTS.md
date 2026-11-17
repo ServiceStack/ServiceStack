@@ -1,3 +1,9 @@
+# Release policy
+
+- All projects use forward-only releases. Add all fixes and changes to `master` and deliver them through the next release.
+- Customers must install the latest version containing the fix. Do not plan backports, separate maintenance releases or fixes against older release branches.
+- Apply any follow-up corrections to `master` and ship them in a subsequent forward release.
+
 # Feature documentation guidance
 
 This directory's first-pass product inventory is indexed in [FEATURES.md](FEATURES.md). Project AGENTS.md files retain their architecture and development rules.
