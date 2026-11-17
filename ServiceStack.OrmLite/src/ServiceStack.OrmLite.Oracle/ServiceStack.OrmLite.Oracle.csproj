@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == 'net10.0' ">
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.400" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.401" />
   </ItemGroup>
 
   <ItemGroup>

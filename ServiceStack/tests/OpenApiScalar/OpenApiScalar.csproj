@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.20.0"/>
+        <PackageReference Include="Scalar.AspNetCore" Version="2.21.0"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" GeneratePathProperty="true"/>
     </ItemGroup>
 
