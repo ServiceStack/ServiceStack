@@ -1,10 +1,13 @@
 #nullable enable
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite.Tests;
@@ -62,6 +65,82 @@ public class Migration1001 : MigrationBase
 [TestFixture]
 public class NamedMigrationTests : OrmLiteTestBase
 {
+    [Test]
+    [NonParallelizable]
+    public async Task Overlapping_migrations_capture_only_their_own_commands()
+    {
+        const string firstSql = "SELECT 'first migration'";
+        const string secondSql = "SELECT 'second migration'";
+        const string otherConnectionSql = "SELECT 'different connection in the migration context'";
+        const string unrelatedSql = "SELECT 'unrelated command'";
+        const string laterSql = "SELECT 'after both migrations'";
+        var originalFilter = OrmLiteConfig.BeforeExecFilter;
+        var observed = new ConcurrentQueue<string>();
+        Action<IDbCommand> filter = cmd => observed.Enqueue(cmd.CommandText);
+
+        OrmLiteConnectionFactory NewFactory() => new(":memory:", SqliteDialect.Provider, setGlobalDialectProvider: false);
+        var timeout = TimeSpan.FromSeconds(10);
+        using var firstEntered = new ManualResetEventSlim();
+        using var secondEntered = new ManualResetEventSlim();
+        using var finishFirst = new ManualResetEventSlim();
+        using var finishSecond = new ManualResetEventSlim();
+        using var unrelatedDb = NewFactory().Open();
+        Task<MigrationBase>? firstRun = null;
+        Task<MigrationBase>? secondRun = null;
+        try
+        {
+            OrmLiteConfig.BeforeExecFilter = filter;
+            firstRun = Task.Run(() => Migrator.Run(NewFactory(), typeof(Migration1000), migration =>
+            {
+                migration.Db!.ExecuteSqlAsync(firstSql).GetAwaiter().GetResult();
+                using (var otherDb = NewFactory().Open())
+                    otherDb.ExecuteSql(otherConnectionSql);
+                firstEntered.Set();
+                if (!finishFirst.Wait(timeout))
+                    throw new TimeoutException("First migration was not released.");
+            }));
+            Assert.That(firstEntered.Wait(timeout), Is.True);
+
+            secondRun = Task.Run(() => Migrator.Run(NewFactory(), typeof(Migration1000), migration =>
+            {
+                migration.Db!.ExecuteSql(secondSql);
+                secondEntered.Set();
+                if (!finishSecond.Wait(timeout))
+                    throw new TimeoutException("Second migration was not released.");
+            }));
+            Assert.That(secondEntered.Wait(timeout), Is.True);
+
+            unrelatedDb.ExecuteSql(unrelatedSql);
+            finishFirst.Set();
+            var first = await firstRun;
+            finishSecond.Set();
+            var second = await secondRun;
+            unrelatedDb.ExecuteSql(laterSql);
+
+            Assert.That(first.Error, Is.Null);
+            Assert.That(second.Error, Is.Null);
+            Assert.That(first.Log, Does.Contain(firstSql).And.Not.Contain(secondSql).And.Not.Contain(unrelatedSql));
+            Assert.That(first.Log, Does.Not.Contain(otherConnectionSql));
+            Assert.That(second.Log, Does.Contain(secondSql).And.Not.Contain(firstSql).And.Not.Contain(unrelatedSql));
+            Assert.That(first.MigrationLog.ToString(), Does.Not.Contain(laterSql));
+            Assert.That(OrmLiteConfig.BeforeExecFilter, Is.SameAs(filter));
+            Assert.That(observed.ToArray(), Is.SupersetOf(new[] { firstSql, secondSql, otherConnectionSql, unrelatedSql, laterSql }));
+        }
+        finally
+        {
+            finishFirst.Set();
+            finishSecond.Set();
+            try
+            {
+                await Task.WhenAll(new[] { firstRun, secondRun }.OfType<Task<MigrationBase>>());
+            }
+            finally
+            {
+                OrmLiteConfig.BeforeExecFilter = originalFilter;
+            }
+        }
+    }
+
     private IDbConnection Create()
     {
         File.Delete("db1.sqlite");

@@ -23,7 +23,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
 
         dbCmd.CommandText = sql;
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd).InTask();
@@ -41,7 +41,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
 
         dbCmd.CommandText = sql;
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd).InTask();
@@ -54,7 +54,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
 
     public static Task<int> ExecNonQueryAsync(this IDbCommand dbCmd, CancellationToken token = default)
     {
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd).InTask();
@@ -212,7 +212,7 @@ public static class OrmLiteResultsFilterExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.GetLongScalar(dbCmd).InTask();

@@ -72,7 +72,7 @@ internal sealed class OrmLiteBatch : IDisposable
     private void AddCommand(IDbCommand dbCmd)
     {
         (dbCmd as OrmLiteCommand)?.OrmLiteConnection.OnExecute(dbCmd, isNonQuery: true);
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);

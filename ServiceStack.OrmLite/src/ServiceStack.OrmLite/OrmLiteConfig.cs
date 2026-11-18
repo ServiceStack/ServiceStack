@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Threading;
 using ServiceStack.Logging;
 
 namespace ServiceStack.OrmLite;
@@ -237,6 +238,14 @@ public static class OrmLiteConfig
 
     public static Action<IDbCommand> BeforeExecFilter { get; set; }
     public static Action<IDbCommand> AfterExecFilter { get; set; }
+
+    internal static readonly AsyncLocal<Action<IDbCommand>> MigrationSqlCapture = new();
+
+    internal static void InvokeBeforeExecFilter(IDbCommand dbCmd)
+    {
+        BeforeExecFilter?.Invoke(dbCmd);
+        MigrationSqlCapture.Value?.Invoke(dbCmd);
+    }
 
     public static Action<IDbCommand, object> InsertFilter { get; set; }
     public static Action<IDbCommand, object> UpdateFilter { get; set; }

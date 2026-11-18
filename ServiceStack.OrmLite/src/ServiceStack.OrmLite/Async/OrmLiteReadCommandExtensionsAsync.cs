@@ -25,7 +25,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         return dbCmd.WithLog(dbCmd.ExecReaderWithRetryAsync(token));
     }
@@ -43,7 +43,7 @@ internal static class OrmLiteReadCommandExtensionsAsync
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         return dbCmd.WithLog(dbCmd.ExecReaderWithRetryAsync(token));
     }

@@ -24,7 +24,7 @@ public static class OrmLiteResultsFilterExtensions
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
@@ -42,7 +42,7 @@ public static class OrmLiteResultsFilterExtensions
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
@@ -52,7 +52,7 @@ public static class OrmLiteResultsFilterExtensions
 
     public static int ExecNonQuery(this IDbCommand dbCmd)
     {
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
@@ -69,7 +69,7 @@ public static class OrmLiteResultsFilterExtensions
 
         dbCmd.CommandText = sql;
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
@@ -212,7 +212,7 @@ public static class OrmLiteResultsFilterExtensions
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.GetLongScalar(dbCmd);

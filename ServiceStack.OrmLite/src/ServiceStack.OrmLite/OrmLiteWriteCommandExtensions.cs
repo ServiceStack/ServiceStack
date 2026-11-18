@@ -279,7 +279,7 @@ public static class OrmLiteWriteCommandExtensions
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
@@ -299,7 +299,7 @@ public static class OrmLiteWriteCommandExtensions
         if (Log.IsDebugEnabled)
             Log.DebugCommand(dbCmd);
 
-        OrmLiteConfig.BeforeExecFilter?.Invoke(dbCmd);
+        OrmLiteConfig.InvokeBeforeExecFilter(dbCmd);
 
         if (OrmLiteConfig.ResultsFilter != null)
             return OrmLiteConfig.ResultsFilter.ExecuteSql(dbCmd);
