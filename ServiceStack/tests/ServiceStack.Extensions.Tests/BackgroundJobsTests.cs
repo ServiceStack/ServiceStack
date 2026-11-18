@@ -1375,6 +1375,38 @@ public class BackgroundJobsTests
     }
 
     [Test]
+    public async Task Migrated_queued_state_is_counted_and_dispatched()
+    {
+        var jobs = feature.Jobs;
+        var batchId = Guid.NewGuid().ToString("N");
+        jobs.CreateJobBatch(batchId, total: 2);
+        var runAfter = DateTime.UtcNow.AddHours(1);
+        var named = jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 1 },
+            new() { BatchId = batchId, RunAfter = runAfter });
+        var legacy = jobs.EnqueueCommand<MyJobCommand>(new MyRequest { Id = 2 },
+            new() { BatchId = batchId, RunAfter = runAfter });
+
+        using var db = jobs.OpenDb();
+        var args = new { state = "0", id = legacy.Id };
+        db.ExecuteSql("UPDATE BackgroundJob SET State = @state WHERE Id = @id", args);
+        db.ExecuteSql("UPDATE JobSummary SET State = @state WHERE Id = @id", args);
+        BackgroundJobSchema.MigrateEnumValues(db);
+
+        var info = (AdminJobInfoResponse)ExecAdmin(x => x.Any(new AdminJobInfo()));
+        Assert.That(info.StateCounts[BackgroundJobState.Queued], Is.GreaterThanOrEqualTo(2));
+        var batch = (AdminGetJobBatchResponse)ExecAdmin(x => x.Any(new AdminGetJobBatch { BatchId = batchId }));
+        Assert.That(batch.StateCounts[nameof(BackgroundJobState.Queued)], Is.EqualTo(2));
+
+        db.ExecuteSql("UPDATE BackgroundJob SET RunAfter = NULL WHERE Id IN (@namedId, @legacyId)",
+            new { namedId = named.Id, legacyId = legacy.Id });
+        foreach (var job in new[] { named, legacy })
+        {
+            var result = await jobs.WaitForJobAsync(job, TimeSpan.FromSeconds(10));
+            Assert.That(result.Summary.State, Is.EqualTo(BackgroundJobState.Completed));
+        }
+    }
+
+    [Test]
     public void Job_Batches_Track_Progress_And_Complete()
     {
         ResetState();

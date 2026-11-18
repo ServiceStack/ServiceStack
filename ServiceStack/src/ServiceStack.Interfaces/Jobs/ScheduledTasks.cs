@@ -120,12 +120,14 @@ public class Schedule
     }
 }
 
+[EnumAsString]
 public enum ScheduleMisfirePolicy
 {
     RunOnce,
     Skip,
 }
 
+[EnumAsString]
 public enum ScheduleOverlapPolicy
 {
     Allow,

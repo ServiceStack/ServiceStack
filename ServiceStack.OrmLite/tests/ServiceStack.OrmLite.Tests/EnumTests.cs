@@ -28,6 +28,48 @@ public class EnumTests : OrmLiteProvidersTestBase
 {
     public EnumTests(DialectContext context) : base(context) {}
 
+    [EnumAsString]
+    public enum NamedValue
+    {
+        First = 1,
+        Second = 2,
+    }
+
+    public class TypeWithNamedEnum
+    {
+        public int Id { get; set; }
+        public NamedValue Value { get; set; }
+        public NamedValue? OptionalValue { get; set; }
+    }
+
+    [Test]
+    public void EnumAsString_uses_names_in_OrmLite_with_integer_serialization_enabled()
+    {
+        using var config = JsConfig.With(new Config { TreatEnumAsInteger = true });
+        using var db = OpenDbConnection();
+        db.DropAndCreateTable<TypeWithNamedEnum>();
+        db.Insert(new TypeWithNamedEnum { Id = 1, Value = NamedValue.First, OptionalValue = NamedValue.Second });
+
+        var table = nameof(TypeWithNamedEnum).SqlTable(DialectProvider);
+        var value = nameof(TypeWithNamedEnum.Value).SqlColumn(DialectProvider);
+        var optionalValue = nameof(TypeWithNamedEnum.OptionalValue).SqlColumn(DialectProvider);
+        var id = nameof(TypeWithNamedEnum.Id).SqlColumn(DialectProvider);
+        Assert.That(db.SqlScalar<string>($"SELECT {value} FROM {table}"), Is.EqualTo(nameof(NamedValue.First)));
+        Assert.That(db.SqlScalar<string>($"SELECT {optionalValue} FROM {table}"), Is.EqualTo(nameof(NamedValue.Second)));
+        Assert.That(DialectProvider.GetQuotedValue(NamedValue.Second, typeof(NamedValue)),
+            Is.EqualTo(DialectProvider.GetQuotedValue(nameof(NamedValue.Second))));
+        Assert.That(db.Single<TypeWithNamedEnum>(x => x.Value == NamedValue.First && x.OptionalValue == NamedValue.Second),
+            Is.Not.Null);
+
+        db.UpdateOnly(() => new TypeWithNamedEnum { Value = NamedValue.Second }, where: x => x.Id == 1);
+        Assert.That(db.SqlScalar<string>($"SELECT {value} FROM {table}"), Is.EqualTo(nameof(NamedValue.Second)));
+
+        db.ExecuteSql($"UPDATE {table} SET {value} = @legacy WHERE {id} = 1", new { legacy = "1" });
+        Assert.That(db.SingleById<TypeWithNamedEnum>(1).Value, Is.EqualTo(NamedValue.First));
+        Assert.That(JsonSerializer.SerializeToString(NamedValue.Second), Is.EqualTo("2"));
+        Assert.That(TypeSerializer.SerializeToString(NamedValue.Second), Is.EqualTo("2"));
+    }
+
     [Test]
     [IgnoreDialect(Dialect.AnyMySql, "Blob columns can't have a default value. https://stackoverflow.com/a/4553664/85785")]
     public void Can_use_RowVersion_on_EnumAsString_PrimaryKey()

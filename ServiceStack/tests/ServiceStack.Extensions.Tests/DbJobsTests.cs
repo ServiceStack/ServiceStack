@@ -845,6 +845,69 @@ public class DbJobsTests
     // Leases, fencing and failover
 
     [Test]
+    public async Task Startup_dispatches_jobs_once_after_explicit_enum_migration()
+    {
+        ResetState();
+        using var config = JsConfig.With(new Config { TreatEnumAsInteger = true });
+        await Jobs.StopAsync(default);
+        var ids = new List<long>();
+        try
+        {
+            using var db = Jobs.OpenDb();
+            var runAfter = DateTime.UtcNow.AddHours(1);
+            foreach (var state in new[] { "Queued", "0" })
+            {
+                var job = Jobs.EnqueueCommand<DbExactlyOnceCommand>(new DbRequest(), new() { RunAfter = runAfter });
+                ids.Add(job.Id);
+                Assert.That(db.SqlScalar<string>("SELECT State FROM BackgroundJob WHERE Id = @id", new { id = job.Id }),
+                    Is.EqualTo("Queued"));
+                Assert.That(db.SqlScalar<string>("SELECT State FROM JobSummary WHERE Id = @id", new { id = job.Id }),
+                    Is.EqualTo("Queued"));
+                db.ExecuteSql("UPDATE BackgroundJob SET State = @state, RunAfter = NULL WHERE Id = @id",
+                    new { state, id = job.Id });
+                db.ExecuteSql("UPDATE JobSummary SET State = @state WHERE Id = @id", new { state, id = job.Id });
+            }
+
+            BackgroundJobSchema.MigrateEnumValues(db);
+            Assert.That(db.SqlColumn<string>("SELECT DISTINCT State FROM BackgroundJob WHERE Id IN (@first, @second)",
+                new { first = ids[0], second = ids[1] }), Is.EquivalentTo(new[] { "Queued" }));
+        }
+        finally
+        {
+            await Jobs.StartAsync(default);
+        }
+
+        foreach (var id in ids)
+        {
+            Assert.That(await WaitForFinishedAsync(id), Is.True, $"Job {id} should complete");
+            Assert.That(GetSummary(id)!.State, Is.EqualTo(BackgroundJobState.Completed));
+        }
+        Assert.That(DbExactlyOnceCommand.ExecutedJobIds, Is.EquivalentTo(ids));
+    }
+
+    [Test]
+    public async Task Worker_starts_a_leased_job_after_explicit_enum_migration()
+    {
+        ResetState();
+        var jobRef = EnqueueDeferred();
+        BackgroundJob job;
+        using (var db = Jobs.OpenDb())
+        {
+            db.ExecuteSql("UPDATE BackgroundJob SET State = @state, LeaseToken = @token WHERE Id = @id",
+                new { state = "0", token = "existing-lease", id = jobRef.Id });
+            BackgroundJobSchema.MigrateEnumValues(db);
+            job = db.SingleById<BackgroundJob>(jobRef.Id);
+            Assert.That(job.LeaseToken, Is.EqualTo("existing-lease"));
+        }
+
+        await DbJobs.ExecuteJobAsync(job);
+
+        Assert.That(await WaitForFinishedAsync(jobRef.Id), Is.True);
+        Assert.That(GetSummary(jobRef.Id)!.State, Is.EqualTo(BackgroundJobState.Completed));
+        Assert.That(DbJobCommand.Count, Is.EqualTo(1));
+    }
+
+    [Test]
     public void Claimed_Jobs_record_their_lease()
     {
         ResetState();
@@ -927,8 +990,9 @@ public class DbJobsTests
             "A fenced archive must leave the Job for its real owner");
     }
 
-    [Test]
-    public void Expired_leases_are_reclaimed_by_another_node()
+    [TestCase("Started")]
+    [TestCase("1")]
+    public void Expired_leases_are_reclaimed_by_another_node(string storedState)
     {
         ResetState();
         var jobRef = EnqueueDeferred();
@@ -943,8 +1007,10 @@ public class DbJobsTests
             LeaseToken = "dead-token",
             LeaseExpiresAt = now.AddMinutes(-1),
             LastActivityDate = now.AddMinutes(-1),
-            State = BackgroundJobState.Started,
         }, where: x => x.Id == jobRef.Id);
+        db.ExecuteSql("UPDATE BackgroundJob SET State = @state WHERE Id = @id",
+            new { state = storedState, id = jobRef.Id });
+        BackgroundJobSchema.MigrateEnumValues(db);
 
         DbJobs.DispatchPendingJobs();
 
@@ -1319,6 +1385,32 @@ public class DbJobsTests
     }
 
     // Admin APIs
+
+    [Test]
+    public void Admin_counts_include_migrated_job_states()
+    {
+        var before = (AdminJobInfoResponse)ExecAdmin(x => x.Any(new AdminJobInfo()));
+        var batchId = Guid.NewGuid().ToString("N");
+        Jobs.CreateJobBatch(batchId, total: 2);
+        var named = EnqueueDeferred(new() { BatchId = batchId });
+        var legacy = EnqueueDeferred(new() { BatchId = batchId });
+
+        using (var db = Jobs.OpenDb())
+        {
+            var args = new { state = "0", id = legacy.Id };
+            db.ExecuteSql("UPDATE BackgroundJob SET State = @state WHERE Id = @id", args);
+            db.ExecuteSql("UPDATE JobSummary SET State = @state WHERE Id = @id", args);
+            BackgroundJobSchema.MigrateEnumValues(db);
+        }
+
+        var info = (AdminJobInfoResponse)ExecAdmin(x => x.Any(new AdminJobInfo()));
+        Assert.That(info.StateCounts[BackgroundJobState.Queued],
+            Is.EqualTo(before.StateCounts.GetValueOrDefault(BackgroundJobState.Queued) + 2));
+        var batch = (AdminGetJobBatchResponse)ExecAdmin(x => x.Any(new AdminGetJobBatch { BatchId = batchId }));
+        Assert.That(batch.StateCounts[nameof(BackgroundJobState.Queued)], Is.EqualTo(2));
+        Jobs.CancelJob(named.Id);
+        Jobs.CancelJob(legacy.Id);
+    }
 
     [Test]
     public void AdminJobInfo_reports_the_RDBMS_provider_and_its_guarantees()
@@ -2420,5 +2512,61 @@ public class DbJobsTests
             "An OnFinished step runs even though the step before it was cancelled");
         Assert.That(DbDependentCommand.ParentJob?.Id, Is.EqualTo(ship.Id));
         Assert.That(DbDependentCommand.ParentJob?.State, Is.EqualTo(BackgroundJobState.Cancelled));
+    }
+}
+
+[TestFixture]
+public class BackgroundJobEnumMigrationTests
+{
+    [TestCase(false)]
+    [TestCase(true)]
+    public void Explicit_enum_migration_normalizes_columns_and_can_be_retried(bool treatEnumAsInteger)
+    {
+        using var config = JsConfig.With(new Config { TreatEnumAsInteger = treatEnumAsInteger });
+        using var db = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider, setGlobalDialectProvider: false).Open();
+        BackgroundJobSchema.MigrateEnumValues(db);
+        db.CreateTable<BackgroundJob>();
+        db.CreateTable<JobSummary>();
+        db.CreateTable<JobAttempt>();
+        db.CreateTable<ScheduledTask>();
+        db.CreateTable<CompletedJob>();
+        db.CreateTable<FailedJob>();
+        db.Insert(new BackgroundJob { LeaseToken = "active-lease" });
+        db.Insert(new BackgroundJob { State = BackgroundJobState.Started });
+        db.Insert(new JobSummary { State = BackgroundJobState.Completed });
+        db.Insert(new JobAttempt { State = BackgroundJobState.Failed });
+        db.Insert(new ScheduledTask { Name = "legacy" });
+        db.Insert(new ScheduledTask { Name = "new", MisfirePolicy = ScheduleMisfirePolicy.Skip,
+            OverlapPolicy = ScheduleOverlapPolicy.Skip, LastRunState = BackgroundJobState.Completed });
+        db.Insert(new CompletedJob { State = BackgroundJobState.Completed });
+        db.Insert(new FailedJob { State = BackgroundJobState.Failed });
+
+        db.ExecuteSql("UPDATE BackgroundJob SET State = '0', RetryBackoff = '3', DependsOnPolicy = '1' WHERE LeaseToken IS NOT NULL");
+        db.ExecuteSql("UPDATE JobSummary SET State = '3'");
+        db.ExecuteSql("UPDATE JobAttempt SET State = '4'");
+        db.ExecuteSql("UPDATE ScheduledTask SET MisfirePolicy = '0', OverlapPolicy = '0', LastRunState = '3' WHERE Name = 'legacy'");
+        db.ExecuteSql("UPDATE CompletedJob SET State = '3', RetryBackoff = '1'");
+        db.ExecuteSql("UPDATE FailedJob SET State = '4', DependsOnPolicy = '1'");
+
+        BackgroundJobSchema.MigrateEnumValues(db);
+        BackgroundJobSchema.MigrateEnumValues(db);
+
+        Assert.That(db.SqlColumn<string>("SELECT State FROM BackgroundJob"), Is.EquivalentTo(new[] { "Queued", "Started" }));
+        Assert.That(db.SqlScalar<string>("SELECT State FROM JobSummary"), Is.EqualTo("Completed"));
+        Assert.That(db.SqlScalar<string>("SELECT State FROM JobAttempt"), Is.EqualTo("Failed"));
+        Assert.That(db.SqlScalar<string>("SELECT State FROM CompletedJob"), Is.EqualTo("Completed"));
+        Assert.That(db.SqlScalar<string>("SELECT State FROM FailedJob"), Is.EqualTo("Failed"));
+        Assert.That(db.SqlScalar<string>("SELECT RetryBackoff FROM CompletedJob"), Is.EqualTo("Linear"));
+        Assert.That(db.SqlScalar<string>("SELECT DependsOnPolicy FROM FailedJob"), Is.EqualTo("OnFinished"));
+        Assert.That(db.SqlScalar<string>("SELECT RetryBackoff FROM BackgroundJob WHERE LeaseToken = 'active-lease'"), Is.EqualTo("ExponentialJitter"));
+        Assert.That(db.SqlScalar<string>("SELECT DependsOnPolicy FROM BackgroundJob WHERE LeaseToken = 'active-lease'"), Is.EqualTo("OnFinished"));
+        Assert.That(db.Single<BackgroundJob>(x => x.State == BackgroundJobState.Queued).LeaseToken, Is.EqualTo("active-lease"));
+        Assert.That(db.Single<BackgroundJob>(x => x.State == BackgroundJobState.Started).RetryBackoff, Is.Null);
+        Assert.That(db.Single<BackgroundJob>(x => x.State == BackgroundJobState.Started).DependsOnPolicy, Is.Null);
+        Assert.That(db.SqlScalar<string>("SELECT MisfirePolicy FROM ScheduledTask WHERE Name = 'legacy'"), Is.EqualTo("RunOnce"));
+        Assert.That(db.SqlScalar<string>("SELECT OverlapPolicy FROM ScheduledTask WHERE Name = 'legacy'"), Is.EqualTo("Allow"));
+        Assert.That(db.SqlScalar<string>("SELECT LastRunState FROM ScheduledTask WHERE Name = 'legacy'"), Is.EqualTo("Completed"));
+        Assert.That(db.SqlScalar<string>("SELECT MisfirePolicy FROM ScheduledTask WHERE Name = 'new'"), Is.EqualTo("Skip"));
+        Assert.That(db.SqlScalar<string>("SELECT OverlapPolicy FROM ScheduledTask WHERE Name = 'new'"), Is.EqualTo("Skip"));
     }
 }

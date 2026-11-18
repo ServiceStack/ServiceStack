@@ -23,6 +23,7 @@ Status: implementation entry points located in this checkout; behavioral verific
 | Optional Redis key-command contracts | Opt in to GETEX/GETDEL/UNLINK without adding required members to existing provider interfaces. | [Sync](Redis/IRedisNativeKeyCommands.cs), [async](Redis/IRedisNativeKeyCommandsAsync.cs), [GETEX options](Redis/RedisGetExOptions.cs) |
 | Optional Redis hash-field expiry contracts | Expire/query/persist individual binary hash fields and preserve ordered per-field results. | [Sync](Redis/IRedisHashExpiryCommands.cs), [async](Redis/IRedisHashExpiryCommandsAsync.cs), [condition enum](Redis/RedisHashExpiryCondition.cs); standalone calls, Redis 7.4+ / compatible native servers |
 | Jobs and commands | Describe durable work, schedules, dependencies and typed command execution. | [Jobs/IBackgroundJobs.cs](Jobs/IBackgroundJobs.cs), [Jobs/BackgroundJob.cs](Jobs/BackgroundJob.cs), [Jobs/ScheduledTasks.cs](Jobs/ScheduledTasks.cs), [Commands](Commands) |
+| OrmLite enum storage annotation | Opt an enum into storing member names independently of serialization settings. | [DataAnnotations/EnumAsStringAttribute.cs](DataAnnotations/EnumAsStringAttribute.cs) |
 
 ## Public documentation
 

@@ -500,6 +500,7 @@ public class JobAttempt
     public virtual DateTime CreatedDate { get; set; }
 }
 
+[EnumAsString]
 public enum BackgroundJobState
 {
     Queued,
@@ -532,6 +533,7 @@ public class JobResult
         (BackgroundJobBase?)Queued ?? (BackgroundJobBase?)Completed ?? Failed;
 }
 
+[EnumAsString]
 public enum RetryBackoff
 {
     Fixed,
@@ -540,6 +542,7 @@ public enum RetryBackoff
     ExponentialJitter,
 }
 
+[EnumAsString]
 public enum JobDependencyPolicy
 {
     /// <summary>Only run when the Job it depends on completes successfully, otherwise it's cancelled</summary>

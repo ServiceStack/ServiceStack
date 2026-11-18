@@ -15,7 +15,7 @@ Status: implementation entry points located in this checkout; behavioral verific
 
 | Capability | Customer outcome | Implementation entry points |
 | --- | --- | --- |
-| Durable local jobs | Queue API requests and commands with retries, cancellation, expiry and status. | [BackgroundsJobFeature.cs](BackgroundsJobFeature.cs), [BackgroundJobs.cs](BackgroundJobs.cs), [BackgroundJobsWorker.cs](BackgroundJobsWorker.cs) |
+| Durable local jobs | Queue API requests and commands with retries, cancellation, expiry and status. Run the [explicit jobs enum migration](../ServiceStack.Server/FEATURES.md#upgrade-experience-for-existing-databases) once before starting workers on a database with legacy numeric-text job states. | [BackgroundsJobFeature.cs](BackgroundsJobFeature.cs), [BackgroundJobs.cs](BackgroundJobs.cs), [BackgroundJobsWorker.cs](BackgroundJobsWorker.cs) |
 | Recurring schedules | Persist schedules and apply time zones, overlap/misfire policies and administrative controls. | [BackgroundJobs.ScheduledTasks.cs](BackgroundJobs.ScheduledTasks.cs) |
 | Batches, dependencies and queues | Track grouped work and control dispatch through shared job contracts. | [BackgroundJobs.Batches.cs](BackgroundJobs.Batches.cs), [BackgroundJobs.cs](BackgroundJobs.cs) |
 | Admin APIs | Inspect, cancel, requeue and monitor local jobs and schedules. | [AdminJobServices.cs](AdminJobServices.cs) |

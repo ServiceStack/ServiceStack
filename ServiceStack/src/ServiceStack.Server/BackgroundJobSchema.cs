@@ -78,6 +78,67 @@ public static class BackgroundJobSchema
         nameof(ScheduledTask.Meta),
     ];
 
+    /// <summary>
+    /// Converts legacy numeric text in Background Jobs enum columns to member names.
+    /// Run once on the jobs database before starting workers with enum-name storage.
+    /// Apply separately to each archive database if its stored values also need to be normalized.
+    /// </summary>
+    public static void MigrateEnumValues(IDbConnection db)
+    {
+        using var transaction = db.OpenTransaction();
+        MigrateJobEnums<BackgroundJob>(db);
+        MigrateJobEnums<CompletedJob>(db);
+        MigrateJobEnums<FailedJob>(db);
+        MigrateEnumColumns<JobSummary>(db, nameof(JobSummary.State));
+        MigrateEnumColumns<JobAttempt>(db, nameof(JobAttempt.State));
+        MigrateEnumColumns<ScheduledTask>(db, nameof(ScheduledTask.LastRunState),
+            nameof(ScheduledTask.MisfirePolicy), nameof(ScheduledTask.OverlapPolicy));
+        transaction.Commit();
+    }
+
+    private static void MigrateJobEnums<T>(IDbConnection db) where T : BackgroundJobBase =>
+        MigrateEnumColumns<T>(db, nameof(BackgroundJobBase.State),
+            nameof(BackgroundJobBase.RetryBackoff), nameof(BackgroundJobBase.DependsOnPolicy));
+
+    private static void MigrateEnumColumns<T>(IDbConnection db, params string[] fieldNames)
+    {
+        if (!db.TableExists<T>())
+            return;
+
+        var dialect = db.GetDialectProvider();
+        var model = typeof(T).GetModelMetadata();
+        var table = new TableRef(model);
+        var quotedTable = dialect.GetQuotedTableName(model);
+        foreach (var fieldName in fieldNames)
+        {
+            var field = model.GetFieldDefinition(fieldName);
+            var columnName = field.Alias != null
+                ? dialect.NamingStrategy.GetAlias(field.Alias)
+                : dialect.NamingStrategy.GetColumnName(field.Name);
+            if (!db.ColumnExists(columnName, table))
+                continue;
+
+            var column = dialect.GetQuotedColumnName(field);
+            var enumType = Nullable.GetUnderlyingType(field.FieldType) ?? field.FieldType;
+            var args = new Dictionary<string, object>();
+            var oldValues = new List<string>();
+            var conversions = new List<string>();
+            foreach (var name in Enum.GetNames(enumType))
+            {
+                var index = oldValues.Count;
+                var oldParam = $"old{index}";
+                var newParam = $"name{index}";
+                args[oldParam] = ((Enum)Enum.Parse(enumType, name)).ToString("D");
+                args[newParam] = name;
+                oldValues.Add(dialect.ParamString + oldParam);
+                conversions.Add($"WHEN {dialect.ParamString}{oldParam} THEN {dialect.ParamString}{newParam}");
+            }
+
+            db.ExecuteSql($"UPDATE {quotedTable} SET {column} = CASE {column} {string.Join(" ", conversions)} END " +
+                $"WHERE {column} IN ({string.Join(", ", oldValues)})", args);
+        }
+    }
+
     public static void UpgradeMainDb(IDbConnection db)
     {
         var hasExistingJobs = db.TableExists<BackgroundJob>();

@@ -18,6 +18,7 @@ namespace ServiceStack.OrmLite.Converters
         Int,
         Char,
         EnumMember,
+        Name,
     }
     
     public class EnumConverter : StringConverter
@@ -35,9 +36,11 @@ namespace ServiceStack.OrmLite.Converters
                 ? EnumKind.Int
                 : enumType.HasAttributeCached<EnumAsCharAttribute>()
                     ? EnumKind.Char
-                    : HasEnumMembers(enumType) 
-                        ? EnumKind.EnumMember
-                        : EnumKind.String;
+                    : enumType.HasAttributeCached<EnumAsStringAttribute>()
+                        ? EnumKind.Name
+                        : HasEnumMembers(enumType)
+                            ? EnumKind.EnumMember
+                            : EnumKind.String;
 
             Dictionary<Type, EnumKind> snapshot, newCache;
             do
@@ -72,6 +75,9 @@ namespace ServiceStack.OrmLite.Converters
             if (enumKind == EnumKind.Char)
                 return DialectProvider.GetQuotedValue(ToCharValue(value).ToString());
 
+            if (enumKind == EnumKind.Name)
+                return DialectProvider.GetQuotedValue(ToEnumName(fieldType, value));
+
             var isEnumFlags = fieldType.IsEnumFlags() ||
                 (!fieldType.IsEnum && fieldType.IsNumericType()); //i.e. is real int && not Enum
 
@@ -94,6 +100,9 @@ namespace ServiceStack.OrmLite.Converters
             var enumKind = GetEnumKind(fieldType);
             if (value == null)
                 return null;
+
+            if (enumKind == EnumKind.Name)
+                return ToEnumName(fieldType, value);
 
             if (value.GetType().IsEnum)
             {
@@ -127,6 +136,11 @@ namespace ServiceStack.OrmLite.Converters
                 : value.ToString();
         }
 
+        private static string ToEnumName(Type enumType, object value) =>
+            value is string text
+                ? Enum.Parse(enumType, text, ignoreCase: true).ToString()
+                : (value.GetType().IsEnum ? value : Enum.ToObject(enumType, value)).ToString();
+
         public static char ToCharValue(object value)
         {
             var charValue = value is char c
@@ -145,8 +159,8 @@ namespace ServiceStack.OrmLite.Converters
         public static bool IsIntEnum(Type fieldType)
         {
             var isIntEnum = intEnums.GetOrAdd(fieldType, type => 
-                type.IsEnumFlags() ||
-                type.HasAttributeCached<EnumAsIntAttribute>() || 
+                type.HasAttributeCached<EnumAsIntAttribute>() ||
+                type.IsEnumFlags() && !type.HasAttributeCached<EnumAsStringAttribute>() ||
                 !type.IsEnum && 
                 type.IsNumericType()); //i.e. is real int && not Enum)
 
