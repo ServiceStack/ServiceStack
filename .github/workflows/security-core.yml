@@ -43,10 +43,10 @@ jobs:
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
-      - name: Rescan frozen core release graphs
-        run: |
-          python3 -m pip install -r build/security/requirements.txt
-          python3 build/security/security_artifacts.py scan --scan-output build/security-scans
+      - name: Scan NuGet packages for the latest GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 build/security/scan_latest.py --scan-output build/security-scans
       - name: Preserve advisory observations
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 #v4

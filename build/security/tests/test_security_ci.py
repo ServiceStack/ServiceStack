@@ -1,15 +1,19 @@
 import hashlib
+from contextlib import redirect_stderr, redirect_stdout
+import io
 import json
 from pathlib import Path
 import sys
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.error import HTTPError
 import zipfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import bundle_security
 import ci_workflows
+import scan_latest
 import security_artifacts
 
 
@@ -60,13 +64,65 @@ class WorkflowTests(unittest.TestCase):
                 self.assertNotIn('--require-clean', verify[0])
                 self.assertNotIn('continue-on-error', workflow)
         monitor = (repo / '.github/workflows/security-core.yml').read_text()
-        self.assertIn('security_artifacts.py scan ', monitor)
+        self.assertIn('scan_latest.py --scan-output build/security-scans', monitor)
         self.assertNotIn('continue-on-error', monitor)
 
     def test_missing_security_run_blocks_publish(self):
         with tempfile.TemporaryDirectory() as temporary, patch.object(ci_workflows, 'api', side_effect=[self.pack(), {'workflow_runs': []}]):
             with self.assertRaisesRegex(ValueError, 'run Package Security Evidence'):
                 ci_workflows.resolve_publish('ServiceStack/ServiceStack', 'a' * 40, Path(temporary) / 'out', '123')
+
+
+class LatestScanTests(unittest.TestCase):
+    package_url = 'https://api.nuget.org/v3-flatcontainer/servicestack/10.5.0/servicestack.10.5.0.nupkg'
+
+    def test_latest_release_scans_exact_published_package_and_preserves_findings(self):
+        package = io.BytesIO()
+        with zipfile.ZipFile(package, 'w') as archive:
+            archive.writestr('ServiceStack.nuspec', '<package><metadata><id>ServiceStack</id><version>10.5.0</version></metadata></package>')
+            archive.writestr('lib/net10.0/_._', '')
+        data = package.getvalue()
+
+        def dotnet(args, cwd):
+            if args[1] == 'restore':
+                self.assertIn('Version="[10.5.0]"', (cwd / 'Consumer.csproj').read_text())
+                library = 'servicestack/10.5.0'
+                cache = args[args.index('--packages') + 1] / library
+                cache.mkdir(parents=True)
+                (cache / 'servicestack.10.5.0.nupkg').write_bytes(data)
+                (cwd / 'obj').mkdir()
+                (cwd / 'obj/project.assets.json').write_text(json.dumps({
+                    'libraries': {'ServiceStack/10.5.0': {'path': library}},
+                    'targets': {'net10.0': {'ServiceStack/10.5.0': {'type': 'package'}}},
+                }))
+                return ''
+            self.assertIn('--include-transitive', args)
+            return json.dumps({'projects': [{'path': str(cwd), 'frameworks': [{'framework': 'net10.0',
+                'transitivePackages': [{'vulnerabilities': [{'severity': 'High'}]}]}]}]})
+
+        with tempfile.TemporaryDirectory() as temporary, redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()) as errors:
+            argv = ['scan_latest.py', '--package', 'ServiceStack', '--scan-output', temporary]
+            with patch.object(sys, 'argv', argv), patch.object(security_artifacts, 'run', side_effect=dotnet), \
+                    patch.object(scan_latest.urllib.request, 'urlopen', side_effect=[io.BytesIO(b'{"tag_name":"v10.5"}'), io.BytesIO(data)]) as fetch:
+                self.assertEqual(scan_latest.main(), 1)
+            self.assertEqual(fetch.call_args_list[0].args[0].full_url, scan_latest.LATEST_RELEASE)
+            self.assertEqual(fetch.call_args_list[1].args[0], self.package_url)
+            report, = (Path(temporary) / 'ServiceStack/10.5.0').glob('*.json')
+            snapshot = json.loads(report.read_text())
+            self.assertEqual(snapshot['packageSha256'], hashlib.sha256(data).hexdigest())
+            self.assertEqual(snapshot['audit']['projects'][0]['path'], 'ServiceStack')
+            self.assertIn('advisories require review', errors.getvalue())
+
+    def test_missing_published_version_fails_without_falling_back(self):
+        missing = HTTPError(self.package_url, 404, 'Not Found', {}, None)
+        argv = ['scan_latest.py', '--package', 'ServiceStack']
+        with patch.object(sys, 'argv', argv), patch.object(scan_latest.urllib.request, 'urlopen',
+                side_effect=[io.BytesIO(b'{"tag_name":"v10.5"}'), missing]) as fetch, \
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()) as errors:
+            self.assertEqual(scan_latest.main(), 1)
+        self.assertEqual(fetch.call_count, 2)
+        self.assertEqual(fetch.call_args.args[0], self.package_url)
+        self.assertIn('ServiceStack 10.5.0: HTTP Error 404', errors.getvalue())
 
 
 class BundleTests(unittest.TestCase):

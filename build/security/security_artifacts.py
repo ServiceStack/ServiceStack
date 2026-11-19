@@ -345,7 +345,7 @@ def render_vex(bom, decisions, created):
     return vex
 
 
-def configurations(repo, package_config=None):
+def configurations(repo, package_config=None, packages=None):
     config = read_json(package_config or HERE / 'packages.json')
     if config.get('schemaVersion') != 1:
         raise ValueError('Unsupported package configuration')
@@ -365,6 +365,11 @@ def configurations(repo, package_config=None):
         ids.add(name.lower())
         projects.add(directory)
         items.append({**item, 'directory': directory})
+    if packages:
+        selected = {name.lower() for name in packages}
+        if selected - ids:
+            raise ValueError('Unknown configured package selection')
+        items = [item for item in items if item['id'].lower() in selected]
     return items
 
 
@@ -465,6 +470,35 @@ def generate_packages(items, args):
             initialize_security(item, args)
 
 
+def restore_package_project(info, project, package_directory, cache):
+    project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>'
+            + '<TargetFrameworks>' + ';'.join(info['frameworks']) + '</TargetFrameworks>'
+            + '<AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>'
+            + '<NuGetAudit>true</NuGetAudit><NuGetAuditMode>all</NuGetAuditMode>'
+            + '<RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>'
+            + '</PropertyGroup><ItemGroup><PackageReference Include="' + escape(info['id'])
+            + '" Version="[' + escape(info['version']) + ']" /></ItemGroup></Project>')
+    # Isolate from machine/global feeds and never execute package build targets.
+    config = project.with_name('NuGet.Config')
+    config.write_text('<configuration><packageSources><clear/><add key="release" value="'
+            + escape(str(package_directory.resolve()), {'"': '&quot;'})
+            + '"/><add key="nuget.org" value="https://api.nuget.org/v3/index.json"/></packageSources>'
+            + '<auditSources><clear/><add key="nuget.org" value="https://data.nuget.org/v3/index.json"/></auditSources></configuration>')
+    restore_log = run(['dotnet', 'restore', project, '--configfile', config, '--packages', cache, '--force-evaluate'], cwd=project.parent)
+    if re.search(r'NU190[05]', restore_log):
+        raise ValueError('Vulnerability source unavailable; restore audit coverage is incomplete')
+    return read_json(project.parent / 'obj/project.assets.json')
+
+
+def audit_project(project, package):
+    audit = json.loads(run(['dotnet', 'package', 'list', '--project', project, '--no-restore', '--include-transitive', '--vulnerable', '--format', 'json'], cwd=project.parent))
+    if any(log.get('level', '').lower() == 'error' for log in audit.get('logs', [])):
+        raise ValueError('Vulnerability scan did not complete successfully')
+    for entry in audit.get('projects', []):
+        entry['path'] = package
+    return audit
+
+
 def generate_one(item, archive, info, args, tool, created):
     release = output_directory(item, args) / 'security' / 'releases' / info['version']
     if release.exists():
@@ -473,24 +507,8 @@ def generate_one(item, archive, info, args, tool, created):
     with tempfile.TemporaryDirectory(prefix='servicestack-sbom-') as temporary:
         temporary = Path(temporary)
         project = temporary / 'Consumer.csproj'
-        project.write_text('<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup>'
-            + '<TargetFrameworks>' + ';'.join(info['frameworks']) + '</TargetFrameworks>'
-            + '<AutomaticallyUseReferenceAssemblyPackages>false</AutomaticallyUseReferenceAssemblyPackages>'
-            + '<NuGetAudit>true</NuGetAudit><NuGetAuditMode>all</NuGetAuditMode>'
-            + '<RestoreEnablePackagePruning>false</RestoreEnablePackagePruning>'
-            + '</PropertyGroup><ItemGroup><PackageReference Include="' + escape(info['id'])
-            + '" Version="[' + escape(info['version']) + ']" /></ItemGroup></Project>')
-        # Isolate from machine/global feeds and never execute package build targets.
-        config = temporary / 'NuGet.Config'
-        config.write_text('<configuration><packageSources><clear/><add key="release" value="'
-            + escape(str(args.package_directory.resolve()), {'"': '&quot;'})
-            + '"/><add key="nuget.org" value="https://api.nuget.org/v3/index.json"/></packageSources>'
-            + '<auditSources><clear/><add key="nuget.org" value="https://data.nuget.org/v3/index.json"/></auditSources></configuration>')
         cache = temporary / 'packages'
-        restore_log = run(['dotnet', 'restore', project, '--configfile', config, '--packages', cache, '--force-evaluate'], cwd=temporary)
-        if re.search(r'NU190[05]', restore_log):
-            raise ValueError('Vulnerability source unavailable; restore audit coverage is incomplete')
-        assets = read_json(temporary / 'obj/project.assets.json')
+        assets = restore_package_project(info, project, args.package_directory, cache)
         documents = {}
         for tfm in info['frameworks']:
             documents[tfm] = generate_framework_bom(tool, project, tfm, temporary, cache)
@@ -510,12 +528,7 @@ def generate_one(item, archive, info, args, tool, created):
         if content:
             bom['metadata']['component']['properties'].append(prop('framework-source', info['frameworkSource']))
         validate_bom(bom)
-        audit = json.loads(run(['dotnet', 'package', 'list', '--project', project, '--no-restore', '--include-transitive', '--vulnerable', '--format', 'json'], cwd=temporary))
-        # Strip paths before publishing the restore-based vulnerability observation.
-        for entry in audit.get('projects', []):
-            entry['path'] = info['id']
-        if any(log.get('level', '').lower() == 'error' for log in audit.get('logs', [])):
-            raise ValueError('Vulnerability scan did not complete successfully')
+        audit = audit_project(project, info['id'])
         resolution = {'frameworks': info['frameworks'], 'declaredDependencyGroups': info['dependencyGroups'],
                       'targets': {target: {name: node.get('dependencies', {}) for name, node in sorted(nodes.items()) if node.get('type') == 'package'} for target, nodes in sorted(assets['targets'].items())}}
         decisions_path = item['directory'] / 'security/vex-decisions.json'
@@ -606,6 +619,19 @@ def report_advisories(release, manifest):
     return len(findings)
 
 
+def record_scan(audit, manifest, created, folder):
+    snapshot = {'package': manifest['package'], 'version': manifest['version'], 'scannedAt': created, 'packageSha256': manifest['packageSha256'], 'audit': audit,
+                'limitations': manifest['limitations']}
+    folder.mkdir(parents=True, exist_ok=True)
+    destination = folder / (created.replace(':', '').replace('-', '') + '.json')
+    with destination.open('xb') as output:
+        output.write(encoded(snapshot))
+    findings = [p for entry in audit.get('projects', []) for framework in entry.get('frameworks', []) for kind in ('topLevelPackages', 'transitivePackages') for p in framework.get(kind, []) if p.get('vulnerabilities')]
+    print(f'{manifest["package"]} {manifest["version"]}: scan recorded, {len(findings)} advisory entries')
+    if findings:
+        raise ValueError(f'New/current advisories require review: {destination}')
+
+
 def scan_release(item, release, args):
     """Rescan exact recorded package versions, refusing a silently changed graph."""
     manifest = verify_release(release)
@@ -640,22 +666,9 @@ def scan_release(item, release, args):
         cached = next((Path(folder) / library['path'] / (manifest['package'].lower() + '.' + manifest['version'].lower() + '.nupkg') for folder in restored['packageFolders'] if (Path(folder) / library['path']).exists()), None)
         if cached is None or digest(cached) != manifest['packageSha256']:
             raise ValueError('Public root package does not match recorded artifact; private builds need their original feed')
-        audit = json.loads(run(['dotnet', 'package', 'list', '--project', project, '--no-restore', '--include-transitive', '--vulnerable', '--format', 'json'], cwd=temporary))
-        if any(x.get('level', '').lower() == 'error' for x in audit.get('logs', [])):
-            raise ValueError('Vulnerability scan failed')
-        for entry in audit.get('projects', []):
-            entry['path'] = manifest['package']
-        snapshot = {'package': manifest['package'], 'version': manifest['version'], 'scannedAt': created, 'packageSha256': manifest['packageSha256'], 'audit': audit,
-                    'limitations': manifest['limitations']}
-        folder = args.scan_output / manifest['package'] / manifest['version'] if args.scan_output else release / 'scans'
-        folder.mkdir(parents=True, exist_ok=True)
-        destination = folder / (created.replace(':', '').replace('-', '') + '.json')
-        with destination.open('xb') as output:
-            output.write(encoded(snapshot))
-        findings = [p for entry in audit.get('projects', []) for framework in entry.get('frameworks', []) for kind in ('topLevelPackages', 'transitivePackages') for p in framework.get(kind, []) if p.get('vulnerabilities')]
-        print(f'{manifest["package"]} {manifest["version"]}: scan recorded, {len(findings)} advisory entries')
-        if findings:
-            raise ValueError(f'New/current advisories require review: {destination}')
+        audit = audit_project(project, manifest['package'])
+    folder = args.scan_output / manifest['package'] / manifest['version'] if args.scan_output else release / 'scans'
+    record_scan(audit, manifest, created, folder)
 
 
 def main():
@@ -673,12 +686,7 @@ def main():
     parser.add_argument('--report-advisories', action='store_true', help='Report recorded dependency advisories as warnings after successful verification')
     args = parser.parse_args()
     try:
-        items = configurations(args.repo.resolve(), args.package_config)
-        if args.package:
-            selected = {x.lower() for x in args.package}
-            if selected - {x['id'].lower() for x in items}:
-                raise ValueError('Unknown configured package selection')
-            items = [x for x in items if x['id'].lower() in selected]
+        items = configurations(args.repo.resolve(), args.package_config, args.package)
         if args.release and not re.fullmatch(r'[A-Za-z0-9_.+-]+', args.release):
             raise ValueError('Unsafe release version')
         if args.command == 'scan':

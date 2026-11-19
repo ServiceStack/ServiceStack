@@ -103,14 +103,19 @@ Automatic completion/manual triggers require workflow definitions on the default
 
 ## Advisory monitoring
 
+The daily and manual `security-core.yml` scans use GitHub's latest published stable release to select the version for all configured packages. A tag such as `v10.5` selects exact version `10.5.0` on NuGet.org. The script checks the downloaded archive, restores a consumer graph for each packaged target framework and queries current managed dependency advisories. A missing package version or incomplete audit fails the scan.
+
+Run the same scan locally with Python 3.10+, the .NET 10 SDK and network access to GitHub and NuGet.org.
+
+    python3 build/security/scan_latest.py
+    python3 build/security/scan_latest.py --package ServiceStack.OrmLite.Oracle
+
+Local reports go to `.build/security-scans/` by default. Use `--scan-output <directory>` to choose another location. The Actions job uploads reports even when an advisory fails the scan. The monitoring job runs independently of NuGet publication.
+
+Historical scans are available through the frozen evidence scanner. It verifies the public archive hash and restores the recorded graph before querying current advisories.
+
     python3 build/security/security_artifacts.py scan
     python3 build/security/security_artifacts.py scan --release 10.4.0 --package ServiceStack.Common
-
-The daily/manual `security-core.yml` scan is independent of the publication workflows. It deliberately fails when retained release graphs match advisories, preserving the review signal; that failure does not by itself gate NuGet publication. A fixed application dependency does not rewrite a historical release graph or clear its recorded findings.
-
-Scan checks every retained release by default. It restores the EXACT recorded versions, confirms the graph has not changed and verifies the public root archive hash before querying current NuGet advisories. It never overwrites the release SBOM. Private rebuilds need their original feed; the first implementation refuses them rather than substituting a public package.
-
-Use --scan-output <directory> for ephemeral scheduled results. security-core.yml runs tests/schema checks on relevant changes and rescans retained core releases daily and on manual dispatch. It uploads fresh reports even if a finding causes failure. GitHub workflow failure provides the review signal; no automatic public vulnerability disclosure or VEX assertion occurs.
 
 Check native payload/engine and first-party code advisories separately. A clean NuGet result only means no advisory matches in that data source for the resolved managed package baseline.
 
