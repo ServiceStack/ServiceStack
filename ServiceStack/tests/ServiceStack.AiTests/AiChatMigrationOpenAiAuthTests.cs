@@ -98,6 +98,25 @@ public partial class AiChatMigrationOpenAiAuthTests
         var path=f.Ext.Credentials.PathFor("alice");if(!OperatingSystem.IsWindows())Assert.That(File.GetUnixFileMode(path),Is.EqualTo(UnixFileMode.UserRead|UnixFileMode.UserWrite));Assert.That(Directory.GetFiles(Path.GetDirectoryName(path)!,"*.tmp"),Is.Empty);
         var host=f.Ext.Credentials.HostId();f.Connect();Assert.That(f.Authorization["client_id"],Is.EqualTo("issued-client"));Assert.That(f.Authorization.ContainsKey("agent_name_hint"),Is.False);Assert.That(f.Authorization.ContainsKey("id_token_hint"),Is.False);Assert.That(f.Authorization["ext_agent_host_id"],Is.EqualTo(host));
     }
+    [Test]
+    public async Task Disconnect_clears_registration_and_allows_switching_to_different_account()
+    {
+        using var f=new Fixture();await f.Grant();
+        var legacyRegistration=Path.Combine(Path.GetDirectoryName(f.Ext.Credentials.PathFor("alice"))!,"openai_registration.json");
+        File.WriteAllText(legacyRegistration,"{\"client_id\":\"issued-client\",\"subject\":\"account-alice\"}");
+        await f.Host.SendAsync("POST","/ext/openai_auth/disconnect","alice",new JsonObject());
+        Assert.That(f.Ext.Credentials.Load("alice"),Is.Null);
+        Assert.That(File.Exists(legacyRegistration),Is.False);
+        f.Connect();
+        Assert.That(f.Authorization["client_id"],Is.EqualTo("dynamic_agent_client"));
+        Assert.That(f.Authorization["agent_name_hint"],Is.EqualTo(f.Ext.Options.AgentName));
+        f.ChangeClaims=c=>{c["sub"]="account-charlie";c["aud"]="other-client";c["email"]="charlie@example.test";};
+        await f.Ext.Flows.CallbackAsync("alice",f.Callback(client:"other-client"),CancellationToken.None);
+        var switched=f.Ext.Credentials.Load("alice")!;
+        Assert.That(switched.GetString("subject"),Is.EqualTo("account-charlie"));
+        Assert.That(switched.GetString("client_id"),Is.EqualTo("other-client"));
+        Assert.That(switched.GetObject("account").GetString("email"),Is.EqualTo("charlie@example.test"));
+    }
     [TestCase("wrong-state"),TestCase("other-user"),TestCase("wrong-host"),TestCase("wrong-port"),TestCase("wrong-path"),TestCase("fragment"),TestCase("duplicate"),TestCase("bare-code"),TestCase("expired")]
     public void Invalid_callback_is_rejected_before_token_exchange(string kind)
     {

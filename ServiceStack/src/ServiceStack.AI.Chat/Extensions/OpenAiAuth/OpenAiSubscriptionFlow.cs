@@ -34,9 +34,12 @@ public sealed class OpenAiSubscriptionFlow(OpenAiSubscriptionOptions options, Op
         var state = store.State(user); Pending flow;
         lock (state.Gate)
         {
-            var credentials = store.Load(user); var client = credentials.GetString("client_id") ?? options.ClientId;
+            var credentials = store.Load(user);
+            var sameIssuer = credentials.GetString("issuer") == options.Issuer;
+            var subject = sameIssuer ? credentials.GetString("subject") : null;
+            var client = sameIssuer && !string.IsNullOrEmpty(subject) ? credentials.GetString("client_id") ?? options.ClientId : options.ClientId;
             state.Generation++;
-            flow = new(Random(), Random(), Random(), client, redirectUri, options.Clock.GetUtcNow(), state.Generation, OpenAiSubscriptionStore.Fingerprint(credentials), credentials.GetString("subject"), automatic, returnUrl);
+            flow = new(Random(), Random(), Random(), client, redirectUri, options.Clock.GetUtcNow(), state.Generation, OpenAiSubscriptionStore.Fingerprint(credentials), subject, automatic, returnUrl);
         }
         lock (flowsGate)
         {

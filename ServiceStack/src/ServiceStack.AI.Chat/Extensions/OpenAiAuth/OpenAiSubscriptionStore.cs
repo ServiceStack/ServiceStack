@@ -48,6 +48,8 @@ public sealed class OpenAiSubscriptionStore(ExtensionContext ctx)
         var state = State(user); lock (state.Gate)
         {
             state.Generation++; var path = PathFor(user); CheckPath(path); if (File.Exists(path)) File.Delete(path);
+            var registration = Path.Combine(Path.GetDirectoryName(path)!, "openai_registration.json");
+            CheckPath(registration); if (File.Exists(registration)) File.Delete(registration);
         }
     }
     public string HostId()
