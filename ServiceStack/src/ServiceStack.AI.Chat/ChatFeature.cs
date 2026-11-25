@@ -147,11 +147,9 @@ public partial class ChatFeature : IPlugin, Model.IHasStringId, IConfigureServic
         ["@ai-sdk/cerebras"] = () => new CerebrasProvider(),
         ["@ai-sdk/mistral"] = () => new MistralProvider(),
         ["@ai-sdk/anthropic"] = () => new AnthropicProvider(),
-        // upstream's -cli variant shells out to a local `claude` binary to reuse a Claude Code
-        // subscription, which doesn't apply to a web host — use the API provider for both so the
-        // bundled `anthropic` config works with ANTHROPIC_API_KEY out of the box
-        ["@ai-sdk/anthropic-cli"] = () => new AnthropicProvider(),
+        ["@ai-sdk/anthropic-cli"] = () => new AnthropicCliProvider(),
         ["@ai-sdk/google"] = () => new GoogleProvider(),
+        ["@ai-sdk/google-cli"] = () => new GoogleCliProvider(),
         ["@openrouter/ai-sdk-provider"] = () => new OpenRouterProvider(),
         ["@fireworks/ai-sdk-provider"] = () => new FireworksProvider(),
         ["llms-sdk-provider"] = () => new LlmsPyProvider(),

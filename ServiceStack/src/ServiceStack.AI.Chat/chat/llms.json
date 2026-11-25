@@ -532,6 +532,7 @@
         },
         "google": {
             "enabled": true,
+            "npm": "@ai-sdk/google-cli",
             "safety_settings": [
                 {
                     "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
