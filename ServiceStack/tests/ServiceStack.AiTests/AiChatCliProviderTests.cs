@@ -120,4 +120,84 @@ public class AiChatCliProviderTests
         Assert.That(res.GetObject("metadata")!.GetLong("duration"), Is.EqualTo(1500));
         Assert.That(res.GetObject("metadata")!.GetString("pricing"), Is.EqualTo("0/0"));
     }
+
+    [Test]
+    public void GoogleCliProvider_materializes_image_and_audio_attachments()
+    {
+        var dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "test-agy-media-" + Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(dir);
+        try
+        {
+            var png = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==");
+            var wav = System.Text.Encoding.ASCII.GetBytes("RIFF\x24\0\0\0WAVEfmt ");
+            var messages = new JsonArray(
+                new JsonObject
+                {
+                    ["role"] = "user",
+                    ["content"] = new JsonArray(
+                        new JsonObject { ["type"] = "text", ["text"] = "Check media" },
+                        new JsonObject { ["type"] = "image_url", ["image_url"] = new JsonObject { ["url"] = "data:image/png;base64," + Convert.ToBase64String(png) } },
+                        new JsonObject { ["type"] = "input_audio", ["input_audio"] = new JsonObject { ["data"] = Convert.ToBase64String(wav), ["format"] = "wav" } }
+                    )
+                }
+            );
+
+            var prompt = GoogleCliProvider.BuildPrompt(messages, dir);
+            Assert.That(prompt, Does.Contain("[Attached image: attachment_1.png (image/png)]"));
+            Assert.That(prompt, Does.Contain("[Attached audio: attachment_2.wav (audio/wav)]"));
+            Assert.That(prompt, Does.Contain("read_file"));
+            Assert.That(System.IO.File.ReadAllBytes(System.IO.Path.Combine(dir, "attachment_1.png")), Is.EqualTo(png));
+            Assert.That(System.IO.File.ReadAllBytes(System.IO.Path.Combine(dir, "attachment_2.wav")), Is.EqualTo(wav));
+        }
+        finally
+        {
+            System.IO.Directory.Delete(dir, true);
+        }
+    }
+
+    [Test]
+    public void AnthropicCliProvider_advertises_media_modalities_and_materializes_audio()
+    {
+        var provider = new TestAnthropicCliProvider("/usr/local/bin/claude");
+        provider.Populate(new JsonObject
+        {
+            ["id"] = "anthropic",
+            ["name"] = "Anthropic",
+            ["models"] = new JsonObject
+            {
+                ["claude-sonnet"] = new JsonObject
+                {
+                    ["id"] = "claude-sonnet",
+                    ["name"] = "Claude Sonnet",
+                    ["modalities"] = new JsonObject { ["input"] = new JsonArray("text") }
+                }
+            }
+        });
+        var inputs = provider.Models["claude-sonnet"].GetObject("modalities")!.GetArray("input")!;
+        Assert.That(inputs.ToJsonString(), Does.Contain("\"image\"").And.Contain("\"audio\""));
+
+        var dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "test-claude-audio-" + Guid.NewGuid().ToString("N"));
+        System.IO.Directory.CreateDirectory(dir);
+        try
+        {
+            var wav = System.Text.Encoding.ASCII.GetBytes("RIFF\x24\0\0\0WAVEfmt ");
+            var messages = new JsonArray(
+                new JsonObject
+                {
+                    ["role"] = "user",
+                    ["content"] = new JsonArray(
+                        new JsonObject { ["type"] = "input_audio", ["input_audio"] = new JsonObject { ["data"] = Convert.ToBase64String(wav), ["format"] = "wav" } }
+                    )
+                }
+            );
+            var files = AnthropicCliProvider.MaterializeAudioAttachments(messages, dir);
+            Assert.That(files, Has.Count.EqualTo(1));
+            Assert.That(files[0], Is.EqualTo(("attachment_1.wav", "audio/wav")));
+            Assert.That(System.IO.File.ReadAllBytes(System.IO.Path.Combine(dir, "attachment_1.wav")), Is.EqualTo(wav));
+        }
+        finally
+        {
+            System.IO.Directory.Delete(dir, true);
+        }
+    }
 }

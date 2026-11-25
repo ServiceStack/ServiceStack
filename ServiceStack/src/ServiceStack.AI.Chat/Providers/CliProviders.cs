@@ -171,7 +171,7 @@ public class GoogleCliProvider : GoogleProvider
                 info["tool_call"] = false;
                 info["modalities"] = new JsonObject
                 {
-                    ["input"] = new JsonArray("text"),
+                    ["input"] = new JsonArray("text", "image", "audio", "pdf"),
                     ["output"] = new JsonArray("text"),
                 };
                 info["cost"] = new JsonObject { ["input"] = 0, ["output"] = 0 };
@@ -210,7 +210,54 @@ public class GoogleCliProvider : GoogleProvider
         return candidate.StartsWith("gemini-", StringComparison.OrdinalIgnoreCase) ? candidate : null;
     }
 
-    static string ExtractText(JsonNode? content)
+    static string MimeToExt(string? mimeType, string defaultExt = "bin")
+    {
+        if (string.IsNullOrWhiteSpace(mimeType))
+            return defaultExt;
+        var semi = mimeType.IndexOf(';');
+        var clean = (semi >= 0 ? mimeType[..semi] : mimeType).Trim().ToLowerInvariant();
+        var slash = clean.LastIndexOf('/');
+        var sub = slash >= 0 ? clean[(slash + 1)..] : clean;
+        return sub switch
+        {
+            "jpeg" => "jpg",
+            "svg+xml" => "svg",
+            "mpeg" => "mp3",
+            "x-wav" or "wave" => "wav",
+            "x-m4a" or "mp4" => "m4a",
+            "plain" => "txt",
+            _ => Regex.Replace(sub, "[^a-z0-9]", "") is { Length: > 0 } ext ? ext : defaultExt,
+        };
+    }
+
+    internal static (byte[]? Bytes, string Mime) DecodeDataUri(string? value, string defaultMime = "application/octet-stream")
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return (null, defaultMime);
+        var b64 = value;
+        var mime = defaultMime;
+        if (value.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+        {
+            var idx = value.IndexOf(";base64,", StringComparison.OrdinalIgnoreCase);
+            if (idx > 0)
+            {
+                var header = value[5..idx].Trim();
+                if (header.Length > 0)
+                    mime = header;
+                b64 = value[(idx + 8)..];
+            }
+        }
+        try
+        {
+            return (Convert.FromBase64String(b64), mime);
+        }
+        catch
+        {
+            return (null, mime);
+        }
+    }
+
+    static string ExtractContent(JsonNode? content, string? workdir, List<string> attachments)
     {
         if (content is JsonValue v && v.TryGetValue<string>(out var s))
             return s;
@@ -227,7 +274,48 @@ public class GoogleCliProvider : GoogleProvider
                 {
                     var type = obj.GetString("type");
                     if (type is "text" or "input_text" && obj.GetString("text") is { Length: > 0 } t)
+                    {
                         parts.Add(t);
+                    }
+                    else if (type == "image_url" && obj.GetObject("image_url") is { } img && workdir != null)
+                    {
+                        var (raw, mime) = DecodeDataUri(img.GetString("url"), "image/png");
+                        if (raw != null)
+                        {
+                            var name = $"attachment_{attachments.Count + 1}.{MimeToExt(mime, "png")}";
+                            File.WriteAllBytes(Path.Combine(workdir, name), raw);
+                            attachments.Add(name);
+                            parts.Add($"[Attached image: {name} ({mime})]");
+                        }
+                    }
+                    else if (type == "input_audio" && obj.GetObject("input_audio") is { } audio && workdir != null)
+                    {
+                        var fmt = (audio.GetString("format") ?? "wav").Trim().TrimStart('.').ToLowerInvariant();
+                        var (raw, mime) = DecodeDataUri(audio.GetString("data"), $"audio/{(fmt.Length > 0 ? fmt : "wav")}");
+                        if (raw != null)
+                        {
+                            var name = $"attachment_{attachments.Count + 1}.{MimeToExt(mime, fmt.Length > 0 ? fmt : "wav")}";
+                            File.WriteAllBytes(Path.Combine(workdir, name), raw);
+                            attachments.Add(name);
+                            parts.Add($"[Attached audio: {name} ({mime})]");
+                        }
+                    }
+                    else if (type == "file" && obj.GetObject("file") is { } fileObj && workdir != null)
+                    {
+                        var (raw, mime) = DecodeDataUri(fileObj.GetString("file_data"), "application/octet-stream");
+                        if (raw != null)
+                        {
+                            var orig = fileObj.GetString("filename") ?? "";
+                            var dot = orig.LastIndexOf('.');
+                            var ext = dot >= 0
+                                ? Regex.Replace(orig[(dot + 1)..].ToLowerInvariant(), "[^a-z0-9]", "")
+                                : MimeToExt(mime, "bin");
+                            var name = $"attachment_{attachments.Count + 1}.{(ext.Length > 0 ? ext : "bin")}";
+                            File.WriteAllBytes(Path.Combine(workdir, name), raw);
+                            attachments.Add(name);
+                            parts.Add($"[Attached file: {name} ({mime})]");
+                        }
+                    }
                 }
             }
             return string.Join("\n", parts);
@@ -235,16 +323,17 @@ public class GoogleCliProvider : GoogleProvider
         return content?.ToString() ?? "";
     }
 
-    public static string BuildPrompt(JsonArray? messages)
+    public static string BuildPrompt(JsonArray? messages, string? workdir = null)
     {
         var systemParts = new List<string>();
         var conversation = new List<(string Role, string Text)>();
+        var attachments = new List<string>();
         foreach (var node in messages ?? [])
         {
             if (node is not JsonObject msg)
                 continue;
             var role = msg.GetString("role") ?? "user";
-            var text = ExtractText(msg["content"]).Trim();
+            var text = ExtractContent(msg["content"], workdir, attachments).Trim();
             if (text.Length == 0)
                 continue;
             if (role is "system" or "developer")
@@ -284,6 +373,11 @@ public class GoogleCliProvider : GoogleProvider
                 sections.Add(string.Join("\n\n", conversation.Skip(lastUserIdx + 1).Select(x => $"[{x.Role}]: {x.Text}")));
         }
 
+        if (attachments.Count > 0)
+        {
+            sections.Add($"Attached files are saved in the current working directory ({string.Join(", ", attachments)}). Inspect them with read_file before answering.");
+        }
+
         return string.Join("\n\n", sections);
     }
 
@@ -311,7 +405,6 @@ public class GoogleCliProvider : GoogleProvider
         chat["model"] = model;
         chat = await ProcessChatAsync(chat, Id).ConfigAwait();
 
-        var prompt = BuildPrompt(chat.GetArray("messages"));
         var effort = ResolveEffort(chat, model, ReasoningEffort);
 
         var startInfo = new ProcessStartInfo
@@ -349,14 +442,6 @@ public class GoogleCliProvider : GoogleProvider
             startInfo.ArgumentList.Add(schema.ToJsonString(ChatJson.Options));
         }
 
-        var jsonInput = new JsonObject
-        {
-            ["event"] = "user",
-            ["message"] = new JsonObject { ["content"] = prompt },
-        }.ToJsonString(ChatJson.Options) + "\n";
-
-        Log.LogInformation("Running: agy --input-format stream-json --output-format stream-json --model {Model}", model);
-
         var startedAt = DateTimeOffset.UtcNow;
         var writer = context.NoStore ? new StreamCheckpointWriter(null, null) : CreateStreamWriter(context);
         var content = new StringBuilder();
@@ -368,6 +453,15 @@ public class GoogleCliProvider : GoogleProvider
 
         try
         {
+            var prompt = BuildPrompt(chat.GetArray("messages"), workdir);
+            var jsonInput = new JsonObject
+            {
+                ["event"] = "user",
+                ["message"] = new JsonObject { ["content"] = prompt },
+            }.ToJsonString(ChatJson.Options) + "\n";
+
+            Log.LogInformation("Running: agy --input-format stream-json --output-format stream-json --model {Model}", model);
+
             using var process = new Process { StartInfo = startInfo };
             process.Start();
             try
@@ -522,8 +616,46 @@ public class AnthropicCliProvider : AnthropicProvider
         if (UseCli)
         {
             foreach (var model in Models.Values)
+            {
                 model["tool_call"] = false;
+                var mods = model.GetObject("modalities") ?? new JsonObject();
+                var inputs = mods.GetArray("input")?.Select(x => x?.GetValue<string>()).Where(x => x != null).Cast<string>().ToList()
+                    ?? ["text"];
+                foreach (var m in new[] { "image", "audio" })
+                {
+                    if (!inputs.Contains(m))
+                        inputs.Add(m);
+                }
+                mods["input"] = new JsonArray(inputs.Select(x => (JsonNode)JsonValue.Create(x)!).ToArray());
+                model["modalities"] = mods;
+            }
         }
+    }
+
+    public static List<(string Name, string Mime)> MaterializeAudioAttachments(JsonArray? messages, string workdir)
+    {
+        var attachments = new List<(string, string)>();
+        foreach (var node in messages ?? [])
+        {
+            if (node is not JsonObject msg || msg["content"] is not JsonArray arr)
+                continue;
+            foreach (var item in arr)
+            {
+                if (item is not JsonObject obj || obj.GetString("type") != "input_audio")
+                    continue;
+                if (obj.GetObject("input_audio") is not { } audio)
+                    continue;
+                var fmt = (audio.GetString("format") ?? "wav").Trim().TrimStart('.').ToLowerInvariant();
+                var (raw, mime) = GoogleCliProvider.DecodeDataUri(audio.GetString("data"), $"audio/{(fmt.Length > 0 ? fmt : "wav")}");
+                if (raw == null)
+                    continue;
+                var ext = Regex.Replace(fmt, "[^a-z0-9]", "");
+                var name = $"attachment_{attachments.Count + 1}.{(ext.Length > 0 ? ext : "wav")}";
+                File.WriteAllBytes(Path.Combine(workdir, name), raw);
+                attachments.Add((name, mime));
+            }
+        }
+        return attachments;
     }
 
     public override string? Validate()
@@ -641,56 +773,76 @@ public class AnthropicCliProvider : AnthropicProvider
             startInfo.ArgumentList.Add(systemPrompt);
         }
 
-        var jsonInput = streamJsonMessage.ToJsonString(ChatJson.Options);
         Log.LogInformation("Running: claude -p --input-format stream-json --output-format stream-json --model {Model}", model);
 
         var startedAt = DateTimeOffset.UtcNow;
-        using var process = new Process { StartInfo = startInfo };
-        process.Start();
+        var workdir = Path.Combine(Path.GetTempPath(), "llms-claude-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(workdir);
         try
         {
-            await process.StandardInput.WriteAsync(jsonInput).ConfigAwait();
-            await process.StandardInput.FlushAsync().ConfigAwait();
-            process.StandardInput.Close();
-
-            var stdoutTask = process.StandardOutput.ReadToEndAsync(context.CancellationToken);
-            var stderrTask = process.StandardError.ReadToEndAsync(context.CancellationToken);
-            await process.WaitForExitAsync(context.CancellationToken).ConfigAwait();
-
-            var stdout = await stdoutTask.ConfigAwait();
-            var stderr = (await stderrTask.ConfigAwait()).Trim();
-
-            if (process.ExitCode != 0)
+            var audioFiles = MaterializeAudioAttachments(chat.GetArray("messages"), workdir);
+            if (audioFiles.Count > 0)
             {
-                var err = stderr.Length > 0 ? stderr : stdout.Trim();
-                throw new InvalidOperationException($"claude CLI error: {(err.Length > 0 ? err : $"claude exited with code {process.ExitCode}")}");
+                var note = "Attached audio file(s) saved in the current working directory: "
+                    + string.Join(", ", audioFiles.Select(a => $"{a.Name} ({a.Mime})"))
+                    + ".";
+                contentBlocks.Add(new JsonObject { ["type"] = "text", ["text"] = note });
+                startInfo.WorkingDirectory = workdir;
             }
 
-            JsonObject? cliResponse = null;
-            foreach (var rawLine in stdout.Split('\n'))
+            var jsonInput = streamJsonMessage.ToJsonString(ChatJson.Options);
+
+            using var process = new Process { StartInfo = startInfo };
+            process.Start();
+            try
             {
-                var line = rawLine.Trim();
-                if (line.Length == 0)
-                    continue;
-                if (line.EndsWith("\x1b[<u", StringComparison.Ordinal))
-                    line = line[..^4].Trim();
-                var obj = ChatJson.TryParseObject(line);
-                if (obj?.GetString("type") == "result")
+                await process.StandardInput.WriteAsync(jsonInput).ConfigAwait();
+                await process.StandardInput.FlushAsync().ConfigAwait();
+                process.StandardInput.Close();
+
+                var stdoutTask = process.StandardOutput.ReadToEndAsync(context.CancellationToken);
+                var stderrTask = process.StandardError.ReadToEndAsync(context.CancellationToken);
+                await process.WaitForExitAsync(context.CancellationToken).ConfigAwait();
+
+                var stdout = await stdoutTask.ConfigAwait();
+                var stderr = (await stderrTask.ConfigAwait()).Trim();
+
+                if (process.ExitCode != 0)
                 {
-                    cliResponse = obj;
-                    break;
+                    var err = stderr.Length > 0 ? stderr : stdout.Trim();
+                    throw new InvalidOperationException($"claude CLI error: {(err.Length > 0 ? err : $"claude exited with code {process.ExitCode}")}");
                 }
+
+                JsonObject? cliResponse = null;
+                foreach (var rawLine in stdout.Split('\n'))
+                {
+                    var line = rawLine.Trim();
+                    if (line.Length == 0)
+                        continue;
+                    if (line.EndsWith("\x1b[<u", StringComparison.Ordinal))
+                        line = line[..^4].Trim();
+                    var obj = ChatJson.TryParseObject(line);
+                    if (obj?.GetString("type") == "result")
+                    {
+                        cliResponse = obj;
+                        break;
+                    }
+                }
+
+                if (cliResponse == null)
+                    throw new InvalidOperationException("No result found in claude CLI stream-json output");
+
+                return ToCliResponse(cliResponse, chat, startedAt, context);
             }
-
-            if (cliResponse == null)
-                throw new InvalidOperationException("No result found in claude CLI stream-json output");
-
-            return ToCliResponse(cliResponse, chat, startedAt, context);
+            catch
+            {
+                CliExecutable.TryTerminate(process);
+                throw;
+            }
         }
-        catch
+        finally
         {
-            CliExecutable.TryTerminate(process);
-            throw;
+            try { Directory.Delete(workdir, recursive: true); } catch { }
         }
     }
 
