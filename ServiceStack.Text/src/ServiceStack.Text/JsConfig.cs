@@ -719,7 +719,6 @@ public static class JsConfig
         AllowRuntimeTypeWithInterfacesNamed =
         [
             "IConvertible",
-            "ISerializable",
             "IRuntimeSerializable",
             "IReturn`1",
             "IReturnVoid",
