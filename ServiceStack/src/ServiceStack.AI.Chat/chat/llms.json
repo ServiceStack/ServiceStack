@@ -421,6 +421,9 @@
         "iteracompute": {
             "enabled": true
         },
+        "sarvam": {
+            "enabled": true
+        },
         "codestral": {
             "enabled": true,
             "npm": "codestral",
