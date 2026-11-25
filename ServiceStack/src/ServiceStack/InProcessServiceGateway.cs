@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -66,23 +67,30 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         }
     }
 
-    protected virtual TResponse ExecSync<TResponse>(object request)
+    private bool ApplyGatewayRequestFiltersSync(object request)
     {
-        if (Request is IConvertRequest convertRequest)
-            request = convertRequest.Convert(request);
-
         foreach (var filter in HostContext.AppHost.GatewayRequestFiltersArray)
         {
             filter(req, request);
             if (req.Response.IsClosed)
-                return default;
+                return false;
         }
         foreach (var filter in HostContext.AppHost.GatewayRequestFiltersAsyncArray)
         {
             filter(req, request).Wait();
             if (req.Response.IsClosed)
-                return default;
+                return false;
         }
+        return true;
+    }
+
+    protected virtual TResponse ExecSync<TResponse>(object request)
+    {
+        if (Request is IConvertRequest convertRequest)
+            request = convertRequest.Convert(request);
+
+        if (!ApplyGatewayRequestFiltersSync(request))
+            return default;
 
         if (request is object[] requestDtos)
         {
@@ -423,6 +431,21 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         }
     }
 
+    private void ExecPublishSync(object request)
+    {
+        try
+        {
+            if (!ApplyGatewayRequestFiltersSync(request))
+                return;
+        }
+        catch (AggregateException ex) when (ex.InnerExceptions.Count == 1)
+        {
+            ExceptionDispatchInfo.Capture(ex.UnwrapIfSingleException()).Throw();
+        }
+
+        HostContext.ServiceController.Execute(request, req);
+    }
+
     public virtual void Publish(object request)
     {
         if (Request is IConvertRequest convertRequest)
@@ -442,7 +465,7 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         Exception e = null;
         try
         {
-            var response = HostContext.ServiceController.Execute(request, req);
+            ExecPublishSync(request);
         }
         catch (Exception ex)
         {
@@ -483,7 +506,8 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         Exception e = null;
         try
         {
-            await HostContext.ServiceController.GatewayExecuteAsync(request, req, applyFilters: false);
+            if (await HostContext.AppHost.ApplyGatewayRequestFiltersAsync(req, request))
+                await HostContext.ServiceController.GatewayExecuteAsync(request, req, applyFilters: false);
         }
         catch (Exception ex)
         {
@@ -524,7 +548,7 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         Exception e = null;
         try
         {
-            var response = HostContext.ServiceController.Execute(typedArray, req);
+            ExecPublishSync(typedArray);
         }
         catch (Exception ex)
         {
@@ -563,7 +587,8 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         Exception e = null;
         try
         {
-            await HostContext.ServiceController.GatewayExecuteAsync(typedArray, req, applyFilters: false);
+            if (await HostContext.AppHost.ApplyGatewayRequestFiltersAsync(req, typedArray))
+                await HostContext.ServiceController.GatewayExecuteAsync(typedArray, req, applyFilters: false);
         }
         catch (Exception ex)
         {
