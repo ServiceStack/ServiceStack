@@ -100,6 +100,7 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
 
     public virtual async Task<object> ExecuteAsync(IRequest req, object instance, TRequest requestDto)
     {
+        using var context = RequestContext.EnterRequest(req);
         try
         {
             BeforeEachRequest(req, requestDto, instance);
@@ -266,6 +267,7 @@ public class ServiceRunner<TRequest> : IServiceRunner<TRequest>
 
     public object ExecuteOneWay(IRequest req, object instance, TRequest requestDto)
     {
+        using var context = RequestContext.EnterRequest(req);
         var msgFactory = AppHost.TryResolve<IMessageFactory>();
         if (msgFactory == null)
         {

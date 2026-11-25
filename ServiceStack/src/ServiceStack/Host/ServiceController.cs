@@ -602,6 +602,7 @@ public class ServiceController : IServiceController
     public object ExecuteMessage(IMessage dto, IRequest req)
     {
         RequestContext.Instance.StartRequestContext();
+        using var context = RequestContext.EnterRequest(req);
 #if NETCORE
         using var scope = req.StartScope();
 #endif
@@ -633,6 +634,7 @@ public class ServiceController : IServiceController
     public async Task<object> ExecuteMessageAsync(IMessage dto, IRequest req, CancellationToken token=default)
     {
         RequestContext.Instance.StartRequestContext();
+        using var context = RequestContext.EnterRequest(req);
 #if NETCORE
         using var scope = req.StartScope();
 #endif
@@ -668,6 +670,7 @@ public class ServiceController : IServiceController
     /// </summary>
     public virtual object Execute(object requestDto, IRequest req)
     {
+        using var context = RequestContext.EnterRequest(req);
         req.Dto = requestDto;
         var requestType = requestDto.GetType();
         req.OperationName = requestType.Name;
@@ -689,6 +692,7 @@ public class ServiceController : IServiceController
     /// </summary>
     public virtual async Task<object> ExecuteAsync(object requestDto, IRequest req) //Used by HTTP handlers to Execute Services
     {
+        using var context = RequestContext.EnterRequest(req);
         req.Dto = requestDto;
         var requestType = requestDto.GetType();
         req.OperationName = requestType.Name;
@@ -780,6 +784,10 @@ public class ServiceController : IServiceController
     /// </summary>
     public async Task<object> ManagedGatewayExecuteAsync(object request, IRequest req)
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        await using var scope = req.StartGatewayScope();
+#endif
         try
         {
             req.SetInProcessRequest();
@@ -804,6 +812,10 @@ public class ServiceController : IServiceController
 
     public async Task<object> GatewayExecuteAsync(object requestDto, IRequest req, bool applyFilters)
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        await using var scope = req.StartGatewayScope();
+#endif
         req.Dto = requestDto;
         var requestType = requestDto.GetType();
 

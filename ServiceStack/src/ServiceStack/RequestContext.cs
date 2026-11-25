@@ -2,11 +2,11 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
+using ServiceStack.Web;
 
 #if !NETCORE
 using System.Runtime.Remoting.Messaging;
-#else
-using System.Threading;
 #endif
 
 namespace ServiceStack;
@@ -18,6 +18,31 @@ namespace ServiceStack;
 public class RequestContext
 {
     public static readonly RequestContext Instance = new RequestContext();
+    private static readonly AsyncLocal<ExecutingRequest> Current = new();
+
+    internal static IRequest CurrentRequest => Current.Value?.Request;
+
+    internal static IDisposable EnterRequest(IRequest request) =>
+        ReferenceEquals(CurrentRequest, request) ? null : new ExecutingRequest(request);
+
+    private sealed class ExecutingRequest : IDisposable
+    {
+        private readonly ExecutingRequest previous = Current.Value;
+        public volatile IRequest Request;
+
+        public ExecutingRequest(IRequest request)
+        {
+            Request = request;
+            Current.Value = this;
+        }
+
+        public void Dispose()
+        {
+            // Clear the request in async work that inherited this context, too.
+            Request = null;
+            Current.Value = previous;
+        }
+    }
 
 #if !NETCORE
     /// <summary>

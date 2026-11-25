@@ -324,7 +324,7 @@ public static class HostContext
 
     public static IRequest GetCurrentRequest()
     {
-        var req = AssertAppHost().TryGetCurrentRequest();
+        var req = TryGetCurrentRequest();
         if (req == null)
             throw new NotImplementedException(ErrorMessages.HostDoesNotSupportSingletonRequest);
 
@@ -333,7 +333,7 @@ public static class HostContext
 
     public static IRequest TryGetCurrentRequest()
     {
-        return AssertAppHost().TryGetCurrentRequest();
+        return RequestContext.CurrentRequest ?? AssertAppHost().TryGetCurrentRequest();
     }
 
     public static IAuthSession GetAuthSecretSession() =>

@@ -265,6 +265,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual TResponse Send<TResponse>(object requestDto)
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        using var scope = req.StartGatewayScope();
+#endif
         var holdDto = req.Dto;
         var holdOp = req.OperationName;
         var holdAttrs = req.RequestAttributes;
@@ -307,6 +311,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual async Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        await using var scope = req.StartGatewayScope();
+#endif
         var holdDto = req.Dto;
         var holdOp = req.OperationName;
         var holdVerb = SetVerb(requestDto);
@@ -356,6 +364,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual List<TResponse> SendAll<TResponse>(IEnumerable<object> requestDtos)
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        using var scope = req.StartGatewayScope();
+#endif
         var holdDto = req.Dto;
         string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
         var holdAttrs = req.RequestAttributes;
@@ -397,6 +409,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual async Task<List<TResponse>> SendAllAsync<TResponse>(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        await using var scope = req.StartGatewayScope();
+#endif
         var holdDto = req.Dto;
         var holdAttrs = req.RequestAttributes;
         string holdVerb = req.GetItem(Keywords.InvokeVerb) as string;
@@ -448,6 +464,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual void Publish(object request)
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        using var scope = req.StartGatewayScope();
+#endif
         if (Request is IConvertRequest convertRequest)
             request = convertRequest.Convert(request);
 
@@ -489,6 +509,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual async Task PublishAsync(object request, CancellationToken token = new CancellationToken())
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        await using var scope = req.StartGatewayScope();
+#endif
         if (Request is IConvertRequest convertRequest)
             request = convertRequest.Convert(request);
 
@@ -531,6 +555,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual void PublishAll(IEnumerable<object> requestDtos)
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        using var scope = req.StartGatewayScope();
+#endif
         if (Request is IConvertRequest convertRequest)
             requestDtos = convertRequest.Convert(requestDtos);
 
@@ -571,6 +599,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
 
     public virtual async Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = new CancellationToken())
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        await using var scope = req.StartGatewayScope();
+#endif
         if (Request is IConvertRequest convertRequest)
             requestDtos = convertRequest.Convert(requestDtos);
 
@@ -630,6 +662,10 @@ public partial class InProcessServiceGateway : IServiceGatewayFormAsync, ICloneS
 
     public async Task<TResponse> SendFormAsync<TResponse>(object requestDto, System.Net.Http.MultipartFormDataContent formData, CancellationToken token = default)
     {
+        using var context = RequestContext.EnterRequest(req);
+#if NETCORE
+        await using var scope = req.StartGatewayScope();
+#endif
         var holdDto = req.Dto;
         var holdOp = req.OperationName;
         var holdVerb = SetVerb(requestDto);

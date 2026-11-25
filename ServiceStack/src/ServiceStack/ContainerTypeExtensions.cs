@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Funq;
 using ServiceStack.Web;
+#if NETCORE
+using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.NetCore;
+#endif
 
 namespace ServiceStack;
 
@@ -14,11 +19,21 @@ public interface IHasServiceScope : IServiceProvider
 
 public static class ServiceScopeExtensions
 {
+    internal static GatewayServiceScope StartGatewayScope(this IRequest request)
+    {
+        if (request is not IHasServiceScope { ServiceScope: null } scopedRequest)
+            return null;
+
+        var factory = (HostContext.AppHost?.Container?.Adapter as NetCoreContainerAdapter)?.ScopeFactory
+            ?? scopedRequest.GetService(typeof(IServiceScopeFactory)) as IServiceScopeFactory;
+        return factory == null ? null : new GatewayServiceScope(scopedRequest, factory.CreateScope());
+    }
+
     public static Microsoft.Extensions.DependencyInjection.IServiceScope StartScope(this IRequest request)
     {
         if (request is IHasServiceScope hasScope)
         {
-            var scopeFactory = (Microsoft.Extensions.DependencyInjection.IServiceScopeFactory) 
+            var scopeFactory = (Microsoft.Extensions.DependencyInjection.IServiceScopeFactory)
                 hasScope.GetService(typeof(Microsoft.Extensions.DependencyInjection.IServiceScopeFactory));
             if (scopeFactory == null)
                 return null;
@@ -28,6 +43,34 @@ public static class ServiceScopeExtensions
             return scope;
         }
         return null;
+    }
+}
+
+internal sealed class GatewayServiceScope : IDisposable, IAsyncDisposable
+{
+    private readonly IHasServiceScope request;
+    private readonly IServiceScope scope;
+
+    internal GatewayServiceScope(IHasServiceScope request, IServiceScope scope)
+    {
+        this.request = request;
+        this.scope = scope;
+        request.ServiceScope = scope;
+    }
+
+    public void Dispose() => DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await new AsyncServiceScope(scope).DisposeAsync().ConfigureAwait(false);
+        }
+        finally
+        {
+            if (ReferenceEquals(request.ServiceScope, scope))
+                request.ServiceScope = null;
+        }
     }
 }
 #endif
