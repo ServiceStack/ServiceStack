@@ -566,8 +566,9 @@ public class BackgroundJobsTests
         Assert.That(job.Id, Is.EqualTo(0));
         job.Id = int.MaxValue;
         AssertNotNulls(job);
-        Assert.That(job.Status, Is.EqualTo("Finished"));
+        // LastRequest is set before the command finishes, wait for it to complete
         Assert.That(ExecUtils.WaitUntilTrue(() => job.Progress >= 1), "job.Progress != 1");
+        Assert.That(job.Status, Is.EqualTo("Finished"));
         Assert.That(job.Logs, Is.EqualTo("MyCommand Started...\nMyCommand Finished"));
         Assert.That(responses.Count, Is.EqualTo(1));
         Assert.That(errors.Count, Is.EqualTo(0));
