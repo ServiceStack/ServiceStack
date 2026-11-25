@@ -206,4 +206,49 @@ public class InProcessServiceGatewayContextTests
         }
     }
 }
+
+public class InProcessServiceGatewayMockRequestTests
+{
+    public class MockGatewayHello : IReturn<MockGatewayHelloResponse>
+    {
+        public string Name { get; set; }
+    }
+    public class MockGatewayHelloResponse
+    {
+        public string Result { get; set; }
+    }
+    public class MockGatewayService : Service
+    {
+        public object Any(MockGatewayHello request) => new MockGatewayHelloResponse { Result = "Hello, " + request.Name };
+    }
+
+    [Test]
+    public async Task Can_send_with_MockHttpRequest_without_NetCoreContainerAdapter([Values] bool sync)
+    {
+        using var appHost = new BasicAppHost
+        {
+            ConfigureAppHost = host => host.RegisterService<MockGatewayService>(),
+        }.Init();
+        var gateway = new InProcessServiceGateway(new MockHttpRequest());
+
+        var response = sync
+            ? gateway.Send(new MockGatewayHello { Name = "World" })
+            : await gateway.SendAsync(new MockGatewayHello { Name = "World" });
+
+        Assert.That(response.Result, Is.EqualTo("Hello, World"));
+    }
+
+    [Test]
+    public void MockHttpRequest_GetService_resolves_from_container()
+    {
+        using var appHost = new BasicAppHost
+        {
+            ConfigureContainer = container => container.Register(new MockGatewayHelloResponse { Result = "registered" }),
+        }.Init();
+        var req = new MockHttpRequest();
+
+        Assert.That(((MockGatewayHelloResponse)req.GetService(typeof(MockGatewayHelloResponse))).Result, Is.EqualTo("registered"));
+        Assert.That(req.GetService(null), Is.Null);
+    }
+}
 #endif

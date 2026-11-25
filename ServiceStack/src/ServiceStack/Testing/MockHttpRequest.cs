@@ -75,14 +75,16 @@ public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
 
     public object GetService(Type serviceType)
     {
-        var mi = typeof(BasicRequest).GetMethod(nameof(TryResolve));
+        if (serviceType == null)
+            return null;
+        var mi = typeof(MockHttpRequest).GetMethod(nameof(TryResolve));
         var genericMi = mi.MakeGenericMethod(serviceType);
         return genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
     }
 
     public AuthUserSession RemoveSession()
     {
-        this.RemoveSession();
+        ServiceExtensions.RemoveSession(this);
         return this.GetSession() as AuthUserSession;
     }
 
