@@ -65,7 +65,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
         return ret;
     }
 
-    static GatewayRequest FromRequest(IRequest req)
+    static GatewayRequest FromRequest(IRequest req, Dictionary<string, object>? items = null)
     {
         var httpReq = req as IHttpRequest;
         var ret = new GatewayRequest
@@ -76,7 +76,7 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
             FormData = new(),
             Headers = req.Headers.Clone(),
             Cookies = new Dictionary<string, Cookie>(req.Cookies),
-            Items = new(req.Items),
+            Items = new(items ?? req.Items),
             UserAgent = req.UserAgent,
             RemoteIp = req.RemoteIp,
             UserHostAddress = req.UserHostAddress,
@@ -102,7 +102,11 @@ public class GatewayRequest : BasicRequest, IHttpRequest, IConvertRequest, IClon
 
     public object Clone()
     {
-        return FromRequest(this.OriginalRequest as IHttpRequest ?? this);
+        var clone = FromRequest(OriginalRequest as IHttpRequest ?? this, Items);
+#if NETCORE
+        clone.ServiceScope = ServiceScope;
+#endif
+        return clone;
     }
 }
 
