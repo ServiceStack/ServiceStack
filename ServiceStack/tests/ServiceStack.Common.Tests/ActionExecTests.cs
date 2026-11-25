@@ -1,8 +1,6 @@
 using System;
-using System.Diagnostics;
 using System.Threading;
 using NUnit.Framework;
-using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -10,29 +8,22 @@ namespace ServiceStack.Common.Tests
     public class ActionExecTests
     {
         [Test]
-        public void Can_run_blocking_options_in_parallel()
+        public void Can_run_blocking_actions_in_parallel()
         {
-            var sw = Stopwatch.StartNew();
+            using var started = new CountdownEvent(2);
+            var completed = 0;
 
-            int i = 0;
-
-            Action incrAndBlock = () => { Interlocked.Increment(ref i); Thread.Sleep(100); };
-
-            var actions = new[]
+            Action waitForBothActions = () =>
             {
-                incrAndBlock,
-                incrAndBlock,
-                incrAndBlock,
-                incrAndBlock,
-                incrAndBlock,
-                incrAndBlock,
+                started.Signal();
+                if (started.Wait(TimeSpan.FromSeconds(10)))
+                    Interlocked.Increment(ref completed);
             };
 
-            actions.ExecAllAndWait(timeout:TimeSpan.FromSeconds(30));
+            var actions = new[] { waitForBothActions, waitForBothActions };
+            actions.ExecAllAndWait(timeout: TimeSpan.FromSeconds(30));
 
-            "Took {0}ms".Print(sw.ElapsedMilliseconds);
-            Assert.That(sw.ElapsedMilliseconds, Is.LessThan(400));
-            Assert.That(i, Is.EqualTo(actions.Length));
+            Assert.That(completed, Is.EqualTo(actions.Length), "Both actions must start before either can complete.");
         }
     }
 }
