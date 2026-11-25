@@ -214,6 +214,7 @@ public class HostConfig
         this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
         this.EmbeddedResourceTreatAsFiles = instance.EmbeddedResourceTreatAsFiles;
         this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
+        this.ApplyGatewayAuthAttributes = instance.ApplyGatewayAuthAttributes;
         this.EnableAutoHtmlResponses = instance.EnableAutoHtmlResponses;
         this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
         this.SoapServiceName = instance.SoapServiceName;
@@ -344,6 +345,12 @@ public class HostConfig
     public string SoapServiceName { get; set; }
     public XmlWriterSettings XmlWriterSettings { get; set; }
     public bool EnableAccessRestrictions { get; set; }
+
+    /// <summary>
+    /// Enforce [Authenticate], [RequiredRole], [RequiredPermission] and other AuthenticateAttribute filters
+    /// on the Request DTO and Service class for In Process Service Gateway requests, throwing 401/403 errors on failure
+    /// </summary>
+    public bool ApplyGatewayAuthAttributes { get; set; }
     public bool EnableAutoHtmlResponses { get; set; }
     public bool UseBclJsonSerializers { get; set; }
     public Regex IsMobileRegex { get; set; }

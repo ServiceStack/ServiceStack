@@ -17,7 +17,7 @@ namespace ServiceStack.Auth;
 /// Handles converting from Application Cookie ClaimsPrincipal into a ServiceStack Session
 /// </summary>
 public class IdentityApplicationAuthProvider<TUser,TRole,TKey> : IdentityAuthProvider<TUser,TRole,TKey>, 
-    IAuthWithRequest, IAuthPlugin, IIdentityApplicationAuthProvider
+    IAuthWithRequest, IAuthPlugin, IIdentityApplicationAuthProvider, IClaimsPrincipalSessionConverter
     where TUser : IdentityUser<TKey>, new()
     where TRole : IdentityRole<TKey>
     where TKey : IEquatable<TKey>
@@ -112,6 +112,15 @@ public class IdentityApplicationAuthProvider<TUser,TRole,TKey> : IdentityAuthPro
         if (session.IsAuthenticated) // if existing Session exists use it instead
             return;
 
+        session = await ConvertPrincipalToSessionAsync(req, claimsPrincipal).ConfigAwait();
+        req.SetItem(Keywords.Session, session);
+    }
+
+    /// <summary>
+    /// Create a new ServiceStack Session populated from an authenticated ClaimsPrincipal
+    /// </summary>
+    public virtual async Task<IAuthSession> ConvertPrincipalToSessionAsync(IRequest req, ClaimsPrincipal claimsPrincipal, CancellationToken token = default)
+    {
         string source;
         string sessionId;
 
@@ -132,10 +141,9 @@ public class IdentityApplicationAuthProvider<TUser,TRole,TKey> : IdentityAuthPro
             else throw new NotSupportedException($"Claim '{IdClaimName}' is required");
         }
 
-        session = SessionFeature.CreateNewSession(req, sessionId);
-        await PopulateSessionAsync(req, session, claimsPrincipal, source);
-
-        req.SetItem(Keywords.Session, session);
+        var session = SessionFeature.CreateNewSession(req, sessionId);
+        await PopulateSessionAsync(req, session, claimsPrincipal, source).ConfigAwait();
+        return session;
     }
     
     public virtual void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null)

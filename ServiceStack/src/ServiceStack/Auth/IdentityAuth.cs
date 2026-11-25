@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
@@ -18,6 +19,15 @@ public interface IIdentityApplicationAuthProvider
     Task PreAuthenticateAsync(IRequest req, IResponse res);
     void PopulateSession(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
     Task PopulateSessionAsync(IRequest req, IAuthSession session, ClaimsPrincipal claimsPrincipal, string? source = null);
+}
+
+/// <summary>
+/// Auth Providers that can convert an authenticated ClaimsPrincipal into a ServiceStack Session,
+/// used to create sessions for requests that don't originate from HTTP, e.g. Blazor Server circuits
+/// </summary>
+public interface IClaimsPrincipalSessionConverter
+{
+    Task<IAuthSession> ConvertPrincipalToSessionAsync(IRequest req, ClaimsPrincipal claimsPrincipal, CancellationToken token = default);
 }
 
 public interface IIdentityAuthContextManager

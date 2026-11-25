@@ -12,6 +12,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Serialization;
+using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
@@ -780,6 +781,74 @@ public class ServiceController : IServiceController
     }
 
     /// <summary>
+    /// When <see cref="HostConfig.ApplyGatewayAuthAttributes"/> is enabled, runs the AuthenticateAttribute filters
+    /// on the Request DTO and its Service class for an In Process Gateway request, throwing an HttpError on failure.
+    /// Service method attributes are not included as they're already executed by the ServiceRunner.
+    /// </summary>
+    public async Task ApplyGatewayAuthAttributesAsync(IRequest req, object requestDto)
+    {
+        if (!appHost.Config.ApplyGatewayAuthAttributes || requestDto == null)
+            return;
+
+        if (requestDto is object[] requestDtos)
+        {
+            foreach (var dto in requestDtos)
+            {
+                if (dto != null)
+                    await ApplyGatewayAuthAttributesSingleAsync(req, dto).ConfigAwait();
+            }
+            return;
+        }
+        await ApplyGatewayAuthAttributesSingleAsync(req, requestDto).ConfigAwait();
+    }
+
+    private async Task ApplyGatewayAuthAttributesSingleAsync(IRequest req, object requestDto)
+    {
+        var attrs = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
+        foreach (var attr in attrs)
+        {
+            if (attr is not AuthenticateAttribute)
+                continue;
+
+            // An authenticated session attached to the gateway request is authoritative,
+            // don't let IAuthWithRequest providers replace it from copied cookies or headers
+            if (req.Items.TryGetValue(Keywords.Session, out var oSession) && oSession is IAuthSession { IsAuthenticated: true })
+                req.SetTrue(Keywords.HasPreAuthenticated);
+
+            // Failures are written to a detached response so the gateway request's response stays open
+            var res = new BasicResponse(new BasicRequest());
+            var authAttr = (AuthenticateAttribute)attr.Copy();
+            appHost.Container.AutoWire(authAttr);
+            try
+            {
+                await authAttr.RequestFilterAsync(req, res, requestDto).ConfigAwait();
+            }
+            finally
+            {
+                appHost.Release(authAttr);
+            }
+
+            if (res.IsClosed)
+                throw CreateGatewayAuthError(req, res);
+            if (req.Response.IsClosed) // closed by an IAuthWithRequest provider
+                throw CreateGatewayAuthError(req, req.Response);
+        }
+    }
+
+    private static HttpError CreateGatewayAuthError(IRequest req, IResponse res)
+    {
+        var statusCode = res.StatusCode;
+        // Treat redirects to a login page and unset status codes as unauthenticated
+        if (statusCode < 400 || statusCode == (int)HttpStatusCode.Unauthorized)
+            return new HttpError(401, nameof(HttpStatusCode.Unauthorized), ErrorMessages.NotAuthenticated.Localize(req));
+
+        var errorCode = Enum.IsDefined(typeof(HttpStatusCode), statusCode)
+            ? ((HttpStatusCode)statusCode).ToString()
+            : statusCode.ToString();
+        return new HttpError(statusCode, errorCode, res.StatusDescription ?? errorCode);
+    }
+
+    /// <summary>
     /// Execute In Process Gateway Request with Gateway + Validation Filters
     /// </summary>
     public async Task<object> ManagedGatewayExecuteAsync(object request, IRequest req)
@@ -795,6 +864,7 @@ public class ServiceController : IServiceController
             if (!await appHost.ApplyGatewayRequestFiltersAsync(req, request))
                 return default;
 
+            await ApplyGatewayAuthAttributesAsync(req, request);
             await ExecValidatorsAsync(request, req);
 
             var response = await GatewayExecuteAsync(request, req, applyFilters: false);

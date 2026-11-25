@@ -52,6 +52,38 @@ public static class BlazorServerUtils
             });
     }
 
+    /// <summary>
+    /// Register an IClientFactory for Blazor Server Apps using ASP.NET Core claims-based Authentication,
+    /// e.g. ASP.NET Core Identity, OIDC or Microsoft Entra ID. In Process Gateway requests use the ServiceStack
+    /// Session converted from the circuit's AuthenticationStateProvider User, never the HttpContext.
+    /// </summary>
+    public static IHttpClientBuilder AddBlazorServerClaimsApiClient(this IServiceCollection services, string baseUrl, Action<BlazorServerApiClientConfig>? configure = null)
+    {
+        var config = new BlazorServerApiClientConfig();
+        configure?.Invoke(config);
+        return services.AddBlazorServerClaimsApiClient(baseUrl, config);
+    }
+
+    public static IHttpClientBuilder AddBlazorServerClaimsApiClient(this IServiceCollection services, string baseUrl, BlazorServerApiClientConfig config)
+    {
+        return services
+            .AddScoped<IClientFactory>(c => new BlazorServerClaimsClientFactory(
+                c.GetRequiredService<JsonApiClient>(), baseUrl, c, config) {
+                AuthenticationStateProvider = c.GetService<AuthenticationStateProvider>(),
+                RequestFactory = c.GetService<IGatewayRequestFactory>(),
+            })
+            .AddHttpClient<JsonApiClient>(client => {
+                client.BaseAddress = new Uri(baseUrl);
+                config.HttpClientFilter?.Invoke(client);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => {
+                var to = HttpUtils.HttpClientHandlerFactory();
+                to.DefaultProxyCredentials = CredentialCache.DefaultCredentials;
+                config.HttpClientHandlerFilter?.Invoke(to);
+                return to;
+            });
+    }
+
     public static JsonApiClient ConfigureClient(this HostState hostState, JsonApiClient Client)
     {
         Client.ClearHeaders();
@@ -142,6 +174,150 @@ public class BlazorServerClientFactory : IClientFactory
     public IServiceGateway GetGateway()
     {
         return Gateway;
+    }
+}
+
+public class BlazorServerApiClientConfig
+{
+    public Action<HttpClient>? HttpClientFilter { get; set; }
+    public Action<HttpClientHandler>? HttpClientHandlerFilter { get; set; }
+
+    /// <summary>
+    /// Custom conversion of an authenticated ClaimsPrincipal into a ServiceStack Session.
+    /// Defaults to the registered IClaimsPrincipalSessionConverter Auth Provider, e.g. NetCoreIdentityAuthProvider or IdentityAuth
+    /// </summary>
+    public Func<IRequest, ClaimsPrincipal, Task<IAuthSession>>? ConvertPrincipalToSessionAsync { get; set; }
+
+    /// <summary>
+    /// Resolve dependencies of In Process Gateway calls from the circuit's DI scope instead of creating
+    /// a new DI scope for each call. Scoped services like DbContext are then shared by concurrent calls in the circuit.
+    /// </summary>
+    public bool UseCircuitServiceScope { get; set; }
+
+    /// <summary>
+    /// Customize each In Process Gateway request
+    /// </summary>
+    public Action<IRequest>? GatewayRequestFilter { get; set; }
+}
+
+/// <summary>
+/// Blazor Server IClientFactory that populates In Process Gateway requests with the ServiceStack Session converted
+/// from the User of the circuit's AuthenticationStateProvider
+/// </summary>
+public class BlazorServerClaimsClientFactory : IClientFactory
+{
+    static readonly ILog Log = LogManager.GetLogger(typeof(BlazorServerClaimsClientFactory));
+
+    public JsonApiClient Client { get; }
+    public string BaseUrl { get; }
+    public IServiceProvider Services { get; }
+    public BlazorServerApiClientConfig Config { get; }
+    public AuthenticationStateProvider? AuthenticationStateProvider { get; set; }
+    public IGatewayRequestFactory? RequestFactory { get; set; }
+
+    private readonly object cacheLock = new();
+    private AuthenticationState? lastState;
+    private IAuthSession? lastSession;
+
+    public BlazorServerClaimsClientFactory(JsonApiClient client, string baseUrl, IServiceProvider services, BlazorServerApiClientConfig? config = null)
+    {
+        Client = client;
+        BaseUrl = baseUrl;
+        Services = services;
+        Config = config ?? new();
+    }
+
+    public JsonApiClient GetClient() => Client;
+
+    public IServiceGateway GetGateway() => new InProcessServiceGateway(CreateGatewayRequest());
+
+    public virtual IRequest CreateGatewayRequest()
+    {
+        var state = GetAuthenticationState();
+        var user = state?.User ?? new ClaimsPrincipal(new ClaimsIdentity());
+        var basicRequest = new BasicHttpRequest
+        {
+            AbsoluteUri = BaseUrl,
+            RawUrl = BaseUrl,
+            PathInfo = "/",
+            User = user, // GatewayRequest.Clone() copies the User from its OriginalRequest
+        };
+        var request = RequestFactory?.Create(basicRequest) ?? GatewayRequest.Create(basicRequest);
+        if (request is BasicRequest basicReq)
+            basicReq.User = user;
+        request.SetItem(Keywords.Session, GetSession(request, state, user));
+        if (Config.UseCircuitServiceScope && request is IHasServiceScope hasScope)
+            hasScope.ServiceScope = new CircuitServiceScope(Services);
+        Config.GatewayRequestFilter?.Invoke(request);
+        return request;
+    }
+
+    public virtual AuthenticationState? GetAuthenticationState()
+    {
+        if (AuthenticationStateProvider == null)
+            return null;
+        try
+        {
+            var task = AuthenticationStateProvider.GetAuthenticationStateAsync();
+            // Completed for Blazor Server's ServerAuthenticationStateProvider once the circuit is initialized
+            return task.IsCompletedSuccessfully ? task.Result : task.GetAwaiter().GetResult();
+        }
+        catch (InvalidOperationException ex) // Authentication state not yet set for this scope
+        {
+            Log.Warn("Could not get the circuit's authentication state, using an unauthenticated session", ex);
+            return null;
+        }
+    }
+
+    protected virtual IAuthSession GetSession(IRequest request, AuthenticationState? state, ClaimsPrincipal user)
+    {
+        lock (cacheLock)
+        {
+            if (state != null && ReferenceEquals(state, lastState) && lastSession != null)
+                return lastSession;
+        }
+
+        IAuthSession session;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            // Avoid continuations needing the Blazor renderer's SynchronizationContext we're blocking on
+            var task = SynchronizationContext.Current == null
+                ? ConvertPrincipalToSessionAsync(request, user)
+                : Task.Run(() => ConvertPrincipalToSessionAsync(request, user));
+            session = task.GetAwaiter().GetResult();
+        }
+        else
+        {
+            session = SessionFeature.CreateNewSession(request, ServiceStack.SessionExtensions.CreateRandomSessionId());
+        }
+
+        lock (cacheLock)
+        {
+            lastState = state;
+            lastSession = session;
+        }
+        return session;
+    }
+
+    protected virtual async Task<IAuthSession> ConvertPrincipalToSessionAsync(IRequest request, ClaimsPrincipal user)
+    {
+        if (Config.ConvertPrincipalToSessionAsync != null)
+            return await Config.ConvertPrincipalToSessionAsync(request, user).ConfigAwait();
+
+        var converter = AuthenticateService.GetAuthProviders().OfType<IClaimsPrincipalSessionConverter>().FirstOrDefault()
+            ?? throw new NotSupportedException(
+                $"No {nameof(IClaimsPrincipalSessionConverter)} Auth Provider is registered, e.g. {nameof(NetCoreIdentityAuthProvider)} or IdentityAuth. " +
+                $"Use {nameof(BlazorServerApiClientConfig)}.{nameof(BlazorServerApiClientConfig.ConvertPrincipalToSessionAsync)} to convert the User to a Session.");
+        return await converter.ConvertPrincipalToSessionAsync(request, user).ConfigAwait();
+    }
+
+    /// <summary>
+    /// Wraps the circuit's DI scope, which is owned and disposed by Blazor
+    /// </summary>
+    sealed class CircuitServiceScope(IServiceProvider services) : IServiceScope
+    {
+        public IServiceProvider ServiceProvider { get; } = services;
+        public void Dispose() {}
     }
 }
 

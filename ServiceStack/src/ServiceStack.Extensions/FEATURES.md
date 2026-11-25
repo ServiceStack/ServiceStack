@@ -19,7 +19,7 @@ Status: implementation entry points located in this checkout; behavioral verific
 | Identity administration | Manage Identity users and register accounts through integrated service APIs. | [Auth/AdminIdentityUsersFeature.cs](Auth/AdminIdentityUsersFeature.cs), [Auth/IdentityRegisterService.cs](Auth/IdentityRegisterService.cs) |
 | gRPC service hosting | Expose DTO services and generated protobuf contracts over gRPC. | [GrpcFeature.cs](GrpcFeature.cs), [Grpc/GrpcServiceBase.cs](Grpc/GrpcServiceBase.cs), [Grpc/GrpcProtoGenerator.cs](Grpc/GrpcProtoGenerator.cs), [IStreamService.cs](IStreamService.cs) |
 | Auth middleware and providers | Integrate Basic authentication, Apple Sign-In and fetch-metadata CSRF middleware. | [BasicAuthenticationHandler.cs](BasicAuthenticationHandler.cs), [Auth/AppleAuthProvider.cs](Auth/AppleAuthProvider.cs), [SecFetchSiteCsrfMiddleware.cs](SecFetchSiteCsrfMiddleware.cs) |
-| Frontend development integration | Register Blazor clients and proxy requests to a Node development server. | [BlazorExtensions.cs](BlazorExtensions.cs), [NodeProxy.cs](NodeProxy.cs) |
+| Frontend development integration | Register Blazor clients that call APIs in process as the circuit's user, and proxy requests to a Node development server. | [BlazorExtensions.cs](BlazorExtensions.cs), [NodeProxy.cs](NodeProxy.cs) |
 
 ## Public documentation
 

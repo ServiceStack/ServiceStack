@@ -92,6 +92,8 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         if (!ApplyGatewayRequestFiltersSync(request))
             return default;
 
+        HostContext.ServiceController.ApplyGatewayAuthAttributesAsync(req, request).GetAwaiter().GetResult();
+
         if (request is object[] requestDtos)
         {
             foreach (var requestDto in requestDtos)
@@ -144,6 +146,8 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         var appHost = HostContext.AppHost;
         if (!await appHost.ApplyGatewayRequestFiltersAsync(req, request)) 
             return default;
+
+        await HostContext.ServiceController.ApplyGatewayAuthAttributesAsync(req, request);
 
         if (request is object[] requestDtos)
         {
@@ -459,6 +463,7 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
             ExceptionDispatchInfo.Capture(ex.UnwrapIfSingleException()).Throw();
         }
 
+        HostContext.ServiceController.ApplyGatewayAuthAttributesAsync(req, request).GetAwaiter().GetResult();
         HostContext.ServiceController.Execute(request, req);
     }
 
@@ -531,7 +536,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         try
         {
             if (await HostContext.AppHost.ApplyGatewayRequestFiltersAsync(req, request))
+            {
+                await HostContext.ServiceController.ApplyGatewayAuthAttributesAsync(req, request);
                 await HostContext.ServiceController.GatewayExecuteAsync(request, req, applyFilters: false);
+            }
         }
         catch (Exception ex)
         {
@@ -620,7 +628,10 @@ public partial class InProcessServiceGateway : IServiceGateway, IServiceGatewayA
         try
         {
             if (await HostContext.AppHost.ApplyGatewayRequestFiltersAsync(req, typedArray))
+            {
+                await HostContext.ServiceController.ApplyGatewayAuthAttributesAsync(req, typedArray);
                 await HostContext.ServiceController.GatewayExecuteAsync(typedArray, req, applyFilters: false);
+            }
         }
         catch (Exception ex)
         {

@@ -13,44 +13,25 @@ namespace ServiceStack;
 
 public static class BlazorExtensions
 {
+    /// <summary>
+    /// Register an IClientFactory for Blazor Server Apps using ASP.NET Core Identity Auth.
+    /// In Process Gateway requests use the Session converted from the circuit's AuthenticationStateProvider User.
+    /// </summary>
     public static IHttpClientBuilder AddBlazorServerIdentityApiClient(this IServiceCollection services, string baseUrl, Action<IdentityApiClientConfig>? configure = null)
     {
         var config = new IdentityApiClientConfig();
         configure?.Invoke(config);
 
-        return services
-            .AddScoped<IClientFactory>(c =>
-            {
-                return new IdentityClientFactory(
-                    c.GetRequiredService<JsonApiClient>(), 
-                    c.GetRequiredService<IServiceGatewayFactory>(), 
-                    baseUrl)
-                {
-                    HttpContext = c.GetService<IHttpContextAccessor>()?.HttpContext,
-                    RequestFactory = c.GetService<IGatewayRequestFactory>(),
-                };
-            })
-            .AddSingleton<IServiceGatewayFactory, IdentityAuthServiceGatewayFactory>()
-            .AddHttpClient<JsonApiClient>(client => {
-                client.BaseAddress = new Uri(baseUrl);
-                config.HttpClientFilter?.Invoke(client);
-            })
-            .ConfigurePrimaryHttpMessageHandler(() =>
-            {
-                var to = HttpUtils.HttpClientHandlerFactory();
-                to.DefaultProxyCredentials = CredentialCache.DefaultCredentials;
-                config.HttpClientHandlerFilter?.Invoke(to);
-                return to;
-            });
+        services.AddSingleton<IServiceGatewayFactory, IdentityAuthServiceGatewayFactory>();
+        return services.AddBlazorServerClaimsApiClient(baseUrl, config);
     }
 }
 
-public class IdentityApiClientConfig
+public class IdentityApiClientConfig : BlazorServerApiClientConfig
 {
-   public Action<HttpClient>? HttpClientFilter { get; set; }
-   public Action<HttpClientHandler>? HttpClientHandlerFilter { get; set; }
 }
 
+[Obsolete("Reads the User from the HttpContext captured when the Blazor Server circuit started, use BlazorServerClaimsClientFactory instead")]
 public class IdentityClientFactory : IClientFactory
 {
     public JsonApiClient Client { get; }
