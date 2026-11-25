@@ -335,7 +335,7 @@ namespace ServiceStack.Text.Tests
             Assert.That(SerializeObject((ulong) 1), Is.EqualTo("{\"Value\":1}"));
             Assert.That(SerializeObject((float) 1.1), Is.EqualTo("{\"Value\":1.1}"));
             Assert.That(SerializeObject((double) 1.1), Is.EqualTo("{\"Value\":1.1}"));
-            Assert.That(SerializeObject((decimal) 1.1), Is.EqualTo("{\"Value\":1.1}"));
+            Assert.That(SerializeObject(1.1m), Is.EqualTo("{\"Value\":1.1}"));
         }
 
         object DeserializeObject(string json) => json.FromJson<TypeWithObjects>().Value;
