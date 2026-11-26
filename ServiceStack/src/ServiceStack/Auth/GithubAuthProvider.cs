@@ -64,6 +64,9 @@ public class GithubAuthProvider : OAuthProvider
         //Transferring AccessToken/Secret from Mobile/Desktop App to Server
         if (request?.AccessToken != null)
         {
+            if (!IsAccessTokenAuthAllowed(authService, session))
+                return HttpError.Forbidden("AccessToken authentication requires a same-origin POST request");
+
             //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
 
             var url = VerifyAccessTokenUrl.Fmt(ClientId, request.AccessToken);
@@ -109,7 +112,8 @@ public class GithubAuthProvider : OAuthProvider
         if (!isPreAuthCallback)
         {
             var scopes = Scopes.Join("%20");
-            string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&{Keywords.State}={session.Id}";
+            var oauthstate = CreateOAuthState(session, tokens);
+            string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&{Keywords.State}={oauthstate}";
 
             await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
             return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
@@ -117,6 +121,11 @@ public class GithubAuthProvider : OAuthProvider
 
         try
         {
+            if (!ValidateOAuthState(httpRequest, session, tokens))
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "InvalidState")));
+
+            await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+
             string accessTokenUrl = $"{AccessTokenUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&client_secret={ClientSecret}&code={code}";
             var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync(token: token).ConfigAwait();
             var authInfo = PclExportClient.Instance.ParseQueryString(contents);

@@ -281,7 +281,8 @@ namespace ServiceStack.Authentication.MongoDb
                     var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
                     if (userAuth != null) return userAuth;
                 }
-                if (!authSession.UserAuthName.IsNullOrEmpty())
+                // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+                if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
                 {
                     var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
                     if (userAuth != null) return userAuth;
@@ -303,7 +304,9 @@ namespace ServiceStack.Authentication.MongoDb
                         cancellationToken: token).ConfigAwait()).FirstOrDefault();
                 return userAuth;
             }
-            return null;
+
+            // Only merge into an existing account by Email when the OAuth provider verified it
+            return tokens.IsEmailVerified() ? await GetUserAuthByUserNameAsync(tokens.Email, token).ConfigAwait() : null;
         }
 
         public async Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token = default)
@@ -311,12 +314,19 @@ namespace ServiceStack.Authentication.MongoDb
             var userAuth = await GetUserAuthAsync(authSession, tokens, token).ConfigAwait() ?? new UserAuth();
 
             var providerCollection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            var authDetails = (await providerCollection.FindAsync(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId, cancellationToken: token).ConfigAwait()).FirstOrDefault() ??
-                new UserAuthDetails
+            var authDetails = (await providerCollection.FindAsync(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId, cancellationToken: token).ConfigAwait()).FirstOrDefault();
+            if (authDetails == null)
+            {
+                authDetails = new UserAuthDetails
                 {
                     Provider = tokens.Provider,
                     UserId = tokens.UserId,
                 };
+            }
+            else if (userAuth.Id != default && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            {
+                throw new AccountAlreadyLinkedException(tokens.Provider);
+            }
 
             authDetails.PopulateMissing(tokens);
             userAuth.PopulateMissingExtended(authDetails);

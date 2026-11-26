@@ -358,7 +358,8 @@ namespace ServiceStack.Authentication.MongoDb
                     var userAuth = GetUserAuth(authSession.UserAuthId);
                     if (userAuth != null) return userAuth;
                 }
-                if (!authSession.UserAuthName.IsNullOrEmpty())
+                // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+                if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
                 {
                     var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
                     if (userAuth != null) return userAuth;
@@ -377,7 +378,9 @@ namespace ServiceStack.Authentication.MongoDb
                 var userAuth = userAuthCollection.Find(u => u.Id == oAuthProvider.UserAuthId).FirstOrDefault();
                 return userAuth;
             }
-            return null;
+
+            // Only merge into an existing account by Email when the OAuth provider verified it
+            return tokens.IsEmailVerified() ? GetUserAuthByUserName(tokens.Email) : null;
         }
 
         public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
@@ -385,12 +388,19 @@ namespace ServiceStack.Authentication.MongoDb
             var userAuth = GetUserAuth(authSession, tokens) ?? new UserAuth();
 
             var providerCollection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            var authDetails = providerCollection.Find(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId).FirstOrDefault() ??
-                              new UserAuthDetails
-                              {
-                                  Provider = tokens.Provider,
-                                  UserId = tokens.UserId,
-                              };
+            var authDetails = providerCollection.Find(ud => ud.Provider == tokens.Provider && ud.UserId == tokens.UserId).FirstOrDefault();
+            if (authDetails == null)
+            {
+                authDetails = new UserAuthDetails
+                {
+                    Provider = tokens.Provider,
+                    UserId = tokens.UserId,
+                };
+            }
+            else if (userAuth.Id != default && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            {
+                throw new AccountAlreadyLinkedException(tokens.Provider);
+            }
 
             authDetails.PopulateMissing(tokens);
             userAuth.PopulateMissingExtended(authDetails);

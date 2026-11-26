@@ -380,7 +380,8 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
             if (userAuth != null)
                 return userAuth;
         }
-        if (!authSession.UserAuthName.IsNullOrEmpty())
+        // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+        if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
         {
             var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
             if (userAuth != null)
@@ -390,7 +391,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
             return null;
 
-        return await ExecAsync(async db =>
+        var linkedUserAuth = await ExecAsync(async db =>
         {
             var oAuthProvider = (await db.SelectAsync<TUserAuthDetails>(q =>
                 q.Provider == tokens.Provider && q.UserId == tokens.UserId, token).ConfigAwait()).FirstOrDefault();
@@ -401,7 +402,12 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
                 return userAuth;
             }
             return null;
-        });
+        }).ConfigAwait();
+        if (linkedUserAuth != null)
+            return linkedUserAuth;
+
+        // Only merge into an existing account by Email when the OAuth provider verified it
+        return tokens.IsEmailVerified() ? await GetUserAuthByUserNameAsync(tokens.Email, token).ConfigAwait() : null;
     }
 
     public virtual async Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
@@ -419,6 +425,10 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
                 authDetails = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
                 authDetails.Provider = tokens.Provider;
                 authDetails.UserId = tokens.UserId;
+            }
+            else if (userAuth.Id != default && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            {
+                throw new AccountAlreadyLinkedException(tokens.Provider);
             }
 
             authDetails.PopulateMissing(tokens, overwriteReserved: true);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Auth;
@@ -124,16 +125,9 @@ public abstract class OAuthProvider : AuthProvider, IOAuthProvider
         if (this.CallbackUrl.IsNullOrEmpty())
             this.CallbackUrl = authService.Request.AbsoluteUri;
 
-        if (RestoreSessionFromState == true)
-        {
-            var state = authService.Request.GetQueryStringOrForm(Keywords.State);
-            if (!string.IsNullOrEmpty(state))
-            {
-                (authService.Request.Response as IHttpResponse)?.ClearCookies();
-                authService.Request.CreateTemporarySessionId(state);
-                session = authService.Request.GetSession(reload:true);
-            }
-        }
+        // Sessions are never restored from the OAuth state param, which would let anyone with a callback URL
+        // for their own session sign a victim into it. When RestoreSessionFromState is enabled,
+        // AuthenticateService bounces callbacks through a same-site page so SameSite=Strict session cookies are sent.
 
         session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 
@@ -142,6 +136,175 @@ public abstract class OAuthProvider : AuthProvider, IOAuthProvider
             session.AddAuthToken(tokens = new AuthTokens { Provider = Provider });
 
         return tokens;
+    }
+
+    protected const string OAuthStateKey = "oauthstate";
+
+    /// <summary>
+    /// Session key used to store the pending OAuth state, scoped per provider so concurrent
+    /// sign-in flows with different providers don't overwrite each other's state
+    /// </summary>
+    protected virtual string OAuthStateSessionKey => OAuthStateKey + ":" + Provider;
+
+    /// <summary>
+    /// Authenticating with an AccessToken signs in to, or links the external identity to, the current session.
+    /// Only allow it from non-GET, same-origin requests so it can't be triggered from a cross-site link or form,
+    /// which would link an attacker's identity to a signed-in user or sign a victim in to the attacker's account
+    /// </summary>
+    protected virtual bool IsAccessTokenAuthAllowed(IServiceBase authService, IAuthSession session)
+    {
+        var req = authService.Request;
+        if (string.Equals(req.Verb, HttpMethods.Get, StringComparison.OrdinalIgnoreCase))
+            return false;
+        return IsTrustedOrigin(req);
+    }
+
+    /// <summary>
+    /// Whether the request was sent from this App's origin (or a CorsFeature whitelisted origin).
+    /// Requests without Origin or Referer headers (i.e. non-browser clients) are trusted.
+    /// </summary>
+    internal static bool IsTrustedOrigin(IRequest req)
+    {
+        var origin = req.GetHeader(HttpHeaders.Origin);
+        if (string.IsNullOrEmpty(origin))
+            origin = req.GetHeader(HttpHeaders.Referer);
+        if (string.IsNullOrEmpty(origin))
+            return true;
+
+        if (!Uri.TryCreate(origin, UriKind.Absolute, out var originUri)
+            || (originUri.Scheme != Uri.UriSchemeHttps && originUri.Scheme != Uri.UriSchemeHttp))
+            return false;
+        var originAuthority = originUri.GetLeftPart(UriPartial.Authority);
+
+        // Same host as this request. The port and scheme of the request can differ from the browser's behind a
+        // TLS-terminating reverse proxy, so only reject an http:// origin for an https:// request
+        if (Uri.TryCreate(req.AbsoluteUri, UriKind.Absolute, out var reqUri) 
+            && string.Equals(originUri.Host, reqUri.Host, StringComparison.OrdinalIgnoreCase)
+            && (originUri.Scheme == Uri.UriSchemeHttps || reqUri.Scheme == Uri.UriSchemeHttp))
+            return true;
+
+        var webHostUrl = HostContext.Config?.WebHostUrl;
+        if (!string.IsNullOrEmpty(webHostUrl) && Uri.TryCreate(webHostUrl, UriKind.Absolute, out var hostUri)
+            && string.Equals(originAuthority, hostUri.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase))
+            return true;
+
+        var allowedOrigins = HostContext.GetPlugin<CorsFeature>()?.AllowOriginWhitelist;
+        if (allowedOrigins != null)
+        {
+            foreach (var allowedOrigin in allowedOrigins)
+            {
+                if (string.Equals(allowedOrigin?.TrimEnd('/'), originAuthority, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Query param added to OAuth callbacks after they've been bounced through a same-site page
+    /// </summary>
+    public const string SessionCookieBounceParam = "ss-bounced";
+
+    /// <summary>
+    /// SameSite=Strict session cookies aren't sent on the cross-site redirect back from the OAuth provider.
+    /// Returns a page that resends the callback (GET or form_post) from this App's origin so the browser
+    /// includes the session cookies, or null if the request isn't an OAuth callback or was already bounced.
+    /// </summary>
+    public static IHttpResult CreateSessionCookieBounce(IRequest req)
+    {
+        if (!string.IsNullOrEmpty(req.QueryString[SessionCookieBounceParam]))
+            return null;
+
+        var isCallback = !string.IsNullOrEmpty(req.GetQueryStringOrForm(Keywords.State))
+            || !string.IsNullOrEmpty(req.GetQueryStringOrForm(Keywords.Code))
+            || !string.IsNullOrEmpty(req.QueryString["oauth_token"]);
+        if (!isCallback)
+            return null;
+
+        // Only ever bounce back to the same path on this App. Collapse leading slashes and backslashes so
+        // a path like //evil.com or /\evil.com can't become a protocol-relative URL to another site
+        var pathAndQuery = new Uri(req.AbsoluteUri).PathAndQuery;
+        pathAndQuery = "/" + pathAndQuery.TrimStart('/', '\\');
+        var url = pathAndQuery.AddQueryParam(SessionCookieBounceParam, "1");
+
+        string html;
+        if (HttpUtils.HasRequestBody(req.Verb) && req.FormData?.Count > 0)
+        {
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("<!DOCTYPE html><html lang=\"en\"><head><meta name=\"referrer\" content=\"no-referrer\" /></head>");
+            sb.Append("<body onload=\"HTMLFormElement.prototype.submit.call(document.forms[0])\"><form method=\"post\" action=\"")
+              .Append(System.Net.WebUtility.HtmlEncode(url)).Append("\">");
+            foreach (string key in req.FormData.AllKeys)
+            {
+                if (key == null) continue;
+                foreach (var value in req.FormData.GetValues(key) ?? TypeConstants.EmptyStringArray)
+                {
+                    sb.Append("<input type=\"hidden\" name=\"").Append(System.Net.WebUtility.HtmlEncode(key))
+                      .Append("\" value=\"").Append(System.Net.WebUtility.HtmlEncode(value)).Append("\" />");
+                }
+            }
+            sb.Append("<button type=\"submit\">Continue</button></form></body></html>");
+            html = StringBuilderCache.ReturnAndFree(sb);
+        }
+        else
+        {
+            var attrUrl = System.Net.WebUtility.HtmlEncode(url);
+            html = "<!DOCTYPE html><html lang=\"en\"><head><meta name=\"referrer\" content=\"no-referrer\" />"
+                + "<meta http-equiv=\"refresh\" content=\"0; URL=" + attrUrl + "\" />"
+                + "<script>window.location.replace(\"" + Formats.HtmlFormat.EncodeForJavaScriptString(url) + "\");</script>"
+                + "</head><body><a href=\"" + attrUrl + "\">Continue</a></body></html>";
+        }
+
+        var result = new HttpResult(html, MimeTypes.Html);
+        result.Headers[HttpHeaders.CacheControl] = "no-store";
+        result.Headers["Referrer-Policy"] = "no-referrer";
+        return result;
+    }
+
+    protected virtual string CreateOAuthState(IAuthSession session, IAuthTokens tokens = null)
+    {
+        var oauthState = SessionExtensions.CreateRandomSessionId();
+
+        if (session is AuthUserSession authSession)
+            (authSession.Meta ??= new Dictionary<string, string>())[OAuthStateSessionKey] = oauthState;
+        else if (tokens != null)
+            (tokens.Items ??= new Dictionary<string, string>())[OAuthStateSessionKey] = oauthState;
+
+        return oauthState;
+    }
+
+    protected virtual bool ValidateOAuthState(IRequest httpRequest, IAuthSession session, IAuthTokens tokens = null)
+    {
+        var state = httpRequest.GetQueryStringOrForm(Keywords.State);
+        if (string.IsNullOrEmpty(state))
+            return false;
+
+        string expectedState = null;
+        if (session is AuthUserSession authSession)
+        {
+            if (authSession.Meta == null || !authSession.Meta.TryGetValue(OAuthStateSessionKey, out expectedState))
+                return false;
+
+            if (string.IsNullOrEmpty(expectedState) || !CryptUtils.FixedTimeEquals(state, expectedState))
+                return false;
+
+            authSession.Meta.Remove(OAuthStateSessionKey);
+            return true;
+        }
+
+        if (tokens != null)
+        {
+            if (tokens.Items == null || !tokens.Items.TryGetValue(OAuthStateSessionKey, out expectedState))
+                return false;
+
+            if (string.IsNullOrEmpty(expectedState) || !CryptUtils.FixedTimeEquals(state, expectedState))
+                return false;
+
+            tokens.Items.Remove(OAuthStateSessionKey);
+            return true;
+        }
+
+        return false;
     }
 
     public virtual Task LoadUserOAuthProviderAsync(IAuthSession userSession, IAuthTokens tokens) => Task.CompletedTask;

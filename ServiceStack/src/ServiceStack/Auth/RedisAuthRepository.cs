@@ -312,7 +312,8 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAut
             if (userAuth != null)
                 return userAuth;
         }
-        if (!authSession.UserAuthName.IsNullOrEmpty())
+        // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+        if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
         {
             var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
             if (userAuth != null)
@@ -329,7 +330,9 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAut
             if (oauthProvider != null)
                 return redis.As<IUserAuth>().GetById(oauthProvider.UserAuthId);
         }
-        return null;
+
+        // Only merge into an existing account by Email when the OAuth provider verified it
+        return tokens.IsEmailVerified() ? GetUserAuthByUserName(tokens.Email) : null;
     }
 
     public virtual IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
@@ -342,6 +345,9 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAut
             authDetails = redis.As<TUserAuthDetails>().GetById(oAuthProviderId);
 
         var userAuth = GetUserAuth(redis, authSession, tokens);
+        if (userAuth != null && authDetails != null && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            throw new AccountAlreadyLinkedException(tokens.Provider);
+
         if (userAuth == null)
         {
             userAuth = typeof(TUserAuth).CreateInstance<TUserAuth>();

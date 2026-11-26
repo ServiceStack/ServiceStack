@@ -152,6 +152,10 @@ namespace ServiceStack.Authentication.RavenDb
                 authDetails.Provider = tokens.Provider;
                 authDetails.UserId = tokens.UserId;
             }
+            else if (userAuth.Id != default && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            {
+                throw new AccountAlreadyLinkedException(tokens.Provider);
+            }
 
             authDetails.PopulateMissing(tokens);
             userAuth.PopulateMissingExtended(authDetails);
@@ -189,7 +193,8 @@ namespace ServiceStack.Authentication.RavenDb
                 var userAuth = await GetUserAuthAsync(authSession.UserAuthId, token).ConfigAwait();
                 if (userAuth != null) return userAuth;
             }
-            if (!authSession.UserAuthName.IsNullOrEmpty())
+            // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+            if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
             {
                 var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
                 if (userAuth != null) return userAuth;
@@ -211,7 +216,9 @@ namespace ServiceStack.Authentication.RavenDb
                 var userAuth = await session.LoadAsync<TUserAuth>(RavenIdConverter.ToString(UserAuthCollectionName, oAuthProvider.UserAuthId), token).ConfigAwait();
                 return userAuth;
             }
-            return null;
+
+            // Only merge into an existing account by Email when the OAuth provider verified it
+            return tokens.IsEmailVerified() ? await GetUserAuthByUserNameAsync(tokens.Email, token).ConfigAwait() : null;
         }
 
         public async Task<IUserAuth> GetUserAuthByUserNameAsync(string userNameOrEmail, CancellationToken token = default)

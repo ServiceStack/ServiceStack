@@ -68,6 +68,9 @@ public class VkAuthProvider : OAuthProvider {
         IRequest httpRequest = authService.Request;
 
         if (request?.AccessToken != null && request?.AccessTokenSecret != null) {
+            if (!IsAccessTokenAuthAllowed(authService, session))
+                return HttpError.Forbidden("AccessToken authentication requires a same-origin POST request");
+
             var authInfo = await GetUserInfoAsync(request.AccessToken, request.AccessTokenSecret).ConfigAwait();
 
             if(authInfo == null || !(authInfo.Get("error") ?? authInfo.Get("error_description")).IsNullOrEmpty()){
@@ -102,13 +105,19 @@ public class VkAuthProvider : OAuthProvider {
         string code = httpRequest.QueryString["code"];
         bool isPreAuthCallback = !code.IsNullOrEmpty();
         if (!isPreAuthCallback) {
-            string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&scope={Scope}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&v={ApiVersion}";
+            var oauthstate = CreateOAuthState(session, tokens);
+            string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&scope={Scope}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&v={ApiVersion}&{Keywords.State}={oauthstate}";
 
             await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
             return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
         }
 
         try {
+            if (!ValidateOAuthState(httpRequest, session, tokens))
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "InvalidState")));
+
+            await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+
             code = EnsureLatestCode(code);
 
             string accessTokeUrl = $"{AccessTokenUrl}?client_id={ApplicationId}&client_secret={SecureKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}";

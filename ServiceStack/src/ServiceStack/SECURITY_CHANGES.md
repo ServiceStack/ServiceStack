@@ -109,6 +109,12 @@ This document summarizes modernization, null-safety, reliability, and bug fixes 
   - Removed duplicate `ClaimTypes.HomePhone` and `ClaimTypes.MobilePhone` registrations in `ConvertSessionToClaims`.
 - **`SocialExtensions.cs`**:
   - Normalized Gravatar email with `Trim().ToLowerInvariant()`, disposed MD5 instance, and guarded null inputs.
+- **OAuth sign-in (GHSA-99jx-gwp7-4j69)**: see [Auth/OAUTH_SECURITY.md](Auth/OAUTH_SECURITY.md) for details.
+  - `OAuthProvider.CreateOAuthState`/`ValidateOAuthState`: random per-provider `state` required on every callback, compared in constant time and single use.
+  - `OAuthProvider.Init` no longer loads a session from `state`. With `RestoreSessionFromState`, `AuthenticateService` bounces callbacks through `CreateSessionCookieBounce` so `SameSite=Strict` session cookies are sent.
+  - `IsAccessTokenAuthAllowed`: `AccessToken` sign-in needs a same-origin POST, checked with `IsTrustedOrigin`.
+  - `AccountAlreadyLinkedException`: Auth Repositories refuse to move a provider link to another user; providers redirect with `f=AccountAlreadyLinked`.
+  - `UserAuthRepositoryExtensions.HasProviderUserId`/`IsEmailVerified`: OAuth identities aren't matched by provider username, and are matched by email only when verified.
 
 ---
 

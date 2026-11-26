@@ -274,6 +274,10 @@ namespace ServiceStack.Authentication.RavenDb
                 authDetails.Provider = tokens.Provider;
                 authDetails.UserId = tokens.UserId;
             }
+            else if (userAuth.Id != default && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            {
+                throw new AccountAlreadyLinkedException(tokens.Provider);
+            }
 
             authDetails.PopulateMissing(tokens);
 
@@ -312,7 +316,8 @@ namespace ServiceStack.Authentication.RavenDb
                     return userAuth;
             }
 
-            if (!authSession.UserAuthName.IsNullOrEmpty())
+            // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+            if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
             {
                 var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
                 if (userAuth != null)
@@ -333,7 +338,8 @@ namespace ServiceStack.Authentication.RavenDb
             if (oAuthProvider != null)
                 return session.Load<TUserAuth>(RavenIdConverter.ToString(UserAuthCollectionName, oAuthProvider.UserAuthId));
 
-            return null;
+            // Only merge into an existing account by Email when the OAuth provider verified it
+            return tokens.IsEmailVerified() ? GetUserAuthByUserName(tokens.Email) : null;
         }
 
         public IUserAuth GetUserAuthByUserName(string userNameOrEmail)

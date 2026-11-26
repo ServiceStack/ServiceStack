@@ -505,13 +505,23 @@ public class AuthenticateService : Service
         if (request.provider == null && request.UserName == null)
             return null; //Just return sessionInfo if no provider or username is given
 
+        // SameSite=Strict session cookies aren't sent on the cross-site OAuth callback, resend it from this origin
+        var restoreSession = oAuthConfig is OAuthProvider { RestoreSessionFromState: true }
+            || oAuthConfig is OAuthProviderSync { RestoreSessionFromState: true };
+        if (restoreSession && !Request.IsInProcessRequest())
+        {
+            var bounce = OAuthProvider.CreateSessionCookieBounce(Request);
+            if (bounce != null)
+                return bounce;
+        }
+
         var authFeature = GetPlugin<AuthFeature>();
         if (authFeature?.HasSessionFeature == true && oAuthConfig is not IAuthWithRequest)
         {
             var generateNewCookies = authFeature.GenerateNewSessionCookiesOnAuthentication
                  //keep existing session during OAuth flow
                  && string.IsNullOrEmpty(Request.QueryString["oauth_token"]) 
-                 && string.IsNullOrEmpty(Request.QueryString["state"]);
+                 && string.IsNullOrEmpty(Request.GetQueryStringOrForm(Keywords.State));
 
             if (generateNewCookies)
                 await Request.GenerateNewSessionCookiesAsync(session, token).ConfigAwait();

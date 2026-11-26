@@ -65,13 +65,19 @@ public class YandexAuthProvider : OAuthProvider
         bool isPreAuthCallback = !code.IsNullOrEmpty();
         if (!isPreAuthCallback)
         {
-            string preAuthUrl = $"{PreAuthUrl}?response_type=code&client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&display=popup&state={Guid.NewGuid().ToString("N")}";
+            var oauthstate = CreateOAuthState(session, tokens);
+            string preAuthUrl = $"{PreAuthUrl}?response_type=code&client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&display=popup&{Keywords.State}={oauthstate}";
             await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
             return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
         }
 
         try
         {
+            if (!ValidateOAuthState(httpRequest, session, tokens))
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "InvalidState")));
+
+            await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+
             string payload = $"grant_type=authorization_code&code={code}&client_id={ApplicationId}&client_secret={ApplicationPassword}";
             string contents = await AccessTokenUrl.PostStringToUrlAsync(payload).ConfigAwait();
 

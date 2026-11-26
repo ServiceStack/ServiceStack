@@ -121,16 +121,9 @@ public abstract class OAuthProviderSync : AuthProviderSync, IOAuthProvider
         if (this.CallbackUrl.IsNullOrEmpty())
             this.CallbackUrl = authService.Request.AbsoluteUri;
 
-        if (RestoreSessionFromState == true)
-        {
-            var state = authService.Request.GetQueryStringOrForm(Keywords.State);
-            if (!string.IsNullOrEmpty(state))
-            {
-                (authService.Request.Response as IHttpResponse)?.ClearCookies();
-                authService.Request.CreateTemporarySessionId(state);
-                session = authService.Request.GetSession(reload:true);
-            }
-        }
+        // Sessions are never restored from the OAuth state param, which would let anyone with a callback URL
+        // for their own session sign a victim into it. When RestoreSessionFromState is enabled,
+        // AuthenticateService bounces callbacks through a same-site page so SameSite=Strict session cookies are sent.
 
         session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 
@@ -139,6 +132,73 @@ public abstract class OAuthProviderSync : AuthProviderSync, IOAuthProvider
             session.AddAuthToken(tokens = new AuthTokens { Provider = Provider });
 
         return tokens;
+    }
+
+    protected const string OAuthStateKey = "oauthstate";
+
+    /// <summary>
+    /// Session key used to store the pending OAuth state, scoped per provider so concurrent
+    /// sign-in flows with different providers don't overwrite each other's state
+    /// </summary>
+    protected virtual string OAuthStateSessionKey => OAuthStateKey + ":" + Provider;
+
+    /// <summary>
+    /// Authenticating with an AccessToken links the external identity to the current session,
+    /// only allow it from non-GET requests so it can't be triggered from a cross-site link and
+    /// don't allow cross-site requests to link an identity to an already authenticated session
+    /// </summary>
+    protected virtual bool IsAccessTokenAuthAllowed(IServiceBase authService, IAuthSession session)
+    {
+        var req = authService.Request;
+        if (string.Equals(req.Verb, HttpMethods.Get, StringComparison.OrdinalIgnoreCase))
+            return false;
+        return OAuthProvider.IsTrustedOrigin(req);
+    }
+
+    protected virtual string CreateOAuthState(IAuthSession session, IAuthTokens tokens = null)
+    {
+        var oauthState = SessionExtensions.CreateRandomSessionId();
+
+        if (session is AuthUserSession authSession)
+            (authSession.Meta ??= new Dictionary<string, string>())[OAuthStateSessionKey] = oauthState;
+        else if (tokens != null)
+            (tokens.Items ??= new Dictionary<string, string>())[OAuthStateSessionKey] = oauthState;
+
+        return oauthState;
+    }
+
+    protected virtual bool ValidateOAuthState(IRequest httpRequest, IAuthSession session, IAuthTokens tokens = null)
+    {
+        var state = httpRequest.GetQueryStringOrForm(Keywords.State);
+        if (string.IsNullOrEmpty(state))
+            return false;
+
+        string expectedState = null;
+        if (session is AuthUserSession authSession)
+        {
+            if (authSession.Meta == null || !authSession.Meta.TryGetValue(OAuthStateSessionKey, out expectedState))
+                return false;
+
+            if (string.IsNullOrEmpty(expectedState) || !CryptUtils.FixedTimeEquals(state, expectedState))
+                return false;
+
+            authSession.Meta.Remove(OAuthStateSessionKey);
+            return true;
+        }
+
+        if (tokens != null)
+        {
+            if (tokens.Items == null || !tokens.Items.TryGetValue(OAuthStateSessionKey, out expectedState))
+                return false;
+
+            if (string.IsNullOrEmpty(expectedState) || !CryptUtils.FixedTimeEquals(state, expectedState))
+                return false;
+
+            tokens.Items.Remove(OAuthStateSessionKey);
+            return true;
+        }
+
+        return false;
     }
 
     public virtual void LoadUserOAuthProvider(IAuthSession userSession, IAuthTokens tokens) { }

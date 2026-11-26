@@ -47,6 +47,9 @@ public class TwitterAuthProvider : OAuthProvider
         //Transferring AccessToken/Secret from Mobile/Desktop App to Server
         if (request.AccessToken != null && request.AccessTokenSecret != null)
         {
+            if (!IsAccessTokenAuthAllowed(authService, session))
+                return HttpError.Forbidden("AccessToken authentication requires a same-origin POST request");
+
             tokens.AccessToken = request.AccessToken;
             tokens.AccessTokenSecret = request.AccessTokenSecret;
 

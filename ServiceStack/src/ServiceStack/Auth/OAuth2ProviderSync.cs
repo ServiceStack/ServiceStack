@@ -54,6 +54,9 @@ public abstract class OAuth2ProviderSync : OAuthProviderSync
         //Transferring AccessToken/Secret from Mobile/Desktop App to Server
         if (request?.AccessToken != null && VerifyAccessToken != null)
         {
+            if (!IsAccessTokenAuthAllowed(authService, session))
+                return HttpError.Forbidden("AccessToken authentication requires a same-origin POST request");
+
             if (!VerifyAccessToken(request.AccessToken))
                 return HttpError.Unauthorized("AccessToken is not for client_id: " + ConsumerKey);
 
@@ -84,7 +87,7 @@ public abstract class OAuth2ProviderSync : OAuthProviderSync
         var isPreAuthCallback = !code.IsNullOrEmpty();
         if (!isPreAuthCallback)
         {
-            var oauthstate = session.Id;                
+            var oauthstate = CreateOAuthState(session, tokens);
             var preAuthUrl = AuthorizeUrl
                 .AddQueryParam("response_type", "code")
                 .AddQueryParam("client_id", ConsumerKey)
@@ -95,26 +98,16 @@ public abstract class OAuth2ProviderSync : OAuthProviderSync
             if (ResponseMode != null)
                 preAuthUrl = preAuthUrl.AddQueryParam("response_mode", ResponseMode);
 
-            if (session is AuthUserSession authSession)
-                (authSession.Meta ?? (authSession.Meta = new Dictionary<string, string>()))["oauthstate"] = oauthstate;
-
             this.SaveSession(authService, session, SessionExpiry);
             return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
         }
 
         try
         {
-            var state = httpRequest.GetQueryStringOrForm(Keywords.State);
-            if (state != null && session is AuthUserSession authSession)
-            {
-                if (authSession.Meta == null)
-                    authSession.Meta = new Dictionary<string, string>();
-                    
-                if (authSession.Meta.TryGetValue("oauthstate", out var oauthState) && state != oauthState)
-                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "InvalidState")));
+            if (!ValidateOAuthState(httpRequest, session, tokens))
+                return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "InvalidState")));
 
-                authSession.Meta.Remove("oauthstate");
-            }
+            this.SaveSession(authService, session, SessionExpiry);
                 
             var contents = GetAccessTokenJson(code);
             var authInfo = (Dictionary<string,object>)JSON.parse(contents);

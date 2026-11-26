@@ -106,7 +106,8 @@ public class YammerAuthProvider : OAuthProvider
         var isPreAuthCallback = !code.IsNullOrEmpty();
         if (!isPreAuthCallback)
         {
-            var preAuthUrl = $"{this.PreAuthUrl}?client_id={this.ClientId}&redirect_uri={this.RedirectUrl.UrlEncode()}";
+            var oauthstate = CreateOAuthState(session, tokens);
+            var preAuthUrl = $"{this.PreAuthUrl}?client_id={this.ClientId}&redirect_uri={this.RedirectUrl.UrlEncode()}&{Keywords.State}={oauthstate}";
 
             await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
             return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
@@ -117,6 +118,11 @@ public class YammerAuthProvider : OAuthProvider
 
         try
         {
+            if (!ValidateOAuthState(authService.Request, session, tokens))
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "InvalidState")));
+
+            await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+
             // Get access response object
             var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetStringFromUrlAsync().ConfigAwait();
 

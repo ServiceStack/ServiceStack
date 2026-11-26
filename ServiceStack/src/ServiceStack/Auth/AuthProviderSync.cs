@@ -32,6 +32,10 @@ public abstract class AuthProviderSync : IAuthProvider, IAuthPlugin
     public bool PersistSession { get; set; }
     public bool SaveExtendedUserInfo { get; set; }
         
+    /// <summary>
+    /// When enabled, OAuth callbacks are resent from this App's origin so SameSite=Strict session cookies are sent.
+    /// Defaults to true when HostConfig.UseSameSiteCookies=true
+    /// </summary>
     public bool? RestoreSessionFromState { get; set; }
 
     public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
@@ -196,7 +200,19 @@ public abstract class AuthProviderSync : IAuthProvider, IAuthPlugin
 
                 if (hasTokens)
                 {
-                    var authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
+                    IUserAuthDetails authDetails;
+                    try
+                    {
+                        authDetails = authRepo.CreateOrMergeAuthSession(session, tokens);
+                    }
+                    catch (AccountAlreadyLinkedException ex)
+                    {
+                        Log.Warn(ex.Message);
+                        // Only discard a session that this sign-in authenticated, an already signed-in user stays signed in
+                        if (string.IsNullOrEmpty(session.UserAuthId))
+                            authService.RemoveSession();
+                        return authService.Redirect(FailedRedirectUrlFilter(this, GetReferrerUrl(authService, session).SetParam("f", "AccountAlreadyLinked")));
+                    }
                     session.UserAuthId = authDetails.UserAuthId.ToString();
 
                     var firstTimeAuthenticated = authDetails.CreatedDate == authDetails.ModifiedDate;

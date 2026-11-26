@@ -12,6 +12,23 @@ namespace ServiceStack.Auth;
 public static class UserAuthRepositoryExtensions
 {
     /// <summary>
+    /// Whether the tokens identify an external OAuth provider account (Provider + UserId)
+    /// </summary>
+    public static bool HasProviderUserId(this IAuthTokens tokens) =>
+        tokens != null && !string.IsNullOrEmpty(tokens.Provider) && !string.IsNullOrEmpty(tokens.UserId);
+
+    /// <summary>
+    /// Whether the OAuth provider asserted the tokens Email address is verified
+    /// </summary>
+    public static bool IsEmailVerified(this IAuthTokens tokens)
+    {
+        if (tokens?.Items == null || string.IsNullOrEmpty(tokens.Email) || tokens.Email.IndexOf('@') < 0)
+            return false;
+        return (tokens.Items.TryGetValue("email_verified", out var verified) && "true".Equals(verified, StringComparison.OrdinalIgnoreCase))
+            || (tokens.Items.TryGetValue("verified_email", out verified) && "true".Equals(verified, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
     /// Creates the required missing tables or DB schema 
     /// </summary>
     public static void AssignRoles(this IAuthRepository userAuthRepo, IUserAuth userAuth,

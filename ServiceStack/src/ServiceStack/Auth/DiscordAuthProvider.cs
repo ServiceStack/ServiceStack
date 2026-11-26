@@ -76,6 +76,7 @@ public class DiscordAuthProvider : OAuth2Provider
         var verifiedEmail = obj.ContainsKey("verified") && obj.Get<bool>("verified");
         if (!verifiedEmail)
             throw new Exception("Email not verified");
+        obj["email_verified"] = "true";
         obj.Add("name", obj["username"]);
         obj.MoveKey("id", "user_id");
         // Username is not unique in Discord, in fact users can change easily.

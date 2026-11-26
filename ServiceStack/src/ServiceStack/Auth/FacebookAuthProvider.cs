@@ -66,6 +66,9 @@ public class FacebookAuthProvider : OAuthProvider
         //Transferring AccessToken/Secret from Mobile/Desktop App to Server
         if (request?.AccessToken != null)
         {
+            if (!IsAccessTokenAuthAllowed(authService, session))
+                return HttpError.Forbidden("AccessToken authentication requires a same-origin POST request");
+
             if (!await AuthHttpGateway.VerifyFacebookAccessTokenAsync(AppId, request.AccessToken, token).ConfigAwait())
                 return HttpError.Unauthorized("AccessToken is not for App: " + AppId);
 
@@ -96,7 +99,8 @@ public class FacebookAuthProvider : OAuthProvider
         var isPreAuthCallback = !code.IsNullOrEmpty();
         if (!isPreAuthCallback)
         {
-            var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}&{Keywords.State}={session.Id}";
+            var oauthstate = CreateOAuthState(session, tokens);
+            var preAuthUrl = $"{PreAuthUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&scope={string.Join(",", Permissions)}&{Keywords.State}={oauthstate}";
 
             await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
             return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
@@ -104,6 +108,11 @@ public class FacebookAuthProvider : OAuthProvider
 
         try
         {
+            if (!ValidateOAuthState(httpRequest, session, tokens))
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "InvalidState")));
+
+            await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+
             var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
             var contents = await AccessTokenUrlFilter(ctx, accessTokenUrl).GetJsonFromUrlAsync(token: token).ConfigAwait();
             var authInfo = JsonObject.Parse(contents);

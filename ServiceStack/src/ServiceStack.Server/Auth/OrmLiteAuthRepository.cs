@@ -511,7 +511,8 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
             if (userAuth != null)
                 return userAuth;
         }
-        if (!authSession.UserAuthName.IsNullOrEmpty())
+        // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+        if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
         {
             var userAuth = GetUserAuthByUserName(authSession.UserAuthName);
             if (userAuth != null)
@@ -521,7 +522,7 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
         if (tokens == null || tokens.Provider.IsNullOrEmpty() || tokens.UserId.IsNullOrEmpty())
             return null;
 
-        return Exec(db =>
+        var linkedUserAuth = Exec(db =>
         {
             var oAuthProvider = db.Select<TUserAuthDetails>(q =>
                 q.Provider == tokens.Provider && q.UserId == tokens.UserId).FirstOrDefault();
@@ -533,6 +534,11 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
             }
             return null;
         });
+        if (linkedUserAuth != null)
+            return linkedUserAuth;
+
+        // Only merge into an existing account by Email when the OAuth provider verified it
+        return tokens.IsEmailVerified() ? GetUserAuthByUserName(tokens.Email) : null;
     }
 
     public virtual IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
@@ -550,6 +556,10 @@ public abstract partial class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDeta
                 authDetails = typeof(TUserAuthDetails).CreateInstance<TUserAuthDetails>();
                 authDetails.Provider = tokens.Provider;
                 authDetails.UserId = tokens.UserId;
+            }
+            else if (userAuth.Id != default && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            {
+                throw new AccountAlreadyLinkedException(tokens.Provider);
             }
 
             authDetails.PopulateMissing(tokens, overwriteReserved: true);

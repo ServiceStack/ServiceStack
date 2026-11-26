@@ -141,6 +141,10 @@ public partial class DynamoDbAuthRepository<TUserAuth, TUserAuthDetails> : IUser
             authDetails.Provider = tokens.Provider;
             authDetails.UserId = tokens.UserId;
         }
+        else if (userAuth.Id != default && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+        {
+            throw new AccountAlreadyLinkedException(tokens.Provider);
+        }
 
         authDetails.PopulateMissing(tokens, overwriteReserved: true);
         userAuth.PopulateMissingExtended(authDetails);
@@ -172,7 +176,8 @@ public partial class DynamoDbAuthRepository<TUserAuth, TUserAuthDetails> : IUser
             if (userAuth != null)
                 return userAuth;
         }
-        if (!authSession.UserAuthName.IsNullOrEmpty())
+        // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+        if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
         {
             var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token);
             if (userAuth != null)
@@ -188,7 +193,9 @@ public partial class DynamoDbAuthRepository<TUserAuth, TUserAuthDetails> : IUser
             var userAuth = DeSanitize(await Db.GetItemAsync<TUserAuth>(authProviderIndex.UserAuthId, token));
             return userAuth;
         }
-        return null;
+
+        // Only merge into an existing account by Email when the OAuth provider verified it
+        return tokens.IsEmailVerified() ? await GetUserAuthByUserNameAsync(tokens.Email, token) : null;
     }
 
     private async Task<UserIdUserAuthDetailsIndex> GetUserAuthByProviderUserIdAsync(string provider, string userId, CancellationToken token=default)

@@ -286,7 +286,8 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails>
             if (userAuth != null)
                 return userAuth;
         }
-        if (!authSession.UserAuthName.IsNullOrEmpty())
+        // Don't trust the provider-populated UserAuthName to resolve an existing account for OAuth identities
+        if (!authSession.UserAuthName.IsNullOrEmpty() && !tokens.HasProviderUserId())
         {
             var userAuth = await GetUserAuthByUserNameAsync(authSession.UserAuthName, token).ConfigAwait();
             if (userAuth != null)
@@ -303,7 +304,9 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails>
             if (oauthProvider != null)
                 return await redis.AsAsync<IUserAuth>().GetByIdAsync(oauthProvider.UserAuthId, token);
         }
-        return null;
+
+        // Only merge into an existing account by Email when the OAuth provider verified it
+        return tokens.IsEmailVerified() ? await GetUserAuthByUserNameAsync(tokens.Email, token).ConfigAwait() : null;
     }
 
     public virtual async Task<IUserAuthDetails> CreateOrMergeAuthSessionAsync(IAuthSession authSession, IAuthTokens tokens, CancellationToken token=default)
@@ -316,6 +319,9 @@ public partial class RedisAuthRepository<TUserAuth, TUserAuthDetails>
             authDetails = await redis.AsAsync<TUserAuthDetails>().GetByIdAsync(oAuthProviderId, token).ConfigAwait();
 
         var userAuth = await GetUserAuthAsync(redis, authSession, tokens, token).ConfigAwait();
+        if (userAuth != null && authDetails != null && authDetails.UserAuthId != default && authDetails.UserAuthId != userAuth.Id)
+            throw new AccountAlreadyLinkedException(tokens.Provider);
+
         if (userAuth == null)
         {
             userAuth = typeof(TUserAuth).CreateInstance<TUserAuth>();

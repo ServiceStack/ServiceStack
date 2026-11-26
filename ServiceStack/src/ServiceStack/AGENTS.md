@@ -104,6 +104,14 @@ Where possible, pipeline interfaces and providers provide both sync and async ex
 - Ensure async wrappers (`UserAuthRepositoryAsyncWrapper`, `CacheClientAsyncWrapper`) forward `Dispose()` and `DisposeAsync()` to underlying implementations.
 - AppHost `OnDisposeCallbacks` must catch exceptions per callback to prevent an error in one callback from aborting cleanup of others.
 
+### 6. OAuth Sign-in
+See [Auth/OAUTH_SECURITY.md](Auth/OAUTH_SECURITY.md) for the full design. Always preserve:
+- Every OAuth callback validates a random, per-provider, single-use `state` (`CreateOAuthState`/`ValidateOAuthState`). Never use the session id as `state`.
+- Never load a session from a URL parameter. `RestoreSessionFromState` works by bouncing callbacks through a same-site page (`OAuthProvider.CreateSessionCookieBounce`).
+- `AccessToken` sign-in branches call `IsAccessTokenAuthAllowed` before verifying the token.
+- `CreateSessionCookieBounce` must only ever target a same-site path: keep collapsing leading `/` and `\` so it can't build a protocol-relative URL.
+- Auth Repositories throw `AccountAlreadyLinkedException` rather than move a provider link to another user, and only resolve OAuth identities by provider link, or by email when `tokens.IsEmailVerified()`.
+
 ---
 
 ## Common Modification Scenarios

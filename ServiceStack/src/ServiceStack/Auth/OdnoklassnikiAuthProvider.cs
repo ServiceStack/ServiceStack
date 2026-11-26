@@ -67,7 +67,8 @@ public class OdnoklassnikiAuthProvider : OAuthProvider
         bool isPreAuthCallback = !code.IsNullOrEmpty();
         if (!isPreAuthCallback)
         {
-            string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&layout=m";
+            var oauthstate = CreateOAuthState(session, tokens);
+            string preAuthUrl = $"{PreAuthUrl}?client_id={ApplicationId}&redirect_uri={CallbackUrl.UrlEncode()}&response_type=code&layout=m&{Keywords.State}={oauthstate}";
 
             await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
             return authService.Redirect(PreAuthUrlFilter(ctx, preAuthUrl));
@@ -75,6 +76,11 @@ public class OdnoklassnikiAuthProvider : OAuthProvider
 
         try
         {
+            if (!ValidateOAuthState(httpRequest, session, tokens))
+                return authService.Redirect(FailedRedirectUrlFilter(ctx, session.ReferrerUrl.SetParam("f", "InvalidState")));
+
+            await this.SaveSessionAsync(authService, session, SessionExpiry, token).ConfigAwait();
+
             string payload = $"client_id={ApplicationId}&client_secret={SecretKey}&code={code}&redirect_uri={CallbackUrl.UrlEncode()}&grant_type=authorization_code";
 
             string contents = await AccessTokenUrlFilter(ctx, AccessTokenUrl)
